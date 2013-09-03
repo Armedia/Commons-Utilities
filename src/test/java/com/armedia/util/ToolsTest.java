@@ -1,0 +1,844 @@
+/**
+ * *******************************************************************
+ * 
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
+ * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
+ * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
+ * IS STRICTLY PROHIBITED.
+ * 
+ * Confidential Property of Armedia LLC.
+ * (c) Copyright Armedia LLC 2011.
+ * All Rights reserved.
+ * 
+ * *******************************************************************
+ */
+package com.armedia.util;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.armedia.commons.utilities.Tools;
+
+/**
+ * @author drivera@armedia.com
+ * 
+ */
+public class ToolsTest {
+
+	private static Number toBigNumber(Number n) {
+		if (!(n instanceof BigInteger) && !(n instanceof BigDecimal)) {
+			if ((n instanceof Float) || (n instanceof Double)) {
+				return new BigDecimal(n.doubleValue());
+			} else {
+				return new BigInteger(String.valueOf(n));
+			}
+		}
+		return n;
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#coalesce(Object, Object...)}.
+	 */
+	@Test
+	public void testCoalesce() {
+		Assert.assertNull(Tools.coalesce(null));
+		Assert.assertNull(Tools.coalesce(null, null, null));
+		Object[] a = {
+			1, 2
+		};
+		Assert.assertNotNull(Tools.coalesce(a[0]));
+		Assert.assertEquals(a[0], Tools.coalesce(null, a[0]));
+		Assert.assertEquals(a[0], Tools.coalesce(null, a[0], a[1]));
+		Assert.assertNotNull(Tools.coalesce(a[1]));
+		Assert.assertEquals(a[1], Tools.coalesce(null, a[1]));
+		Assert.assertEquals(a[1], Tools.coalesce(null, a[1], a[0]));
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#toTrimmedString(java.lang.Object, boolean)}.
+	 */
+	@Test
+	public void testAsTrimmedString() {
+		Object[][] o = {
+			{
+				null, null, null
+			}, {
+				1, "1", "1"
+			}, {
+				"", "", null
+			}, {
+				" ", "", null
+			}, {
+				"     ", "", null
+			}, {
+				"hello", "hello", "hello"
+			}, {
+				"     hello     ", "hello", "hello"
+			}, {
+				"hello     ", "hello", "hello"
+			}, {
+				"     hello", "hello", "hello"
+			}, {
+				"hello there", "hello there", "hello there"
+			}, {
+				"     hello there    ", "hello there", "hello there"
+			}, {
+				"hello there     ", "hello there", "hello there"
+			}, {
+				"     hello there", "hello there", "hello there"
+			}, {
+				"hello     there", "hello     there", "hello     there"
+			}, {
+				"     hello     there    ", "hello     there", "hello     there"
+			}, {
+				"hello     there     ", "hello     there", "hello     there"
+			}, {
+				"     hello     there", "hello     there", "hello     there"
+			}
+		};
+		for (Object[] a : o) {
+			Assert.assertEquals(a[2], Tools.toTrimmedString(a[0], true));
+			Assert.assertEquals(a[1], Tools.toTrimmedString(a[0], false));
+			Assert.assertEquals(a[1], Tools.toTrimmedString(a[0]));
+		}
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#toString(java.lang.Object, boolean)}.
+	 */
+	@Test
+	public void testAsString() {
+		Object[][] o = {
+			{
+				null, null, null
+			}, {
+				1, "1", "1"
+			}, {
+				"", "", null
+			}, {
+				" ", " ", " "
+			}, {
+				"     ", "     ", "     "
+			}, {
+				"hello", "hello", "hello"
+			}, {
+				"     hello     ", "     hello     ", "     hello     "
+			}, {
+				"hello     ", "hello     ", "hello     "
+			}, {
+				"     hello", "     hello", "     hello"
+			}, {
+				"hello there", "hello there", "hello there"
+			}, {
+				"     hello there    ", "     hello there    ", "     hello there    "
+			}, {
+				"hello there     ", "hello there     ", "hello there     "
+			}, {
+				"     hello there", "     hello there", "     hello there"
+			}, {
+				"hello     there", "hello     there", "hello     there"
+			}, {
+				"     hello     there    ", "     hello     there    ", "     hello     there    "
+			}, {
+				"hello     there     ", "hello     there     ", "hello     there     "
+			}, {
+				"     hello     there", "     hello     there", "     hello     there"
+			}, {
+				"", "", null
+			}
+		};
+		for (Object[] a : o) {
+			Assert.assertEquals(a[2], Tools.toString(a[0], true));
+			Assert.assertEquals(a[1], Tools.toString(a[0], false));
+			Assert.assertEquals(a[1], Tools.toString(a[0]));
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.Tools#consolidateRepeatedCharacters(java.lang.String, char)}.
+	 */
+	@Test
+	public void testConsolidateRepeatedCharacters() {
+		String[][] o = {
+			{
+				" ", null, null
+			}, {
+				"1", "asdf11111111sfdasdf", "asdf1sfdasdf"
+			}, {
+				"x", "0x1x2xxx3x4x5", "0x1x2x3x4x5"
+			}, {
+				" ", "hello", "hello", "hello"
+			}, {
+				" ", "     hello     ", " hello "
+			}, {
+				" ", "hello     ", "hello "
+			}, {
+				" ", "     hello", " hello"
+			}, {
+				" ", "hello there", "hello there"
+			}, {
+				" ", "     hello there    ", " hello there "
+			}, {
+				" ", "hello there     ", "hello there "
+			}, {
+				" ", "     hello there", " hello there"
+			}, {
+				" ", "hello     there", "hello there"
+			}, {
+				" ", "     hello     there    ", " hello there "
+			}, {
+				" ", "hello     there     ", "hello there "
+			}, {
+				" ", "     hello     there", " hello there"
+			}
+		};
+		for (String[] a : o) {
+			final char c = a[0].charAt(0);
+			Assert.assertEquals(a[2], Tools.consolidateRepeatedCharacters(a[1], c));
+		}
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#toNumber(java.lang.Object)}.
+	 */
+	@Test
+	public void testAsNumber() {
+		final String maxLong = String.valueOf(Long.MAX_VALUE);
+		final String minLong = String.valueOf(Long.MIN_VALUE);
+		Object[][] o = {
+			{
+				null, null
+			}, {
+				"0", 0
+			}, {
+				"1", 1
+			}, {
+				"-1", -1
+			}, {
+				Long.MAX_VALUE, Long.MAX_VALUE
+			}, {
+				maxLong, Long.MAX_VALUE
+			}, {
+				maxLong + "0000", new BigInteger(maxLong + "0000")
+			}, {
+				Long.MIN_VALUE, Long.MIN_VALUE
+			}, {
+				minLong, Long.MIN_VALUE
+			}, {
+				minLong + "0000", new BigInteger(minLong + "0000")
+			}, {
+				"1 ", new Exception()
+			}, {
+				" 1", new Exception()
+			}, {
+				" 1 ", new Exception()
+			}, {
+				"ASDFASDF", new Exception()
+			}, {
+				"1.0", 1.0
+			}, {
+				"-1.0", -1.0
+			}, {
+				Double.MAX_VALUE, Double.MAX_VALUE
+			}, {
+				Double.MIN_VALUE, Double.MIN_VALUE
+			}, {
+				-Double.MAX_VALUE, -Double.MAX_VALUE
+			}, {
+				-Double.MIN_VALUE, -Double.MIN_VALUE
+			}, {
+				maxLong + "00000000." + maxLong, new BigDecimal(maxLong + "00000000." + maxLong)
+			}, {
+				"-" + maxLong + "00000000." + maxLong, new BigDecimal("-" + maxLong + "00000000." + maxLong)
+			}
+		};
+		for (Object[] a : o) {
+			if (a[1] != null) {
+				if (a[1] instanceof Exception) {
+					try {
+						Number result = Tools.toNumber(a[0]);
+						Assert.fail(String.format("Expected a failure with input = [%s] but got %s (%s)", a[0], result,
+							result.getClass()));
+					} catch (NumberFormatException e) {
+						// All is well
+					}
+				} else {
+					Number result = ToolsTest.toBigNumber(Tools.toNumber(a[0]));
+					Number expected = ToolsTest.toBigNumber(Number.class.cast(a[1]));
+
+					if (result instanceof BigInteger) {
+						BigInteger bigExpected = BigInteger.class.cast(expected);
+						BigInteger bigResult = BigInteger.class.cast(result);
+						Assert.assertEquals(0, bigExpected.compareTo(bigResult));
+					} else {
+						BigDecimal bigExpected = BigDecimal.class.cast(expected);
+						BigDecimal bigResult = BigDecimal.class.cast(result);
+						Assert.assertEquals(0, bigExpected.compareTo(bigResult));
+					}
+				}
+			} else {
+				Assert.assertEquals(null, Tools.toNumber(a[0]));
+			}
+		}
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#strcmp(java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testStrcmp() {
+		String[][] testData = {
+			{
+				null, null, "0"
+			}, {
+				null, "asdf", "-1"
+			}, {
+				"asdf", null, "1"
+			}, {
+				"asdf", "asdf", "0"
+			}, {
+				"asdf", " ASDF ".trim().toLowerCase(), "0" // This is to ensure the strings are
+															// equal, but not the same object
+			}, {
+				"asdf", "ASDF", "1"
+			}, {
+				"aSdF", "AsDf", "1"
+			}, {
+				"asdf", "bsdf", "-1"
+			}, {
+				"bsdf", "asdf", "1"
+			}, {
+				"asdf", "BSDF", "1"
+			}, {
+				"bSdF", "AsDf", "1"
+			}, {
+				"asdf", "atdf", "-1"
+			}, {
+				"atdf", "asdf", "1"
+			}, {
+				"asdf", "ATDF", "1"
+			}, {
+				"aTdF", "AsDf", "1"
+			},
+		};
+		for (String[] a : testData) {
+			Integer result = Integer.valueOf(a[2]);
+			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.strcmp(a[0], a[1]));
+			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.STRCMP.compare(a[0], a[1]));
+		}
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#stricmp(java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testStricmp() {
+		String[][] testData = {
+			{
+				null, null, "0"
+			}, {
+				null, "asdf", "-1"
+			}, {
+				"asdf", null, "1"
+			}, {
+				"asdf", "asdf", "0"
+			}, {
+				"asdf", "ASDF", "0"
+			}, {
+				"aSdF", "AsDf", "0"
+			}, {
+				"asdf", "bsdf", "-1"
+			}, {
+				"bsdf", "asdf", "1"
+			}, {
+				"asdf", "BSDF", "-1"
+			}, {
+				"bSdF", "AsDf", "1"
+			}, {
+				"asdf", "atdf", "-1"
+			}, {
+				"atdf", "asdf", "1"
+			}, {
+				"asdf", "ATDF", "-1"
+			}, {
+				"aTdF", "AsDf", "1"
+			},
+		};
+		for (String[] a : testData) {
+			Integer result = Integer.valueOf(a[2]);
+			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.stricmp(a[0], a[1]));
+			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.STRICMP.compare(a[0], a[1]));
+		}
+	}
+
+	@Test
+	public void testHashToolArray() {
+		Random rand = new Random(System.currentTimeMillis());
+
+		boolean[][] arr_boolean = {
+			new boolean[10], new boolean[10]
+		};
+		do {
+			for (boolean[] a : arr_boolean) {
+				for (int i = 0; i < a.length; i++) {
+					a[i] = rand.nextBoolean();
+				}
+			}
+		} while (Arrays.equals(arr_boolean[0], arr_boolean[1]));
+
+		byte[][] arr_byte = {
+			new byte[10], new byte[10]
+		};
+		rand.nextBytes(arr_byte[0]);
+		do {
+			rand.nextBytes(arr_byte[1]);
+		} while (Arrays.equals(arr_byte[0], arr_byte[1]));
+
+		short[][] arr_short = {
+			new short[10], new short[10]
+		};
+		for (int i = 0; i < arr_short[0].length; i++) {
+			arr_short[0][i] = (short) rand.nextInt();
+		}
+		do {
+			for (int i = 0; i < arr_short[1].length; i++) {
+				arr_short[1][i] = (short) rand.nextInt();
+			}
+		} while (Arrays.equals(arr_short[0], arr_short[1]));
+
+		int[][] arr_int = {
+			new int[10], new int[10]
+		};
+		for (int i = 0; i < arr_int[0].length; i++) {
+			arr_int[0][i] = rand.nextInt();
+		}
+		do {
+			for (int i = 0; i < arr_int[1].length; i++) {
+				arr_int[1][i] = rand.nextInt();
+			}
+		} while (Arrays.equals(arr_int[0], arr_int[1]));
+
+		long[][] arr_long = {
+			new long[10], new long[10]
+		};
+		for (int i = 0; i < arr_long[0].length; i++) {
+			arr_long[0][i] = rand.nextLong();
+		}
+		do {
+			for (int i = 0; i < arr_long[1].length; i++) {
+				arr_long[1][i] = rand.nextLong();
+			}
+		} while (Arrays.equals(arr_long[0], arr_long[1]));
+
+		float[][] arr_float = {
+			new float[10], new float[10]
+		};
+		for (int i = 0; i < arr_float[0].length; i++) {
+			arr_float[0][i] = rand.nextFloat();
+		}
+		do {
+			for (int i = 0; i < arr_float[1].length; i++) {
+				arr_float[1][i] = rand.nextFloat();
+			}
+		} while (Arrays.equals(arr_float[0], arr_float[1]));
+
+		double[][] arr_double = {
+			new double[10], new double[10]
+		};
+		for (int i = 0; i < arr_double[0].length; i++) {
+			arr_double[0][i] = rand.nextDouble();
+		}
+		do {
+			for (int i = 0; i < arr_double[1].length; i++) {
+				arr_double[1][i] = rand.nextDouble();
+			}
+		} while (Arrays.equals(arr_double[0], arr_double[1]));
+
+		char[][] arr_char = {
+			null, null
+		};
+		arr_char[0] = UUID.randomUUID().toString().toCharArray();
+		do {
+			arr_char[1] = UUID.randomUUID().toString().toCharArray();
+		} while (Arrays.equals(arr_char[0], arr_char[1]));
+
+		Object[][] arr_obj = {
+			new Object[10], new Object[10]
+		};
+		for (int i = 0; i < arr_obj[0].length; i++) {
+			if ((rand.nextInt(10) % 5) == 0) {
+				continue;
+			}
+			arr_obj[0][i] = String.valueOf(Integer.valueOf(i));
+		}
+		do {
+			for (int i = 0; i < arr_obj[1].length; i++) {
+				if ((rand.nextInt(10) % 5) == 0) {
+					continue;
+				}
+				arr_obj[1][i] = String.valueOf(Integer.valueOf(i));
+			}
+		} while (Arrays.equals(arr_obj[0], arr_obj[1]));
+
+		int[][] primes = {
+			{
+				5801, 5813, 5827, 5843, 5851
+			}, {
+				5807, 5821, 5839, 5849, 5857
+			}
+		};
+
+		Object a = new Object();
+		Object b = new Object();
+		for (int i = 0; i < primes[0].length; i++) {
+			final int p = primes[0][i];
+			final int q = primes[1][i];
+
+			int hashA = 0;
+			int hashB = 0;
+
+			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_boolean[0]);
+			Assert.assertEquals(String.format("Failed boolean with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_boolean[0]);
+			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_boolean[1]);
+			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_boolean[0]);
+			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_boolean[1]);
+			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_byte[0]);
+			Assert.assertEquals(String.format("Failed byte with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_byte[0]);
+			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_byte[1]);
+			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_byte[0]);
+			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_byte[1]);
+			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_short[0]);
+			Assert.assertEquals(String.format("Failed short with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_short[0]);
+			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_short[1]);
+			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_short[0]);
+			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_short[1]);
+			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_int[0]);
+			Assert.assertEquals(String.format("Failed int with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_int[0]);
+			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_int[1]);
+			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_int[0]);
+			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_int[1]);
+			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_long[0]);
+			Assert.assertEquals(String.format("Failed long with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_long[0]);
+			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_long[1]);
+			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_long[0]);
+			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_long[1]);
+			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_float[0]);
+			Assert.assertEquals(String.format("Failed float with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_float[0]);
+			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_float[1]);
+			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_float[0]);
+			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_float[1]);
+			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_double[0]);
+			Assert.assertEquals(String.format("Failed double with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_double[0]);
+			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_double[1]);
+			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_double[0]);
+			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_double[1]);
+			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_char[0]);
+			Assert.assertEquals(String.format("Failed char with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_char[0]);
+			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_char[1]);
+			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_char[0]);
+			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_char[1]);
+			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
+			hashB = Tools.hashTool(b, null, p, p, arr_obj[0]);
+			Assert.assertEquals(String.format("Failed obj with prime = %d", p), hashA, hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
+			hashB = Tools.hashTool(a, null, q, p, arr_obj[0]);
+			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
+			hashB = Tools.hashTool(a, null, p, p, arr_obj[1]);
+			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_obj[0]);
+			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+
+			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
+			hashB = Tools.hashTool(a, null, p, q, arr_obj[1]);
+			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+		}
+	}
+
+	@Test
+	public void testAsBoolean() {
+		Object[][] arr = {
+			{
+				"true", true
+			}, {
+				"TRUE", true
+			}, {
+				"tRuE", true
+			}, {
+				"T", true
+			}, {
+				"t", true
+			}, {
+				"yes", true
+			}, {
+				"YES", true
+			}, {
+				"yEs", true
+			}, {
+				"y", true
+			}, {
+				"Y", true
+			}, {
+				"on", true
+			}, {
+				"ON", true
+			}, {
+				"oN", true
+			}, {
+				"1", true
+			}, {
+				"   yes", true
+			}, {
+				"YES   ", true
+			}, {
+				"   yEs   ", true
+			}, {
+				"    y", true
+			}, {
+				"Y   ", true
+			}, {
+				"false", false
+			}, {
+				"FALSE", false
+			}, {
+				"fAlSe", false
+			}, {
+				"F", false
+			}, {
+				"f", false
+			}, {
+				"no", false
+			}, {
+				"NO", false
+			}, {
+				"nO", false
+			}, {
+				"n", false
+			}, {
+				"N", false
+			}, {
+				"off", false
+			}, {
+				"OFF", false
+			}, {
+				"oFf", false
+			}, {
+				"0", false
+			}, {
+				"   no", false
+			}, {
+				"NO   ", false
+			}, {
+				"   nO   ", false
+			}, {
+				"n    ", false
+			}, {
+				"    N", false
+			},
+		};
+		Assert.assertNull(Tools.toBoolean(null));
+		for (Object[] s : arr) {
+			final String str = Tools.toString(s[0]);
+			final Boolean expected = Boolean.class.cast(s[1]);
+			Assert.assertEquals(String.format("Failed when checking [%s]", str), expected, Tools.toBoolean(str));
+		}
+	}
+
+	@Test
+	public void testEnsureBetween() {
+		Integer[][] arr = {
+			{
+				Integer.MIN_VALUE, 0, Integer.MAX_VALUE, 0
+			}, {
+				Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE
+			}, {
+				Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE
+			}, {
+				Integer.MAX_VALUE, 0, Integer.MIN_VALUE, 0
+			}, {
+				Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE
+			}, {
+				Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE
+			}, {
+				Integer.MAX_VALUE, 0, Integer.MAX_VALUE, Integer.MAX_VALUE
+			}, {
+				Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE
+			}, {
+				Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE
+			}, {
+				Integer.MIN_VALUE, 0, Integer.MIN_VALUE, Integer.MIN_VALUE
+			}, {
+				Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE
+			}, {
+				Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE
+			}, {
+				0, 1, 2, 1
+			}, {
+				2, 1, 0, 1
+			}, {
+				0, 1, 0, 0
+			}, {
+				1, 0, 1, 1
+			}, {
+				null, 0, 1
+			}, {
+				1, null, 1
+			}, {
+				1, 0, null
+			}, {
+				null, null, 1
+			}, {
+				1, null, null
+			}, {
+				null, 0, null
+			}, {
+				null, null, null
+			},
+		};
+		for (Integer[] a : arr) {
+			if (a.length < 4) {
+				// Expect an exception
+				try {
+					Tools.ensureBetween(a[0], a[1], a[2]);
+					Assert.fail(String.format("Failed to raise an exception with array %s", Arrays.toString(a)));
+				} catch (IllegalArgumentException e) {
+					// Expected, move on
+				}
+			} else {
+				Assert.assertEquals(String.format("Failed when comparing the array %s", Arrays.toString(a)), a[3],
+					Tools.ensureBetween(a[0], a[1], a[2]));
+			}
+		}
+	}
+}
