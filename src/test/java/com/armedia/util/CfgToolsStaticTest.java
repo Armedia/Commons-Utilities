@@ -112,7 +112,8 @@ public class CfgToolsStaticTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.CfgTools#decodeBoolean(java.lang.String, java.util.Map)}.
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeBoolean(java.lang.String, java.util.Map)}
+	 * .
 	 */
 	@Test
 	public void testDecodeBooleanWithoutDefault() {
@@ -166,7 +167,8 @@ public class CfgToolsStaticTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeByte(String, Map, Byte)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeByte(String, Map, Byte)}
+	 * .
 	 */
 	@Test
 	public void testDecodeByteWithDefault() {
@@ -211,8 +213,8 @@ public class CfgToolsStaticTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeByte(java.lang.String, java.util.Map)}
-	 * .
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeByte(java.lang.String, java.util.Map)} .
 	 */
 	@Test
 	public void testDecodeByteWithoutDefault() {
@@ -282,7 +284,8 @@ public class CfgToolsStaticTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeShort(String, Map, Short)} .
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeShort(String, Map, Short)} .
 	 */
 	@Test
 	public void testDecodeShortWithDefault() {
@@ -406,7 +409,8 @@ public class CfgToolsStaticTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeInteger(String, Map, Integer)} .
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeInteger(String, Map, Integer)} .
 	 */
 	@Test
 	public void testDecodeIntegerWithDefault() {
@@ -456,7 +460,8 @@ public class CfgToolsStaticTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.CfgTools#decodeInteger(java.lang.String, java.util.Map)}.
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeInteger(java.lang.String, java.util.Map)}
+	 * .
 	 */
 	@Test
 	public void testDecodeIntegerWithoutDefault() {
@@ -532,7 +537,8 @@ public class CfgToolsStaticTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeLong(String, Map, Long)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeLong(String, Map, Long)}
+	 * .
 	 */
 	@Test
 	public void testDecodeLongWithDefault() {
@@ -577,8 +583,8 @@ public class CfgToolsStaticTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#decodeLong(java.lang.String, java.util.Map)}
-	 * .
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeLong(java.lang.String, java.util.Map)} .
 	 */
 	@Test
 	public void testDecodeLongWithoutDefault() {
@@ -944,7 +950,8 @@ public class CfgToolsStaticTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.CfgTools#decodeBinary(java.lang.String, java.util.Map, byte[])} .
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeBinary(java.lang.String, java.util.Map, byte[])}
+	 * .
 	 */
 	@Test
 	public void testDecodeBinaryWithDefault() throws Throwable {

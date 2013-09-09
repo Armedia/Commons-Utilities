@@ -34,12 +34,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -783,6 +787,66 @@ public class Tools {
 			return Tools.stricmp(o1, o2);
 		}
 	};
+
+	public static <K, V> Map<K, V> freezeCopy(Map<K, V> m) {
+		return Tools.freezeCopy(m, false);
+	}
+
+	public static <K, V> Map<K, V> freezeCopy(Map<K, V> m, boolean nullAsEmpty) {
+		if (m == null) {
+			if (nullAsEmpty) {
+				return Collections.emptyMap();
+			} else {
+				return null;
+			}
+		}
+		if (m.isEmpty()) { return Collections.emptyMap(); }
+		final Map<K, V> ret;
+		if (m instanceof SortedMap<?, ?>) {
+			ret = new TreeMap<K, V>(m);
+		} else {
+			ret = new HashMap<K, V>(m);
+		}
+		return Collections.unmodifiableMap(ret);
+	}
+
+	public static <T> List<T> freezeCopy(List<T> l) {
+		return Tools.freezeCopy(l, false);
+	}
+
+	public static <T> List<T> freezeCopy(List<T> l, boolean nullAsEmpty) {
+		if (l == null) {
+			if (nullAsEmpty) {
+				return Collections.emptyList();
+			} else {
+				return null;
+			}
+		}
+		if (l.isEmpty()) { return Collections.emptyList(); }
+		return Collections.unmodifiableList(new ArrayList<T>(l));
+	}
+
+	public static <T> Set<T> freezeCopy(Set<T> s) {
+		return Tools.freezeCopy(s, false);
+	}
+
+	public static <T> Set<T> freezeCopy(Set<T> s, boolean nullAsEmpty) {
+		if (s == null) {
+			if (nullAsEmpty) {
+				return Collections.emptySet();
+			} else {
+				return null;
+			}
+		}
+		if (s.isEmpty()) { return Collections.emptySet(); }
+		final Set<T> ret;
+		if (s instanceof SortedMap<?, ?>) {
+			ret = new TreeSet<T>(s);
+		} else {
+			ret = new HashSet<T>(s);
+		}
+		return Collections.unmodifiableSet(ret);
+	}
 
 	public static <T> List<T> freezeList(List<T> l) {
 		return Tools.freezeList(l, false);
