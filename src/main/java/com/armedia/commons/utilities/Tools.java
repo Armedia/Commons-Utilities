@@ -679,7 +679,7 @@ public class Tools {
 	public static String consolidateRepeatedCharacters(String str, char c) {
 		if (str == null) { return null; }
 		final String C = String.valueOf(c);
-		return str.replaceAll(Pattern.quote(C) + "+", C);
+		return str.replaceAll(String.format("%s+", Pattern.quote(C)), C);
 	}
 
 	/**
