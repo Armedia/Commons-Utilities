@@ -178,7 +178,8 @@ public class FileNameTools {
 	public static String removeLeadingSeparators(String str, char sep) {
 		if (str == null) { return null; }
 		int start = 0;
-		while ((start < str.length()) && (str.charAt(start) == sep)) {
+		final int length = str.length();
+		while ((start < length) && (str.charAt(start) == sep)) {
 			start++;
 		}
 		return str.substring(start);
