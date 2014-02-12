@@ -119,4 +119,11 @@ public class CompareUtil {
 	public static boolean equals(long a, long b) {
 		return (a == b);
 	}
+
+	public static <T extends Comparable<T>> int compare(T a, T b) {
+		if (a == b) { return 0; }
+		if (a == null) { return -1; }
+		if (b == null) { return 1; }
+		return a.compareTo(b);
+	}
 }
