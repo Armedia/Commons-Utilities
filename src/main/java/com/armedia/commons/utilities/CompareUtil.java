@@ -20,6 +20,10 @@
  */
 package com.armedia.commons.utilities;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * This class contains multiple static methods that facilitate the comparison of two objects. In the
  * cases
@@ -124,6 +128,49 @@ public class CompareUtil {
 		if (a == b) { return 0; }
 		if (a == null) { return -1; }
 		if (b == null) { return 1; }
-		return a.compareTo(b);
+		return CompareUtil.toUnitary(a.compareTo(b));
+	}
+
+	public static <K extends Comparable<K>, V extends Comparable<V>> int compare(Map<K, V> a, Map<K, V> b) {
+		if (a == b) { return 0; }
+		if (a == null) { return -1; }
+		if (b == null) { return 1; }
+
+		// Neither is null, so compare them...
+		if (a.isEmpty() != b.isEmpty()) {
+			// If only one is empty, then the empty one sorts ahead
+			return (a.isEmpty() ? -1 : 1);
+		} else {
+			// If both are "equally empty", then if they're both empty,
+			// we can shortcut the comparison
+			if (a.isEmpty()) { return 0; }
+		}
+
+		// First, check just the keys - if there are differences there,
+		// we need go no further
+		Set<K> keys = new TreeSet<K>();
+		keys.addAll(a.keySet());
+		keys.addAll(b.keySet());
+		for (K k : keys) {
+			// The one who contains the lower-sorting key, sorts earlier
+			if (!a.containsKey(k)) { return 1; }
+			if (!b.containsKey(k)) { return -1; }
+
+			// Both have the same key, so compare the values - the one who
+			// contains the lower value, sorts earlier
+			V va = a.get(k);
+			V vb = b.get(k);
+			int v = CompareUtil.compare(va, vb);
+			if (v != 0) { return v; }
+		}
+
+		// The maps are identical
+		return 0;
+
+	}
+
+	public static int toUnitary(int value) {
+		if (value == 0) { return value; }
+		return (value < 0 ? -1 : 1);
 	}
 }
