@@ -15,6 +15,7 @@ package com.armedia.commons.utilities;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 
@@ -26,7 +27,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.commons.io.output.StringBuilderWriter;
 import org.xml.sax.SAXException;
 
 /**
@@ -189,7 +189,7 @@ public class XmlTools {
 	 * @throws JAXBException
 	 */
 	public static String marshal(Object target, String schemaName, boolean format) throws JAXBException {
-		StringBuilderWriter w = new StringBuilderWriter();
+		StringWriter w = new StringWriter();
 		XmlTools.marshal(target, schemaName, w, format);
 		return w.toString();
 	}
