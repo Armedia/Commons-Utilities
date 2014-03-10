@@ -5,7 +5,7 @@
 	<name>OSGi Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>0.2.2</version>
+	<version>0.2.3</version>
 	<description>A set of utility classes for use by OSGi modules</description>
 	<packaging>bundle</packaging>
 
@@ -80,13 +80,13 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.1</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
