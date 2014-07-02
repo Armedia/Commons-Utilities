@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -840,7 +841,7 @@ public class Tools {
 		}
 		if (s.isEmpty()) { return Collections.emptySet(); }
 		final Set<T> ret;
-		if (s instanceof SortedMap<?, ?>) {
+		if (s instanceof SortedSet<?>) {
 			ret = new TreeSet<T>(s);
 		} else {
 			ret = new HashSet<T>(s);

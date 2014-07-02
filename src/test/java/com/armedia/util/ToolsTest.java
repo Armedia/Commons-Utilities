@@ -16,8 +16,19 @@ package com.armedia.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -61,7 +72,8 @@ public class ToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.Tools#toTrimmedString(java.lang.Object, boolean)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.Tools#toTrimmedString(java.lang.Object, boolean)}.
 	 */
 	@Test
 	public void testAsTrimmedString() {
@@ -110,7 +122,8 @@ public class ToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.Tools#toString(java.lang.Object, boolean)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.Tools#toString(java.lang.Object, boolean)}.
 	 */
 	@Test
 	public void testAsString() {
@@ -162,7 +175,8 @@ public class ToolsTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.Tools#consolidateRepeatedCharacters(java.lang.String, char)}.
+	 * {@link com.armedia.commons.utilities.Tools#consolidateRepeatedCharacters(java.lang.String, char)}
+	 * .
 	 */
 	@Test
 	public void testConsolidateRepeatedCharacters() {
@@ -290,7 +304,8 @@ public class ToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.Tools#strcmp(java.lang.String, java.lang.String)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.Tools#strcmp(java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testStrcmp() {
@@ -336,7 +351,8 @@ public class ToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.Tools#stricmp(java.lang.String, java.lang.String)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.Tools#stricmp(java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testStricmp() {
@@ -840,5 +856,235 @@ public class ToolsTest {
 					Tools.ensureBetween(a[0], a[1], a[2]));
 			}
 		}
+	}
+
+	private <C extends Collection<Object>> void validateFrozen(C source, C frozen) {
+		final Collection<Object> singleton = Collections.singleton(new Object());
+		final String message = String.format("%s is not frozen", source.getClass().getSimpleName());
+		Assert.assertEquals(source, frozen);
+		try {
+			frozen.add(UUID.randomUUID());
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+		try {
+			frozen.addAll(singleton);
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+		try {
+			frozen.remove(0);
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+		try {
+			frozen.removeAll(singleton);
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+		try {
+			frozen.retainAll(singleton);
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+
+		Iterator<Object> it = frozen.iterator();
+		Assert.assertTrue(it.hasNext());
+		try {
+			it.remove();
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+	}
+
+	private void validateFrozen(Map<Object, Object> source, Map<Object, Object> frozen) {
+		final UUID uuid = UUID.randomUUID();
+		final Map<?, ?> singletonMap = Collections.singletonMap(uuid, uuid.toString());
+		final String message = String.format("%s is not frozen", source.getClass().getSimpleName());
+		Assert.assertEquals(source, frozen);
+		try {
+			frozen.put(uuid, uuid.toString());
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+		try {
+			frozen.putAll(singletonMap);
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+		try {
+			frozen.remove(0);
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+		try {
+			frozen.remove(uuid);
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+
+		Iterator<Object> it = frozen.keySet().iterator();
+		Assert.assertTrue(it.hasNext());
+		try {
+			it.remove();
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+
+		it = frozen.values().iterator();
+		Assert.assertTrue(it.hasNext());
+		try {
+			it.remove();
+			Assert.fail(message);
+		} catch (UnsupportedOperationException e) {
+			// All is well
+		}
+	}
+
+	@Test
+	public void testFreezers() {
+		final UUID newUuid = UUID.randomUUID();
+		// freezeCopy
+		final List<Object> nullList = null;
+		final List<Object> list = new ArrayList<Object>();
+		List<Object> frozenList = null;
+
+		final Set<Object> nullSet = null;
+		final Set<Object> set = new HashSet<Object>();
+		final Set<Object> sortedSet = new TreeSet<Object>();
+		Set<Object> frozenSet = null;
+
+		final Map<Object, Object> nullMap = null;
+		final Map<Object, Object> map = new HashMap<Object, Object>();
+		final Map<Object, Object> sortedMap = new TreeMap<Object, Object>();
+		Map<Object, Object> frozenMap = null;
+
+		for (int i = 0; i < 5; i++) {
+			UUID uuid = UUID.randomUUID();
+			list.add(uuid);
+			set.add(uuid);
+			sortedSet.add(uuid);
+			map.put(uuid, uuid.toString());
+			sortedMap.put(uuid, uuid.toString());
+		}
+
+		Assert.assertNull(Tools.freezeCopy(nullList));
+		Assert.assertNull(Tools.freezeCopy(nullList, false));
+
+		frozenList = Tools.freezeCopy(nullList, true);
+		Assert.assertNotNull(frozenList);
+		Assert.assertTrue(frozenList.isEmpty());
+		Assert.assertSame(Collections.emptyList(), frozenList);
+
+		frozenList = Tools.freezeCopy(list);
+		Assert.assertNotSame(list, frozenList);
+		validateFrozen(list, frozenList);
+		list.add(newUuid);
+		Assert.assertNotEquals(list, frozenList);
+
+		Assert.assertNull(Tools.freezeCopy(nullSet));
+		Assert.assertNull(Tools.freezeCopy(nullSet, false));
+
+		frozenSet = Tools.freezeCopy(nullSet, true);
+		Assert.assertNotNull(frozenSet);
+		Assert.assertTrue(frozenSet.isEmpty());
+		Assert.assertSame(Collections.emptySet(), frozenSet);
+
+		frozenSet = Tools.freezeCopy(set);
+		Assert.assertNotSame(set, frozenSet);
+		validateFrozen(set, frozenSet);
+		set.add(newUuid);
+		Assert.assertNotEquals(set, frozenSet);
+
+		frozenSet = Tools.freezeCopy(sortedSet);
+		Assert.assertNotSame(sortedSet, frozenSet);
+		validateFrozen(sortedSet, frozenSet);
+		sortedSet.add(newUuid);
+		Assert.assertNotEquals(sortedSet, frozenSet);
+
+		Assert.assertNull(Tools.freezeCopy(nullMap));
+		Assert.assertNull(Tools.freezeCopy(nullMap, false));
+
+		frozenMap = Tools.freezeCopy(nullMap, true);
+		Assert.assertNotNull(frozenMap);
+		Assert.assertTrue(frozenMap.isEmpty());
+		Assert.assertSame(Collections.emptyMap(), frozenMap);
+
+		frozenMap = Tools.freezeCopy(map);
+		validateFrozen(map, frozenMap);
+		map.put(newUuid, newUuid.toString());
+		Assert.assertNotEquals(map, frozenMap);
+
+		frozenMap = Tools.freezeCopy(sortedMap);
+		validateFrozen(sortedMap, frozenMap);
+		sortedMap.put(newUuid, newUuid.toString());
+		Assert.assertNotEquals(sortedMap, frozenMap);
+
+		// freeze{List,Map,Set}
+		list.remove(newUuid);
+		set.remove(newUuid);
+		sortedSet.remove(newUuid);
+		map.remove(newUuid);
+		sortedMap.remove(newUuid);
+
+		Assert.assertNull(Tools.freezeList(nullList));
+		Assert.assertNull(Tools.freezeList(nullList, false));
+
+		frozenList = Tools.freezeList(nullList, true);
+		Assert.assertNotNull(frozenList);
+		Assert.assertTrue(frozenList.isEmpty());
+		Assert.assertSame(Collections.emptyList(), frozenList);
+
+		frozenList = Tools.freezeList(list);
+		validateFrozen(list, frozenList);
+		list.add(newUuid);
+		Assert.assertEquals(list, frozenList);
+
+		Assert.assertNull(Tools.freezeSet(nullSet));
+		Assert.assertNull(Tools.freezeSet(nullSet, false));
+
+		frozenSet = Tools.freezeSet(nullSet, true);
+		Assert.assertNotNull(frozenSet);
+		Assert.assertTrue(frozenSet.isEmpty());
+		Assert.assertSame(Collections.emptySet(), frozenSet);
+
+		frozenSet = Tools.freezeSet(set);
+		validateFrozen(set, frozenSet);
+		set.add(newUuid);
+		Assert.assertEquals(set, frozenSet);
+
+		frozenSet = Tools.freezeSet(sortedSet);
+		validateFrozen(sortedSet, frozenSet);
+		sortedSet.add(newUuid);
+		Assert.assertEquals(sortedSet, frozenSet);
+
+		Assert.assertNull(Tools.freezeMap(nullMap));
+		Assert.assertNull(Tools.freezeMap(nullMap, false));
+
+		frozenMap = Tools.freezeMap(nullMap, true);
+		Assert.assertNotNull(frozenMap);
+		Assert.assertTrue(frozenMap.isEmpty());
+		Assert.assertSame(Collections.emptyMap(), frozenMap);
+
+		frozenMap = Tools.freezeMap(map);
+		validateFrozen(map, frozenMap);
+		map.put(newUuid, newUuid.toString());
+		Assert.assertEquals(map, frozenMap);
+
+		frozenMap = Tools.freezeMap(sortedMap);
+		validateFrozen(sortedMap, frozenMap);
+		sortedMap.put(newUuid, newUuid.toString());
+		Assert.assertEquals(sortedMap, frozenMap);
 	}
 }
