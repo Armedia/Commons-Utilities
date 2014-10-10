@@ -24,8 +24,6 @@ import java.util.TreeSet;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.CollectionTools;
-
 /**
  * @author drivera@armedia.com
  * 

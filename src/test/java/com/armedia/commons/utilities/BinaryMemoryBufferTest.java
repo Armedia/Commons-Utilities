@@ -24,8 +24,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.BinaryMemoryBuffer;
-
 /**
  * @author drivera@armedia.com
  * 

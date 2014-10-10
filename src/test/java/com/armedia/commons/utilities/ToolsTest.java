@@ -34,8 +34,6 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.Tools;
-
 /**
  * @author drivera@armedia.com
  * 

@@ -22,8 +22,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.FileNameTools;
-
 /**
  * @author drivera@armedia.com
  * 

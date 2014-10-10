@@ -32,9 +32,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.CfgTools;
-import com.armedia.commons.utilities.ConfigurationSetting;
-
 /**
  * @author drivera@armedia.com
  * 

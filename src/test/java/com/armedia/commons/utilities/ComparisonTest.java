@@ -17,8 +17,6 @@ package com.armedia.commons.utilities;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.Comparison;
-
 /**
  * 
  * @author drivera@armedia.com

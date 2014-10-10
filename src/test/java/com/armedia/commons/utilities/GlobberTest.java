@@ -19,8 +19,6 @@ import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.Globber;
-
 public class GlobberTest {
 
 	@Test

@@ -30,9 +30,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.CfgTools;
-import com.armedia.commons.utilities.Tools;
-
 /**
  * @author drivera@armedia.com
  * 

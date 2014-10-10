@@ -22,9 +22,6 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.BasicIndexedIterator;
-import com.armedia.commons.utilities.IndexedIterator;
-
 /**
  * @author drivera@armedia.com
  * 

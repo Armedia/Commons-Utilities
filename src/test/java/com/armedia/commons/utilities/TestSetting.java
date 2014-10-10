@@ -16,8 +16,6 @@ package com.armedia.commons.utilities;
 
 import org.apache.commons.codec.binary.Base64;
 
-import com.armedia.commons.utilities.ConfigurationSetting;
-
 /**
  * @author drivera@armedia.com
  * 

@@ -14,8 +14,6 @@
  */
 package com.armedia.commons.utilities;
 
-import com.armedia.commons.utilities.ConfigurationSetting;
-import com.armedia.commons.utilities.Tools;
 
 /**
  * @author drivera@armedia.com

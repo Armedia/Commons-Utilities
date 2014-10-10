@@ -23,8 +23,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.BinaryEncoding;
-
 /**
  * @author drivera@armedia.com
  * 

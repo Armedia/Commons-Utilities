@@ -22,8 +22,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.ParameterizedString;
-
 /**
  * @author drivera@armedia.com
  * 
