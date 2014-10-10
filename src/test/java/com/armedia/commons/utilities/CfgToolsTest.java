@@ -12,7 +12,7 @@
  * 
  * *******************************************************************
  */
-package com.armedia.util;
+package com.armedia.commons.utilities;
 
 import java.io.InputStream;
 import java.util.Arrays;

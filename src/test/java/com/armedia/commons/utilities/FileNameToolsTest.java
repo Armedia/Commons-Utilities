@@ -12,7 +12,7 @@
  * 
  * *******************************************************************
  */
-package com.armedia.util;
+package com.armedia.commons.utilities;
 
 import java.io.File;
 import java.util.ArrayList;

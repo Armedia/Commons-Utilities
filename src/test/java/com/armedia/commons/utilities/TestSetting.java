@@ -12,7 +12,7 @@
  * 
  * *******************************************************************
  */
-package com.armedia.util;
+package com.armedia.commons.utilities;
 
 import org.apache.commons.codec.binary.Base64;
 

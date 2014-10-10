@@ -12,7 +12,7 @@
  * 
  * *******************************************************************
  */
-package com.armedia.util;
+package com.armedia.commons.utilities;
 
 import java.nio.charset.Charset;
 import java.util.Random;

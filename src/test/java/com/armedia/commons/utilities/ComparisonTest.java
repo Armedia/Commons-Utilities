@@ -12,7 +12,7 @@
  * 
  * *******************************************************************
  */
-package com.armedia.util;
+package com.armedia.commons.utilities;
 
 import org.junit.Assert;
 import org.junit.Test;

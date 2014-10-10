@@ -12,10 +12,13 @@
  * 
  * *******************************************************************
  */
-package com.armedia.util;
+package com.armedia.commons.utilities;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,47 +27,81 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.BinaryMemoryBuffer;
+import com.armedia.commons.utilities.TextMemoryBuffer;
+import com.armedia.commons.utilities.TextMemoryBuffer.TextMemoryBufferReader;
 
 /**
  * @author drivera@armedia.com
  * 
  */
-public class BinaryMemoryBufferTest {
+public class TextMemoryBufferTest {
 
-	private static final byte[] FWD = new byte[256];
-	private static final byte[] REV = new byte[256];
+	private static final char[] ALPHABET;
+	private static final char[] FWD = new char[256];
+	private static final char[] REV = new char[256];
 
 	static {
-		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
-			BinaryMemoryBufferTest.FWD[i] = (byte) (i & 0xFF);
-			BinaryMemoryBufferTest.REV[i] = (byte) ((~BinaryMemoryBufferTest.FWD[i]) & 0xFF);
+		List<Character> a = new ArrayList<Character>();
+		for (int i = 0; i < 65536; i++) {
+			try {
+				if (!Character.isDefined(i)) {
+					continue;
+				}
+				switch (Character.getType(i)) {
+					case Character.CONTROL:
+					case Character.UNASSIGNED:
+					case Character.PRIVATE_USE:
+					case Character.NON_SPACING_MARK:
+						continue;
+				}
+				a.add(Character.valueOf((char) i));
+			} catch (Throwable t) {
+				// Not a valid character
+			}
+		}
+		Collections.shuffle(a);
+		ALPHABET = new char[a.size()];
+		int j = 0;
+		for (Character c : a) {
+			TextMemoryBufferTest.ALPHABET[j] = c;
+			j++;
+		}
+
+		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
+			TextMemoryBufferTest.FWD[i] = TextMemoryBufferTest.ALPHABET[i];
+			TextMemoryBufferTest.REV[i] = TextMemoryBufferTest.ALPHABET[TextMemoryBufferTest.ALPHABET.length - i - 1];
+		}
+	}
+
+	private static void randomChars(Random r, char[] c) {
+		for (int i = 0; i < c.length; i++) {
+			c[i] = TextMemoryBufferTest.ALPHABET[r.nextInt(TextMemoryBufferTest.ALPHABET.length)];
 		}
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer()}.
+	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#TextMemoryBuffer()}.
 	 */
 	@Test
-	public void testByteBuffer() {
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
-		Assert.assertEquals(BinaryMemoryBuffer.DEFAULT_CHUNK_SIZE, b.getChunkSize());
+	public void testCharBuffer() {
+		TextMemoryBuffer b = new TextMemoryBuffer();
+		Assert.assertEquals(TextMemoryBuffer.DEFAULT_CHUNK_SIZE, b.getChunkSize());
 		Assert.assertEquals(0, b.getAllocatedSize());
 		b.close();
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer(int)}.
+	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#TextMemoryBuffer(int)}.
 	 */
 	@Test
-	public void testByteBufferInt() {
+	public void testCharBufferInt() {
 		int[] chunkSizes = {
 			Integer.MIN_VALUE, -10, -5, -1, 0, 1, 5, 10, 129, 256, 1024, 2048, Integer.MAX_VALUE
 		};
 		for (int chunkSize : chunkSizes) {
-			BinaryMemoryBuffer b = new BinaryMemoryBuffer(chunkSize);
-			if (chunkSize < BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE) {
-				Assert.assertEquals(BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE, b.getChunkSize());
+			TextMemoryBuffer b = new TextMemoryBuffer(chunkSize);
+			if (chunkSize < TextMemoryBuffer.MINIMUM_CHUNK_SIZE) {
+				Assert.assertEquals(TextMemoryBuffer.MINIMUM_CHUNK_SIZE, b.getChunkSize());
 			} else {
 				Assert.assertEquals(chunkSize, b.getChunkSize());
 			}
@@ -74,34 +111,34 @@ public class BinaryMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(int)}.
+	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#write(int)}.
 	 */
 	@Test
-	public void testWriteInt() throws IOException {
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
-		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
+	public void testWrite() throws IOException {
+		TextMemoryBuffer b = new TextMemoryBuffer();
+		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
 			Assert.assertEquals(i, b.getCurrentSize());
-			b.write(BinaryMemoryBufferTest.FWD[i]);
+			b.write(TextMemoryBufferTest.FWD[i]);
 			Assert.assertEquals(i + 1, b.getCurrentSize());
 		}
 		b.close();
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(byte[])}.
+	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#write(char[])}.
 	 * 
 	 * @throws IOException
 	 */
 	@Test
 	public void testWriteByteArray() throws IOException {
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
-		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
-			Assert.assertEquals(i * BinaryMemoryBufferTest.FWD.length, b.getCurrentSize());
-			b.write(BinaryMemoryBufferTest.FWD);
-			Assert.assertEquals((i + 1) * BinaryMemoryBufferTest.FWD.length, b.getCurrentSize());
+		TextMemoryBuffer b = new TextMemoryBuffer();
+		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
+			Assert.assertEquals(i * TextMemoryBufferTest.FWD.length, b.getCurrentSize());
+			b.write(TextMemoryBufferTest.FWD);
+			Assert.assertEquals((i + 1) * TextMemoryBufferTest.FWD.length, b.getCurrentSize());
 		}
 		try {
-			b.write(null);
+			b.write((char[]) null);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// This is ok
@@ -110,85 +147,85 @@ public class BinaryMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(byte[], int, int)}.
+	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#write(char[], int, int)}.
 	 * 
 	 * @throws IOException
 	 */
 	@Test
 	public void testWriteByteArrayIntInt() throws IOException {
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
+		TextMemoryBuffer b = new TextMemoryBuffer();
 		try {
-			b.write(null, 0, 0);
+			b.write((char[]) null, 0, 0);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// This is ok
 		}
 		try {
-			b.write(null, 0, -1);
+			b.write((char[]) null, 0, -1);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// This is ok
 		}
 		try {
-			b.write(null, -1, 0);
+			b.write((char[]) null, -1, 0);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// This is ok
 		}
 		try {
-			b.write(null, -1, -1);
+			b.write((char[]) null, -1, -1);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// This is ok
 		}
 		try {
-			b.write(null, 0, BinaryMemoryBufferTest.FWD.length);
+			b.write((char[]) null, 0, TextMemoryBufferTest.FWD.length);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// This is ok
 		}
 		try {
-			b.write(null, 1, BinaryMemoryBufferTest.FWD.length);
+			b.write((char[]) null, 1, TextMemoryBufferTest.FWD.length);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// This is ok
 		}
 
-		b.write(BinaryMemoryBufferTest.FWD, 0, 0);
+		b.write(TextMemoryBufferTest.FWD, 0, 0);
 		try {
-			b.write(BinaryMemoryBufferTest.FWD, 0, -1);
+			b.write(TextMemoryBufferTest.FWD, 0, -1);
 			Assert.fail("Failed to raise a IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
 			// This is ok
 		}
 		try {
-			b.write(BinaryMemoryBufferTest.FWD, -1, 0);
+			b.write(TextMemoryBufferTest.FWD, -1, 0);
 			Assert.fail("Failed to raise a IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
 			// This is ok
 		}
 		try {
-			b.write(BinaryMemoryBufferTest.FWD, -1, -1);
+			b.write(TextMemoryBufferTest.FWD, -1, -1);
 			Assert.fail("Failed to raise a IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
 			// This is ok
 		}
-		b.write(BinaryMemoryBufferTest.FWD, 0, BinaryMemoryBufferTest.FWD.length);
+		b.write(TextMemoryBufferTest.FWD, 0, TextMemoryBufferTest.FWD.length);
 		try {
-			b.write(BinaryMemoryBufferTest.FWD, 1, BinaryMemoryBufferTest.FWD.length);
+			b.write(TextMemoryBufferTest.FWD, 1, TextMemoryBufferTest.FWD.length);
 			Assert.fail("Failed to raise a IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
 			// This is ok
 		}
 
 		b.close();
-		b = new BinaryMemoryBuffer();
+		b = new TextMemoryBuffer();
 
 		long writeCount = 0;
-		for (int o = 0; o < BinaryMemoryBufferTest.FWD.length; o++) {
-			int maxLen = Math.min(BinaryMemoryBufferTest.FWD.length / 2, BinaryMemoryBufferTest.FWD.length - o);
+		for (int o = 0; o < TextMemoryBufferTest.FWD.length; o++) {
+			int maxLen = Math.min(TextMemoryBufferTest.FWD.length / 2, TextMemoryBufferTest.FWD.length - o);
 			for (int l = 0; l < maxLen; l++) {
-				b.write(BinaryMemoryBufferTest.FWD, o, l);
+				b.write(TextMemoryBufferTest.FWD, o, l);
 
 				writeCount += l;
 				Assert.assertEquals(writeCount, b.getCurrentSize());
@@ -210,17 +247,17 @@ public class BinaryMemoryBufferTest {
 		int[] writeCounts = {
 			1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 		};
-		for (int chunkSize = BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
+		for (int chunkSize = TextMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
 			for (int writeCount : writeCounts) {
-				BinaryMemoryBuffer b = new BinaryMemoryBuffer(chunkSize);
+				TextMemoryBuffer b = new TextMemoryBuffer(chunkSize);
 				Assert.assertEquals(chunkSize, b.getChunkSize());
 				Assert.assertEquals(0, b.getAllocatedSize());
 
 				for (int c = 0; c < writeCount; c++) {
-					b.write(BinaryMemoryBufferTest.FWD);
+					b.write(TextMemoryBufferTest.FWD);
 				}
 
-				int totalSize = BinaryMemoryBufferTest.FWD.length * writeCount;
+				int totalSize = TextMemoryBufferTest.FWD.length * writeCount;
 				int x = (totalSize / chunkSize);
 				int y = (totalSize % chunkSize);
 				if (y > 0) {
@@ -238,44 +275,44 @@ public class BinaryMemoryBufferTest {
 		int[] writeCounts = {
 			1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 		};
-		for (int chunkSize = BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
+		for (int chunkSize = TextMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
 			for (int writeCount : writeCounts) {
-				BinaryMemoryBuffer b = new BinaryMemoryBuffer(chunkSize);
+				TextMemoryBuffer b = new TextMemoryBuffer(chunkSize);
 				Assert.assertEquals(chunkSize, b.getChunkSize());
 				Assert.assertEquals(0, b.getCurrentSize());
 
 				for (int c = 0; c < writeCount; c++) {
-					b.write(BinaryMemoryBufferTest.FWD);
+					b.write(TextMemoryBufferTest.FWD);
 				}
 
-				Assert.assertEquals(BinaryMemoryBufferTest.FWD.length * writeCount, b.getCurrentSize());
+				Assert.assertEquals(TextMemoryBufferTest.FWD.length * writeCount, b.getCurrentSize());
 				b.close();
 			}
 		}
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#close()}.
+	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#close()}.
 	 */
 	@Test
 	public void testClose() throws IOException {
-		BinaryMemoryBuffer buf = new BinaryMemoryBuffer();
-		buf.write(BinaryMemoryBufferTest.FWD);
+		TextMemoryBuffer buf = new TextMemoryBuffer();
+		buf.write(TextMemoryBufferTest.FWD);
 		buf.close();
 		try {
-			buf.write(BinaryMemoryBufferTest.REV);
+			buf.write(TextMemoryBufferTest.REV);
 			Assert.fail("Should have failed with IOException");
 		} catch (IOException e) {
 			// All is well
 		}
 		try {
-			buf.write(BinaryMemoryBufferTest.REV, 30, 40);
+			buf.write(TextMemoryBufferTest.REV, 30, 40);
 			Assert.fail("Should have failed with IOException");
 		} catch (IOException e) {
 			// All is well
 		}
 		try {
-			buf.write(BinaryMemoryBufferTest.FWD[30]);
+			buf.write(TextMemoryBufferTest.FWD[30]);
 			Assert.fail("Should have failed with IOException");
 		} catch (IOException e) {
 			// All is well
@@ -284,30 +321,30 @@ public class BinaryMemoryBufferTest {
 
 	@Test
 	public void testInput() throws IOException {
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
-		b.write(BinaryMemoryBufferTest.FWD);
-		b.write(BinaryMemoryBufferTest.REV);
-		InputStream in = b.getInputStream();
-		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
+		TextMemoryBuffer b = new TextMemoryBuffer();
+		b.write(TextMemoryBufferTest.FWD);
+		b.write(TextMemoryBufferTest.REV);
+		Reader in = b.getReader();
+		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
 			int r = in.read();
 			Assert.assertTrue(r >= 0);
-			Assert.assertEquals(BinaryMemoryBufferTest.FWD[i], (byte) r);
+			Assert.assertEquals(TextMemoryBufferTest.FWD[i], r);
 		}
-		for (int i = 0; i < BinaryMemoryBufferTest.REV.length; i++) {
+		for (int i = 0; i < TextMemoryBufferTest.REV.length; i++) {
 			int r = in.read();
 			Assert.assertTrue(r >= 0);
-			Assert.assertEquals(BinaryMemoryBufferTest.REV[i], (byte) r);
+			Assert.assertEquals(TextMemoryBufferTest.REV[i], r);
 		}
-		byte[] buf = new byte[BinaryMemoryBufferTest.FWD.length];
+		char[] buf = new char[TextMemoryBufferTest.FWD.length];
 
-		in = b.getInputStream();
+		in = b.getReader();
 		in.read(buf);
-		Assert.assertArrayEquals(BinaryMemoryBufferTest.FWD, buf);
+		Assert.assertArrayEquals(TextMemoryBufferTest.FWD, buf);
 		in.read(buf, 0, buf.length);
-		Assert.assertArrayEquals(BinaryMemoryBufferTest.REV, buf);
+		Assert.assertArrayEquals(TextMemoryBufferTest.REV, buf);
 
 		try {
-			in.read(null);
+			in.read((char[]) null);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// All is well
@@ -341,7 +378,7 @@ public class BinaryMemoryBufferTest {
 			// All is well
 		}
 		try {
-			in.read(null);
+			in.read((char[]) null);
 			Assert.fail("Failed to raise a NullPointerException");
 		} catch (NullPointerException e) {
 			// All is well
@@ -387,8 +424,8 @@ public class BinaryMemoryBufferTest {
 	@Test
 	public void testBlockingInput() throws IOException {
 
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
-		final InputStream in = b.getInputStream();
+		TextMemoryBuffer b = new TextMemoryBuffer();
+		final Reader in = b.getReader();
 		final AtomicInteger counter = new AtomicInteger(0);
 		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
 		final AtomicBoolean started = new AtomicBoolean(false);
@@ -405,7 +442,7 @@ public class BinaryMemoryBufferTest {
 				// 100ms
 				try {
 					started.set(true);
-					for (byte b : BinaryMemoryBufferTest.FWD) {
+					for (char b : TextMemoryBufferTest.FWD) {
 						if (Thread.currentThread().isInterrupted()) { return; }
 						long now = System.currentTimeMillis();
 						synchronized (lock) {
@@ -423,7 +460,7 @@ public class BinaryMemoryBufferTest {
 						// This check tells us if we really did block
 						Assert.assertTrue((end - now) >= ((blockTimeMs * 4) / 5));
 						// This ensures we read the expected value
-						Assert.assertEquals(b, (byte) r);
+						Assert.assertEquals(b, r);
 						// This ensures we account for a successful read
 						counter.incrementAndGet();
 					}
@@ -458,7 +495,7 @@ public class BinaryMemoryBufferTest {
 
 		// Ensure we don't write until the reader thread is ready to read
 		ex = null;
-		for (byte w : BinaryMemoryBufferTest.FWD) {
+		for (char w : TextMemoryBufferTest.FWD) {
 			synchronized (lock) {
 				while (!readyToRead.get() && t.isAlive()) {
 					try {
@@ -494,18 +531,17 @@ public class BinaryMemoryBufferTest {
 		Assert.assertNull(String.format("Failed to complete the read, caught an exception: %s", thrown.get()),
 			thrown.get());
 		Assert.assertTrue("Failed to complete the read - failed early", finished.get());
-		Assert.assertEquals("Failed to complete the read - fell short", BinaryMemoryBufferTest.FWD.length,
-			counter.get());
+		Assert.assertEquals("Failed to complete the read - fell short", TextMemoryBufferTest.FWD.length, counter.get());
 		b.close();
 	}
 
 	@Test
 	public void testBlockingInputClosure() {
-		BinaryMemoryBuffer b = null;
+		TextMemoryBuffer b = null;
 		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<InputStream> in = new AtomicReference<InputStream>();
+		final AtomicReference<Reader> in = new AtomicReference<Reader>();
 
 		{
 			Runnable[] readers = {
@@ -525,7 +561,7 @@ public class BinaryMemoryBufferTest {
 					@Override
 					public void run() {
 						try {
-							byte[] buf = new byte[128];
+							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf);
 							Assert.assertEquals(r, -1);
@@ -538,7 +574,7 @@ public class BinaryMemoryBufferTest {
 					@Override
 					public void run() {
 						try {
-							byte[] buf = new byte[128];
+							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf, 10, 20);
 							Assert.assertEquals(r, -1);
@@ -551,8 +587,8 @@ public class BinaryMemoryBufferTest {
 			};
 
 			for (Runnable reader : readers) {
-				b = new BinaryMemoryBuffer();
-				in.set(b.getInputStream());
+				b = new TextMemoryBuffer();
+				in.set(b.getReader());
 				started.set(false);
 				finished.set(false);
 				thrown.set(null);
@@ -591,11 +627,11 @@ public class BinaryMemoryBufferTest {
 
 	@Test
 	public void testBlockingInputPartialRead() throws IOException {
-		BinaryMemoryBuffer b = null;
+		TextMemoryBuffer b = null;
 		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<InputStream> in = new AtomicReference<InputStream>();
+		final AtomicReference<Reader> in = new AtomicReference<Reader>();
 
 		{
 			Runnable[] readers = {
@@ -615,7 +651,7 @@ public class BinaryMemoryBufferTest {
 					@Override
 					public void run() {
 						try {
-							byte[] buf = new byte[128];
+							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf);
 							Assert.assertEquals(r, 1);
@@ -628,7 +664,7 @@ public class BinaryMemoryBufferTest {
 					@Override
 					public void run() {
 						try {
-							byte[] buf = new byte[128];
+							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf, 0, 128);
 							Assert.assertEquals(r, 1);
@@ -641,8 +677,8 @@ public class BinaryMemoryBufferTest {
 			};
 
 			for (Runnable reader : readers) {
-				b = new BinaryMemoryBuffer();
-				in.set(b.getInputStream());
+				b = new TextMemoryBuffer();
+				in.set(b.getReader());
 				started.set(false);
 				finished.set(false);
 				thrown.set(null);
@@ -682,11 +718,11 @@ public class BinaryMemoryBufferTest {
 
 	@Test
 	public void testBlockingInputInterruption() {
-		BinaryMemoryBuffer b = null;
+		TextMemoryBuffer b = null;
 		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<InputStream> in = new AtomicReference<InputStream>();
+		final AtomicReference<Reader> in = new AtomicReference<Reader>();
 
 		{
 			Runnable[] readers = {
@@ -706,7 +742,7 @@ public class BinaryMemoryBufferTest {
 					@Override
 					public void run() {
 						try {
-							byte[] buf = new byte[128];
+							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf);
 							Assert.assertEquals(r, -1);
@@ -719,7 +755,7 @@ public class BinaryMemoryBufferTest {
 					@Override
 					public void run() {
 						try {
-							byte[] buf = new byte[128];
+							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf, 10, 20);
 							Assert.assertEquals(r, -1);
@@ -732,11 +768,11 @@ public class BinaryMemoryBufferTest {
 			};
 
 			for (Runnable reader : readers) {
-				b = new BinaryMemoryBuffer();
+				b = new TextMemoryBuffer();
 				started.set(false);
 				finished.set(false);
 				thrown.set(null);
-				in.set(b.getInputStream());
+				in.set(b.getReader());
 				Thread t = new Thread(reader);
 				t.setDaemon(true);
 				t.start();
@@ -780,13 +816,13 @@ public class BinaryMemoryBufferTest {
 
 	@Test
 	public void testInputMarkReset() throws IOException {
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
+		TextMemoryBuffer b = new TextMemoryBuffer();
 		Random r = new Random(System.currentTimeMillis());
-		byte[] random = new byte[1024];
-		r.nextBytes(random);
+		char[] random = new char[1024];
+		TextMemoryBufferTest.randomChars(r, random);
 		b.write(random);
 
-		InputStream in = b.getInputStream();
+		TextMemoryBufferReader in = b.getReader();
 		Assert.assertTrue(in.markSupported());
 		int start = r.nextInt(512);
 		int length = r.nextInt(random.length - start);
@@ -799,21 +835,60 @@ public class BinaryMemoryBufferTest {
 		in.skip(start);
 		Assert.assertEquals(available - start, in.available());
 		in.mark(-1);
-		byte[] segment = new byte[length];
+		char[] segment = new char[length];
 		System.arraycopy(random, start, segment, 0, length);
 		for (int i = 0; i < length; i++) {
 			final int v = in.read();
 			Assert.assertFalse(v == -1);
-			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], (byte) v);
+			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], v);
 		}
 		in.reset();
 		Assert.assertEquals(available - start, in.available());
 		for (int i = 0; i < length; i++) {
 			final int v = in.read();
 			Assert.assertFalse(v == -1);
-			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], (byte) v);
+			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], v);
 		}
 
 		b.close();
+	}
+
+	@Test
+	public void testCharSequence() throws IOException {
+		TextMemoryBuffer buf = new TextMemoryBuffer();
+		Random r = new Random(System.currentTimeMillis());
+		char[] random = new char[128];
+		TextMemoryBufferTest.randomChars(r, random);
+		buf.write(random);
+		buf.close();
+
+		String randomString = new String(random);
+
+		final CharSequence a = randomString;
+		final CharSequence b = buf.getCharSequence();
+
+		Assert.assertEquals(a.length(), b.length());
+
+		for (int i = 0; i < a.length(); i++) {
+			Assert.assertEquals(String.format("Difference in position %d", i), a.charAt(i), b.charAt(i));
+		}
+
+		for (int o = 0; o < a.length(); o++) {
+			for (int l = 0; l < (a.length() - o); l++) {
+				CharSequence subA = a.subSequence(o, o + l);
+				CharSequence subB = b.subSequence(o, o + l);
+				Assert.assertEquals(String.format("Length failed at parameters (%d,%d)", o, l), subA.length(),
+					subB.length());
+				for (int i = 0; i < subA.length(); i++) {
+					try {
+						final char ca = subA.charAt(i);
+						final char cb = subB.charAt(i);
+						Assert.assertEquals(String.format("Length failed at parameters (%d,%d,%d)", o, l, i), ca, cb);
+					} catch (ArrayIndexOutOfBoundsException e) {
+						Assert.fail(String.format("Array Index failed at parameters (%d,%d,%d)", o, l, i));
+					}
+				}
+			}
+		}
 	}
 }
