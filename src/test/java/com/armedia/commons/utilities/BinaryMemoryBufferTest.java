@@ -1,15 +1,15 @@
 /**
  * *******************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
  * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
  * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
  * IS STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC.
  * (c) Copyright Armedia LLC 2011.
  * All Rights reserved.
- * 
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -17,6 +17,8 @@ package com.armedia.commons.utilities;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,7 +28,7 @@ import org.junit.Test;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public class BinaryMemoryBufferTest {
 
@@ -41,7 +43,8 @@ public class BinaryMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer()}.
+	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer()}
+	 * .
 	 */
 	@Test
 	public void testByteBuffer() {
@@ -52,7 +55,8 @@ public class BinaryMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer(int)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer(int)}.
 	 */
 	@Test
 	public void testByteBufferInt() {
@@ -87,7 +91,7 @@ public class BinaryMemoryBufferTest {
 
 	/**
 	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(byte[])}.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -108,8 +112,9 @@ public class BinaryMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(byte[], int, int)}.
-	 * 
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(byte[], int, int)}.
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -383,17 +388,18 @@ public class BinaryMemoryBufferTest {
 	}
 
 	@Test
-	public void testBlockingInput() throws IOException {
+	public void testBlockingInput() throws Throwable {
 
 		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
 		final InputStream in = b.getInputStream();
 		final AtomicInteger counter = new AtomicInteger(0);
 		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
-		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicBoolean readyToRead = new AtomicBoolean(false);
-		final Object lock = new Object();
-		final int blockTimeMs = 10;
+		final int blockTimeMs = 100;
+		final int itemCount = 64;
+		final int itemStep = (BinaryMemoryBufferTest.FWD.length / itemCount);
+		final CyclicBarrier startBarrier = new CyclicBarrier(2);
+		final CyclicBarrier ioBarrier = new CyclicBarrier(2);
 
 		Runnable reader = new Runnable() {
 			@Override
@@ -402,20 +408,19 @@ public class BinaryMemoryBufferTest {
 				// least 5 ms, since the writing thread will write one byte every 10 ms... after
 				// 100ms
 				try {
-					started.set(true);
-					for (byte b : BinaryMemoryBufferTest.FWD) {
+					startBarrier.await();
+					for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i += itemStep) {
+						final byte b = BinaryMemoryBufferTest.FWD[i];
 						if (Thread.currentThread().isInterrupted()) { return; }
+						final int r;
+						ioBarrier.await();
+						long end = 0;
 						long now = System.currentTimeMillis();
-						synchronized (lock) {
-							readyToRead.set(true);
-							lock.notify();
+						try {
+							r = in.read();
+						} finally {
+							end = System.currentTimeMillis();
 						}
-						int r = in.read();
-						synchronized (lock) {
-							readyToRead.set(false);
-							lock.notify();
-						}
-						long end = System.currentTimeMillis();
 						if (r == -1) { return; }
 						// Tolerate 10ms difference...
 						// This check tells us if we really did block
@@ -428,73 +433,68 @@ public class BinaryMemoryBufferTest {
 					finished.set(true);
 				} catch (Throwable t) {
 					thrown.set(t);
+				} finally {
+					ioBarrier.reset();
 				}
 			}
 		};
+
 		// Ensure the thread is a daemon thread, just in case
 		Thread t = new Thread(reader);
 		t.setDaemon(true);
 		t.start();
-		InterruptedException ex = null;
 
 		// Wait for the reader thread to start
-		for (int i = 0; i < 5; i++) {
-			if (started.get()) {
-				break;
-			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// We wait some more
-				ex = e;
-			}
+		try {
+			startBarrier.await();
+		} catch (InterruptedException e) {
+			t.interrupt();
+		} catch (BrokenBarrierException e) {
 		}
-		if (ex != null) {
-			Thread.currentThread().interrupt();
-		}
-		Assert.assertTrue(started.get());
+		Assert.assertFalse("Thread start barrier broken", startBarrier.isBroken());
 
 		// Ensure we don't write until the reader thread is ready to read
-		ex = null;
-		for (byte w : BinaryMemoryBufferTest.FWD) {
-			synchronized (lock) {
-				while (!readyToRead.get() && t.isAlive()) {
-					try {
-						lock.wait(1000);
-					} catch (InterruptedException e) {
-						// ignore this
-					}
-				}
-			}
+		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i += itemStep) {
 			if (!t.isAlive()) {
 				break;
 			}
+			final byte w = BinaryMemoryBufferTest.FWD[i];
+			try {
+				ioBarrier.await();
+				Assert.assertFalse("IO barrier broken in assertion", ioBarrier.isBroken());
+			} catch (InterruptedException e) {
+				t.interrupt();
+				Assert.fail(String.format("IO barrier broken due to thread interruption (%d)", w));
+			} catch (BrokenBarrierException e) {
+				Assert.fail(String.format("IO barrier broken due to broken barrier exception (%d)", w));
+			} finally {
+				ioBarrier.reset();
+			}
+
 			try {
 				Thread.sleep(blockTimeMs);
 			} catch (InterruptedException e) {
-				ex = e;
+				Thread.currentThread().interrupt();
 			}
 			b.write(w);
-		}
-		if (ex != null) {
-			Thread.currentThread().interrupt();
 		}
 
 		// Give the reader a short time to catch up, then kill it where it lies
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
-			if (ex == null) {
-				Thread.currentThread().interrupt();
-			}
+			Thread.currentThread().interrupt();
 		}
 		t.interrupt();
-		Assert.assertNull(String.format("Failed to complete the read, caught an exception: %s", thrown.get()),
-			thrown.get());
-		Assert.assertTrue("Failed to complete the read - failed early", finished.get());
-		Assert.assertEquals("Failed to complete the read - fell short", BinaryMemoryBufferTest.FWD.length,
-			counter.get());
-		b.close();
+		Throwable ex = thrown.get();
+		try {
+			if (ex != null) { throw new RuntimeException(String.format(
+				"Failed to complete the read, caught an exception: %s", ex), ex); }
+			Assert.assertTrue("Failed to complete the read - failed early", finished.get());
+			Assert.assertEquals("Failed to complete the read - fell short", itemCount, counter.get());
+		} finally {
+			b.close();
+		}
 	}
 
 	@Test
