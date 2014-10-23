@@ -1,15 +1,12 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -52,7 +49,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public class Tools {
 
@@ -423,7 +420,7 @@ public class Tools {
 
 	/**
 	 * This invocation is identical to {@code asTrimmedString(o, false)}.
-	 * 
+	 *
 	 * @param o
 	 * @return the trimmed string version of the object, or {@code null} if the object was null
 	 */
@@ -434,14 +431,14 @@ public class Tools {
 	/**
 	 * The semantics are similar to {@link #toString(Object, boolean)}, except that the the
 	 * resulting string value is trimmed prior to deciding whether the empty string should be
-	 * returned or {@code null} should be returned instead. Therefore, all strings returned
-	 * by this method are trimmed (all leading and trailing spaces removed).
-	 * 
+	 * returned or {@code null} should be returned instead. Therefore, all strings returned by this
+	 * method are trimmed (all leading and trailing spaces removed).
+	 *
 	 * @param o
 	 * @return the trimmed string version of the object, or {@code null} if the object was null. If
 	 *         {@code emptyAsNull} is {@code true}, then empty strings are returned as {@code null}
 	 *         values.
-	 * 
+	 *
 	 */
 	public static String toTrimmedString(Object o, boolean emptyAsNull) {
 		if (o == null) { return null; }
@@ -455,13 +452,13 @@ public class Tools {
 	}
 
 	/**
-	 * Convert the given object to a subclass of {@link Number}. First, a direct typecast
-	 * to Number is attempted. If this fails, then a parse as a {@link BigInteger} is attempted
-	 * and returned. Finally, if this fails, an attempt is made as {@link BigDecimal}. If the
-	 * reference is {@code null}, then {@code null} is returned. Importantly, this method will
-	 * never return {@link Double#POSITIVE_INFINITY}, {@link Double#NEGATIVE_INFINITY} or
-	 * {@link Double#NaN} (or their {@link Float} counterparts).
-	 * 
+	 * Convert the given object to a subclass of {@link Number}. First, a direct typecast to Number
+	 * is attempted. If this fails, then a parse as a {@link BigInteger} is attempted and returned.
+	 * Finally, if this fails, an attempt is made as {@link BigDecimal}. If the reference is
+	 * {@code null}, then {@code null} is returned. Importantly, this method will never return
+	 * {@link Double#POSITIVE_INFINITY}, {@link Double#NEGATIVE_INFINITY} or {@link Double#NaN} (or
+	 * their {@link Float} counterparts).
+	 *
 	 * @param o
 	 * @return a {@link Number} version of the given object, or {@code null} if the object was null.
 	 */
@@ -481,7 +478,7 @@ public class Tools {
 	 * {@code null}, then null is returned, instead of the customary string {@code "null"}. This is
 	 * useful preserve the semantics of {@code "null"} references, while attempting to convert the
 	 * value to a string.
-	 * 
+	 *
 	 * @param o
 	 * @return the string version of the object, or {@code null} if the object was null
 	 */
@@ -498,7 +495,7 @@ public class Tools {
 	 * The second parameter serves to describe how the empty string should be handled. If the
 	 * resulting conversion yields the empty string, and {@code emptyAsNull} is {@code true}, then
 	 * {@code null} is returned. Else, the empty string is returned.
-	 * 
+	 *
 	 * @param o
 	 * @return the string version of the object, or {@code null} if the object was null. If
 	 *         {@code emptyAsNull} is {@code true}, then empty strings will be folded to the
@@ -566,7 +563,7 @@ public class Tools {
 	/**
 	 * Returns a recursively-calculated string for the given array of object references, invoking
 	 * {@link #toString(Object)} for each element in the array respectively.
-	 * 
+	 *
 	 * @param a
 	 * @return a string that represents this array, and its elements' string representations,
 	 *         recursively
@@ -577,10 +574,10 @@ public class Tools {
 	}
 
 	/**
-	 * 
+	 *
 	 * Returns a recursively-calculated string for the given {@link Collection}, invoking
 	 * {@link #toString(Object)} for each element in the collection respectively.
-	 * 
+	 *
 	 * @param a
 	 * @return a string that represents this collection, and its elements' string representations,
 	 *         recursively
@@ -591,10 +588,10 @@ public class Tools {
 	}
 
 	/**
-	 * 
+	 *
 	 * Returns a recursively-calculated string for the given {@link Map}, invoking
 	 * {@link #toString(Object)} for each key and value in the map respectively.
-	 * 
+	 *
 	 * @param a
 	 * @return a string that represents this map, and its keys' and values' string representations,
 	 *         recursively
@@ -620,12 +617,11 @@ public class Tools {
 	 * Returns a hashcode for the given object values, using the base object's hashCode() result as
 	 * a seed source, and the given prime number as the hash multiplier. This is useful in generated
 	 * hashCode() methods. Importantly, it uses {@link HashCodeBuilder} to facilitate the work.
-	 * 
+	 *
 	 * @param base
 	 * @param superHash
 	 *            the hashcode of the superclass. <b>NEVER</b> include the value from invoking
-	 *            super.hashCode()
-	 *            when the superclass doesn't override {@link Object#hashCode()}.
+	 *            super.hashCode() when the superclass doesn't override {@link Object#hashCode()}.
 	 * @param values
 	 * @return a hashcode calculated from the given values
 	 */
@@ -648,7 +644,7 @@ public class Tools {
 	/**
 	 * Returns the first non-null reference within the provided list of references, or {@code null}
 	 * if all references are {@code null}.
-	 * 
+	 *
 	 * @param <T>
 	 * @param o
 	 * @param others
@@ -672,7 +668,7 @@ public class Tools {
 	 * <p>
 	 * This is useful when sanitizing paths to a specific format.
 	 * </p>
-	 * 
+	 *
 	 * @param str
 	 * @return the string {@code str} with repeated, consecutive instances of the character
 	 *         {@code c} collapsed into a single instance.
@@ -684,15 +680,15 @@ public class Tools {
 	}
 
 	/**
-	 * A utility method that helps determine if {@code a} and {@code b} meet any of the
-	 * following conditions:
+	 * A utility method that helps determine if {@code a} and {@code b} meet any of the following
+	 * conditions:
 	 * <ul>
 	 * <li>the same reference value ({@code null} or otherwise)</li>
 	 * <li>objects of the same class</li>
 	 * </ul>
-	 * On all other cases, it returns {@code false}. This method is useful in the overriding
-	 * of {@link Object#equals(Object)}, as it covers some of the boilerplate work.
-	 * 
+	 * On all other cases, it returns {@code false}. This method is useful in the overriding of
+	 * {@link Object#equals(Object)}, as it covers some of the boilerplate work.
+	 *
 	 * @param a
 	 * @param b
 	 * @return {@code true} if {@code a} and {@code b} are either both {@code null}, refer to the
@@ -706,15 +702,15 @@ public class Tools {
 	}
 
 	/**
-	 * A utility method that helps determine if {@code a} and {@code b} meet any of the
-	 * following conditions:
+	 * A utility method that helps determine if {@code a} and {@code b} meet any of the following
+	 * conditions:
 	 * <ul>
 	 * <li>the same reference value ({@code null} or otherwise)</li>
 	 * <li>are equal as per {@link Object#equals(Object)} (i.e. invoking {@code a.equals(b)})</li>
 	 * </ul>
-	 * On all other cases, it returns {@code false}. This method is useful in the overriding
-	 * of {@link Object#equals(Object)}, as it aids in the comparison of internal member fields.
-	 * 
+	 * On all other cases, it returns {@code false}. This method is useful in the overriding of
+	 * {@link Object#equals(Object)}, as it aids in the comparison of internal member fields.
+	 *
 	 * @param a
 	 * @param b
 	 * @return {@code true} if {@code a} and {@code b} are either both {@code null}, refer to the
@@ -729,11 +725,11 @@ public class Tools {
 
 	/**
 	 * Compare two strings, and return their relative order, where {@code 0} means they're equal
-	 * (either the same string, have the same content, or both are {@code null}), < 0 means
-	 * that {@code a} sorts before {@code b} (or {@code a} is {@code null} when {@code b} is not),
-	 * and > 0 means that {@code a} sorts after {@code b} (or {@code a} is not {@code null} when
-	 * {@code b} is).
-	 * 
+	 * (either the same string, have the same content, or both are {@code null}), < 0 means that
+	 * {@code a} sorts before {@code b} (or {@code a} is {@code null} when {@code b} is not), and >
+	 * 0 means that {@code a} sorts after {@code b} (or {@code a} is not {@code null} when {@code b}
+	 * is).
+	 *
 	 * @param a
 	 * @param b
 	 * @return 0 if a==b, 1 if a>b, -1 if a<b
@@ -753,7 +749,7 @@ public class Tools {
 	 * both are {@code null} ), < 0 means that {@code a} sorts before {@code b} (or {@code a} is
 	 * {@code null} when {@code b} is not), and > 0 means that {@code a} sorts after {@code b} (or
 	 * {@code a} is not {@code null} when {@code b} is).
-	 * 
+	 *
 	 * @param a
 	 * @param b
 	 * @return 0 if a==b, 1 if a>b, -1 if a<b, case-insensitively
@@ -768,8 +764,8 @@ public class Tools {
 	}
 
 	/**
-	 * A {@link Comparator} instance that utilizes {@link #strcmp(String, String)} to perform
-	 * its comparison.
+	 * A {@link Comparator} instance that utilizes {@link #strcmp(String, String)} to perform its
+	 * comparison.
 	 */
 	public static final Comparator<String> STRCMP = new Comparator<String>() {
 		@Override
@@ -779,8 +775,8 @@ public class Tools {
 	};
 
 	/**
-	 * A {@link Comparator} instance that utilizes {@link #stricmp(String, String)} to perform
-	 * its comparison.
+	 * A {@link Comparator} instance that utilizes {@link #stricmp(String, String)} to perform its
+	 * comparison.
 	 */
 	public static final Comparator<String> STRICMP = new Comparator<String>() {
 		@Override
@@ -991,13 +987,11 @@ public class Tools {
 
 	/**
 	 * Turns the given object into a string, using String.valueOf(). If the given reference is null,
-	 * then null is returned,
-	 * instead of the customary string "null". This is useful preserve the semantics of null
-	 * references, while attempting to
-	 * convert the value to a string.
-	 * 
+	 * then null is returned, instead of the customary string "null". This is useful preserve the
+	 * semantics of null references, while attempting to convert the value to a string.
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static String stringize(Object o) {
 		return Tools.stringize(o, false);
@@ -1005,17 +999,15 @@ public class Tools {
 
 	/**
 	 * Turns the given object into a string, using String.valueOf(). If the given reference is null,
-	 * then null is returned,
-	 * instead of the customary string "null". This is useful preserve the semantics of null
-	 * references, while attempting to
-	 * convert the value to a string.
+	 * then null is returned, instead of the customary string "null". This is useful preserve the
+	 * semantics of null references, while attempting to convert the value to a string.
 	 * <p/>
 	 * The second parameter serves to describe how the empty string should be handled. If the
 	 * resulting conversion yields the empty string, and emptyAsNull is true, then null is returned.
 	 * Else, the resulting value is returned.
-	 * 
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static String stringize(Object o, boolean emptyAsNull) {
 		if (o == null) { return null; }
@@ -1028,13 +1020,12 @@ public class Tools {
 
 	/**
 	 * Returns a substring of the given string, with a maximum length of maxLen characters. If the
-	 * string is less than
-	 * maxLength characters long, the string itself is returned. If the string is null, then null is
-	 * returned.
-	 * 
+	 * string is less than maxLength characters long, the string itself is returned. If the string
+	 * is null, then null is returned.
+	 *
 	 * @param str
 	 * @param maxLen
-	 * 
+	 *
 	 */
 	public static String truncate(String str, int maxLen) {
 		if (str == null) { return null; }
@@ -1044,11 +1035,11 @@ public class Tools {
 
 	/**
 	 * Returns a string comprised of all the word characters in the string that ocurr before the
-	 * first non-word character, ignoring
-	 * any leading non-word characters, or null if the string is null.
-	 * 
+	 * first non-word character, ignoring any leading non-word characters, or null if the string is
+	 * null.
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static String firstWord(String str) {
 		if (str == null) { return str; }
@@ -1060,11 +1051,10 @@ public class Tools {
 
 	/**
 	 * Returns the given string with all words modified to have their first letter capitalized, or
-	 * null if the string is null.
-	 * Consecutive non-word characters are coalesced to a single space.
-	 * 
+	 * null if the string is null. Consecutive non-word characters are coalesced to a single space.
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static String capitalize(String str) {
 		if (str == null) { return null; }
@@ -1084,11 +1074,11 @@ public class Tools {
 
 	/**
 	 * Turns the given string into an Enum<?> instance, or null if the string is null.
-	 * 
+	 *
 	 * @param <T>
 	 * @param c
 	 * @param str
-	 * 
+	 *
 	 */
 	public static <T extends Enum<T>> T decodeEnum(Class<T> c, String str) {
 		if (str == null) { return null; }
@@ -1097,19 +1087,18 @@ public class Tools {
 
 	/**
 	 * Attempts to decode the given string to a target object class, assuming that class declares a
-	 * public static method with the
-	 * signature (? denotes the object's class): ? valueOf(String v)
+	 * public static method with the signature (? denotes the object's class): ? valueOf(String v)
 	 * <p/>
 	 * The method uses reflection, and wraps any reflection exception in a {@link RuntimeException}
 	 * to facilitate invocation and simplify code structure. This has the drawback that the method
 	 * is less expressive than doing the invocation manually (fewer specific error conditions are
 	 * exposed), so users should be careful to not make use of this under uncontrolled
 	 * circumstances.
-	 * 
+	 *
 	 * @param <T>
 	 * @param c
 	 * @param str
-	 * 
+	 *
 	 */
 	public static <T> T decodeUnknown(Class<T> c, String str) {
 		if (str == null) { return null; }
@@ -1139,9 +1128,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Boolean} value using valueOf(), but returns null if the
 	 * string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Boolean decodeBoolean(String str) {
 		if (str == null) { return null; }
@@ -1151,9 +1140,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Boolean} value using valueOf(), but returns the ifNull
 	 * value if the string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Boolean decodeBoolean(String str, boolean ifNull) {
 		if (str == null) { return ifNull; }
@@ -1163,9 +1152,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Integer} value using valueOf(), but returns null if the
 	 * string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Integer decodeInteger(String str) {
 		if (str == null) { return null; }
@@ -1175,9 +1164,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Integer} value using valueOf(), but returns the ifNull
 	 * value if the string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Integer decodeInteger(String str, int ifNull) {
 		if (str == null) { return ifNull; }
@@ -1187,9 +1176,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Long} value using valueOf(), but returns null if the
 	 * string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Long decodeLong(String str) {
 		if (str == null) { return null; }
@@ -1199,9 +1188,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Long} value using valueOf(), but returns the ifNull
 	 * value if the string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Long decodeLong(String str, long ifNull) {
 		if (str == null) { return ifNull; }
@@ -1211,9 +1200,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Float} value using valueOf(), but returns null if the
 	 * string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Float decodeFloat(String str) {
 		if (str == null) { return null; }
@@ -1223,9 +1212,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Float} value using valueOf(), but returns the ifNull
 	 * value if the string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Float decodeFloat(String str, float ifNull) {
 		if (str == null) { return ifNull; }
@@ -1235,9 +1224,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Double} value using valueOf(), but returns null if the
 	 * string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Double decodeDouble(String str) {
 		if (str == null) { return null; }
@@ -1247,9 +1236,9 @@ public class Tools {
 	/**
 	 * Decodes the given string to a {@link Double} value using valueOf(), but returns the ifNull
 	 * value if the string is null.
-	 * 
+	 *
 	 * @param str
-	 * 
+	 *
 	 */
 	public static Double decodeDouble(String str, double ifNull) {
 		if (str == null) { return ifNull; }
@@ -1258,13 +1247,12 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to the specified enum type, first attempting a direct class cast,
-	 * and then resorting to
-	 * valueOf(String).
-	 * 
+	 * and then resorting to valueOf(String).
+	 *
 	 * @param <T>
 	 * @param c
 	 * @param o
-	 * 
+	 *
 	 */
 	public static <T extends Enum<T>> T decodeEnum(Class<T> c, Object o) {
 		if (o == null) { return null; }
@@ -1274,11 +1262,10 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Boolean} value using valueOf(), but returns null if the
-	 * string is null. The method
-	 * first attempts to do a class cast, and then resorts to valueOf().
-	 * 
+	 * string is null. The method first attempts to do a class cast, and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Boolean decodeBoolean(Object o) {
 		if (o == null) { return null; }
@@ -1288,11 +1275,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Boolean} value using valueOf(), but returns the ifNull
-	 * value if the string is null. The
-	 * method first attempts to do a class cast, and then resorts to valueOf().
-	 * 
+	 * value if the string is null. The method first attempts to do a class cast, and then resorts
+	 * to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Boolean decodeBoolean(Object o, boolean ifNull) {
 		if (o == null) { return ifNull; }
@@ -1302,12 +1289,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Integer} value using valueOf(), but returns null if the
-	 * string is null. The method
-	 * first attempts to do a class cast, then a class cast to Number, and then resorts to
-	 * valueOf().
-	 * 
+	 * string is null. The method first attempts to do a class cast, then a class cast to Number,
+	 * and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Integer decodeInteger(Object o) {
 		if (o == null) { return null; }
@@ -1318,12 +1304,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Integer} value using valueOf(), but returns the ifNull
-	 * value if the string is null. The
-	 * method first attempts to do a class cast, then a class cast to Number, and then resorts to
-	 * valueOf().
-	 * 
+	 * value if the string is null. The method first attempts to do a class cast, then a class cast
+	 * to Number, and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Integer decodeInteger(Object o, int ifNull) {
 		if (o == null) { return ifNull; }
@@ -1334,12 +1319,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Long} value using valueOf(), but returns null if the
-	 * string is null. The method
-	 * first attempts to do a class cast, then a class cast to Number, and then resorts to
-	 * valueOf().
-	 * 
+	 * string is null. The method first attempts to do a class cast, then a class cast to Number,
+	 * and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Long decodeLong(Object o) {
 		if (o == null) { return null; }
@@ -1350,12 +1334,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Long} value using valueOf(), but returns the ifNull
-	 * value if the string is null. The
-	 * method first attempts to do a class cast, then a class cast to Number, and then resorts to
-	 * valueOf().
-	 * 
+	 * value if the string is null. The method first attempts to do a class cast, then a class cast
+	 * to Number, and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Long decodeLong(Object o, Long ifNull) {
 		if (o == null) { return ifNull; }
@@ -1366,12 +1349,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Float} value using valueOf(), but returns null if the
-	 * string is null. The method
-	 * first attempts to do a class cast, then a class cast to Number, and then resorts to
-	 * valueOf().
-	 * 
+	 * string is null. The method first attempts to do a class cast, then a class cast to Number,
+	 * and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Float decodeFloat(Object o) {
 		if (o == null) { return null; }
@@ -1382,12 +1364,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Float} value using valueOf(), but returns the ifNull
-	 * value if the string is null. The
-	 * method first attempts to do a class cast, then a class cast to Number, and then resorts to
-	 * valueOf().
-	 * 
+	 * value if the string is null. The method first attempts to do a class cast, then a class cast
+	 * to Number, and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Float decodeFloat(Object o, float ifNull) {
 		if (o == null) { return ifNull; }
@@ -1398,12 +1379,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Double} value using valueOf(), but returns null if the
-	 * string is null. The method
-	 * first attempts to do a class cast, then a class cast to Number, and then resorts to
-	 * valueOf().
-	 * 
+	 * string is null. The method first attempts to do a class cast, then a class cast to Number,
+	 * and then resorts to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Double decodeDouble(Object o) {
 		if (o == null) { return null; }
@@ -1414,12 +1394,11 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Double} value using valueOf(), but returns the ifNull
-	 * value if the string is null. The
-	 * method
-	 * first attempts to do a class cast, and then resorts to valueOf().
-	 * 
+	 * value if the string is null. The method first attempts to do a class cast, and then resorts
+	 * to valueOf().
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static Double decodeDouble(Object o, double ifNull) {
 		if (o == null) { return ifNull; }
@@ -1430,11 +1409,11 @@ public class Tools {
 
 	/**
 	 * Turns the given object into a a string, and then encodes it as a CSV line following
-	 * applicable standards (quoting, escaping,
-	 * etc). This is equivalent to invoking encodeForCSV(o, true).
-	 * 
+	 * applicable standards (quoting, escaping, etc). This is equivalent to invoking encodeForCSV(o,
+	 * true).
+	 *
 	 * @param o
-	 * 
+	 *
 	 */
 	public static String encodeForCSV(Object o) {
 		return Tools.encodeForCSV(o, true);
@@ -1442,13 +1421,12 @@ public class Tools {
 
 	/**
 	 * Turns the given object into a a string, and then encodes it as a CSV line following
-	 * applicable standards (quoting, escaping,
-	 * etc). If the given object is null, and nullAsEmpty is true, then the empty string is
-	 * returned.
-	 * 
+	 * applicable standards (quoting, escaping, etc). If the given object is null, and nullAsEmpty
+	 * is true, then the empty string is returned.
+	 *
 	 * @param o
 	 * @param nullAsEmpty
-	 * 
+	 *
 	 */
 	public static String encodeForCSV(Object o, boolean nullAsEmpty) {
 		if (o == null) { return (nullAsEmpty ? "" : "null"); }
@@ -1463,9 +1441,9 @@ public class Tools {
 
 	/**
 	 * Turns a glob expression into a regular expression, for matching.
-	 * 
+	 *
 	 * @param line
-	 * 
+	 *
 	 */
 	public static String globToRegex(String line) {
 		StringBuilder sb = new StringBuilder(line.length());
@@ -1561,13 +1539,13 @@ public class Tools {
 
 	/**
 	 * Returns a hashcode for the given object values, using the base object's hashCode() result as
-	 * a seed source, and the given
-	 * prime number as the hash multiplier. This is useful in generated hashCode() methods.
-	 * 
+	 * a seed source, and the given prime number as the hash multiplier. This is useful in generated
+	 * hashCode() methods.
+	 *
 	 * @param base
 	 * @param prime
 	 * @param values
-	 * 
+	 *
 	 */
 	public static int hashTool(final Object base, final int prime, Object... values) {
 		return Tools.hashTool(base, prime, Arrays.asList(values));
@@ -1575,13 +1553,13 @@ public class Tools {
 
 	/**
 	 * Returns a hashcode for the given object values, using the base object's hashCode() result as
-	 * a seed source, and the given
-	 * prime number as the hash multiplier. This is useful in generated hashCode() methods.
-	 * 
+	 * a seed source, and the given prime number as the hash multiplier. This is useful in generated
+	 * hashCode() methods.
+	 *
 	 * @param base
 	 * @param prime
 	 * @param values
-	 * 
+	 *
 	 */
 	public static int hashTool(final Object base, final int prime, List<?> values) {
 		int hash = base.getClass().hashCode();
@@ -1597,12 +1575,11 @@ public class Tools {
 
 	/**
 	 * Analogous to its *nix namesake, returns the directory name in which the given pathname
-	 * resides, using sep as the directory
-	 * separator character.
-	 * 
+	 * resides, using sep as the directory separator character.
+	 *
 	 * @param fullPath
 	 * @param sep
-	 * 
+	 *
 	 */
 	public static String dirname(String fullPath, char sep) {
 		final String s = String.valueOf(sep);
@@ -1621,11 +1598,10 @@ public class Tools {
 
 	/**
 	 * Analogous to its *nix namesake, returns the directory name in which the given pathname
-	 * resides, using File.separatorChar as
-	 * the directory separator character.
-	 * 
+	 * resides, using File.separatorChar as the directory separator character.
+	 *
 	 * @param fullPath
-	 * 
+	 *
 	 */
 	public static String dirname(String fullPath) {
 		return Tools.dirname(fullPath, File.separatorChar);
@@ -1633,12 +1609,11 @@ public class Tools {
 
 	/**
 	 * Analogous to its *nix namesake, returns the given pathname's base name, with all directory
-	 * components removed, using sep as
-	 * the directory separator character.
-	 * 
+	 * components removed, using sep as the directory separator character.
+	 *
 	 * @param fullPath
 	 * @param sep
-	 * 
+	 *
 	 */
 	public static String basename(String fullPath, char sep) {
 		final String s = String.valueOf(sep);
@@ -1652,11 +1627,10 @@ public class Tools {
 
 	/**
 	 * Analogous to its *nix namesake, returns the given pathname's base name, with all directory
-	 * components removed, using
-	 * File.separatorChar as the directory separator character.
-	 * 
+	 * components removed, using File.separatorChar as the directory separator character.
+	 *
 	 * @param fullPath
-	 * 
+	 *
 	 */
 	public static String basename(String fullPath) {
 		return Tools.basename(fullPath, File.separatorChar);
@@ -1664,10 +1638,10 @@ public class Tools {
 
 	/**
 	 * Returns the highest value R for which: <code>((R % mod) == 0) && (R &lt;= num)</code>
-	 * 
+	 *
 	 * @param num
 	 * @param mod
-	 * 
+	 *
 	 */
 	public static int modulateDown(int num, int mod) {
 		return (num - (num % mod));
@@ -1675,10 +1649,10 @@ public class Tools {
 
 	/**
 	 * Returns the highest value R for which: <code>((R % mod) == 0) && (R &lt;= num)</code>
-	 * 
+	 *
 	 * @param num
 	 * @param mod
-	 * 
+	 *
 	 */
 	public static long modulateDown(long num, long mod) {
 		return (num - (num % mod));
@@ -1686,10 +1660,10 @@ public class Tools {
 
 	/**
 	 * Returns the lowest value R for which: <code>((R % mod) == 0) && (R &gt;= num)</code>
-	 * 
+	 *
 	 * @param num
 	 * @param mod
-	 * 
+	 *
 	 */
 	public static int modulateUp(int num, int mod) {
 		return Tools.modulateDown(num + (mod - 1), mod);
@@ -1697,10 +1671,10 @@ public class Tools {
 
 	/**
 	 * Returns the lowest value R for which: <code>((R % mod) == 0) && (R &gt;= num)</code>
-	 * 
+	 *
 	 * @param num
 	 * @param mod
-	 * 
+	 *
 	 */
 	public static long modulateUp(long num, long mod) {
 		return Tools.modulateDown(num + (mod - 1), mod);
@@ -1708,11 +1682,11 @@ public class Tools {
 
 	/**
 	 * Returns a {@link Properties} instance populated from the contents of the given resource,
-	 * located using getResourceAsStream()
-	 * from the class loader onto which the {@link Toolkit} class was loaded.
-	 * 
+	 * located using getResourceAsStream() from the class loader onto which the {@link Toolkit}
+	 * class was loaded.
+	 *
 	 * @param resource
-	 * 
+	 *
 	 */
 	public static Properties loadPropertiesFromResource(String resource) {
 		InputStream in = Tools.class.getClassLoader().getResourceAsStream(resource);
@@ -1731,9 +1705,9 @@ public class Tools {
 
 	/**
 	 * Returns a {@link Properties} instance populated from the contents of the given URL.
-	 * 
+	 *
 	 * @param url
-	 * 
+	 *
 	 */
 	public static Properties loadPropertiesFromURL(URL url) {
 		InputStream in = null;
@@ -1755,11 +1729,11 @@ public class Tools {
 
 	/**
 	 * Returns a {@link Properties} instance populated from the contents of the given XML-formatted
-	 * resource, located using
-	 * getResourceAsStream() from the class loader onto which the {@link Toolkit} class was loaded.
-	 * 
+	 * resource, located using getResourceAsStream() from the class loader onto which the
+	 * {@link Toolkit} class was loaded.
+	 *
 	 * @param resource
-	 * 
+	 *
 	 */
 	public static Properties loadXmlPropertiesFromResource(String resource) {
 		InputStream in = Tools.class.getClassLoader().getResourceAsStream(resource);
@@ -1779,9 +1753,9 @@ public class Tools {
 	/**
 	 * Returns a {@link Properties} instance populated from the XML-formatted contents of the given
 	 * URL.
-	 * 
+	 *
 	 * @param url
-	 * 
+	 *
 	 */
 	public static Properties loadXmlPropertiesFromURL(URL url) {
 		InputStream in = null;
@@ -1803,9 +1777,9 @@ public class Tools {
 
 	/**
 	 * Loads the contents of the given InputStream into a new Properties instance.
-	 * 
+	 *
 	 * @param in
-	 * 
+	 *
 	 */
 	public static Properties loadPropertiesFromStream(InputStream in) {
 		Properties p = new Properties();
@@ -1819,9 +1793,9 @@ public class Tools {
 
 	/**
 	 * Loads the contents of the given Reader into a new Properties instance.
-	 * 
+	 *
 	 * @param in
-	 * 
+	 *
 	 */
 	public static Properties loadPropertiesFromReader(Reader in) {
 		Properties p = new Properties();
@@ -1836,9 +1810,9 @@ public class Tools {
 	/**
 	 * Loads the contents of the given InputStream into a new Properties instance, assuming they're
 	 * XML-formatted.
-	 * 
+	 *
 	 * @param in
-	 * 
+	 *
 	 */
 	public static Properties loadXmlPropertiesFromStream(InputStream in) {
 		Properties p = new Properties();
@@ -1852,13 +1826,12 @@ public class Tools {
 
 	/**
 	 * Searches the exception "tree" upwards until it finds an exception cause that matches the
-	 * given target class (using
-	 * isAssignableFrom()).
-	 * 
+	 * given target class (using isAssignableFrom()).
+	 *
 	 * @param <T>
 	 * @param t
 	 * @param targetClass
-	 * 
+	 *
 	 */
 	public static <T extends Throwable> T findRootCause(Throwable t, Class<T> targetClass) {
 		if (t == null) { return null; }
@@ -1875,11 +1848,10 @@ public class Tools {
 
 	/**
 	 * Returns the topmost exception cause in the given exception (using getCause()), or the
-	 * exception itself if it's its own cause
-	 * (which happens, sometimes).
-	 * 
+	 * exception itself if it's its own cause (which happens, sometimes).
+	 *
 	 * @param t
-	 * 
+	 *
 	 */
 	public static Throwable findRootCause(Throwable t) {
 		if (t == null) { return null; }
@@ -1891,9 +1863,9 @@ public class Tools {
 
 	/**
 	 * Returns the message associated with the root exception cause.
-	 * 
+	 *
 	 * @param t
-	 * 
+	 *
 	 */
 	public static String getRootThrownMessage(Throwable t) {
 		t = Tools.findRootCause(t);
@@ -1903,11 +1875,10 @@ public class Tools {
 
 	/**
 	 * Returns the message associated with the exception, or generates one using the exception's
-	 * canonical name if the message is
-	 * null.
-	 * 
+	 * canonical name if the message is null.
+	 *
 	 * @param t
-	 * 
+	 *
 	 */
 	public static String getThrownMessage(Throwable t) {
 		if (t.getMessage() == null) { return t.getClass().getCanonicalName(); }
@@ -1916,9 +1887,9 @@ public class Tools {
 
 	/**
 	 * Returns a string containing a stack trace for the given exception.
-	 * 
+	 *
 	 * @param t
-	 * 
+	 *
 	 */
 	public static String getStackTrace(Throwable t) {
 		StringWriter writer = new StringWriter();
@@ -1929,11 +1900,11 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static boolean between(byte value, byte lo, byte hi) {
 		return ((lo <= value) && (value <= hi));
@@ -1941,11 +1912,11 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static boolean between(short value, short lo, short hi) {
 		return ((lo <= value) && (value <= hi));
@@ -1953,11 +1924,11 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static boolean between(int value, int lo, int hi) {
 		return ((lo <= value) && (value <= hi));
@@ -1965,11 +1936,11 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static boolean between(long value, long lo, long hi) {
 		return ((lo <= value) && (value <= hi));
@@ -1977,11 +1948,11 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static boolean between(float value, float lo, float hi) {
 		return ((lo <= value) && (value <= hi));
@@ -1989,11 +1960,11 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static boolean between(double value, double lo, double hi) {
 		return ((lo <= value) && (value <= hi));
@@ -2001,11 +1972,11 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static boolean between(char value, char lo, char hi) {
 		return ((lo <= value) && (value <= hi));
@@ -2013,13 +1984,59 @@ public class Tools {
 
 	/**
 	 * Checks to see if value is between lo and hi, inclusive.
-	 * 
+	 *
 	 * @param value
 	 * @param lo
 	 * @param hi
-	 * 
+	 *
 	 */
 	public static <T extends Comparable<T>> boolean between(T value, T lo, T hi) {
 		return (lo.compareTo(value) <= 0) && (value.compareTo(hi) <= 0);
+	}
+
+	/**
+	 * @see #overlayMaps(Map, Collection)
+	 * @param target
+	 *            the map that will contain the consolidated data
+	 * @param readable
+	 *            the maps that will be iterated over, and whose mappings will be added to
+	 *            {@code target}
+	 * @throws IllegalArgumentException
+	 *             if {@code target} is {@code null}
+	 */
+	public static <K, V> void overlayMaps(Map<K, V> target, Map<K, V>... readable) {
+		if (target == null) { throw new IllegalArgumentException("Must provide a map to overlay the values to"); }
+		if ((readable == null) || (readable.length == 0)) { return; }
+		Tools.overlayMaps(target, Arrays.asList(readable));
+	}
+
+	/**
+	 * Consolidates the views of multiple maps onto a single one, with the mappings from earlier
+	 * maps overriding the mappings from later maps. The {@code target} map's mappings will be left
+	 * untouched, and only new mappings coming in from the other maps will be added. Maps will be
+	 * iterated over in order, and no mappings will be overridden. That means that the first map to
+	 * provide a mapping "wins", because subsequent mappings for that same key will be ignored.
+	 *
+	 * @param target
+	 *            the map that will contain the consolidated data
+	 * @param readable
+	 *            the maps that will be iterated over, and whose mappings will be added to
+	 *            {@code target}
+	 * @throws IllegalArgumentException
+	 *             if {@code target} is {@code null}
+	 */
+	public static <K, V> void overlayMaps(Map<K, V> target, Collection<Map<K, V>> readable) {
+		if (target == null) { throw new IllegalArgumentException("Must provide a map to overlay the values to"); }
+		if ((readable == null) || (readable.isEmpty())) { return; }
+		for (Map<K, V> m : readable) {
+			if ((m == null) || m.isEmpty()) {
+				continue;
+			}
+			for (K k : m.keySet()) {
+				if (!target.containsKey(k)) {
+					target.put(k, m.get(k));
+				}
+			}
+		}
 	}
 }
