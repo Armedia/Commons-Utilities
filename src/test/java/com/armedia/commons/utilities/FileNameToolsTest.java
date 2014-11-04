@@ -1,15 +1,12 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -24,13 +21,14 @@ import org.junit.Test;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
-public class FileNameToolsTest {
+public class FileNameToolsTest implements GoodServiceTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.FileNameTools#removeEdgeSeparators(java.lang.String, char)}.
+	 * {@link com.armedia.commons.utilities.FileNameTools#removeEdgeSeparators(java.lang.String, char)}
+	 * .
 	 */
 	@Test
 	public void testRemoveEdgeSeparators() {
@@ -70,7 +68,8 @@ public class FileNameToolsTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.FileNameTools#removeLeadingSeparators(java.lang.String, char)} .
+	 * {@link com.armedia.commons.utilities.FileNameTools#removeLeadingSeparators(java.lang.String, char)}
+	 * .
 	 */
 	@Test
 	public void testRemoveLeadingSeparators() {
@@ -110,7 +109,8 @@ public class FileNameToolsTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.FileNameTools#removeTrailingSeparators(java.lang.String, char)} .
+	 * {@link com.armedia.commons.utilities.FileNameTools#removeTrailingSeparators(java.lang.String, char)}
+	 * .
 	 */
 	@Test
 	public void testRemoveTrailingSeparators() {
@@ -149,7 +149,8 @@ public class FileNameToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.FileNameTools#singleSeparators(java.lang.String)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.FileNameTools#singleSeparators(java.lang.String)}.
 	 */
 	@Test
 	public void testSingleSeparators() {
@@ -188,7 +189,8 @@ public class FileNameToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.FileNameTools#basename(java.lang.String, char)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.FileNameTools#basename(java.lang.String, char)}.
 	 */
 	@Test
 	public void testBasename() {
@@ -227,7 +229,8 @@ public class FileNameToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.FileNameTools#dirname(java.lang.String, char)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.FileNameTools#dirname(java.lang.String, char)}.
 	 */
 	@Test
 	public void testDirname() {
@@ -275,7 +278,8 @@ public class FileNameToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.FileNameTools#normalizePath(java.lang.String, char)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.FileNameTools#normalizePath(java.lang.String, char)}.
 	 */
 	@Test
 	public void testNormalizePath() {
@@ -322,7 +326,8 @@ public class FileNameToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.FileNameTools#tokenize(java.lang.String, char)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.FileNameTools#tokenize(java.lang.String, char)}.
 	 */
 	@Test
 	public void testTokenize() {
@@ -429,7 +434,7 @@ public class FileNameToolsTest {
 	/**
 	 * Test method for
 	 * {@link com.armedia.commons.utilities.FileNameTools#reconstitute(java.util.Collection, boolean, boolean)}
-	 * 
+	 *
 	 */
 	@Test
 	public void testReconstitute() {

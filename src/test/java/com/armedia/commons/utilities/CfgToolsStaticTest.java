@@ -1,15 +1,12 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -32,9 +29,9 @@ import org.junit.Test;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
-public class CfgToolsStaticTest {
+public class CfgToolsStaticTest implements GoodServiceTest {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 
 	private static Map<String, String> CONFIG = null;
@@ -736,7 +733,7 @@ public class CfgToolsStaticTest {
 		Assert.assertTrue(Float.isInfinite(CfgTools.decodeFloat(TestSetting.FLOAT_OVER, CfgToolsStaticTest.CONFIG)));
 		Assert.assertTrue(Float.isInfinite(CfgTools.decodeFloat(TestSetting.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
 		Assert
-			.assertTrue(0 < Float.compare(0, CfgTools.decodeFloat(TestSetting.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
+		.assertTrue(0 < Float.compare(0, CfgTools.decodeFloat(TestSetting.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
 		try {
 			CfgTools.decodeFloat(TestSetting.BOOLEAN_TRUE, CfgToolsStaticTest.CONFIG);
 			Assert.fail("Failed when getting boolean.true as a float - should have failed to parse");
@@ -804,7 +801,7 @@ public class CfgToolsStaticTest {
 		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble("double.over", CfgToolsStaticTest.CONFIG, null)));
 		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble("double.under", CfgToolsStaticTest.CONFIG, null)));
 		Assert
-			.assertTrue(0 < Double.compare(0, CfgTools.decodeDouble("double.under", CfgToolsStaticTest.CONFIG, null)));
+		.assertTrue(0 < Double.compare(0, CfgTools.decodeDouble("double.under", CfgToolsStaticTest.CONFIG, null)));
 
 		try {
 			CfgTools.decodeDouble("boolean.true", CfgToolsStaticTest.CONFIG, null);
@@ -856,7 +853,7 @@ public class CfgToolsStaticTest {
 
 		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSetting.DOUBLE_OVER, CfgToolsStaticTest.CONFIG)));
 		Assert
-			.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSetting.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
+		.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSetting.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
 		Assert.assertTrue(0 < Double.compare(0,
 			CfgTools.decodeDouble(TestSetting.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
 		try {

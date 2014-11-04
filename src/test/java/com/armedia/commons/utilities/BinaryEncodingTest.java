@@ -1,15 +1,12 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -25,9 +22,9 @@ import org.junit.Test;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
-public class BinaryEncodingTest {
+public class BinaryEncodingTest implements GoodServiceTest {
 
 	private static final byte[] EMPTY = new byte[0];
 	private final Random random = new Random(System.currentTimeMillis());
@@ -125,7 +122,8 @@ public class BinaryEncodingTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryEncoding#identify(java.lang.String)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.BinaryEncoding#identify(java.lang.String)}.
 	 */
 	@Test
 	public void testIdentify() {

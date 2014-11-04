@@ -16,6 +16,7 @@ import java.util.ServiceLoader;
  */
 public class PluggableServiceLocator<S> {
 
+	private final ClassLoader classLoader;
 	private final Class<S> serviceClass;
 	private final ServiceLoader<S> loader;
 
@@ -26,7 +27,7 @@ public class PluggableServiceLocator<S> {
 	}
 
 	public PluggableServiceLocator(Class<S> serviceClass, PluggableServiceSelector<S> defaultSelector) {
-		this(serviceClass, Thread.currentThread().getContextClassLoader(), null);
+		this(serviceClass, Thread.currentThread().getContextClassLoader(), defaultSelector);
 	}
 
 	public PluggableServiceLocator(Class<S> serviceClass, ClassLoader classLoader) {
@@ -39,9 +40,14 @@ public class PluggableServiceLocator<S> {
 			"Must provide a service class for which to locate instances"); }
 		if (classLoader == null) { throw new IllegalArgumentException(
 			"Must provide a classloader in which to locate instances"); }
+		this.classLoader = classLoader;
 		this.serviceClass = serviceClass;
 		this.loader = ServiceLoader.load(this.serviceClass, classLoader);
 		this.defaultSelector = defaultSelector;
+	}
+
+	public final ClassLoader getClassLoader() {
+		return this.classLoader;
 	}
 
 	public final Class<S> getServiceClass() {
@@ -132,7 +138,7 @@ public class PluggableServiceLocator<S> {
 					while (this.it.hasNext()) {
 						S next = this.it.next();
 						if ((finalSelector == null) || finalSelector.matches(next)) {
-							this.current = this.it.next();
+							this.current = next;
 							break;
 						}
 					}

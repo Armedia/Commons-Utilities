@@ -1,15 +1,12 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -34,9 +31,9 @@ import org.junit.Test;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
-public class CfgToolsTest {
+public class CfgToolsTest implements GoodServiceTest {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 
 	private static CfgTools CONFIG = null;
@@ -149,7 +146,8 @@ public class CfgToolsTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.CfgTools#getBoolean(com.armedia.commons.utilities.ConfigurationSetting)} .
+	 * {@link com.armedia.commons.utilities.CfgTools#getBoolean(com.armedia.commons.utilities.ConfigurationSetting)}
+	 * .
 	 */
 	@Test
 	public void testGetBooleanSetting() {
@@ -285,7 +283,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getByte(ConfigurationSetting)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getByte(ConfigurationSetting)}
+	 * .
 	 */
 	@Test
 	public void testGetByteConfigurationSetting() {
@@ -429,7 +428,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getShort(ConfigurationSetting)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getShort(ConfigurationSetting)}
+	 * .
 	 */
 	@Test
 	public void testGetShortConfigurationSetting() {
@@ -573,7 +573,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getInteger(ConfigurationSetting)} .
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#getInteger(ConfigurationSetting)} .
 	 */
 	@Test
 	public void testGetIntegerConfigurationSetting() {
@@ -717,7 +718,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getLong(ConfigurationSetting)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getLong(ConfigurationSetting)}
+	 * .
 	 */
 	@Test
 	public void testGetLongConfigurationSetting() {
@@ -844,7 +846,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getFloat(ConfigurationSetting)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getFloat(ConfigurationSetting)}
+	 * .
 	 */
 	@Test
 	public void testGetFloatConfigurationSetting() {
@@ -926,7 +929,7 @@ public class CfgToolsTest {
 		CfgToolsTest.assertEquals(-Double.MAX_VALUE,
 			CfgToolsTest.CONFIG.getDouble("double.min.undef", -Double.MAX_VALUE));
 		CfgToolsTest
-			.assertEquals(Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min.undef", Double.MAX_VALUE));
+		.assertEquals(Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min.undef", Double.MAX_VALUE));
 
 		CfgToolsTest.assertEquals(-Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min", null));
 		CfgToolsTest.assertEquals(-Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min", -Double.MAX_VALUE));
@@ -975,7 +978,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getDouble(ConfigurationSetting)} .
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#getDouble(ConfigurationSetting)} .
 	 */
 	@Test
 	public void testGetDoubleConfigurationSetting() {
@@ -1075,7 +1079,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getString(ConfigurationSetting)} .
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#getString(ConfigurationSetting)} .
 	 */
 	@Test
 	public void testGetStringConfigurationSetting() {
@@ -1143,7 +1148,8 @@ public class CfgToolsTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getBinary(ConfigurationSetting)}.
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#getBinary(ConfigurationSetting)}.
 	 */
 	@Test
 	public void testGetBinaryWithoutDefault() throws Throwable {
@@ -1170,7 +1176,8 @@ public class CfgToolsTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.CfgTools#getBinary(com.armedia.commons.utilities.ConfigurationSetting)} .
+	 * {@link com.armedia.commons.utilities.CfgTools#getBinary(com.armedia.commons.utilities.ConfigurationSetting)}
+	 * .
 	 */
 	@Test
 	public void testGetBinaryConfigurationSetting() throws Throwable {
