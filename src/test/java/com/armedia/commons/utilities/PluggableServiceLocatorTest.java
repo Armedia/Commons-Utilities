@@ -34,9 +34,9 @@ public class PluggableServiceLocatorTest {
 		}
 		if (!b.isEmpty()) { throw new RuntimeException(
 			String
-				.format(
-					"The following classes must ALL implement the GoodServiceTest interface (or this test changed to not require it): ",
-					b)); }
+			.format(
+				"The following classes must ALL implement the GoodServiceTest interface (or this test changed to not require it): ",
+				b)); }
 		SERVICE_CLASSES = Collections.unmodifiableSet(a);
 		Assert.assertTrue("Must have more than one class implementing GoodServiceTest", a.size() > 1);
 
@@ -302,6 +302,87 @@ public class PluggableServiceLocatorTest {
 			Assert.assertNotNull(String.format("Reload caused class [%s] to be loaded, but it wasn't expected", actual
 				.getClass().getCanonicalName()), expected);
 			Assert.assertNotSame(expected, actual);
+		}
+	}
+
+	@Test
+	public void testIterator() {
+		PluggableServiceLocator<GoodServiceTest> locator = null;
+		PluggableServiceSelector<GoodServiceTest> selector = null;
+
+		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
+		Assert.assertNull(locator.getDefaultSelector());
+
+		int count = 0;
+		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext(); count++) {
+			it.next();
+		}
+		Assert.assertEquals(PluggableServiceLocatorTest.SERVICE_CLASSES.size(), count);
+
+		selector = new PluggableServiceSelector<GoodServiceTest>() {
+			@Override
+			public boolean matches(GoodServiceTest service) {
+				return false;
+			}
+		};
+		locator.setDefaultSelector(selector);
+		Assert.assertFalse(locator.iterator().hasNext());
+		try {
+			GoodServiceTest ret = locator.iterator().next();
+			Assert.fail(String.format("Expected to fail due to no elements, but instead got [%s]", ret.getClass()
+				.getCanonicalName()));
+		} catch (NoSuchElementException e) {
+			// All is well
+		}
+
+		selector = new PluggableServiceSelector<GoodServiceTest>() {
+			@Override
+			public boolean matches(GoodServiceTest service) {
+				return PluggableServiceLocatorTest.SERVICE_CLASSES.contains(service.getClass().getCanonicalName());
+			}
+		};
+		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext();) {
+			GoodServiceTest s = it.next();
+			if (!selector.matches(s)) {
+				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
+					.getCanonicalName(), PluggableServiceLocatorTest.SERVICE_CLASSES));
+			}
+		}
+
+		selector = new PluggableServiceSelector<GoodServiceTest>() {
+			@Override
+			public boolean matches(GoodServiceTest service) {
+				return PluggableServiceLocatorTest.SUBSET_1.contains(service.getClass().getCanonicalName());
+			}
+		};
+		locator.setDefaultSelector(selector);
+		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext();) {
+			GoodServiceTest s = it.next();
+			if (!selector.matches(s)) {
+				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
+					.getCanonicalName(), PluggableServiceLocatorTest.SUBSET_1));
+			}
+		}
+
+		selector = new PluggableServiceSelector<GoodServiceTest>() {
+			@Override
+			public boolean matches(GoodServiceTest service) {
+				return PluggableServiceLocatorTest.SUBSET_2.contains(service.getClass().getCanonicalName());
+			}
+		};
+		locator.setDefaultSelector(selector);
+		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext();) {
+			GoodServiceTest s = it.next();
+			if (!selector.matches(s)) {
+				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
+					.getCanonicalName(), PluggableServiceLocatorTest.SUBSET_2));
+			}
+		}
+
+		try {
+			locator.iterator().remove();
+		} catch (UnsupportedOperationException e) {
+			// all is well
 		}
 	}
 }

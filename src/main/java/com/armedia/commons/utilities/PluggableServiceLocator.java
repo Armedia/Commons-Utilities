@@ -14,7 +14,7 @@ import java.util.ServiceLoader;
  * @author drivera@armedia.com
  *
  */
-public class PluggableServiceLocator<S> {
+public class PluggableServiceLocator<S> implements Iterable<S> {
 
 	private final ClassLoader classLoader;
 	private final Class<S> serviceClass;
@@ -164,5 +164,13 @@ public class PluggableServiceLocator<S> {
 				throw new UnsupportedOperationException();
 			}
 		};
+	}
+
+	/**
+	 * Overrides {@link Iterable#iterator()}, but is equivalent to invoking {@link #getAll()}.
+	 */
+	@Override
+	public Iterator<S> iterator() {
+		return getAll();
 	}
 }
