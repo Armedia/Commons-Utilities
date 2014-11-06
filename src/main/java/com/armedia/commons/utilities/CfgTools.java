@@ -1,15 +1,12 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -24,12 +21,12 @@ import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public class CfgTools implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
+	private static final Map<String, ?> EMPTY_MAP = Collections.emptyMap();
 	public static final CfgTools EMPTY = new CfgTools(CfgTools.EMPTY_MAP);
 
 	private static void validateSetting(Object setting) {
@@ -39,13 +36,13 @@ public class CfgTools implements Serializable {
 	/**
 	 * Decode the named setting from the given map as a {@link Boolean} value, returning the value
 	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Boolean} value
 	 */
-	public static Boolean decodeBoolean(String label, Map<String, String> settings, Boolean defaultValue) {
+	public static Boolean decodeBoolean(String label, Map<String, ?> settings, Boolean defaultValue) {
 		CfgTools.validateSetting(label);
 		String value = Tools.toTrimmedString(settings.get(label), true);
 		return (value != null ? Boolean.valueOf(value) : defaultValue);
@@ -55,12 +52,12 @@ public class CfgTools implements Serializable {
 	 * Decode the named setting from the given map as a {@link Boolean} value, returning
 	 * {@code null} if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeBoolean(label, settings, null)}
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Boolean} value
 	 */
-	public static Boolean decodeBoolean(String label, Map<String, String> settings) {
+	public static Boolean decodeBoolean(String label, Map<String, ?> settings) {
 		return CfgTools.decodeBoolean(label, settings, null);
 	}
 
@@ -71,12 +68,12 @@ public class CfgTools implements Serializable {
 	 * value obtained from {@code setting} is cast to a Boolean if it's a Boolean value, or
 	 * calculated using {@link Boolean#valueOf(String)} otherwise. If the default value is
 	 * {@code null}, then it's simply passed verbatim.
-	 * 
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Boolean} value
 	 */
-	public static Boolean decodeBoolean(ConfigurationSetting setting, Map<String, String> settings) {
+	public static Boolean decodeBoolean(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		Boolean defaultValue = null;
 		Object dv = setting.getDefaultValue();
@@ -91,15 +88,15 @@ public class CfgTools implements Serializable {
 	}
 
 	/**
-	 * Decode the named setting from the given map as a {@link Byte} value, returning the value
-	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 * Decode the named setting from the given map as a {@link Byte} value, returning the value sent
+	 * in {@code defaultValue} if it's not defined or is the empty string.
+	 *
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Byte} value
 	 */
-	public static Byte decodeByte(String label, Map<String, String> settings, Byte defaultValue) {
+	public static Byte decodeByte(String label, Map<String, ?> settings, Byte defaultValue) {
 		CfgTools.validateSetting(label);
 		String value = Tools.toTrimmedString(settings.get(label), true);
 		if (value != null) { return Byte.valueOf(value); }
@@ -110,12 +107,12 @@ public class CfgTools implements Serializable {
 	 * Decode the named setting from the given map as a {@link Byte} value, returning {@code null}
 	 * if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeByte(label, settings, null)}
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Byte} value
 	 */
-	public static Byte decodeByte(String label, Map<String, String> settings) {
+	public static Byte decodeByte(String label, Map<String, ?> settings) {
 		return CfgTools.decodeByte(label, settings, null);
 	}
 
@@ -123,16 +120,15 @@ public class CfgTools implements Serializable {
 	 * Decode the given setting from the given map as a {@link Byte} value, returning {@code null}
 	 * if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeByte(setting.getLabel(), settings, setting.getDefaultValue())}. The default
-	 * value obtained from {@code setting} is cast to a {@link Byte} if it's a Byte-type, and
-	 * passed on to the subsequent calls. Otherwise, the value is parsed using
-	 * {@link Byte#valueOf(String)}. If the default value is {@code null}, then it's simply passed
-	 * verbatim.
-	 * 
+	 * value obtained from {@code setting} is cast to a {@link Byte} if it's a Byte-type, and passed
+	 * on to the subsequent calls. Otherwise, the value is parsed using {@link Byte#valueOf(String)}
+	 * . If the default value is {@code null}, then it's simply passed verbatim.
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Byte} value
 	 */
-	public static Byte decodeByte(ConfigurationSetting setting, Map<String, String> settings) {
+	public static Byte decodeByte(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		Byte defaultValue = null;
 		Object dv = setting.getDefaultValue();
@@ -151,13 +147,13 @@ public class CfgTools implements Serializable {
 	/**
 	 * Decode the named setting from the given map as a {@link Short} value, returning the value
 	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Short} value
 	 */
-	public static Short decodeShort(String label, Map<String, String> settings, Short defaultValue) {
+	public static Short decodeShort(String label, Map<String, ?> settings, Short defaultValue) {
 		CfgTools.validateSetting(label);
 		String value = Tools.toTrimmedString(settings.get(label), true);
 		if (value != null) { return Short.valueOf(value); }
@@ -169,12 +165,12 @@ public class CfgTools implements Serializable {
 	 * Decode the named setting from the given map as a {@link Short} value, returning {@code null}
 	 * if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeShort(label, settings, null)}
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Short} value
 	 */
-	public static Short decodeShort(String label, Map<String, String> settings) {
+	public static Short decodeShort(String label, Map<String, ?> settings) {
 		return CfgTools.decodeShort(label, settings, null);
 	}
 
@@ -186,12 +182,12 @@ public class CfgTools implements Serializable {
 	 * passed on to the subsequent calls. Otherwise, the value is parsed using
 	 * {@link Short#valueOf(String)}. If the default value is {@code null}, then it's simply passed
 	 * verbatim.
-	 * 
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Short} value
 	 */
-	public static Short decodeShort(ConfigurationSetting setting, Map<String, String> settings) {
+	public static Short decodeShort(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		Short defaultValue = null;
 		Object dv = setting.getDefaultValue();
@@ -210,13 +206,13 @@ public class CfgTools implements Serializable {
 	/**
 	 * Decode the named setting from the given map as a {@link Integer} value, returning the value
 	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as an {@link Integer} value
 	 */
-	public static Integer decodeInteger(String label, Map<String, String> settings, Integer defaultValue) {
+	public static Integer decodeInteger(String label, Map<String, ?> settings, Integer defaultValue) {
 		CfgTools.validateSetting(label);
 		String value = Tools.toTrimmedString(settings.get(label), true);
 		if (value != null) { return Integer.valueOf(value); }
@@ -228,12 +224,12 @@ public class CfgTools implements Serializable {
 	 * Decode the named setting from the given map as a {@link Integer} value, returning
 	 * {@code null} if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeInteger(label, settings, null)}
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as an {@link Integer} value
 	 */
-	public static Integer decodeInteger(String label, Map<String, String> settings) {
+	public static Integer decodeInteger(String label, Map<String, ?> settings) {
 		return CfgTools.decodeInteger(label, settings, null);
 	}
 
@@ -244,14 +240,13 @@ public class CfgTools implements Serializable {
 	 * value obtained from {@code setting} is cast to a {@link Integer} if it's a Integer-type, and
 	 * passed on to the subsequent calls. Otherwise, the value is parsed using
 	 * {@link Integer#valueOf(String)}. If the default value is {@code null}, then it's simply
-	 * passed
-	 * verbatim.
-	 * 
+	 * passed verbatim.
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as an {@link Integer} value
 	 */
-	public static Integer decodeInteger(ConfigurationSetting setting, Map<String, String> settings) {
+	public static Integer decodeInteger(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		Integer defaultValue = null;
 		Object dv = setting.getDefaultValue();
@@ -268,15 +263,15 @@ public class CfgTools implements Serializable {
 	}
 
 	/**
-	 * Decode the named setting from the given map as a {@link Long} value, returning the value
-	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 * Decode the named setting from the given map as a {@link Long} value, returning the value sent
+	 * in {@code defaultValue} if it's not defined or is the empty string.
+	 *
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Long} value
 	 */
-	public static Long decodeLong(String label, Map<String, String> settings, Long defaultValue) {
+	public static Long decodeLong(String label, Map<String, ?> settings, Long defaultValue) {
 		CfgTools.validateSetting(label);
 		String value = Tools.toTrimmedString(settings.get(label), true);
 		if (value != null) { return Long.valueOf(value); }
@@ -288,12 +283,12 @@ public class CfgTools implements Serializable {
 	 * Decode the named setting from the given map as a {@link Long} value, returning {@code null}
 	 * if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeLong(label, settings, null)}
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Long} value
 	 */
-	public static Long decodeLong(String label, Map<String, String> settings) {
+	public static Long decodeLong(String label, Map<String, ?> settings) {
 		return CfgTools.decodeLong(label, settings, null);
 	}
 
@@ -301,16 +296,15 @@ public class CfgTools implements Serializable {
 	 * Decode the given setting from the given map as a {@link Long} value, returning {@code null}
 	 * if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeLong(setting.getLabel(), settings, setting.getDefaultValue())}. The default
-	 * value obtained from {@code setting} is cast to a {@link Long} if it's a Long-type, and
-	 * passed on to the subsequent calls. Otherwise, the value is parsed using
-	 * {@link Long#valueOf(String)}. If the default value is {@code null}, then it's simply passed
-	 * verbatim.
-	 * 
+	 * value obtained from {@code setting} is cast to a {@link Long} if it's a Long-type, and passed
+	 * on to the subsequent calls. Otherwise, the value is parsed using {@link Long#valueOf(String)}
+	 * . If the default value is {@code null}, then it's simply passed verbatim.
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Long} value
 	 */
-	public static Long decodeLong(ConfigurationSetting setting, Map<String, String> settings) {
+	public static Long decodeLong(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		Long defaultValue = null;
 		Object dv = setting.getDefaultValue();
@@ -329,13 +323,13 @@ public class CfgTools implements Serializable {
 	/**
 	 * Decode the named setting from the given map as a {@link Float} value, returning the value
 	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Float} value
 	 */
-	public static Float decodeFloat(String label, Map<String, String> settings, Number defaultValue) {
+	public static Float decodeFloat(String label, Map<String, ?> settings, Number defaultValue) {
 		CfgTools.validateSetting(label);
 		String value = Tools.toTrimmedString(settings.get(label), true);
 		if (value != null) { return Float.valueOf(value); }
@@ -347,12 +341,12 @@ public class CfgTools implements Serializable {
 	 * Decode the named setting from the given map as a {@link Float} value, returning {@code null}
 	 * if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeFloat(label, settings, null)}
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Float} value
 	 */
-	public static Float decodeFloat(String label, Map<String, String> settings) {
+	public static Float decodeFloat(String label, Map<String, ?> settings) {
 		return CfgTools.decodeFloat(label, settings, null);
 	}
 
@@ -364,12 +358,12 @@ public class CfgTools implements Serializable {
 	 * passed on to the subsequent calls. Otherwise, the value is parsed using
 	 * {@link Float#valueOf(String)}. If the default value is {@code null}, then it's simply passed
 	 * verbatim.
-	 * 
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Float} value
 	 */
-	public static Float decodeFloat(ConfigurationSetting setting, Map<String, String> settings) {
+	public static Float decodeFloat(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		Float defaultValue = null;
 		Object dv = setting.getDefaultValue();
@@ -388,13 +382,13 @@ public class CfgTools implements Serializable {
 	/**
 	 * Decode the named setting from the given map as a {@link Double} value, returning the value
 	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Double} value
 	 */
-	public static Double decodeDouble(String label, Map<String, String> settings, Number defaultValue) {
+	public static Double decodeDouble(String label, Map<String, ?> settings, Number defaultValue) {
 		CfgTools.validateSetting(label);
 		String value = Tools.toTrimmedString(settings.get(label), true);
 		if (value != null) { return Double.valueOf(value); }
@@ -406,12 +400,12 @@ public class CfgTools implements Serializable {
 	 * Decode the named setting from the given map as a {@link Double} value, returning {@code null}
 	 * if it's not defined or is the empty string. This is equivalent to calling
 	 * {@code decodeDouble(label, settings, null)}
-	 * 
+	 *
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Double} value
 	 */
-	public static Double decodeDouble(String label, Map<String, String> settings) {
+	public static Double decodeDouble(String label, Map<String, ?> settings) {
 		return CfgTools.decodeDouble(label, settings, null);
 	}
 
@@ -423,12 +417,12 @@ public class CfgTools implements Serializable {
 	 * passed on to the subsequent calls. Otherwise, the value is parsed using
 	 * {@link Double#valueOf(String)}. If the default value is {@code null}, then it's simply passed
 	 * verbatim.
-	 * 
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link Double} value
 	 */
-	public static Double decodeDouble(ConfigurationSetting setting, Map<String, String> settings) {
+	public static Double decodeDouble(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		Double defaultValue = null;
 		Object dv = setting.getDefaultValue();
@@ -445,15 +439,15 @@ public class CfgTools implements Serializable {
 	}
 
 	/**
-	 * Returns the named setting from the given map, returning the value
-	 * sent in {@code defaultValue} if it's not defined or is the empty string.
-	 * 
+	 * Returns the named setting from the given map, returning the value sent in
+	 * {@code defaultValue} if it's not defined or is the empty string.
+	 *
 	 * @param setting
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link String} value
 	 */
-	public static String decodeString(String setting, Map<String, String> settings, String defaultValue) {
+	public static String decodeString(String setting, Map<String, ?> settings, String defaultValue) {
 		CfgTools.validateSetting(setting);
 		String value = Tools.toString(settings.get(setting), true);
 		if (value == null) { return String.class.cast(defaultValue); }
@@ -463,12 +457,12 @@ public class CfgTools implements Serializable {
 	/**
 	 * Decode the named setting from the given map, returning {@code null} if it's not defined or is
 	 * the empty string. This is equivalent to calling {@code decodeString(label, settings, null)}
-	 * 
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link String} value
 	 */
-	public static String decodeString(String setting, Map<String, String> settings) {
+	public static String decodeString(String setting, Map<String, ?> settings) {
 		return CfgTools.decodeString(setting, settings, null);
 	}
 
@@ -479,15 +473,14 @@ public class CfgTools implements Serializable {
 	 * value obtained from {@code setting} is cast to a {@link String} if it's a String-type, and
 	 * passed on to the subsequent calls. Otherwise, the value is parsed using
 	 * {@link Tools#toString(Object, boolean)} with the {@code emptyAsNull} parameter set to
-	 * {@code true}. This means that empty strings will not be returned - and will only be
-	 * returned as {@code null}. If the default value is {@code null}, then it's simply
-	 * passed verbatim.
-	 * 
+	 * {@code true}. This means that empty strings will not be returned - and will only be returned
+	 * as {@code null}. If the default value is {@code null}, then it's simply passed verbatim.
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link String} value
 	 */
-	public static String decodeString(ConfigurationSetting setting, Map<String, String> settings) {
+	public static String decodeString(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		return CfgTools.decodeString(setting.getLabel(), settings, Tools.toString(setting.getDefaultValue(), true));
 	}
@@ -496,7 +489,7 @@ public class CfgTools implements Serializable {
 	 * Returns the named setting from the given map, returning the value sent in
 	 * {@code defaultValue} if it's not defined or is the empty string. The value is presumed to be
 	 * Base64 encoded.
-	 * 
+	 *
 	 * @param setting
 	 * @param settings
 	 * @param defaultValue
@@ -504,7 +497,7 @@ public class CfgTools implements Serializable {
 	 * @throws DecoderException
 	 *             if the string value is not a valid Base64 string
 	 */
-	public static byte[] decodeBinary(String setting, Map<String, String> settings, byte[] defaultValue)
+	public static byte[] decodeBinary(String setting, Map<String, ?> settings, byte[] defaultValue)
 		throws DecoderException {
 		String str = CfgTools.decodeString(setting, settings, null);
 		if (str == null) { return defaultValue; }
@@ -515,14 +508,14 @@ public class CfgTools implements Serializable {
 	/**
 	 * Decode the named setting from the given map, returning {@code null} if it's not defined or is
 	 * the empty string. This is equivalent to calling {@code decodeBinary(label, settings, null)}
-	 * 
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link String} value
 	 * @throws DecoderException
 	 *             if the string value is not a valid Base64 string
 	 */
-	public static byte[] decodeBinary(String setting, Map<String, String> settings) throws DecoderException {
+	public static byte[] decodeBinary(String setting, Map<String, ?> settings) throws DecoderException {
 		return CfgTools.decodeBinary(setting, settings, null);
 	}
 
@@ -534,9 +527,8 @@ public class CfgTools implements Serializable {
 	 * passed on to the subsequent calls. Otherwise, the value is converted using
 	 * {@link Object#toString()} and then decoded as a Base64 value. If the conversion result isn't
 	 * a valid Base64 string, then a {@link DecoderException} is raised. If the default value is
-	 * {@code null}, then it's simply
-	 * passed verbatim.
-	 * 
+	 * {@code null}, then it's simply passed verbatim.
+	 *
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as a {@link String} value
@@ -545,8 +537,7 @@ public class CfgTools implements Serializable {
 	 *             be properly decoded into a byte[] (not a byte[], or its toString() isn't a
 	 *             Base-64 encoded binary
 	 */
-	public static byte[] decodeBinary(ConfigurationSetting setting, Map<String, String> settings)
-		throws DecoderException {
+	public static byte[] decodeBinary(ConfigurationSetting setting, Map<String, ?> settings) throws DecoderException {
 		CfgTools.validateSetting(setting);
 		Object dv = setting.getDefaultValue();
 		if ((dv != null) && (!(dv instanceof byte[]))) {
@@ -558,9 +549,53 @@ public class CfgTools implements Serializable {
 		return CfgTools.decodeBinary(setting.getLabel(), settings, (byte[]) dv);
 	}
 
-	private Map<String, String> settings;
+	/**
+	 * Returns the named setting from the given map, returning the value sent in
+	 * {@code defaultValue} if it's not defined.
+	 *
+	 * @param setting
+	 * @param settings
+	 * @param defaultValue
+	 * @return the named setting from the given map as a {@link String} value
+	 */
+	public static Object decodeObject(String setting, Map<String, ?> settings, Object defaultValue) {
+		CfgTools.validateSetting(setting);
+		Object value = settings.get(setting);
+		if (value == null) { return defaultValue; }
+		return value;
+	}
 
-	public CfgTools(Map<String, String> settings) {
+	/**
+	 * Decode the named setting from the given map, returning {@code null} if it's not defined. This
+	 * is equivalent to calling {@code decodeObject(label, settings, null)}
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return the named setting from the given map as a {@link String} value
+	 */
+	public static Object decodeObject(String setting, Map<String, ?> settings) {
+		return CfgTools.decodeObject(setting, settings, null);
+	}
+
+	/**
+	 * Decode the given setting from the given map as an {@link Object} value, returning
+	 * {@code null} if it's not defined. This is equivalent to calling
+	 * {@code decodeObject(setting.getLabel(), settings, setting.getDefaultValue())}. The default
+	 * value obtained from {@code setting} is returned verbatim, and passed on to the subsequent
+	 * calls.
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return the named setting from the given map as a {@link String} value
+	 */
+	public static Object decodeObject(ConfigurationSetting setting, Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return CfgTools.decodeObject(setting.getLabel(), settings, setting.getDefaultValue());
+	}
+
+	private Map<String, ?> settings;
+
+	public CfgTools(Map<String, ?> settings) {
 		this.settings = settings;
 	}
 
@@ -670,6 +705,18 @@ public class CfgTools implements Serializable {
 
 	public byte[] getBinary(ConfigurationSetting setting) throws DecoderException {
 		return CfgTools.decodeBinary(setting, this.settings);
+	}
+
+	public Object getObject(String setting, Object defaultValue) {
+		return CfgTools.decodeObject(setting, this.settings, defaultValue);
+	}
+
+	public Object getObject(String setting) {
+		return CfgTools.decodeObject(setting, this.settings);
+	}
+
+	public Object getObject(ConfigurationSetting setting) {
+		return CfgTools.decodeObject(setting, this.settings);
 	}
 
 	public int getCount() {
