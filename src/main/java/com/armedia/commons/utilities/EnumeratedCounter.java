@@ -54,7 +54,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		if (result == null) { throw new IllegalArgumentException("Must provide a valid result to count for"); }
 		this.lock.readLock().lock();
 		try {
-			AtomicInteger counter = this.counters.get(type).get(result);
+			AtomicInteger counter = getLiveCounters(type).get(result);
 			final int ret = counter.incrementAndGet();
 			this.cummulative.get(result).incrementAndGet();
 			return ret;
@@ -63,9 +63,13 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		}
 	}
 
+	private Map<R, AtomicInteger> getLiveCounters(T type) {
+		return (type != null ? this.counters.get(type) : this.cummulative);
+	}
+
 	public final Map<R, Integer> getCounters(T type) {
 		Map<R, Integer> ret = new EnumMap<R, Integer>(this.rClass);
-		Map<R, AtomicInteger> m = (type != null ? this.counters.get(type) : this.cummulative);
+		Map<R, AtomicInteger> m = getLiveCounters(type);
 		this.lock.writeLock().lock();
 		try {
 			for (Map.Entry<R, AtomicInteger> e : m.entrySet()) {
@@ -96,7 +100,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 
 	public final Map<R, Integer> reset(T type) {
 		Map<R, Integer> ret = new EnumMap<R, Integer>(this.rClass);
-		Map<R, AtomicInteger> m = (type != null ? this.counters.get(ret) : this.cummulative);
+		Map<R, AtomicInteger> m = getLiveCounters(type);
 		this.lock.writeLock().lock();
 		try {
 			for (Map.Entry<R, AtomicInteger> e : m.entrySet()) {
@@ -154,8 +158,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 
 	public final String generateReport(T type, int indentLevel) {
 		if (type == null) { throw new IllegalArgumentException("Unsupported null object type"); }
-		Map<R, AtomicInteger> results = this.counters.get(type);
-		return generateReport(results, indentLevel, String.format("Number of %s", type));
+		return generateReport(getLiveCounters(type), indentLevel, String.format("Number of %s", type));
 	}
 
 	private final String generateReport(Map<R, AtomicInteger> results, int indentLevel, String entryLabel) {
