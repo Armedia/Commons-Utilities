@@ -1256,7 +1256,7 @@ public class Tools {
 	 */
 	public static <T extends Enum<T>> T decodeEnum(Class<T> c, Object o) {
 		if (o == null) { return null; }
-		if (c.isAssignableFrom(o.getClass())) { return c.cast(o); }
+		if (c.isInstance(o)) { return c.cast(o); }
 		return Enum.valueOf(c, o.toString());
 	}
 
@@ -1826,7 +1826,7 @@ public class Tools {
 
 	/**
 	 * Searches the exception "tree" upwards until it finds an exception cause that matches the
-	 * given target class (using isAssignableFrom()).
+	 * given target class (using {@link Class#isInstance(Object)}).
 	 *
 	 * @param <T>
 	 * @param t
@@ -1837,12 +1837,12 @@ public class Tools {
 		if (t == null) { return null; }
 		if (targetClass == null) { throw new IllegalArgumentException("Must supply a target class to compare against"); }
 		while ((t.getCause() != null) && (t.getCause() != t)) {
-			if (targetClass.isAssignableFrom(t.getClass())) {
+			if (targetClass.isInstance(t)) {
 				break;
 			}
 			t = t.getCause();
 		}
-		if (targetClass.isAssignableFrom(t.getClass())) { return targetClass.cast(t); }
+		if (targetClass.isInstance(t)) { return targetClass.cast(t); }
 		return null;
 	}
 
