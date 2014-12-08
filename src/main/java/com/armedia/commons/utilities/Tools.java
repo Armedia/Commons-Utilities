@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +47,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.text.StrTokenizer;
 
 /**
  * @author drivera@armedia.com
@@ -2038,5 +2040,31 @@ public class Tools {
 				}
 			}
 		}
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values) {
+		return Tools.parseEnumCSV(enumClass, values, true);
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values, boolean failOnUnknown) {
+		if ((enumClass == null) || !enumClass.isEnum()) { throw new IllegalArgumentException(
+			"Must provide an enum class"); }
+		Set<E> ret = EnumSet.noneOf(enumClass);
+		if (values == null) { return ret; }
+		StrTokenizer tok = StrTokenizer.getCSVInstance(values);
+		for (String str : tok.getTokenList()) {
+			if ("*".equalsIgnoreCase(str)) {
+				ret = EnumSet.allOf(enumClass);
+				break;
+			}
+			try {
+				ret.add(Enum.valueOf(enumClass, str));
+			} catch (IllegalArgumentException e) {
+				// Ignore the bad enum value
+				if (failOnUnknown) { throw new IllegalArgumentException(String.format(
+					"The value [%s] is not a valid enum for %s", enumClass.getCanonicalName())); }
+			}
+		}
+		return ret;
 	}
 }

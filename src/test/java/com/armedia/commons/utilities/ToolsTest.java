@@ -1,15 +1,12 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -20,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,7 +34,7 @@ import org.junit.Test;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public class ToolsTest {
 
@@ -318,7 +316,7 @@ public class ToolsTest {
 				"asdf", "asdf", "0"
 			}, {
 				"asdf", " ASDF ".trim().toLowerCase(), "0" // This is to ensure the strings are
-															// equal, but not the same object
+				// equal, but not the same object
 			}, {
 				"asdf", "ASDF", "1"
 			}, {
@@ -1084,5 +1082,126 @@ public class ToolsTest {
 		validateFrozen(sortedMap, frozenMap);
 		sortedMap.put(newUuid, newUuid.toString());
 		Assert.assertEquals(sortedMap, frozenMap);
+	}
+
+	private static enum TestEnumA {
+		//
+		A,
+		B,
+		C,
+		D,
+		E
+	}
+
+	private static enum TestEnumB {
+		//
+		Z,
+		X,
+		Y,
+		W,
+		V
+	}
+
+	private static enum TestEnumC {
+		//
+		a,
+		b,
+		c,
+		d,
+		e,
+		z,
+		x,
+		y,
+		w,
+		v
+	}
+
+	@Test
+	public void testParseEnumCSV() {
+		String str = null;
+		Set<TestEnumA> setA = null;
+		Set<TestEnumA> expA = null;
+		Set<TestEnumB> setB = null;
+		Set<TestEnumB> expB = null;
+		Set<TestEnumC> setC = null;
+		Set<TestEnumC> expC = null;
+
+		try {
+			Tools.parseEnumCSV(null, "", false);
+			Assert.fail("Did not fail with a null enum class");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+
+		str = null;
+		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
+		expA = EnumSet.noneOf(TestEnumA.class);
+		Assert.assertEquals(expA, setA);
+		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
+		expB = EnumSet.noneOf(TestEnumB.class);
+		Assert.assertEquals(expB, setB);
+		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
+		expC = EnumSet.noneOf(TestEnumC.class);
+		Assert.assertEquals(expC, setC);
+
+		str = "";
+		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
+		expA = EnumSet.noneOf(TestEnumA.class);
+		Assert.assertEquals(expA, setA);
+		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
+		expB = EnumSet.noneOf(TestEnumB.class);
+		Assert.assertEquals(expB, setB);
+		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
+		expC = EnumSet.noneOf(TestEnumC.class);
+		Assert.assertEquals(expC, setC);
+
+		str = "*";
+		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
+		expA = EnumSet.allOf(TestEnumA.class);
+		Assert.assertEquals(expA, setA);
+		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
+		expB = EnumSet.allOf(TestEnumB.class);
+		Assert.assertEquals(expB, setB);
+		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
+		expC = EnumSet.allOf(TestEnumC.class);
+		Assert.assertEquals(expC, setC);
+
+		str = "A,a,C,c,Z,z,X,x";
+		try {
+			setA = Tools.parseEnumCSV(TestEnumA.class, str, true);
+			Assert.fail(String.format("TestEnumA did not fail with values [%s]", str));
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
+		expA = EnumSet.noneOf(TestEnumA.class);
+		expA.add(TestEnumA.A);
+		expA.add(TestEnumA.C);
+		Assert.assertEquals(expA, setA);
+		try {
+			setB = Tools.parseEnumCSV(TestEnumB.class, str, true);
+			Assert.fail(String.format("TestEnumB did not fail with values [%s]", str));
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
+		expB = EnumSet.noneOf(TestEnumB.class);
+		expB.add(TestEnumB.Z);
+		expB.add(TestEnumB.X);
+		Assert.assertEquals(expB, setB);
+		try {
+			setC = Tools.parseEnumCSV(TestEnumC.class, str, true);
+			Assert.fail(String.format("TestEnumC did not fail with values [%s]", str));
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
+		expC = EnumSet.noneOf(TestEnumC.class);
+		expC.add(TestEnumC.a);
+		expC.add(TestEnumC.c);
+		expC.add(TestEnumC.z);
+		expC.add(TestEnumC.x);
+		Assert.assertEquals(expC, setC);
+
 	}
 }
