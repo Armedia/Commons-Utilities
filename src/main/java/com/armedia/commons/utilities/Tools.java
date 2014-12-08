@@ -2043,17 +2043,26 @@ public class Tools {
 	}
 
 	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values) {
-		return Tools.parseEnumCSV(enumClass, values, true);
+		return Tools.parseEnumCSV(enumClass, values, null, true);
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values, String all) {
+		return Tools.parseEnumCSV(enumClass, values, all, true);
 	}
 
 	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values, boolean failOnUnknown) {
+		return Tools.parseEnumCSV(enumClass, values, null, failOnUnknown);
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values, String all,
+		boolean failOnUnknown) {
 		if ((enumClass == null) || !enumClass.isEnum()) { throw new IllegalArgumentException(
 			"Must provide an enum class"); }
 		Set<E> ret = EnumSet.noneOf(enumClass);
 		if (values == null) { return ret; }
 		StrTokenizer tok = StrTokenizer.getCSVInstance(values);
 		for (String str : tok.getTokenList()) {
-			if ("*".equalsIgnoreCase(str)) {
+			if ((all != null) && Tools.equals(all, str)) {
 				ret = EnumSet.allOf(enumClass);
 				break;
 			}
@@ -2062,7 +2071,7 @@ public class Tools {
 			} catch (IllegalArgumentException e) {
 				// Ignore the bad enum value
 				if (failOnUnknown) { throw new IllegalArgumentException(String.format(
-					"The value [%s] is not a valid enum for %s", enumClass.getCanonicalName())); }
+					"The value [%s] is not a valid enum for %s", str, enumClass.getCanonicalName())); }
 			}
 		}
 		return ret;

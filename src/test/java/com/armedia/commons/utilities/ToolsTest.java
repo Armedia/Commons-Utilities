@@ -1155,14 +1155,25 @@ public class ToolsTest {
 		expC = EnumSet.noneOf(TestEnumC.class);
 		Assert.assertEquals(expC, setC);
 
-		str = "*";
-		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
+		str = "ALL";
+		setA = Tools.parseEnumCSV(TestEnumA.class, str, null, false);
+		expA = EnumSet.noneOf(TestEnumA.class);
+		Assert.assertEquals(expA, setA);
+		setB = Tools.parseEnumCSV(TestEnumB.class, str, null, false);
+		expB = EnumSet.noneOf(TestEnumB.class);
+		Assert.assertEquals(expB, setB);
+		setC = Tools.parseEnumCSV(TestEnumC.class, str, null, false);
+		expC = EnumSet.noneOf(TestEnumC.class);
+		Assert.assertEquals(expC, setC);
+
+		str = "ALL";
+		setA = Tools.parseEnumCSV(TestEnumA.class, str, "ALL", false);
 		expA = EnumSet.allOf(TestEnumA.class);
 		Assert.assertEquals(expA, setA);
-		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
+		setB = Tools.parseEnumCSV(TestEnumB.class, str, "ALL", false);
 		expB = EnumSet.allOf(TestEnumB.class);
 		Assert.assertEquals(expB, setB);
-		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
+		setC = Tools.parseEnumCSV(TestEnumC.class, str, "ALL", false);
 		expC = EnumSet.allOf(TestEnumC.class);
 		Assert.assertEquals(expC, setC);
 
