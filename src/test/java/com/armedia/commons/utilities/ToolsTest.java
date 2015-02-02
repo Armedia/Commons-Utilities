@@ -62,9 +62,29 @@ public class ToolsTest {
 		Assert.assertNotNull(Tools.coalesce(a[0]));
 		Assert.assertEquals(a[0], Tools.coalesce(null, a[0]));
 		Assert.assertEquals(a[0], Tools.coalesce(null, a[0], a[1]));
+		Assert.assertEquals(a[0], Tools.coalesce(null, null, a[0]));
 		Assert.assertNotNull(Tools.coalesce(a[1]));
 		Assert.assertEquals(a[1], Tools.coalesce(null, a[1]));
 		Assert.assertEquals(a[1], Tools.coalesce(null, a[1], a[0]));
+		Assert.assertEquals(a[1], Tools.coalesce(null, null, a[1]));
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#coalesce(Object, Object...)}.
+	 */
+	@Test
+	public void testFirstNonNull() {
+		Assert.assertEquals(-1, Tools.firstNonNull(null));
+		Assert.assertEquals(-1, Tools.firstNonNull(null, null, null));
+		Object[] a = {
+			1, 2
+		};
+		Assert.assertEquals(0, Tools.firstNonNull(a[0]));
+		Assert.assertEquals(1, Tools.firstNonNull(null, a[0]));
+		Assert.assertEquals(2, Tools.firstNonNull(null, null, a[1]));
+		Assert.assertEquals(0, Tools.firstNonNull(a[1]));
+		Assert.assertEquals(1, Tools.firstNonNull(null, a[1]));
+		Assert.assertEquals(2, Tools.firstNonNull(null, null, a[0]));
 	}
 
 	/**
@@ -316,7 +336,7 @@ public class ToolsTest {
 				"asdf", "asdf", "0"
 			}, {
 				"asdf", " ASDF ".trim().toLowerCase(), "0" // This is to ensure the strings are
-				// equal, but not the same object
+			// equal, but not the same object
 			}, {
 				"asdf", "ASDF", "1"
 			}, {
