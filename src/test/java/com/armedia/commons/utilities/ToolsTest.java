@@ -88,6 +88,21 @@ public class ToolsTest {
 	}
 
 	/**
+	 * Test method for {@link com.armedia.commons.utilities.Tools#coalesce(Object, Object...)}.
+	 */
+	@Test
+	public void testFirstNull() {
+		Object[] a = {
+			1, 2
+		};
+		Assert.assertEquals(0, Tools.firstNull(null));
+		Assert.assertEquals(-1, Tools.firstNull(a[0]));
+		Assert.assertEquals(1, Tools.firstNull(a[0], (Object) null));
+		Assert.assertEquals(2, Tools.firstNull(a[0], a[1], null));
+		Assert.assertEquals(0, Tools.firstNull(null, null, null));
+	}
+
+	/**
 	 * Test method for
 	 * {@link com.armedia.commons.utilities.Tools#toTrimmedString(java.lang.Object, boolean)}.
 	 */
