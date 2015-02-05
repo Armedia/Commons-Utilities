@@ -661,15 +661,15 @@ public class Tools {
 	}
 
 	/**
-	 * Returns the index of the first non-null reference within the provided list of references, or
-	 * {@code -1} if all references are {@code null}. Index 0 is the first reference, 1 is the
-	 * second, etc.
+	 * Returns the index of the first non-{@code null} reference within the provided list of
+	 * references, or {@code -1} if all references are {@code null}. Index 0 is the first reference,
+	 * 1 is the second, etc.
 	 *
 	 * @param <T>
 	 * @param o
 	 * @param others
-	 * @return the index of the first non-null reference within the provided list of references, or
-	 *         {@code -1} if all references are {@code null}
+	 * @return the index of the first non-{@code null} reference within the provided list of
+	 *         references, or {@code -1} if all references are {@code null}
 	 */
 	public static <T extends Object> int firstNonNull(T o, T... others) {
 		if (o != null) { return 0; }
@@ -677,6 +677,27 @@ public class Tools {
 		for (T x : others) {
 			++i;
 			if (x != null) { return i; }
+		}
+		return -1;
+	}
+
+	/**
+	 * Returns the index of the first {@code null} reference within the provided list of references,
+	 * or {@code -1} if all references are non-{@code null}. Index 0 is the first reference, 1 is
+	 * the second, etc.
+	 *
+	 * @param <T>
+	 * @param o
+	 * @param others
+	 * @return the index of the first {@code null} reference within the provided list of references,
+	 *         or {@code -1} if all references are non-{@code null}
+	 */
+	public static <T extends Object> int firstNull(T o, T... others) {
+		if (o == null) { return 0; }
+		int i = 0;
+		for (T x : others) {
+			++i;
+			if (x == null) { return i; }
 		}
 		return -1;
 	}
