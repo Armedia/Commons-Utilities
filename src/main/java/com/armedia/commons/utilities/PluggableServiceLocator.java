@@ -27,12 +27,12 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 *
 	 */
 	public static interface ErrorListener {
-		public void errorRaised(ServiceConfigurationError t);
+		public void errorRaised(ServiceConfigurationError e);
 	}
 
 	public static final ErrorListener NULL_LISTENER = new ErrorListener() {
 		@Override
-		public void errorRaised(ServiceConfigurationError t) {
+		public void errorRaised(ServiceConfigurationError e) {
 			// Do nothing
 		}
 	};
@@ -123,7 +123,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 
 	/**
 	 * Returns the first service instance that matches the given selector. This is identical to
-	 * invoking {@code getAll(selector).next()}. Exceptions raised during detection will be ignored.
+	 * invoking {@code getAll(selector).next()}.
 	 *
 	 * @param selector
 	 *            the selector to use when finding service matches
@@ -138,7 +138,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	/**
 	 * Returns an {@link Iterator} to scan over all the available service instances. This is
 	 * identical to invoking {@link #getAll(PluggableServiceSelector)} with a {@code null}
-	 * parameter. Exceptions raised during detection will be ignored.
+	 * parameter.
 	 *
 	 * @return an {@link Iterator} to scan over all the available service instances.
 	 */
