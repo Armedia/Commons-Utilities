@@ -2,6 +2,7 @@ package com.armedia.commons.utilities;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 /**
@@ -26,8 +27,15 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 *
 	 */
 	public static interface ErrorListener {
-		public void errorRaised(Throwable t);
+		public void errorRaised(ServiceConfigurationError t);
 	}
+
+	public static final ErrorListener NULL_LISTENER = new ErrorListener() {
+		@Override
+		public void errorRaised(ServiceConfigurationError t) {
+			// Do nothing
+		}
+	};
 
 	private final ClassLoader classLoader;
 	private final Class<S> serviceClass;
@@ -162,19 +170,16 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 				if (this.current == null) {
 					while (this.it.hasNext()) {
 						final S next;
-						if (this.listener == null) {
+						try {
 							next = this.it.next();
-						} else {
+						} catch (ServiceConfigurationError t) {
+							if (this.listener == null) { throw t; }
 							try {
-								next = this.it.next();
-							} catch (Throwable t) {
-								try {
-									this.listener.errorRaised(t);
-								} catch (Throwable t2) {
-									// Do nothing...
-								}
-								continue;
+								this.listener.errorRaised(t);
+							} catch (Throwable t2) {
+								// Do nothing...
 							}
+							continue;
 						}
 						if ((this.finalSelector == null) || this.finalSelector.matches(next)) {
 							this.current = next;

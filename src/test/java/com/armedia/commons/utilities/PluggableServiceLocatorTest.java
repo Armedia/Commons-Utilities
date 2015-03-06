@@ -228,10 +228,10 @@ public class PluggableServiceLocatorTest {
 		}
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
-		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
+		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
 		ErrorListener listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Throwable e) {
+			public void errorRaised(ServiceConfigurationError e) {
 				exception.set(e);
 			}
 		};
@@ -246,7 +246,7 @@ public class PluggableServiceLocatorTest {
 		Assert.assertNotNull(exception.get());
 		listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Throwable e) {
+			public void errorRaised(ServiceConfigurationError e) {
 				throw new RuntimeException();
 			}
 		};
@@ -351,10 +351,10 @@ public class PluggableServiceLocatorTest {
 		}
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
-		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
+		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
 		ErrorListener listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Throwable e) {
+			public void errorRaised(ServiceConfigurationError e) {
 				exception.set(e);
 			}
 		};
@@ -364,7 +364,7 @@ public class PluggableServiceLocatorTest {
 		Assert.assertNotNull(exception.get());
 		listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Throwable e) {
+			public void errorRaised(ServiceConfigurationError e) {
 				throw new RuntimeException();
 			}
 		};
@@ -486,10 +486,10 @@ public class PluggableServiceLocatorTest {
 		}
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
-		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
+		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
 		ErrorListener listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Throwable e) {
+			public void errorRaised(ServiceConfigurationError e) {
 				exception.set(e);
 			}
 		};
@@ -499,7 +499,7 @@ public class PluggableServiceLocatorTest {
 		Assert.assertNotNull(exception.get());
 		listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Throwable e) {
+			public void errorRaised(ServiceConfigurationError e) {
 				throw new RuntimeException();
 			}
 		};
