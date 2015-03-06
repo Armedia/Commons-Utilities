@@ -27,12 +27,12 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 *
 	 */
 	public static interface ErrorListener {
-		public void errorRaised(ServiceConfigurationError e);
+		public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e);
 	}
 
 	public static final ErrorListener NULL_LISTENER = new ErrorListener() {
 		@Override
-		public void errorRaised(ServiceConfigurationError e) {
+		public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
 			// Do nothing
 		}
 	};
@@ -161,6 +161,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		return new Iterator<S>() {
 			private final PluggableServiceSelector<S> finalSelector = (selector == null ? PluggableServiceLocator.this.defaultSelector
 				: selector);
+			private final Class<S> serviceClass = PluggableServiceLocator.this.serviceClass;
 			private final Iterator<S> it = PluggableServiceLocator.this.loader.iterator();
 			private final ErrorListener listener = PluggableServiceLocator.this.listener;
 
@@ -175,7 +176,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 						} catch (ServiceConfigurationError t) {
 							if (this.listener == null) { throw t; }
 							try {
-								this.listener.errorRaised(t);
+								this.listener.errorRaised(this.serviceClass, t);
 							} catch (Throwable t2) {
 								// Do nothing...
 							}
