@@ -16,11 +16,25 @@ import java.util.ServiceLoader;
  */
 public class PluggableServiceLocator<S> implements Iterable<S> {
 
+	/**
+	 * <p>
+	 * This interface helps in detecting errors which would otherwise be silently ignored while
+	 * searching for pluggable services.
+	 * </p>
+	 *
+	 * @author Diego Rivera
+	 *
+	 */
+	public static interface ErrorListener {
+		public void errorRaised(Throwable t);
+	}
+
 	private final ClassLoader classLoader;
 	private final Class<S> serviceClass;
 	private final ServiceLoader<S> loader;
 
 	private PluggableServiceSelector<S> defaultSelector = null;
+	private ErrorListener listener = null;
 
 	public PluggableServiceLocator(Class<S> serviceClass) {
 		this(serviceClass, Thread.currentThread().getContextClassLoader(), null);
@@ -72,6 +86,14 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		this.defaultSelector = defaultSelector;
 	}
 
+	public final ErrorListener getErrorListener() {
+		return this.listener;
+	}
+
+	public final void setErrorListener(ErrorListener listener) {
+		this.listener = listener;
+	}
+
 	/**
 	 * Direct delegate to {@link ServiceLoader#reload()}.
 	 */
@@ -88,12 +110,12 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 *             when there is no matching service available
 	 */
 	public final S getFirst() throws NoSuchElementException {
-		return getAll(null).next();
+		return getFirst(null);
 	}
 
 	/**
 	 * Returns the first service instance that matches the given selector. This is identical to
-	 * invoking {@code getAll(selector).next()}.
+	 * invoking {@code getAll(selector).next()}. Exceptions raised during detection will be ignored.
 	 *
 	 * @param selector
 	 *            the selector to use when finding service matches
@@ -108,7 +130,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	/**
 	 * Returns an {@link Iterator} to scan over all the available service instances. This is
 	 * identical to invoking {@link #getAll(PluggableServiceSelector)} with a {@code null}
-	 * parameter.
+	 * parameter. Exceptions raised during detection will be ignored.
 	 *
 	 * @return an {@link Iterator} to scan over all the available service instances.
 	 */
@@ -120,26 +142,39 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 * Returns an {@link Iterator} that scans over all the available service instances that match
 	 * the given selector. If the selector is {@code null}, then all available instances will match.
 	 * Otherwise, only those instances {@code I} for which {@code selector.matches(I)} returns
-	 * {@code true} will be iterated over, skipping over all non-matching instances.
+	 * {@code true} will be iterated over, skipping over all non-matching instances. Exceptions
+	 * raised during detection will be ignored.
 	 *
 	 * @param selector
 	 * @return an {@link Iterator} that scans over all the available service instances that match
 	 *         the given selector
 	 */
-	public final Iterator<S> getAll(PluggableServiceSelector<S> selector) {
-		final PluggableServiceSelector<S> finalSelector = (selector == null ? this.defaultSelector : selector);
+	public final Iterator<S> getAll(final PluggableServiceSelector<S> selector) {
 		return new Iterator<S>() {
+			private final PluggableServiceSelector<S> finalSelector = (selector == null ? PluggableServiceLocator.this.defaultSelector
+				: selector);
 			private final Iterator<S> it = PluggableServiceLocator.this.loader.iterator();
+			private final ErrorListener listener = PluggableServiceLocator.this.listener;
 
 			private S current = null;
 
 			private S findNext() {
 				if (this.current == null) {
 					while (this.it.hasNext()) {
-						S next = this.it.next();
-						if ((finalSelector == null) || finalSelector.matches(next)) {
-							this.current = next;
-							break;
+						try {
+							S next = this.it.next();
+							if ((this.finalSelector == null) || this.finalSelector.matches(next)) {
+								this.current = next;
+								break;
+							}
+						} catch (Throwable t) {
+							if (this.listener != null) {
+								try {
+									this.listener.errorRaised(t);
+								} catch (Throwable t2) {
+									// Do nothing...
+								}
+							}
 						}
 					}
 				}

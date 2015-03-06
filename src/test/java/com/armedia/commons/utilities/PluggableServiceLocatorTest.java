@@ -7,9 +7,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.armedia.commons.utilities.PluggableServiceLocator.ErrorListener;
 
 public class PluggableServiceLocatorTest {
 
@@ -18,14 +21,14 @@ public class PluggableServiceLocatorTest {
 	private static final Set<String> SUBSET_2;
 
 	static {
-		Class<?>[] classes = {
+		Class<?>[] goodClasses = {
 			BasicIndexedIteratorTest.class, BinaryEncodingTest.class, BinaryMemoryBufferTest.class,
 			CfgToolsStaticTest.class, CfgToolsTest.class, CollectionToolsTest.class, ComparisonTest.class,
 			FileNameToolsTest.class, GlobberTest.class
 		};
 		Set<String> a = new TreeSet<String>();
 		Set<String> b = new TreeSet<String>();
-		for (Class<?> c : classes) {
+		for (Class<?> c : goodClasses) {
 			if (GoodServiceTest.class.isAssignableFrom(c)) {
 				a.add(c.getCanonicalName());
 			} else {
@@ -60,89 +63,89 @@ public class PluggableServiceLocatorTest {
 
 	@Test
 	public void testConstructors() {
-		PluggableServiceSelector<GoodServiceTest> selector = new PluggableServiceSelector<GoodServiceTest>() {
+		PluggableServiceSelector<GoodServiceTest> goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return false;
 			}
 		};
-		PluggableServiceLocator<?> locator = null;
+		PluggableServiceLocator<?> goodLocator = null;
 
 		ClassLoader testCl = Thread.currentThread().getContextClassLoader();
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
-		Assert.assertSame(GoodServiceTest.class, locator.getServiceClass());
-		Assert.assertNull(locator.getDefaultSelector());
-		Assert.assertSame(Thread.currentThread().getContextClassLoader(), locator.getClassLoader());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
+		Assert.assertSame(GoodServiceTest.class, goodLocator.getServiceClass());
+		Assert.assertNull(goodLocator.getDefaultSelector());
+		Assert.assertSame(Thread.currentThread().getContextClassLoader(), goodLocator.getClassLoader());
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, selector);
-		Assert.assertSame(GoodServiceTest.class, locator.getServiceClass());
-		Assert.assertSame(selector, locator.getDefaultSelector());
-		Assert.assertSame(Thread.currentThread().getContextClassLoader(), locator.getClassLoader());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, goodSelector);
+		Assert.assertSame(GoodServiceTest.class, goodLocator.getServiceClass());
+		Assert.assertSame(goodSelector, goodLocator.getDefaultSelector());
+		Assert.assertSame(Thread.currentThread().getContextClassLoader(), goodLocator.getClassLoader());
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl);
-		Assert.assertSame(GoodServiceTest.class, locator.getServiceClass());
-		Assert.assertNull(locator.getDefaultSelector());
-		Assert.assertSame(testCl, locator.getClassLoader());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl);
+		Assert.assertSame(GoodServiceTest.class, goodLocator.getServiceClass());
+		Assert.assertNull(goodLocator.getDefaultSelector());
+		Assert.assertSame(testCl, goodLocator.getClassLoader());
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl, selector);
-		Assert.assertSame(GoodServiceTest.class, locator.getServiceClass());
-		Assert.assertSame(selector, locator.getDefaultSelector());
-		Assert.assertSame(testCl, locator.getClassLoader());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl, goodSelector);
+		Assert.assertSame(GoodServiceTest.class, goodLocator.getServiceClass());
+		Assert.assertSame(goodSelector, goodLocator.getDefaultSelector());
+		Assert.assertSame(testCl, goodLocator.getClassLoader());
 
 		testCl = new ClassLoader(testCl) {
 		};
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl);
-		Assert.assertSame(GoodServiceTest.class, locator.getServiceClass());
-		Assert.assertNull(locator.getDefaultSelector());
-		Assert.assertSame(testCl, locator.getClassLoader());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl);
+		Assert.assertSame(GoodServiceTest.class, goodLocator.getServiceClass());
+		Assert.assertNull(goodLocator.getDefaultSelector());
+		Assert.assertSame(testCl, goodLocator.getClassLoader());
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl, selector);
-		Assert.assertSame(GoodServiceTest.class, locator.getServiceClass());
-		Assert.assertSame(selector, locator.getDefaultSelector());
-		Assert.assertSame(testCl, locator.getClassLoader());
-
-		try {
-			locator = new PluggableServiceLocator<GoodServiceTest>(null, (ClassLoader) null);
-			Assert.fail("Did not fail with null arguments");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			locator = new PluggableServiceLocator<GoodServiceTest>(null, testCl);
-			Assert.fail("Did not fail with null arguments");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, (ClassLoader) null);
-			Assert.fail("Did not fail with null arguments");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl, goodSelector);
+		Assert.assertSame(GoodServiceTest.class, goodLocator.getServiceClass());
+		Assert.assertSame(goodSelector, goodLocator.getDefaultSelector());
+		Assert.assertSame(testCl, goodLocator.getClassLoader());
 
 		try {
-			locator = new PluggableServiceLocator<GoodServiceTest>(null, null, null);
+			goodLocator = new PluggableServiceLocator<GoodServiceTest>(null, (ClassLoader) null);
 			Assert.fail("Did not fail with null arguments");
 		} catch (IllegalArgumentException e) {
 			// All is well
 		}
 		try {
-			locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, null, null);
+			goodLocator = new PluggableServiceLocator<GoodServiceTest>(null, testCl);
 			Assert.fail("Did not fail with null arguments");
 		} catch (IllegalArgumentException e) {
 			// All is well
 		}
 		try {
-			locator = new PluggableServiceLocator<GoodServiceTest>(null, testCl, null);
+			goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, (ClassLoader) null);
+			Assert.fail("Did not fail with null arguments");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+
+		try {
+			goodLocator = new PluggableServiceLocator<GoodServiceTest>(null, null, null);
+			Assert.fail("Did not fail with null arguments");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+		try {
+			goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, null, null);
+			Assert.fail("Did not fail with null arguments");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+		try {
+			goodLocator = new PluggableServiceLocator<GoodServiceTest>(null, testCl, null);
 			Assert.fail("Did not fail with null arguments");
 		} catch (IllegalArgumentException e) {
 			// All is well
 		}
 
 		// Should work
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl, null);
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, testCl, null);
 	}
 
 	@Test
@@ -153,48 +156,48 @@ public class PluggableServiceLocatorTest {
 				return false;
 			}
 		};
-		PluggableServiceLocator<GoodServiceTest> locator = null;
+		PluggableServiceLocator<GoodServiceTest> goodLocator = null;
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
-		Assert.assertNull(locator.getDefaultSelector());
-		locator.setDefaultSelector(selector);
-		Assert.assertSame(selector, locator.getDefaultSelector());
-		locator.setDefaultSelector(null);
-		Assert.assertNull(locator.getDefaultSelector());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
+		Assert.assertNull(goodLocator.getDefaultSelector());
+		goodLocator.setDefaultSelector(selector);
+		Assert.assertSame(selector, goodLocator.getDefaultSelector());
+		goodLocator.setDefaultSelector(null);
+		Assert.assertNull(goodLocator.getDefaultSelector());
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, selector);
-		Assert.assertSame(selector, locator.getDefaultSelector());
-		locator.setDefaultSelector(null);
-		Assert.assertNull(locator.getDefaultSelector());
-		locator.setDefaultSelector(selector);
-		Assert.assertSame(selector, locator.getDefaultSelector());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class, selector);
+		Assert.assertSame(selector, goodLocator.getDefaultSelector());
+		goodLocator.setDefaultSelector(null);
+		Assert.assertNull(goodLocator.getDefaultSelector());
+		goodLocator.setDefaultSelector(selector);
+		Assert.assertSame(selector, goodLocator.getDefaultSelector());
 	}
 
 	@Test
 	public void testGetFirst() {
-		PluggableServiceLocator<GoodServiceTest> locator = null;
-		PluggableServiceSelector<GoodServiceTest> selector = null;
+		PluggableServiceLocator<GoodServiceTest> goodLocator = null;
+		PluggableServiceSelector<GoodServiceTest> goodSelector = null;
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
-		Assert.assertNull(locator.getDefaultSelector());
-		Assert.assertNotNull(locator.getFirst());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
+		Assert.assertNull(goodLocator.getDefaultSelector());
+		Assert.assertNotNull(goodLocator.getFirst());
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return false;
 			}
 		};
-		locator.setDefaultSelector(selector);
+		goodLocator.setDefaultSelector(goodSelector);
 		try {
-			GoodServiceTest ret = locator.getFirst();
+			GoodServiceTest ret = goodLocator.getFirst();
 			Assert.fail(String.format("Expected to fail due to no elements, but instead got [%s]", ret.getClass()
 				.getCanonicalName()));
 		} catch (NoSuchElementException e) {
 			// All is well
 		}
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				String className = service.getClass().getCanonicalName();
@@ -202,101 +205,170 @@ public class PluggableServiceLocatorTest {
 					&& !PluggableServiceLocatorTest.SUBSET_2.contains(className);
 			}
 		};
-		locator.setDefaultSelector(null);
-		Assert.assertNotNull(locator.getFirst(selector));
-		locator.setDefaultSelector(selector);
-		Assert.assertNotNull(locator.getFirst());
+		goodLocator.setDefaultSelector(null);
+		Assert.assertNotNull(goodLocator.getFirst(goodSelector));
+		goodLocator.setDefaultSelector(goodSelector);
+		Assert.assertNotNull(goodLocator.getFirst());
+
+		PluggableServiceLocator<BadServiceTest> badLocator = null;
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		Assert.assertNull(badLocator.getDefaultSelector());
+		try {
+			badLocator.getFirst();
+			Assert.fail("Should have failed to find an instance");
+		} catch (NoSuchElementException e) {
+			// / all is well
+		}
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
+		ErrorListener listener = new ErrorListener() {
+			@Override
+			public void errorRaised(Throwable e) {
+				exception.set(e);
+			}
+		};
+		badLocator.setErrorListener(listener);
+		Assert.assertSame(listener, badLocator.getErrorListener());
+		try {
+			badLocator.getFirst();
+			Assert.fail("Should have failed to find an instance");
+		} catch (NoSuchElementException e) {
+			// / all is well
+		}
+		Assert.assertNotNull(exception.get());
+		listener = new ErrorListener() {
+			@Override
+			public void errorRaised(Throwable e) {
+				throw new RuntimeException();
+			}
+		};
+		badLocator.setErrorListener(listener);
+		try {
+			badLocator.getFirst();
+			Assert.fail("Should have failed to find an instance");
+		} catch (NoSuchElementException e) {
+			// / all is well
+		}
 	}
 
 	@Test
 	public void testGetAll() {
-		PluggableServiceLocator<GoodServiceTest> locator = null;
-		PluggableServiceSelector<GoodServiceTest> selector = null;
+		PluggableServiceLocator<GoodServiceTest> goodLocator = null;
+		PluggableServiceSelector<GoodServiceTest> goodSelector = null;
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
-		Assert.assertNull(locator.getDefaultSelector());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
+		Assert.assertNull(goodLocator.getDefaultSelector());
 
 		int count = 0;
-		for (Iterator<GoodServiceTest> it = locator.getAll(); it.hasNext(); count++) {
+		for (Iterator<GoodServiceTest> it = goodLocator.getAll(); it.hasNext(); count++) {
 			it.next();
 		}
 		Assert.assertEquals(PluggableServiceLocatorTest.SERVICE_CLASSES.size(), count);
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return false;
 			}
 		};
-		Assert.assertFalse(locator.getAll(selector).hasNext());
+		Assert.assertFalse(goodLocator.getAll(goodSelector).hasNext());
 		try {
-			GoodServiceTest ret = locator.getAll(selector).next();
+			GoodServiceTest ret = goodLocator.getAll(goodSelector).next();
 			Assert.fail(String.format("Expected to fail due to no elements, but instead got [%s]", ret.getClass()
 				.getCanonicalName()));
 		} catch (NoSuchElementException e) {
 			// All is well
 		}
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return PluggableServiceLocatorTest.SERVICE_CLASSES.contains(service.getClass().getCanonicalName());
 			}
 		};
-		for (Iterator<GoodServiceTest> it = locator.getAll(); it.hasNext();) {
+		for (Iterator<GoodServiceTest> it = goodLocator.getAll(); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!selector.matches(s)) {
+			if (!goodSelector.matches(s)) {
 				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
 					.getCanonicalName(), PluggableServiceLocatorTest.SERVICE_CLASSES));
 			}
 		}
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return PluggableServiceLocatorTest.SUBSET_1.contains(service.getClass().getCanonicalName());
 			}
 		};
-		for (Iterator<GoodServiceTest> it = locator.getAll(selector); it.hasNext();) {
+		for (Iterator<GoodServiceTest> it = goodLocator.getAll(goodSelector); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!selector.matches(s)) {
+			if (!goodSelector.matches(s)) {
 				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
 					.getCanonicalName(), PluggableServiceLocatorTest.SUBSET_1));
 			}
 		}
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return PluggableServiceLocatorTest.SUBSET_2.contains(service.getClass().getCanonicalName());
 			}
 		};
-		for (Iterator<GoodServiceTest> it = locator.getAll(selector); it.hasNext();) {
+		for (Iterator<GoodServiceTest> it = goodLocator.getAll(goodSelector); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!selector.matches(s)) {
+			if (!goodSelector.matches(s)) {
 				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
 					.getCanonicalName(), PluggableServiceLocatorTest.SUBSET_2));
 			}
 		}
 
 		try {
-			locator.getAll().remove();
+			goodLocator.getAll().remove();
 		} catch (UnsupportedOperationException e) {
 			// all is well
 		}
+
+		PluggableServiceLocator<BadServiceTest> badLocator = null;
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		Assert.assertNull(badLocator.getDefaultSelector());
+		Assert.assertFalse(badLocator.getAll().hasNext());
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
+		ErrorListener listener = new ErrorListener() {
+			@Override
+			public void errorRaised(Throwable e) {
+				exception.set(e);
+			}
+		};
+		badLocator.setErrorListener(listener);
+		Assert.assertSame(listener, badLocator.getErrorListener());
+		Assert.assertFalse(badLocator.getAll().hasNext());
+		Assert.assertNotNull(exception.get());
+		listener = new ErrorListener() {
+			@Override
+			public void errorRaised(Throwable e) {
+				throw new RuntimeException();
+			}
+		};
+		badLocator.setErrorListener(listener);
+		Assert.assertFalse(badLocator.getAll().hasNext());
 	}
 
 	@Test
 	public void testReload() {
-		PluggableServiceLocator<GoodServiceTest> locator = new PluggableServiceLocator<GoodServiceTest>(
+		PluggableServiceLocator<GoodServiceTest> goodLocator = new PluggableServiceLocator<GoodServiceTest>(
 			GoodServiceTest.class);
 		Map<String, GoodServiceTest> cache = new HashMap<String, GoodServiceTest>();
-		for (Iterator<GoodServiceTest> it = locator.getAll(); it.hasNext();) {
+		for (Iterator<GoodServiceTest> it = goodLocator.getAll(); it.hasNext();) {
 			GoodServiceTest s = it.next();
 			cache.put(s.getClass().getCanonicalName(), s);
 		}
-		locator.reload();
-		for (Iterator<GoodServiceTest> it = locator.getAll(); it.hasNext();) {
+		goodLocator.reload();
+		for (Iterator<GoodServiceTest> it = goodLocator.getAll(); it.hasNext();) {
 			GoodServiceTest actual = it.next();
 			GoodServiceTest expected = cache.get(actual.getClass().getCanonicalName());
 			Assert.assertNotNull(String.format("Reload caused class [%s] to be loaded, but it wasn't expected", actual
@@ -307,82 +379,109 @@ public class PluggableServiceLocatorTest {
 
 	@Test
 	public void testIterator() {
-		PluggableServiceLocator<GoodServiceTest> locator = null;
-		PluggableServiceSelector<GoodServiceTest> selector = null;
+		PluggableServiceLocator<GoodServiceTest> goodLocator = null;
+		PluggableServiceSelector<GoodServiceTest> goodSelector = null;
 
-		locator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
-		Assert.assertNull(locator.getDefaultSelector());
+		goodLocator = new PluggableServiceLocator<GoodServiceTest>(GoodServiceTest.class);
+		Assert.assertNull(goodLocator.getDefaultSelector());
 
 		int count = 0;
-		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext(); count++) {
+		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext(); count++) {
 			it.next();
 		}
 		Assert.assertEquals(PluggableServiceLocatorTest.SERVICE_CLASSES.size(), count);
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return false;
 			}
 		};
-		locator.setDefaultSelector(selector);
-		Assert.assertFalse(locator.iterator().hasNext());
+		goodLocator.setDefaultSelector(goodSelector);
+		Assert.assertFalse(goodLocator.iterator().hasNext());
 		try {
-			GoodServiceTest ret = locator.iterator().next();
+			GoodServiceTest ret = goodLocator.iterator().next();
 			Assert.fail(String.format("Expected to fail due to no elements, but instead got [%s]", ret.getClass()
 				.getCanonicalName()));
 		} catch (NoSuchElementException e) {
 			// All is well
 		}
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return PluggableServiceLocatorTest.SERVICE_CLASSES.contains(service.getClass().getCanonicalName());
 			}
 		};
-		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext();) {
+		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!selector.matches(s)) {
+			if (!goodSelector.matches(s)) {
 				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
 					.getCanonicalName(), PluggableServiceLocatorTest.SERVICE_CLASSES));
 			}
 		}
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return PluggableServiceLocatorTest.SUBSET_1.contains(service.getClass().getCanonicalName());
 			}
 		};
-		locator.setDefaultSelector(selector);
-		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext();) {
+		goodLocator.setDefaultSelector(goodSelector);
+		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!selector.matches(s)) {
+			if (!goodSelector.matches(s)) {
 				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
 					.getCanonicalName(), PluggableServiceLocatorTest.SUBSET_1));
 			}
 		}
 
-		selector = new PluggableServiceSelector<GoodServiceTest>() {
+		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
 			@Override
 			public boolean matches(GoodServiceTest service) {
 				return PluggableServiceLocatorTest.SUBSET_2.contains(service.getClass().getCanonicalName());
 			}
 		};
-		locator.setDefaultSelector(selector);
-		for (Iterator<GoodServiceTest> it = locator.iterator(); it.hasNext();) {
+		goodLocator.setDefaultSelector(goodSelector);
+		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!selector.matches(s)) {
+			if (!goodSelector.matches(s)) {
 				Assert.fail(String.format("Got class [%s] but it's not listed as part of %s", s.getClass()
 					.getCanonicalName(), PluggableServiceLocatorTest.SUBSET_2));
 			}
 		}
 
 		try {
-			locator.iterator().remove();
+			goodLocator.iterator().remove();
 		} catch (UnsupportedOperationException e) {
 			// all is well
 		}
+
+		PluggableServiceLocator<BadServiceTest> badLocator = null;
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		Assert.assertNull(badLocator.getDefaultSelector());
+		Assert.assertFalse(badLocator.iterator().hasNext());
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
+		ErrorListener listener = new ErrorListener() {
+			@Override
+			public void errorRaised(Throwable e) {
+				exception.set(e);
+			}
+		};
+		badLocator.setErrorListener(listener);
+		Assert.assertSame(listener, badLocator.getErrorListener());
+		Assert.assertFalse(badLocator.iterator().hasNext());
+		Assert.assertNotNull(exception.get());
+		listener = new ErrorListener() {
+			@Override
+			public void errorRaised(Throwable e) {
+				throw new RuntimeException();
+			}
+		};
+		badLocator.setErrorListener(listener);
+		Assert.assertFalse(badLocator.iterator().hasNext());
 	}
 }
