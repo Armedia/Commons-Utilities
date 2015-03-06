@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.ServiceConfigurationError;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,9 +38,9 @@ public class PluggableServiceLocatorTest {
 		}
 		if (!b.isEmpty()) { throw new RuntimeException(
 			String
-			.format(
-				"The following classes must ALL implement the GoodServiceTest interface (or this test changed to not require it): ",
-				b)); }
+				.format(
+					"The following classes must ALL implement the GoodServiceTest interface (or this test changed to not require it): ",
+					b)); }
 		SERVICE_CLASSES = Collections.unmodifiableSet(a);
 		Assert.assertTrue("Must have more than one class implementing GoodServiceTest", a.size() > 1);
 
@@ -214,11 +215,16 @@ public class PluggableServiceLocatorTest {
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		Assert.assertNull(badLocator.getDefaultSelector());
+		Assert.assertNull(badLocator.getErrorListener());
 		try {
 			badLocator.getFirst();
 			Assert.fail("Should have failed to find an instance");
 		} catch (NoSuchElementException e) {
-			// / all is well
+			Assert.fail("Should have failed with a different exception");
+		} catch (ServiceConfigurationError e) {
+			Throwable t = e.getCause();
+			Assert.assertEquals(RuntimeException.class, t.getClass());
+			Assert.assertEquals(ExplodingTest.ERROR_STR, t.getMessage());
 		}
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
@@ -334,7 +340,15 @@ public class PluggableServiceLocatorTest {
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		Assert.assertNull(badLocator.getDefaultSelector());
-		Assert.assertFalse(badLocator.getAll().hasNext());
+		Assert.assertNull(badLocator.getErrorListener());
+		try {
+			badLocator.getAll().hasNext();
+			Assert.fail("Should have failed with an exception");
+		} catch (ServiceConfigurationError e) {
+			Throwable t = e.getCause();
+			Assert.assertEquals(RuntimeException.class, t.getClass());
+			Assert.assertEquals(ExplodingTest.ERROR_STR, t.getMessage());
+		}
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
@@ -461,7 +475,15 @@ public class PluggableServiceLocatorTest {
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		Assert.assertNull(badLocator.getDefaultSelector());
-		Assert.assertFalse(badLocator.iterator().hasNext());
+		Assert.assertNull(badLocator.getErrorListener());
+		try {
+			badLocator.iterator().hasNext();
+			Assert.fail("Should have failed with an exception");
+		} catch (ServiceConfigurationError e) {
+			Throwable t = e.getCause();
+			Assert.assertEquals(RuntimeException.class, t.getClass());
+			Assert.assertEquals(ExplodingTest.ERROR_STR, t.getMessage());
+		}
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();

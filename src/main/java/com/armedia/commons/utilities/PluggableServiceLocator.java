@@ -161,20 +161,24 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 			private S findNext() {
 				if (this.current == null) {
 					while (this.it.hasNext()) {
-						try {
-							S next = this.it.next();
-							if ((this.finalSelector == null) || this.finalSelector.matches(next)) {
-								this.current = next;
-								break;
-							}
-						} catch (Throwable t) {
-							if (this.listener != null) {
+						final S next;
+						if (this.listener == null) {
+							next = this.it.next();
+						} else {
+							try {
+								next = this.it.next();
+							} catch (Throwable t) {
 								try {
 									this.listener.errorRaised(t);
 								} catch (Throwable t2) {
 									// Do nothing...
 								}
+								continue;
 							}
+						}
+						if ((this.finalSelector == null) || this.finalSelector.matches(next)) {
+							this.current = next;
+							break;
 						}
 					}
 				}
