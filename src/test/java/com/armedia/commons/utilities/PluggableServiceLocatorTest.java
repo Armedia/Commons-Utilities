@@ -216,18 +216,30 @@ public class PluggableServiceLocatorTest {
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		Assert.assertNull(badLocator.getDefaultSelector());
 		Assert.assertNull(badLocator.getErrorListener());
+		Assert.assertFalse(badLocator.isHideErrors());
 		try {
 			badLocator.getFirst();
 			Assert.fail("Should have failed to find an instance");
 		} catch (NoSuchElementException e) {
-			Assert.fail("Should have failed with a different exception");
+			Assert.fail("Should have failed with a ServiceConfigurationError");
 		} catch (ServiceConfigurationError e) {
 			Throwable t = e.getCause();
 			Assert.assertEquals(RuntimeException.class, t.getClass());
 			Assert.assertEquals(ExplodingTest.ERROR_STR, t.getMessage());
 		}
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		Assert.assertFalse(badLocator.isHideErrors());
+		badLocator.setHideErrors(true);
+		Assert.assertTrue(badLocator.isHideErrors());
+		try {
+			badLocator.getFirst();
+			Assert.fail("Should have failed to find an instance");
+		} catch (NoSuchElementException e) {
+			// All is well
+		}
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		Assert.assertFalse(badLocator.isHideErrors());
 		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
 		ErrorListener listener = new ErrorListener() {
 			@Override
@@ -244,6 +256,19 @@ public class PluggableServiceLocatorTest {
 			// / all is well
 		}
 		Assert.assertNotNull(exception.get());
+		exception.set(null);
+		badLocator.setHideErrors(true);
+		try {
+			badLocator.getFirst();
+			Assert.fail("Should have failed to find an instance");
+		} catch (NoSuchElementException e) {
+			// / all is well
+		}
+		Assert.assertNull(exception.get());
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		badLocator.setHideErrors(false);
+		Assert.assertFalse(badLocator.isHideErrors());
 		listener = new ErrorListener() {
 			@Override
 			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
@@ -341,14 +366,20 @@ public class PluggableServiceLocatorTest {
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		Assert.assertNull(badLocator.getDefaultSelector());
 		Assert.assertNull(badLocator.getErrorListener());
+		Assert.assertFalse(badLocator.isHideErrors());
 		try {
 			badLocator.getAll().hasNext();
-			Assert.fail("Should have failed with an exception");
+			Assert.fail("Should have failed with a ServiceConfigurationError");
 		} catch (ServiceConfigurationError e) {
 			Throwable t = e.getCause();
 			Assert.assertEquals(RuntimeException.class, t.getClass());
 			Assert.assertEquals(ExplodingTest.ERROR_STR, t.getMessage());
 		}
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		Assert.assertFalse(badLocator.isHideErrors());
+		badLocator.setHideErrors(true);
+		Assert.assertTrue(badLocator.isHideErrors());
+		Assert.assertFalse(badLocator.getAll().hasNext());
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
@@ -362,6 +393,21 @@ public class PluggableServiceLocatorTest {
 		Assert.assertSame(listener, badLocator.getErrorListener());
 		Assert.assertFalse(badLocator.getAll().hasNext());
 		Assert.assertNotNull(exception.get());
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		exception.set(null);
+		Assert.assertFalse(badLocator.isHideErrors());
+		badLocator.setHideErrors(true);
+		Assert.assertTrue(badLocator.isHideErrors());
+		Assert.assertFalse(badLocator.getAll().hasNext());
+		badLocator.setErrorListener(listener);
+		Assert.assertSame(listener, badLocator.getErrorListener());
+		Assert.assertFalse(badLocator.getAll().hasNext());
+		Assert.assertNull(exception.get());
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		badLocator.setHideErrors(false);
+		Assert.assertFalse(badLocator.isHideErrors());
 		listener = new ErrorListener() {
 			@Override
 			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
@@ -476,14 +522,20 @@ public class PluggableServiceLocatorTest {
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		Assert.assertNull(badLocator.getDefaultSelector());
 		Assert.assertNull(badLocator.getErrorListener());
+		Assert.assertFalse(badLocator.isHideErrors());
 		try {
 			badLocator.iterator().hasNext();
-			Assert.fail("Should have failed with an exception");
+			Assert.fail("Should have failed with a ServiceConfigurationError");
 		} catch (ServiceConfigurationError e) {
 			Throwable t = e.getCause();
 			Assert.assertEquals(RuntimeException.class, t.getClass());
 			Assert.assertEquals(ExplodingTest.ERROR_STR, t.getMessage());
 		}
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		Assert.assertFalse(badLocator.isHideErrors());
+		badLocator.setHideErrors(true);
+		Assert.assertTrue(badLocator.isHideErrors());
+		Assert.assertFalse(badLocator.iterator().hasNext());
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
@@ -497,6 +549,21 @@ public class PluggableServiceLocatorTest {
 		Assert.assertSame(listener, badLocator.getErrorListener());
 		Assert.assertFalse(badLocator.iterator().hasNext());
 		Assert.assertNotNull(exception.get());
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		exception.set(null);
+		Assert.assertFalse(badLocator.isHideErrors());
+		badLocator.setHideErrors(true);
+		Assert.assertTrue(badLocator.isHideErrors());
+		Assert.assertFalse(badLocator.getAll().hasNext());
+		badLocator.setErrorListener(listener);
+		Assert.assertSame(listener, badLocator.getErrorListener());
+		Assert.assertFalse(badLocator.iterator().hasNext());
+		Assert.assertNull(exception.get());
+
+		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
+		badLocator.setHideErrors(false);
+		Assert.assertFalse(badLocator.isHideErrors());
 		listener = new ErrorListener() {
 			@Override
 			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {

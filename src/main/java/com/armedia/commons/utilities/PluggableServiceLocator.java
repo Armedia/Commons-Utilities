@@ -30,19 +30,13 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e);
 	}
 
-	public static final ErrorListener NULL_LISTENER = new ErrorListener() {
-		@Override
-		public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
-			// Do nothing
-		}
-	};
-
 	private final ClassLoader classLoader;
 	private final Class<S> serviceClass;
 	private final ServiceLoader<S> loader;
 
 	private PluggableServiceSelector<S> defaultSelector = null;
 	private ErrorListener listener = null;
+	private boolean hideErrors = false;
 
 	public PluggableServiceLocator(Class<S> serviceClass) {
 		this(serviceClass, Thread.currentThread().getContextClassLoader(), null);
@@ -100,6 +94,14 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 
 	public final void setErrorListener(ErrorListener listener) {
 		this.listener = listener;
+	}
+
+	public final boolean isHideErrors() {
+		return this.hideErrors;
+	}
+
+	public final void setHideErrors(boolean hideErrors) {
+		this.hideErrors = hideErrors;
 	}
 
 	/**
@@ -164,6 +166,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 			private final Class<S> serviceClass = PluggableServiceLocator.this.serviceClass;
 			private final Iterator<S> it = PluggableServiceLocator.this.loader.iterator();
 			private final ErrorListener listener = PluggableServiceLocator.this.listener;
+			private final boolean hideErrors = PluggableServiceLocator.this.hideErrors;
 
 			private S current = null;
 
@@ -174,11 +177,13 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 						try {
 							next = this.it.next();
 						} catch (ServiceConfigurationError t) {
-							if (this.listener == null) { throw t; }
-							try {
-								this.listener.errorRaised(this.serviceClass, t);
-							} catch (Throwable t2) {
-								// Do nothing...
+							if (!this.hideErrors) {
+								if (this.listener == null) { throw t; }
+								try {
+									this.listener.errorRaised(this.serviceClass, t);
+								} catch (Throwable t2) {
+									// Do nothing...
+								}
 							}
 							continue;
 						}
