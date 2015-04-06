@@ -1,23 +1,19 @@
 /**
  * *******************************************************************
- * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
- * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
- * 
+ *
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
+ *
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
 
-
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public enum TestSettingString implements ConfigurationSetting {
 	BOOLEAN_TRUE_UNDEF("true"),
@@ -83,6 +79,7 @@ public enum TestSettingString implements ConfigurationSetting {
 	STRING_EMPTY(),
 	STRING_UNDEF("kn>&V~s*.`_`s5?ngd7;bH :p` 4pmb]: )$~n;b?5?%)2QL3wX!F!M):LC)?(?R:9Kg2g[@589HK$t["),
 	STRING_SAMPLE("}%>jrM8/hs2_ztFJ 5 SSt2p3(S))%R6swPkZ}WS[?,7(!m%hsf6WNG*LcmM<%(l 2Gc8d+)VMhR~2n'"),
+	STRING_UNSET(),
 
 	BINARY_EMPTY(),
 	BINARY_UNDEF( // Checksum = f5c050a846647459de71cd7348f4c6987da8af0edf9af6e0cd0a3151a3a43c54

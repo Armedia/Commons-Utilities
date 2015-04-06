@@ -929,7 +929,7 @@ public class CfgToolsTest implements GoodServiceTest {
 		CfgToolsTest.assertEquals(-Double.MAX_VALUE,
 			CfgToolsTest.CONFIG.getDouble("double.min.undef", -Double.MAX_VALUE));
 		CfgToolsTest
-		.assertEquals(Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min.undef", Double.MAX_VALUE));
+			.assertEquals(Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min.undef", Double.MAX_VALUE));
 
 		CfgToolsTest.assertEquals(-Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min", null));
 		CfgToolsTest.assertEquals(-Double.MAX_VALUE, CfgToolsTest.CONFIG.getDouble("double.min", -Double.MAX_VALUE));
@@ -1235,5 +1235,39 @@ public class CfgToolsTest implements GoodServiceTest {
 		Set<String> s = new HashSet<String>();
 		s.addAll(Arrays.asList(keys));
 		Assert.assertEquals(s, CfgToolsTest.CONFIG.getSettings());
+	}
+
+	/**
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#hasValue(java.lang.String)} .
+	 */
+	@Test
+	public void testHasValueString() {
+		Assert.assertTrue(CfgToolsTest.CONFIG.hasValue("string.empty"));
+		Assert.assertTrue(CfgToolsTest.CONFIG.hasValue("string.sample"));
+		Assert.assertFalse(CfgToolsTest.CONFIG.hasValue("string.unset"));
+		try {
+			CfgToolsTest.CONFIG.hasValue((String) null);
+			Assert.fail("Did not fail with a null setting");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#hasValue(com.armedia.commons.utilities.ConfigurationSetting)}
+	 * .
+	 */
+	@Test
+	public void testHasValueConfigurationSetting() {
+		Assert.assertTrue(CfgToolsTest.CONFIG.hasValue(TestSettingString.STRING_EMPTY));
+		Assert.assertTrue(CfgToolsTest.CONFIG.hasValue(TestSettingString.STRING_SAMPLE));
+		Assert.assertFalse(CfgToolsTest.CONFIG.hasValue(TestSettingString.STRING_UNSET));
+		try {
+			CfgToolsTest.CONFIG.hasValue((ConfigurationSetting) null);
+			Assert.fail("Did not fail with a null setting");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
 	}
 }

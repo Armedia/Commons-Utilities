@@ -1039,4 +1039,39 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 			// All is well - this is expected
 		}
 	}
+
+	/**
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#hasValue(java.lang.String, java.util.Map)} .
+	 */
+	@Test
+	public void testHasValueString() {
+		Assert.assertTrue(CfgTools.hasValue("string.empty", CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(CfgTools.hasValue("string.sample", CfgToolsStaticTest.CONFIG));
+		Assert.assertFalse(CfgTools.hasValue("string.unset", CfgToolsStaticTest.CONFIG));
+		try {
+			CfgTools.hasValue((String) null, CfgToolsStaticTest.CONFIG);
+			Assert.fail("Did not fail with a null setting");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link com.armedia.commons.utilities.CfgTools#hasValue(com.armedia.commons.utilities.ConfigurationSetting, java.util.Map)}
+	 * .
+	 */
+	@Test
+	public void testHasValueConfigurationSetting() {
+		Assert.assertTrue(CfgTools.hasValue(TestSettingString.STRING_EMPTY, CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(CfgTools.hasValue(TestSettingString.STRING_SAMPLE, CfgToolsStaticTest.CONFIG));
+		Assert.assertFalse(CfgTools.hasValue(TestSettingString.STRING_UNSET, CfgToolsStaticTest.CONFIG));
+		try {
+			CfgTools.hasValue((ConfigurationSetting) null, CfgToolsStaticTest.CONFIG);
+			Assert.fail("Did not fail with a null setting");
+		} catch (IllegalArgumentException e) {
+			// All is well
+		}
+	}
 }

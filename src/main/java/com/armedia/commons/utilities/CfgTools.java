@@ -593,6 +593,30 @@ public class CfgTools implements Serializable {
 		return CfgTools.decodeObject(setting.getLabel(), settings, setting.getDefaultValue());
 	}
 
+	/**
+	 * Check to see if the given setting has a value set ({@code null} or otherwise).
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return {@code true} if the setting has a set value, {@code false} otherwise
+	 */
+	public static boolean hasValue(String setting, Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return settings.containsKey(setting);
+	}
+
+	/**
+	 * Check to see if the given setting has a value set ({@code null} or otherwise).
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return {@code true} if the setting has a set value, {@code false} otherwise
+	 */
+	public static boolean hasValue(ConfigurationSetting setting, Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return CfgTools.hasValue(setting.getLabel(), settings);
+	}
+
 	private Map<String, ?> settings;
 
 	public CfgTools(Map<String, ?> settings) {
@@ -721,6 +745,14 @@ public class CfgTools implements Serializable {
 
 	public int getCount() {
 		return this.settings.size();
+	}
+
+	public boolean hasValue(String setting) {
+		return CfgTools.hasValue(setting, this.settings);
+	}
+
+	public boolean hasValue(ConfigurationSetting setting) {
+		return CfgTools.hasValue(setting, this.settings);
 	}
 
 	public Set<String> getSettings() {
