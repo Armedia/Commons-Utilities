@@ -279,54 +279,6 @@ public class FileNameToolsTest implements GoodServiceTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.FileNameTools#normalizePath(java.lang.String, char)}.
-	 */
-	@Test
-	public void testNormalizePath() {
-		String[][] testData = {
-			{
-				"|", "", ""
-			}, {
-				"|", "|", "|"
-			}, {
-				"|", "asdf|fdas", "asdf|fdas"
-			}, {
-				"|", "|asdf|fdas", "|asdf|fdas"
-			}, {
-				"|", "asdf|fdas|", "asdf|fdas|"
-			}, {
-				"|", "|asdf|fdas|", "|asdf|fdas|"
-			}, {
-				"|", "|||||||||", "|"
-			}, {
-				"|", "asdf|||||||||fdas", "asdf|fdas"
-			}, {
-				"|", "|||||||||asdf|||||||||fdas", "|asdf|fdas"
-			}, {
-				"|", "asdf|||||||||fdas|||||||||", "asdf|fdas|"
-			}, {
-				"|", "|||||||||asdf|||||||||fdas|||||||||", "|asdf|fdas|"
-			}, {
-				"|", "|asdf|.|poiuy|..|fdas|", "|asdf|fdas|"
-			}, {
-				"|", "|asdf|..|..|fdas|", "|fdas|"
-			}, {
-				"|", "|asdf|.|.|fdas|", "|asdf|fdas|"
-			},
-		};
-		for (String[] values : testData) {
-			char sep = values[0].charAt(0);
-			Assert.assertEquals(values[2], FileNameTools.normalizePath(values[1], sep));
-			String a = values[1].replace('|', File.separatorChar);
-			String b = values[2].replace('|', File.separatorChar);
-			Assert.assertEquals(b, FileNameTools.normalizePath(a));
-		}
-		Assert.assertNull(FileNameTools.normalizePath(null));
-		Assert.assertNull(FileNameTools.normalizePath(null, '|'));
-	}
-
-	/**
-	 * Test method for
 	 * {@link com.armedia.commons.utilities.FileNameTools#tokenize(java.lang.String, char)}.
 	 */
 	@Test
