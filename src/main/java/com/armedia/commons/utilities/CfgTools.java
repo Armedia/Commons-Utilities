@@ -619,7 +619,14 @@ public class CfgTools implements Serializable {
 
 	private Map<String, ?> settings;
 
+	public CfgTools() {
+		this(null);
+	}
+
 	public CfgTools(Map<String, ?> settings) {
+		if (settings == null) {
+			settings = Collections.emptyMap();
+		}
 		this.settings = settings;
 	}
 
@@ -757,5 +764,10 @@ public class CfgTools implements Serializable {
 
 	public Set<String> getSettings() {
 		return this.settings.keySet();
+	}
+
+	@Override
+	public String toString() {
+		return String.format("CfgTools %s", this.settings);
 	}
 }
