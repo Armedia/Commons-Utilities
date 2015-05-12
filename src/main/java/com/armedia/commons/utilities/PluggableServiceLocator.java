@@ -2,7 +2,6 @@ package com.armedia.commons.utilities;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 /**
@@ -27,7 +26,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 *
 	 */
 	public static interface ErrorListener {
-		public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e);
+		public void errorRaised(Class<?> serviceClass, Throwable t);
 	}
 
 	private final ClassLoader classLoader;
@@ -176,7 +175,17 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 						final S next;
 						try {
 							next = this.it.next();
-						} catch (ServiceConfigurationError t) {
+						} catch (RuntimeException t) {
+							if (!this.hideErrors) {
+								if (this.listener == null) { throw t; }
+								try {
+									this.listener.errorRaised(this.serviceClass, t);
+								} catch (Throwable t2) {
+									// Do nothing...
+								}
+							}
+							continue;
+						} catch (Error t) {
 							if (!this.hideErrors) {
 								if (this.listener == null) { throw t; }
 								try {

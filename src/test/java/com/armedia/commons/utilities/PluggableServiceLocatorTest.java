@@ -240,10 +240,10 @@ public class PluggableServiceLocatorTest {
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
 		Assert.assertFalse(badLocator.isHideErrors());
-		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
+		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		ErrorListener listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
+			public void errorRaised(Class<?> serviceClass, Throwable e) {
 				exception.set(e);
 			}
 		};
@@ -271,7 +271,7 @@ public class PluggableServiceLocatorTest {
 		Assert.assertFalse(badLocator.isHideErrors());
 		listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
+			public void errorRaised(Class<?> serviceClass, Throwable e) {
 				throw new RuntimeException();
 			}
 		};
@@ -382,10 +382,10 @@ public class PluggableServiceLocatorTest {
 		Assert.assertFalse(badLocator.getAll().hasNext());
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
-		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
+		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		ErrorListener listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
+			public void errorRaised(Class<?> serviceClass, Throwable e) {
 				exception.set(e);
 			}
 		};
@@ -410,7 +410,7 @@ public class PluggableServiceLocatorTest {
 		Assert.assertFalse(badLocator.isHideErrors());
 		listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
+			public void errorRaised(Class<?> serviceClass, Throwable e) {
 				throw new RuntimeException();
 			}
 		};
@@ -538,10 +538,10 @@ public class PluggableServiceLocatorTest {
 		Assert.assertFalse(badLocator.iterator().hasNext());
 
 		badLocator = new PluggableServiceLocator<BadServiceTest>(BadServiceTest.class);
-		final AtomicReference<ServiceConfigurationError> exception = new AtomicReference<ServiceConfigurationError>();
+		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		ErrorListener listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
+			public void errorRaised(Class<?> serviceClass, Throwable e) {
 				exception.set(e);
 			}
 		};
@@ -566,7 +566,7 @@ public class PluggableServiceLocatorTest {
 		Assert.assertFalse(badLocator.isHideErrors());
 		listener = new ErrorListener() {
 			@Override
-			public void errorRaised(Class<?> serviceClass, ServiceConfigurationError e) {
+			public void errorRaised(Class<?> serviceClass, Throwable e) {
 				throw new RuntimeException();
 			}
 		};
