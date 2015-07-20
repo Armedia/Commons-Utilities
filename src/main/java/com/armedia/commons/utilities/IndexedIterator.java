@@ -1,14 +1,11 @@
 /**
  * *******************************************************************
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
  * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
  * 
  * *******************************************************************
  */
@@ -53,12 +50,12 @@ public interface IndexedIterator<T> extends Iterator<T> {
 	public int currentIndex();
 
 	/**
-	 * Returns the last element returned by this iterator, or {@code null} if it was removed via
-	 * an call to {@link #remove()}. If no element has been fetched, an
-	 * {@link IllegalStateException} will be raised.
+	 * Returns the last element returned by this iterator, or {@code null} if it was removed via an
+	 * call to {@link #remove()}. If no element has been fetched, an {@link IllegalStateException}
+	 * will be raised.
 	 * 
-	 * @return the last element returned by this iterator, or {@code null} if it was removed via
-	 *         an call to {@link #remove()}
+	 * @return the last element returned by this iterator, or {@code null} if it was removed via an
+	 *         call to {@link #remove()}
 	 */
 	public T current();
 

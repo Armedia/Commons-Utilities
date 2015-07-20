@@ -1,14 +1,11 @@
 /**
  * *******************************************************************
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
  * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
  * 
  * *******************************************************************
  */
@@ -69,10 +66,10 @@ public enum BinaryEncoding {
 	private static final byte[] NO_BYTES = new byte[0];
 
 	/**
-	 * Decodes the given string into a binary byte array, using the appropriate
-	 * codec to perform translation. If the value is {@code null}, {@code null} is
-	 * returned. If the value is the empty string ({@code ""} - a.k.a. no data to decode), then
-	 * a length-0 {@code byte} array is returned.
+	 * Decodes the given string into a binary byte array, using the appropriate codec to perform
+	 * translation. If the value is {@code null}, {@code null} is returned. If the value is the
+	 * empty string ({@code ""} - a.k.a. no data to decode), then a length-0 {@code byte} array is
+	 * returned.
 	 * 
 	 * @param value
 	 * @return a byte array decoded from the given string value. If the value is {@code null},
@@ -85,10 +82,10 @@ public enum BinaryEncoding {
 	}
 
 	/**
-	 * Encodes the given {@code byte} array into a String, using the appropriate
-	 * codec to perform translation. If the value is {@code null}, {@code null} is
-	 * returned. If the value is a length-0 {@code byte} array (i.e. no data to encode), then
-	 * the empty string {@code ""} is returned.
+	 * Encodes the given {@code byte} array into a String, using the appropriate codec to perform
+	 * translation. If the value is {@code null}, {@code null} is returned. If the value is a
+	 * length-0 {@code byte} array (i.e. no data to encode), then the empty string {@code ""} is
+	 * returned.
 	 * 
 	 * @param value
 	 * @return a string encoded from the given byte array. If the value is {@code null},
@@ -101,8 +98,8 @@ public enum BinaryEncoding {
 	}
 
 	/**
-	 * Normalizes the value to a form which would have been produced by the encoding. Equivalent
-	 * to invoking {@code encode(decode(value))}.
+	 * Normalizes the value to a form which would have been produced by the encoding. Equivalent to
+	 * invoking {@code encode(decode(value))}.
 	 * 
 	 * @param value
 	 * @return the normalized form of the given encoded value
@@ -116,9 +113,9 @@ public enum BinaryEncoding {
 	protected abstract String doEncode(byte[] value);
 
 	/**
-	 * Attempts to translate the given string into one of the encodings supported. Importantly,
-	 * it trims the string and folds it to uppercase, before invoking {@link #valueOf(String)}.
-	 * If the given encoding is {@code null}, then {@code null} is returned.
+	 * Attempts to translate the given string into one of the encodings supported. Importantly, it
+	 * trims the string and folds it to uppercase, before invoking {@link #valueOf(String)}. If the
+	 * given encoding is {@code null}, then {@code null} is returned.
 	 * 
 	 * @param encoding
 	 * @return the BinaryEncoding instance described by the given string (the string represents the

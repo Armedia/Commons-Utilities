@@ -1,14 +1,11 @@
 /**
  * *******************************************************************
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
  * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
  * 
  * *******************************************************************
  */
@@ -76,10 +73,9 @@ public enum Comparison {
 	}
 
 	/**
-	 * Executes the comparison between the two objects, and returns {@code true} if the
-	 * comparison relationship is matched, or {@code false} otherwise. For instance,
-	 * for {@link Comparison#LE}, this method will return {@code true} if and only if
-	 * a is less than, or equal to b.
+	 * Executes the comparison between the two objects, and returns {@code true} if the comparison
+	 * relationship is matched, or {@code false} otherwise. For instance, for {@link Comparison#LE},
+	 * this method will return {@code true} if and only if a is less than, or equal to b.
 	 * 
 	 * @param a
 	 * @param b
@@ -89,8 +85,8 @@ public enum Comparison {
 	public abstract <T extends Comparable<T>> boolean matches(T a, T b);
 
 	/**
-	 * Decode the given string into a valid comparison that can be used for comparing
-	 * two similarly-typed values. If no comparison matches the given symbols, then {@code null} is
+	 * Decode the given string into a valid comparison that can be used for comparing two
+	 * similarly-typed values. If no comparison matches the given symbols, then {@code null} is
 	 * returned. The valid symbols are (case-insensitive):
 	 * <ul>
 	 * <li>Greater Than: GT, &gt;</li>
@@ -101,9 +97,8 @@ public enum Comparison {
 	 * </ul>
 	 * 
 	 * @param symbol
-	 * @return a valid comparison that can be used for comparing
-	 *         two similarly-typed values, or {@code null} if symbol is null or if no comparison
-	 *         matches.
+	 * @return a valid comparison that can be used for comparing two similarly-typed values, or
+	 *         {@code null} if symbol is null or if no comparison matches.
 	 */
 	public static Comparison decode(String symbol) {
 		if (symbol == null) { return null; }

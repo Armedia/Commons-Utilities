@@ -1,13 +1,10 @@
 /**********************************************************************
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
  * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2007.
- * All Rights reserved.
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2007. All Rights reserved.
  * 
  *********************************************************************/
 package com.armedia.commons.utilities;
@@ -30,8 +27,8 @@ import javax.xml.validation.SchemaFactory;
 import org.xml.sax.SAXException;
 
 /**
- * This class provides some utility methods for JAXB bindings to facilitate the loading
- * and storing of XML-bound classes.
+ * This class provides some utility methods for JAXB bindings to facilitate the loading and storing
+ * of XML-bound classes.
  * 
  * @author drivera@armedia.com
  * 
@@ -104,8 +101,8 @@ public class XmlTools {
 	}
 
 	/**
-	 * Perform the actual XML loading from the given reader, and assuming the root element is
-	 * an element of the given targetClass. This is equivalent to invoking
+	 * Perform the actual XML loading from the given reader, and assuming the root element is an
+	 * element of the given targetClass. This is equivalent to invoking
 	 * {@code unmarshal(targetClass, null, r)}.
 	 * 
 	 * @param targetClass
@@ -118,8 +115,8 @@ public class XmlTools {
 	}
 
 	/**
-	 * Perform the actual XML loading from the given reader using the named schema, and
-	 * assuming the root element is an element of the given targetClass.
+	 * Perform the actual XML loading from the given reader using the named schema, and assuming the
+	 * root element is an element of the given targetClass.
 	 * 
 	 * @param targetClass
 	 * @param schemaName

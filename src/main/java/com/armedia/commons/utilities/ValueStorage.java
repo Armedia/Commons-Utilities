@@ -1,14 +1,11 @@
 /**
  * *******************************************************************
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
  * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
  * 
  * *******************************************************************
  */
@@ -25,13 +22,12 @@ import java.util.Set;
 public interface ValueStorage<T> {
 
 	/**
-	 * Assign the given value to the given name. Returns the previously stored
-	 * value for the given name, or {@code null} if none was stored.
+	 * Assign the given value to the given name. Returns the previously stored value for the given
+	 * name, or {@code null} if none was stored.
 	 * 
 	 * @param name
 	 * @param value
-	 * @return the previously stored
-	 *         value for the given name, or {@code null} if none was stored
+	 * @return the previously stored value for the given name, or {@code null} if none was stored
 	 */
 	public T setValue(String name, T value);
 
@@ -52,8 +48,8 @@ public interface ValueStorage<T> {
 	public boolean hasValue(String name);
 
 	/**
-	 * Returns a {@link Set} containing the names of all the values stored. The returned set
-	 * is read-only.
+	 * Returns a {@link Set} containing the names of all the values stored. The returned set is
+	 * read-only.
 	 * 
 	 * @return a read-only {@link Set} containing the names of all the values stored
 	 */

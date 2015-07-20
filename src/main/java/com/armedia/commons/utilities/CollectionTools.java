@@ -1,14 +1,11 @@
 /**
  * *******************************************************************
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
+ * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
+ * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
+ * STRICTLY PROHIBITED.
  * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2007.
- * All Rights reserved.
+ * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2007. All Rights reserved.
  * 
  * *******************************************************************
  */
@@ -22,10 +19,10 @@ public class CollectionTools {
 
 	/**
 	 * Adds all the elements in the {@link Collection} {@code src} into the {@code target}
-	 * Collection, ensuring that duplicates aren't added. The method uses an internal
-	 * instance of {@link HashSet} to detect duplicity. Importantly, it will only add items
-	 * to the target that don't already exist upon it. Items are added by way of the
-	 * {@link Collection#add(Object)} method.
+	 * Collection, ensuring that duplicates aren't added. The method uses an internal instance of
+	 * {@link HashSet} to detect duplicity. Importantly, it will only add items to the target that
+	 * don't already exist upon it. Items are added by way of the {@link Collection#add(Object)}
+	 * method.
 	 * 
 	 * 
 	 * @param src
