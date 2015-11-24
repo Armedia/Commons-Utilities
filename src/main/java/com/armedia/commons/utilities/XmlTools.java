@@ -1,11 +1,11 @@
 /**********************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
  * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
  * STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2007. All Rights reserved.
- * 
+ *
  *********************************************************************/
 package com.armedia.commons.utilities;
 
@@ -29,9 +29,9 @@ import org.xml.sax.SAXException;
 /**
  * This class provides some utility methods for JAXB bindings to facilitate the loading and storing
  * of XML-bound classes.
- * 
+ *
  * @author drivera@armedia.com
- * 
+ *
  */
 public class XmlTools {
 
@@ -42,7 +42,7 @@ public class XmlTools {
 	/**
 	 * Loads a {@link Schema} instance from the classpath resource name {@code schemaName}.
 	 * Classpath resource name rules apply (i.e. package names, etc).
-	 * 
+	 *
 	 * @param schemaName
 	 * @return the loaded {@link Schema} instance
 	 * @throws JAXBException
@@ -57,13 +57,13 @@ public class XmlTools {
 			}
 			*/
 			final URL schemaUrl = Thread.currentThread().getContextClassLoader().getResource(schemaName);
-			if (schemaUrl == null) { throw new JAXBException(String.format("Failed to load the schema from '%s'",
-				schemaName)); }
+			if (schemaUrl == null) { throw new JAXBException(
+				String.format("Failed to load the schema from '%s'", schemaName)); }
 			try {
 				SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 				schema = sf.newSchema(schemaUrl);
 			} catch (SAXException e) {
-				throw new JAXBException(String.format("Failed to load the schema '%s'", schemaName));
+				throw new JAXBException(String.format("Failed to load the schema '%s'", schemaName), e);
 			}
 		} else {
 			schema = null;
@@ -75,7 +75,7 @@ public class XmlTools {
 	 * Perform the actual XML loading from the given input stream, and assuming the root element is
 	 * an element of the given targetClass. This is equivalent to invoking
 	 * {@code unmarshal(targetClass, null, in)}.
-	 * 
+	 *
 	 * @param targetClass
 	 * @param in
 	 * @return The unmarshalled object
@@ -88,7 +88,7 @@ public class XmlTools {
 	/**
 	 * Perform the actual XML loading from the given input stream using the named schema, and
 	 * assuming the root element is an element of the given targetClass.
-	 * 
+	 *
 	 * @param targetClass
 	 * @param schemaName
 	 * @param in
@@ -104,7 +104,7 @@ public class XmlTools {
 	 * Perform the actual XML loading from the given reader, and assuming the root element is an
 	 * element of the given targetClass. This is equivalent to invoking
 	 * {@code unmarshal(targetClass, null, r)}.
-	 * 
+	 *
 	 * @param targetClass
 	 * @param r
 	 * @return The unmarshalled object
@@ -117,7 +117,7 @@ public class XmlTools {
 	/**
 	 * Perform the actual XML loading from the given reader using the named schema, and assuming the
 	 * root element is an element of the given targetClass.
-	 * 
+	 *
 	 * @param targetClass
 	 * @param schemaName
 	 * @param r
@@ -132,8 +132,8 @@ public class XmlTools {
 	private static <T> T doUnmarshal(final Class<T> targetClass, final String schemaName, final Object src)
 		throws JAXBException {
 		if (targetClass == null) { throw new IllegalArgumentException("Must supply a class to unmarshal"); }
-		if (src == null) { throw new IllegalArgumentException(String.format("No reader to read %s from",
-			targetClass.getName())); }
+		if (src == null) { throw new IllegalArgumentException(
+			String.format("No reader to read %s from", targetClass.getName())); }
 		final Schema schema = XmlTools.loadSchema(schemaName);
 		Unmarshaller u = JAXBContext.newInstance(targetClass).createUnmarshaller();
 		if (schema != null) {
@@ -156,7 +156,7 @@ public class XmlTools {
 
 	/**
 	 * Marshal out the given object using JAXB bindings, and return the resulting XML string.
-	 * 
+	 *
 	 * @param target
 	 * @return The marshalled object, in {@link String} form
 	 * @throws JAXBException
@@ -167,7 +167,7 @@ public class XmlTools {
 
 	/**
 	 * Marshal out the given object using JAXB bindings, and return the resulting XML string.
-	 * 
+	 *
 	 * @param target
 	 * @param schemaName
 	 * @return The marshalled object, in {@link String} form
@@ -179,7 +179,7 @@ public class XmlTools {
 
 	/**
 	 * Marshal out the given object using JAXB bindings, and return the resulting XML string.
-	 * 
+	 *
 	 * @param target
 	 * @param schemaName
 	 * @return The marshalled object, in {@link String} form
@@ -229,8 +229,8 @@ public class XmlTools {
 	private static void doMarshal(Object target, final String schemaName, Object out, boolean format)
 		throws JAXBException {
 		if (target == null) { throw new IllegalArgumentException("Must supply an object to marshal"); }
-		if (out == null) { throw new IllegalArgumentException(String.format("Nowhere to write %s to", target.getClass()
-			.getName())); }
+		if (out == null) { throw new IllegalArgumentException(
+			String.format("Nowhere to write %s to", target.getClass().getName())); }
 
 		Class<?> targetClass = target.getClass();
 		final Schema schema = XmlTools.loadSchema(schemaName);
