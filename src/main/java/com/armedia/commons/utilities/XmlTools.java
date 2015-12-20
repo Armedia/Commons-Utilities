@@ -242,6 +242,7 @@ public class XmlTools {
 			XmlTools.LOG.warn(String.format("No schema specified for marshalling class %s", targetClass.getName()));
 			*/
 		}
+		m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
 		if (format) {
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		}
