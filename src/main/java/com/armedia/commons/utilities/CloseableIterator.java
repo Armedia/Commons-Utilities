@@ -18,7 +18,7 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 	private E current = null;
 
 	private void assertOpen() {
-		if (this.state != State.CLOSED) { throw new NoSuchElementException("This iterator is already closed"); }
+		if (this.state == State.CLOSED) { throw new NoSuchElementException("This iterator is already closed"); }
 	}
 
 	@Override
