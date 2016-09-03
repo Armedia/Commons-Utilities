@@ -68,7 +68,7 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 
 	@Override
 	public final void close() {
-		assertOpen();
+		if (this.closed) { return; }
 		try {
 			doClose();
 		} finally {
