@@ -68,7 +68,7 @@ public abstract class PooledWorkers<S, Q> {
 					} else {
 						next = PooledWorkers.this.workQueue.poll();
 						if (next == null) {
-							this.log.info("Exiting the export polling loop");
+							this.log.info("Exiting the work polling loop");
 							return;
 						}
 					}
@@ -80,7 +80,7 @@ public abstract class PooledWorkers<S, Q> {
 					// due to a value collision.
 					if (next == this.exitValue) {
 						// Work complete
-						this.log.info("Exiting the export polling loop");
+						this.log.info("Exiting the work polling loop");
 						return;
 					}
 
@@ -183,7 +183,7 @@ public abstract class PooledWorkers<S, Q> {
 						this.log.warn("An executor thread was canceled!", e);
 					}
 				}
-				this.log.info("All the export workers are done.");
+				this.log.info("All the workers are done.");
 			}
 		} finally {
 			List<Q> remaining = new ArrayList<Q>();
