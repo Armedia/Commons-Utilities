@@ -55,7 +55,7 @@ public abstract class PooledWorkers<S, Q> {
 			try {
 				while (!Thread.interrupted()) {
 					if (this.log.isDebugEnabled()) {
-						this.log.debug("Polling the queue...");
+						this.log.trace("Polling the queue...");
 					}
 					Q next = null;
 					if (this.blocking) {
@@ -68,7 +68,7 @@ public abstract class PooledWorkers<S, Q> {
 					} else {
 						next = PooledWorkers.this.workQueue.poll();
 						if (next == null) {
-							this.log.info("Exiting the work polling loop");
+							this.log.debug("Exiting the work polling loop");
 							return;
 						}
 					}
@@ -80,12 +80,12 @@ public abstract class PooledWorkers<S, Q> {
 					// due to a value collision.
 					if (next == this.exitValue) {
 						// Work complete
-						this.log.info("Exiting the work polling loop");
+						this.log.debug("Exiting the work polling loop");
 						return;
 					}
 
 					if (this.log.isDebugEnabled()) {
-						this.log.debug(String.format("Polled %s", next));
+						this.log.trace(String.format("Polled %s", next));
 					}
 
 					try {
@@ -146,7 +146,7 @@ public abstract class PooledWorkers<S, Q> {
 	}
 
 	private final synchronized void waitCleanly() {
-		this.log.info("Signaling work completion for the workers");
+		this.log.debug("Signaling work completion for the workers");
 		boolean waitCleanly = true;
 		if (this.exitValue != null) {
 			for (int i = 0; i < this.threadCount; i++) {
@@ -167,7 +167,7 @@ public abstract class PooledWorkers<S, Q> {
 		try {
 			// We're done, we must wait until all workers are waiting
 			if (waitCleanly) {
-				this.log.info(String.format("Waiting for %d workers to finish processing", this.threadCount));
+				this.log.debug(String.format("Waiting for %d workers to finish processing", this.threadCount));
 				for (Future<?> future : this.futures) {
 					try {
 						future.get();
@@ -183,7 +183,7 @@ public abstract class PooledWorkers<S, Q> {
 						this.log.warn("An executor thread was canceled!", e);
 					}
 				}
-				this.log.info("All the workers are done.");
+				this.log.debug("All the workers are done.");
 			}
 		} finally {
 			List<Q> remaining = new ArrayList<Q>();
@@ -201,7 +201,7 @@ public abstract class PooledWorkers<S, Q> {
 		// minutes
 		int pending = this.activeCounter.get();
 		if (pending > 0) {
-			this.log.info(String
+			this.log.debug(String
 				.format("Waiting for pending workers to terminate (maximum 5 minutes, %d pending workers)", pending));
 			try {
 				this.executor.awaitTermination(5, TimeUnit.MINUTES);
@@ -222,7 +222,7 @@ public abstract class PooledWorkers<S, Q> {
 				int pending = this.activeCounter.get();
 				if (pending > 0) {
 					try {
-						this.log.info(String.format(
+						this.log.debug(String.format(
 							"Waiting an additional 60 seconds for worker termination as a contingency (%d pending workers)",
 							pending));
 						this.executor.awaitTermination(1, TimeUnit.MINUTES);
