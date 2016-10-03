@@ -1164,8 +1164,8 @@ public class Tools {
 				throw new RuntimeException(e.getCause());
 			}
 		}
-		throw new RuntimeException(String.format("Can't decode objects of class %s without an instance to do it",
-			c.getCanonicalName()));
+		throw new RuntimeException(
+			String.format("Can't decode objects of class %s without an instance to do it", c.getCanonicalName()));
 	}
 
 	/**
@@ -1878,7 +1878,8 @@ public class Tools {
 	 */
 	public static <T extends Throwable> T findRootCause(Throwable t, Class<T> targetClass) {
 		if (t == null) { return null; }
-		if (targetClass == null) { throw new IllegalArgumentException("Must supply a target class to compare against"); }
+		if (targetClass == null) { throw new IllegalArgumentException(
+			"Must supply a target class to compare against"); }
 		while ((t.getCause() != null) && (t.getCause() != t)) {
 			if (targetClass.isInstance(t)) {
 				break;
@@ -2097,8 +2098,8 @@ public class Tools {
 
 	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values, String all,
 		boolean failOnUnknown) {
-		if ((enumClass == null) || !enumClass.isEnum()) { throw new IllegalArgumentException(
-			"Must provide an enum class"); }
+		if ((enumClass == null)
+			|| !enumClass.isEnum()) { throw new IllegalArgumentException("Must provide an enum class"); }
 		Set<E> ret = EnumSet.noneOf(enumClass);
 		if (values == null) { return ret; }
 		StrTokenizer tok = StrTokenizer.getCSVInstance(values);
@@ -2111,10 +2112,22 @@ public class Tools {
 				ret.add(Enum.valueOf(enumClass, str));
 			} catch (IllegalArgumentException e) {
 				// Ignore the bad enum value
-				if (failOnUnknown) { throw new IllegalArgumentException(String.format(
-					"The value [%s] is not a valid enum for %s", str, enumClass.getCanonicalName())); }
+				if (failOnUnknown) { throw new IllegalArgumentException(
+					String.format("The value [%s] is not a valid enum for %s", str, enumClass.getCanonicalName())); }
 			}
 		}
 		return ret;
+	}
+
+	public static File canonicalize(File f) {
+		if (f == null) { return null; }
+		try {
+			f = f.getCanonicalFile();
+		} catch (IOException e) {
+			// Do nothing...
+		} finally {
+			f = f.getAbsoluteFile();
+		}
+		return f;
 	}
 }
