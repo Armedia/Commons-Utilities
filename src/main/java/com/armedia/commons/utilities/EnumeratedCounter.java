@@ -3,7 +3,7 @@ package com.armedia.commons.utilities;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -15,8 +15,8 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 	private static final String NEW_LINE = String.format("%n");
 
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
-	private final Map<T, Map<R, AtomicInteger>> counters;
-	private final Map<R, AtomicInteger> cummulative;
+	private final Map<T, Map<R, AtomicLong>> counters;
+	private final Map<R, AtomicLong> cummulative;
 	private final Class<T> tClass;
 	private final Class<R> rClass;
 	private final String formatString;
@@ -28,18 +28,18 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		this.tClass = tClass;
 
 		int maxWidth = 0;
-		Map<R, AtomicInteger> cummulative = new EnumMap<R, AtomicInteger>(rClass);
+		Map<R, AtomicLong> cummulative = new EnumMap<R, AtomicLong>(rClass);
 		for (R result : this.rClass.getEnumConstants()) {
-			cummulative.put(result, new AtomicInteger(0));
+			cummulative.put(result, new AtomicLong(0));
 			maxWidth = Math.max(maxWidth, result.name().length());
 		}
 		this.cummulative = Collections.unmodifiableMap(cummulative);
 
-		Map<T, Map<R, AtomicInteger>> counters = new EnumMap<T, Map<R, AtomicInteger>>(tClass);
+		Map<T, Map<R, AtomicLong>> counters = new EnumMap<T, Map<R, AtomicLong>>(tClass);
 		for (T type : tClass.getEnumConstants()) {
-			Map<R, AtomicInteger> results = new EnumMap<R, AtomicInteger>(rClass);
+			Map<R, AtomicLong> results = new EnumMap<R, AtomicLong>(rClass);
 			for (R result : this.rClass.getEnumConstants()) {
-				results.put(result, new AtomicInteger(0));
+				results.put(result, new AtomicLong(0));
 			}
 			counters.put(type, Collections.unmodifiableMap(results));
 		}
@@ -49,13 +49,13 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		this.formatString = String.format("%%s objects %%-%ds: %%6d%%n", maxWidth);
 	}
 
-	public final int increment(T type, R result) {
+	public final long increment(T type, R result) {
 		if (type == null) { throw new IllegalArgumentException("Unsupported null object type"); }
 		if (result == null) { throw new IllegalArgumentException("Must provide a valid result to count for"); }
 		this.lock.readLock().lock();
 		try {
-			AtomicInteger counter = getLiveCounters(type).get(result);
-			final int ret = counter.incrementAndGet();
+			AtomicLong counter = getLiveCounters(type).get(result);
+			final long ret = counter.incrementAndGet();
 			this.cummulative.get(result).incrementAndGet();
 			return ret;
 		} finally {
@@ -63,16 +63,16 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		}
 	}
 
-	private Map<R, AtomicInteger> getLiveCounters(T type) {
+	private Map<R, AtomicLong> getLiveCounters(T type) {
 		return (type != null ? this.counters.get(type) : this.cummulative);
 	}
 
-	public final Map<R, Integer> getCounters(T type) {
-		Map<R, Integer> ret = new EnumMap<R, Integer>(this.rClass);
-		Map<R, AtomicInteger> m = getLiveCounters(type);
+	public final Map<R, Long> getCounters(T type) {
+		Map<R, Long> ret = new EnumMap<R, Long>(this.rClass);
+		Map<R, AtomicLong> m = getLiveCounters(type);
 		this.lock.writeLock().lock();
 		try {
-			for (Map.Entry<R, AtomicInteger> e : m.entrySet()) {
+			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				ret.put(e.getKey(), e.getValue().get());
 			}
 			return Collections.unmodifiableMap(ret);
@@ -81,8 +81,8 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		}
 	}
 
-	public final Map<T, Map<R, Integer>> getCounters() {
-		Map<T, Map<R, Integer>> ret = new EnumMap<T, Map<R, Integer>>(this.tClass);
+	public final Map<T, Map<R, Long>> getCounters() {
+		Map<T, Map<R, Long>> ret = new EnumMap<T, Map<R, Long>>(this.tClass);
 		this.lock.writeLock().lock();
 		try {
 			for (T t : this.counters.keySet()) {
@@ -94,18 +94,18 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		}
 	}
 
-	public final Map<R, Integer> getCummulative() {
+	public final Map<R, Long> getCummulative() {
 		return getCounters(null);
 	}
 
-	public final Map<R, Integer> reset(T type) {
-		Map<R, Integer> ret = new EnumMap<R, Integer>(this.rClass);
-		Map<R, AtomicInteger> m = getLiveCounters(type);
+	public final Map<R, Long> reset(T type) {
+		Map<R, Long> ret = new EnumMap<R, Long>(this.rClass);
+		Map<R, AtomicLong> m = getLiveCounters(type);
 		this.lock.writeLock().lock();
 		try {
-			for (Map.Entry<R, AtomicInteger> e : m.entrySet()) {
+			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				final R r = e.getKey();
-				final int val = e.getValue().getAndSet(0);
+				final long val = e.getValue().getAndSet(0);
 				ret.put(r, val);
 				this.cummulative.get(r).addAndGet(-val);
 			}
@@ -115,8 +115,8 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		}
 	}
 
-	public final Map<T, Map<R, Integer>> reset() {
-		Map<T, Map<R, Integer>> ret = new EnumMap<T, Map<R, Integer>>(this.tClass);
+	public final Map<T, Map<R, Long>> reset() {
+		Map<T, Map<R, Long>> ret = new EnumMap<T, Map<R, Long>>(this.tClass);
 		this.lock.writeLock().lock();
 		try {
 			for (T t : this.tClass.getEnumConstants()) {
@@ -161,7 +161,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		return generateReport(getLiveCounters(type), indentLevel, String.format("Number of %s", type));
 	}
 
-	private final String generateReport(Map<R, AtomicInteger> results, int indentLevel, String entryLabel) {
+	private final String generateReport(Map<R, AtomicLong> results, int indentLevel, String entryLabel) {
 		this.lock.writeLock().lock();
 		try {
 			return EnumeratedCounter.generateSummary(this.rClass, results, indentLevel, entryLabel,
@@ -177,7 +177,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 			maxWidth = Math.max(maxWidth, e.name().length());
 		}
 		maxWidth = Math.max(maxWidth, totalLabel.length());
-		return String.format("%%s objects %%-%ds: %%6d%%n", maxWidth);
+		return String.format("%%s objects %%-%ds: %%12d%%n", maxWidth);
 	}
 
 	public static <E extends Enum<E>> String generateSummary(Class<E> klass, Map<E, ? extends Number> results,
@@ -201,13 +201,13 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> {
 		}
 		final String indent = s.toString();
 		s.setLength(0);
-		int total = 0;
+		long total = 0;
 		for (Map.Entry<E, ? extends Number> e : results.entrySet()) {
 			final E r = e.getKey();
 			final Number i = e.getValue();
-			int intValue = i.intValue();
-			total += intValue;
-			s.append(indent).append(String.format(formatString, entryLabel, r, intValue));
+			long longValue = i.longValue();
+			total += longValue;
+			s.append(indent).append(String.format(formatString, entryLabel, r, longValue));
 		}
 		String totalLine = String.format(formatString, entryLabel, totalLabel, total);
 		// PATCH: need to repeat one less than the length of the line, or we'll overflow by 1...
