@@ -888,6 +888,22 @@ public class Tools {
 		return Collections.unmodifiableSet(ret);
 	}
 
+	public static <T> Collection<T> freezeCollection(Collection<T> c) {
+		return Tools.freezeCollection(c, false);
+	}
+
+	public static <T> Collection<T> freezeCollection(Collection<T> c, boolean nullAsEmpty) {
+		if (c == null) {
+			if (nullAsEmpty) {
+				return Collections.emptyList();
+			} else {
+				return null;
+			}
+		}
+		if (c.isEmpty()) { return Collections.emptyList(); }
+		return Collections.unmodifiableCollection(c);
+	}
+
 	public static <T> List<T> freezeList(List<T> l) {
 		return Tools.freezeList(l, false);
 	}
