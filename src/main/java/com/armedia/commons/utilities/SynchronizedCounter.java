@@ -1,12 +1,33 @@
 package com.armedia.commons.utilities;
 
-public final class SynchronizedCounter {
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-	private long value;
+/**
+ * <p>
+ * This is a simple, thread-safe synchronized value that allows semi-atomic modification operations,
+ * and wait operations. The internal locking is carried out using a {@link ReadWriteLock} for
+ * maximum performance and concurrency. It also tracks the value for the last time the value was
+ * changed, in nanoseconds.
+ * </p>
+ *
+ * @author Diego Rivera &lt;diego.rivera@armedia.com&gt;
+ *
+ */
+public final class SynchronizedCounter {
+	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+	private final Condition changed = this.rwLock.writeLock().newCondition();
+	private final long created;
+	private long lastChange = 0;
+	private long value = 0;
 
 	/**
 	 * <p>
-	 * Create a new counter with the initial value of 0
+	 * Create a new value with the starting value of 0. Identical to invoking
+	 * {@link #SynchronizedCounter(long) new SynchronizedCounter(0)}.
 	 * </p>
 	 */
 	public SynchronizedCounter() {
@@ -15,100 +36,260 @@ public final class SynchronizedCounter {
 
 	/**
 	 * <p>
-	 * Create a new counter with the given initial value
+	 * Create a new value with the given starting value
 	 * </p>
 	 *
-	 * @param initialValue
+	 * @param start
+	 *            the starting value for the value.
 	 */
-	public SynchronizedCounter(long initialValue) {
-		this.value = initialValue;
+	public SynchronizedCounter(long start) {
+		this.value = start;
+		this.created = System.nanoTime();
+		this.lastChange = this.created;
 	}
 
 	/**
 	 * <p>
-	 * Decrement the counter by 1.
-	 * </p>
+	 * Returns the time at which the object was created, in nanoseconds (as returned by
+	 * {@link System#nanoTime()}).
 	 *
-	 * @return the new value
+	 * @return the time at which the object was created, in nanoseconds
 	 */
-	public synchronized long decrement() {
-		return increment(-1);
+	public long getCreated() {
+		return this.created;
 	}
 
 	/**
 	 * <p>
-	 * Decrement the counter by the given amount. Signum is preserved, so decrementing by -1 is the
-	 * same as incrementing by 1.
+	 * Returns the time at which the object was last changed, in nanoseconds (as returned by
+	 * {@link System#nanoTime()}).
 	 * </p>
 	 *
-	 * @return the new value
+	 * @return the time at which the object was last changed, in nanoseconds
 	 */
-	public synchronized long decrement(long amount) {
-		return increment(-amount);
-	}
-
-	/**
-	 * <p>
-	 * Increment the counter by 1.
-	 * </p>
-	 *
-	 * @return the new value
-	 */
-	public synchronized long increment() {
-		return increment(1);
-	}
-
-	/**
-	 * <p>
-	 * Increment the counter by the given amount. Signum is preserved, so incrementing by -1 is the
-	 * same as decrementing by 1.
-	 * </p>
-	 *
-	 * @return the new value
-	 */
-	public synchronized long increment(long amount) {
-		if (amount != 0) {
-			this.value += amount;
-			notify();
+	public long getLastChanged() {
+		Lock l = this.rwLock.readLock();
+		l.lock();
+		try {
+			return this.lastChange;
+		} finally {
+			l.unlock();
 		}
-		return this.value;
 	}
 
 	/**
 	 * <p>
-	 * Sets the value of the internal counter, and returns the previous value.
+	 * Returns {@code true} if the object's value has changed since its creation, {@code false}
+	 * otherwise. This doesn't take into account instances where the value's value has been re-set
+	 * to its original value after the fact. This only reflects if the value's value has varied in
+	 * any way since its creation.
 	 * </p>
 	 *
-	 * @param value
-	 * @return the previous value.
+	 * @return {@code true} if the object's value has changed since its creation, {@code false}
+	 *         otherwise
 	 */
-	public synchronized long setValue(long value) {
-		long prev = this.value;
-		if (prev != value) {
-			// Only notify when there's an actual change
+	public boolean isChangedSinceCreation() {
+		Lock l = this.rwLock.readLock();
+		l.lock();
+		try {
+			return (this.lastChange != this.created);
+		} finally {
+			l.unlock();
+		}
+	}
+
+	/**
+	 * <p>
+	 * Return the value's current value
+	 * </p>
+	 *
+	 * @return the value's current value
+	 */
+	public long get() {
+		Lock l = this.rwLock.readLock();
+		l.lock();
+		try {
+			return this.value;
+		} finally {
+			l.unlock();
+		}
+	}
+
+	/**
+	 * <p>
+	 * Set the value's value to the new {@code value}, and return its current value
+	 * </p>
+	 *
+	 * @return the value's current value
+	 */
+	public long set(long value) {
+		Lock l = this.rwLock.writeLock();
+		l.lock();
+		try {
+			final long ret = this.value;
 			this.value = value;
-			notify();
+			if (value != ret) {
+				// Only trigger the change if there actually was a change
+				this.lastChange = System.nanoTime();
+				this.changed.signal();
+			}
+			return ret;
+		} finally {
+			l.unlock();
 		}
-		return prev;
-	}
-
-	public synchronized long getValue() {
-		return this.value;
 	}
 
 	/**
 	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the internal counter matches the given value.
+	 * Add the given {@code delta} to the current value. If the delta is 0, no change detected via
+	 * {@link #waitForChange()} or {@link #waitUntil(long)}.
+	 * </p>
+	 *
+	 * @param delta
+	 *            the amount to add to the value.
+	 * @return the new value after applying the delta
+	 */
+	public long add(long delta) {
+		Lock l = this.rwLock.writeLock();
+		l.lock();
+		try {
+			long ret = (this.value += delta);
+			if (delta != 0) {
+				// Only trigger the change if there actually was a change
+				this.lastChange = System.nanoTime();
+				this.changed.signal();
+			}
+			return ret;
+		} finally {
+			l.unlock();
+		}
+	}
+
+	/**
+	 * <p>
+	 * Subtract the given delta from the value. Identical to invoking {@link #add(long) add(-delta)}
+	 * </p>
+	 *
+	 * @param delta
+	 *            the amount to subtract from the value
+	 * @return the new value after applying the delta.
+	 */
+	public long subtract(long delta) {
+		return add(-delta);
+	}
+
+	/**
+	 * <p>
+	 * Add one to the value. Identical to invoking {@link #add(long) add(1)}
+	 * </p>
+	 *
+	 * @return the new value after applying the change.
+	 */
+	public long increment() {
+		return add(1);
+	}
+
+	/**
+	 * <p>
+	 * Subtract one from the value. Identical to invoking {@link #add(long) subtract(1)}
+	 * </p>
+	 *
+	 * @return the new value after applying the change.
+	 */
+	public long decrement() {
+		return subtract(1);
+	}
+
+	/**
+	 * <p>
+	 * Wait until the value's value matches the given {@code value}. Identical to invoking
+	 * {@link #waitUntil(long, long, TimeUnit) waitUntil(value, 0, TimeUnit.SECONDS)}.
 	 * </p>
 	 *
 	 * @param value
+	 *            the value to wait for
 	 * @throws InterruptedException
 	 */
-	public synchronized void waitForValue(long value) throws InterruptedException {
-		while (this.value != value) {
-			wait();
+	public void waitUntil(final long value) throws InterruptedException {
+		waitUntil(value, 0, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * <p>
+	 * Wait until the value's value matches the given {@code value}, for up to the given timeout
+	 * value. If the value of {@code timeout} is less than or equal to {@code 0}, then this method
+	 * waits forever regardless of the value of {@code timeUnit}.
+	 * </p>
+	 *
+	 * @param value
+	 *            the value to wait for
+	 * @param timeout
+	 *            the number of {@link TimeUnit TimeUnits} to wait for
+	 * @param timeUnit
+	 *            the {@link TimeUnit} for the wait timeout
+	 * @throws InterruptedException
+	 */
+	public void waitUntil(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
+		Lock l = this.rwLock.writeLock();
+		l.lock();
+		try {
+			while (value != this.value) {
+				if (timeout > 0) {
+					this.changed.await(timeout, timeUnit);
+				} else {
+					this.changed.await();
+				}
+			}
+			// Cascade the signal for anyone else waiting...
+			this.changed.signal();
+		} finally {
+			l.unlock();
 		}
-		notify();
+	}
+
+	/**
+	 * <p>
+	 * Wait until the value's value changes. Identical to invoking
+	 * {@link #waitForChange(long, TimeUnit) waitForChange(0, TimeUnit.SECONDS)}.
+	 * </p>
+	 *
+	 * @return the new value after the detected change.
+	 * @throws InterruptedException
+	 */
+	public long waitForChange() throws InterruptedException {
+		return waitForChange(0, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * <p>
+	 * Wait until the value's value changes, for up to the given timeout value. If the value of
+	 * {@code timeout} is less than or equal to {@code 0}, then this method waits forever regardless
+	 * of the value of {@code timeUnit}.
+	 * </p>
+	 *
+	 * @param timeout
+	 *            the number of {@link TimeUnit TimeUnits} to wait for
+	 * @param timeUnit
+	 *            the {@link TimeUnit} for the wait timeout
+	 * @return the new value after the detected change.
+	 * @throws InterruptedException
+	 */
+	public long waitForChange(long timeout, TimeUnit timeUnit) throws InterruptedException {
+		Lock l = this.rwLock.writeLock();
+		l.lock();
+		try {
+			if (timeout > 0) {
+				this.changed.await(timeout, timeUnit);
+			} else {
+				this.changed.await();
+			}
+			final long ret = this.value;
+			// Cascade the signal for anyone else waiting...
+			this.changed.signal();
+			return ret;
+		} finally {
+			l.unlock();
+		}
 	}
 
 	/**
@@ -119,125 +300,21 @@ public final class SynchronizedCounter {
 	 * </p>
 	 *
 	 * @param count
-	 * @return the value of the counter at the moment the condition is met
+	 * @return the value of the counter at the last change counted
 	 * @throws InterruptedException
 	 */
-	public synchronized long waitUntilChanges(int count) throws InterruptedException {
-		if (count <= 0) { return this.value; }
+	public long waitUntilChangeCount(int count) throws InterruptedException {
+		if (count <= 0) { return get(); }
 		long ret = 0;
 		for (int i = 0; i < count; i++) {
-			ret = waitUntilChange();
+			ret = waitForChange();
 		}
 		return ret;
 	}
 
-	/**
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the internal counter's value has changed by at
-	 * least 1. This is identical to invoking {@link #waitUntilDelta(int)} with a value of 1.
-	 * </p>
-	 *
-	 * @return the value of the counter at the moment the condition is met
-	 * @throws InterruptedException
-	 */
-	public synchronized long waitUntilChange() throws InterruptedException {
-		return waitUntilDelta(1);
-	}
-
-	/**
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the internal counter's value has changed by at
-	 * least the given {@code delta}. Please note that {@link Math#abs(int)} is used to obtain the
-	 * {@code delta}'s absolute value and use that as the magnitude of the expected shift. Thus,
-	 * negative or positive values of the same magnitude may be used interchangeably.
-	 * </p>
-	 * <p>
-	 * If the delta is 0, this method returns immediately with the current value of the counter.
-	 * </p>
-	 *
-	 * @param delta
-	 * @return the value of the counter at the moment the condition is met
-	 * @throws InterruptedException
-	 */
-	public synchronized long waitUntilDelta(int delta) throws InterruptedException {
-		// The delta is an int instead of a long to avoid problems with trying to detect overflow
-		// conditions
-		delta = Math.abs(delta);
-		final long current = this.value;
-		while (((current - delta) < this.value) && (this.value < (current + delta))) {
-			wait();
-		}
-		notify();
-		return this.value;
-	}
-
-	/**
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the counter's value increases by at least one.
-	 * Identical to invoking {@link #waitUntilIncrease(int)} with a value of 1.
-	 * </p>
-	 *
-	 * @return the value of the counter at the moment the condition is met
-	 * @throws InterruptedException
-	 */
-	public synchronized long waitUntilIncrease() throws InterruptedException {
-		return waitUntilIncrease(1);
-	}
-
-	/**
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the counter's value increases by at least the
-	 * given delta. If a negative value is provided, then its magnitude is obtained via
-	 * {@link Math#abs(int)}.
-	 * </p>
-	 *
-	 * @param delta
-	 * @return the value of the counter at the moment the condition is met
-	 * @throws InterruptedException
-	 */
-	public synchronized long waitUntilIncrease(int delta) throws InterruptedException {
-		delta = Math.abs(delta);
-		final long current = this.value;
-		while (this.value < (current + delta)) {
-			wait();
-		}
-		notify();
-		return this.value;
-	}
-
-	/**
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the counter's value decreases by at least one.
-	 * Identical to invoking {@link #waitUntilDecrease(int)} with a value of 1.
-	 * </p>
-	 *
-	 * @return the value of the counter at the moment the condition is met
-	 * @throws InterruptedException
-	 */
-	public synchronized long waitUntilDecrease() throws InterruptedException {
-		return waitUntilDecrease(1);
-	}
-
-	/**
-	 * <p>
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the counter's value decreases by at least the
-	 * given delta. If a negative value is provided, then its magnitude is obtained via
-	 * {@link Math#abs(int)}.
-	 * </p>
-	 * </p>
-	 *
-	 * @param delta
-	 * @return the value of the counter at the moment the condition is met
-	 * @throws InterruptedException
-	 */
-	public synchronized long waitUntilDecrease(int delta) throws InterruptedException {
-		delta = Math.abs(delta);
-		final long current = this.value;
-		while (this.value > (current - delta)) {
-			wait();
-		}
-		notify();
-		return this.value;
+	@Override
+	public String toString() {
+		return String.format("SynchronizedCounter [created=%s, lastChange=%s, value=%s]", this.created, this.lastChange,
+			this.value);
 	}
 }
