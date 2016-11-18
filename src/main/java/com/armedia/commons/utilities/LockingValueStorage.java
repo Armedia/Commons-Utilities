@@ -37,6 +37,12 @@ public class LockingValueStorage<T> extends SimpleValueStorage<T> {
 		this.rwLock = new ReentrantReadWriteLock(fairLock);
 	}
 
+	public LockingValueStorage(boolean ordered, ReadWriteLock rwLock) {
+		super(ordered);
+		if (rwLock == null) { throw new IllegalArgumentException("Must provide a ReadWriteLock instance"); }
+		this.rwLock = rwLock;
+	}
+
 	@Override
 	public T setValue(String name, T value) {
 		final Lock l = this.rwLock.writeLock();
