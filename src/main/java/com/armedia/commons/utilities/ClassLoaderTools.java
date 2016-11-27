@@ -6,12 +6,12 @@ package com.armedia.commons.utilities;
 
 /**
  * @author diego
- * 
+ *
  */
 public class ClassLoaderTools {
 
 	public static <T extends Object> Class<T> locateClass(String name, Class<T> primary, Class<?>... requiredSubclasses)
-		throws Exception {
+		throws ClassCastException {
 		final Class<?> c;
 		try {
 			c = Class.forName(name);
@@ -22,8 +22,8 @@ public class ClassLoaderTools {
 
 		if (!primary.isAssignableFrom(c)) {
 			// Not assignable... fail...
-			throw new Exception(String.format("Class %s is not assignable as a %s", c.getCanonicalName(),
-				primary.getCanonicalName()));
+			throw new ClassCastException(
+				String.format("Class %s is not assignable as a %s", c.getCanonicalName(), primary.getCanonicalName()));
 		}
 
 		@SuppressWarnings("unchecked")
@@ -36,8 +36,8 @@ public class ClassLoaderTools {
 			}
 			if (!r.isAssignableFrom(k)) {
 				// Not assignable... fail...
-				throw new Exception(String.format("Class %s is not assignable as a %s", k.getCanonicalName(),
-					r.getCanonicalName()));
+				throw new ClassCastException(
+					String.format("Class %s is not assignable as a %s", k.getCanonicalName(), r.getCanonicalName()));
 			}
 		}
 		return k;
