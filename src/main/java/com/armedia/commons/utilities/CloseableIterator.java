@@ -27,7 +27,13 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 		if (this.state == State.READY) { return true; }
 
 		// Either WAITING or FETCHED, we need to check to see if we have a next element
-		final boolean ret = checkNext();
+		final boolean ret;
+		try {
+			ret = checkNext();
+		} catch (Exception e) {
+			close();
+			throw new RuntimeException("Failed to check for the next item in the iterator, closed automatically", e);
+		}
 		if (ret) {
 			this.state = State.READY;
 		} else {
@@ -61,7 +67,7 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 	 *
 	 * @return {@code true} if there's another element to iterate over, {@code false} otherwise.
 	 */
-	protected abstract boolean checkNext();
+	protected abstract boolean checkNext() throws Exception;
 
 	/**
 	 * <p>
