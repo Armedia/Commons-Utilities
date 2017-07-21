@@ -24,6 +24,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 /**
@@ -38,6 +39,19 @@ public class XmlTools {
 	private static final boolean DEFAULT_FORMAT = false;
 
 	// private static final Logger LOG = Logger.getLogger(XmlTools.class);
+
+	/**
+	 * Gets an instance of {@link JAXBContext} that supports reading and writing the classes listed
+	 * in (and referenced by) the {@code targetClasses} parameter.
+	 *
+	 * @param targetClasses
+	 *            the classes to build the context for
+	 * @return a new {@link JAXBContext} instance
+	 * @throws JAXBException
+	 */
+	public static JAXBContext getContext(Class<?>... targetClasses) throws JAXBException {
+		return JAXBContext.newInstance(targetClasses);
+	}
 
 	/**
 	 * Loads a {@link Schema} instance from the classpath resource name {@code schemaName}.
@@ -129,20 +143,37 @@ public class XmlTools {
 		return XmlTools.doUnmarshal(targetClass, schemaName, r);
 	}
 
+	/**
+	 * Returns a valid JAXB {@link Unmarshaller} instance supporting the given classes, as per the
+	 * named schema (may be {@code null}).
+	 *
+	 * @param schemaName
+	 * @param targetClasses
+	 * @return a valid JAXB {@link Unmarshaller}
+	 * @throws JAXBException
+	 */
+	public static Unmarshaller getUnmarshaller(final String schemaName, Class<?>... targetClasses)
+		throws JAXBException {
+		if (targetClasses == null) {
+			targetClasses = new Class[0];
+		}
+
+		Unmarshaller u = XmlTools.getContext(targetClasses).createUnmarshaller();
+		if (!StringUtils.isEmpty(schemaName)) {
+			final Schema schema = XmlTools.loadSchema(schemaName);
+			if (schema != null) {
+				u.setSchema(schema);
+			}
+		}
+		return u;
+	}
+
 	private static <T> T doUnmarshal(final Class<T> targetClass, final String schemaName, final Object src)
 		throws JAXBException {
 		if (targetClass == null) { throw new IllegalArgumentException("Must supply a class to unmarshal"); }
 		if (src == null) { throw new IllegalArgumentException(
 			String.format("No reader to read %s from", targetClass.getName())); }
-		final Schema schema = XmlTools.loadSchema(schemaName);
-		Unmarshaller u = JAXBContext.newInstance(targetClass).createUnmarshaller();
-		if (schema != null) {
-			u.setSchema(schema);
-		} else {
-			/*
-			XmlTools.LOG.warn(String.format("No schema specified for unmarshalling class %s", targetClass.getName()));
-			*/
-		}
+		Unmarshaller u = XmlTools.getUnmarshaller(schemaName, targetClass);
 		if (src instanceof Reader) {
 			return targetClass.cast(u.unmarshal(Reader.class.cast(src)));
 		} else {
@@ -226,22 +257,37 @@ public class XmlTools {
 		XmlTools.doMarshal(target, schemaName, w, format);
 	}
 
+	/**
+	 * Returns a valid JAXB {@link Marshaller} instance supporting the given classes, as per the
+	 * named schema (may be {@code null}).
+	 *
+	 * @param schemaName
+	 * @param targetClasses
+	 * @return a valid JAXB {@link Marshaller}
+	 * @throws JAXBException
+	 */
+	public static Marshaller getMarshaller(final String schemaName, Class<?>... targetClasses) throws JAXBException {
+		if (targetClasses == null) {
+			targetClasses = new Class[0];
+		}
+
+		Marshaller m = XmlTools.getContext(targetClasses).createMarshaller();
+		if (!StringUtils.isEmpty(schemaName)) {
+			final Schema schema = XmlTools.loadSchema(schemaName);
+			if (schema != null) {
+				m.setSchema(schema);
+			}
+		}
+		return m;
+	}
+
 	private static void doMarshal(Object target, final String schemaName, Object out, boolean format)
 		throws JAXBException {
 		if (target == null) { throw new IllegalArgumentException("Must supply an object to marshal"); }
 		if (out == null) { throw new IllegalArgumentException(
 			String.format("Nowhere to write %s to", target.getClass().getName())); }
 
-		Class<?> targetClass = target.getClass();
-		final Schema schema = XmlTools.loadSchema(schemaName);
-		Marshaller m = JAXBContext.newInstance(targetClass).createMarshaller();
-		if (schema != null) {
-			m.setSchema(schema);
-		} else {
-			/*
-			XmlTools.LOG.warn(String.format("No schema specified for marshalling class %s", targetClass.getName()));
-			*/
-		}
+		Marshaller m = XmlTools.getMarshaller(schemaName, target.getClass());
 		m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
 		if (format) {
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

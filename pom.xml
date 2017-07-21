@@ -5,7 +5,7 @@
 	<name>OSGi Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>0.3.17</version>
+	<version>0.3.18</version>
 	<description>A set of utility classes for use by OSGi modules</description>
 	<packaging>bundle</packaging>
 
