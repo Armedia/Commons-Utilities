@@ -1,24 +1,28 @@
 /**
  * *******************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
  * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
  * STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011-2012. All Rights reserved.
- * 
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public abstract class LockDispenser<K extends Object, C extends Object> {
 
@@ -31,23 +35,35 @@ public abstract class LockDispenser<K extends Object, C extends Object> {
 		};
 	}
 
-	private final Map<K, Reference<C>> locks = new HashMap<K, Reference<C>>();
+	private class LockBox {
+		private final K key;
 
-	public final C getLock(K key) {
-		synchronized (this.locks) {
-			Reference<C> ret = this.locks.get(key);
-			C c = (ret != null ? ret.get() : null);
-			if (c == null) {
-				c = newLock(key);
-				if (c == null) {
-					this.locks.remove(key);
-					return null;
-				}
-				ret = newReference(c);
-				this.locks.put(key, ret);
-			}
-			return ret.get();
+		private Reference<C> lock = null;
+
+		private LockBox(K key) {
+			this.key = key;
 		}
+
+		private synchronized C get() {
+			if ((this.lock == null) || (this.lock.get() == null)) {
+				this.lock = newReference(newLock(this.key));
+			}
+			return this.lock.get();
+		}
+	}
+
+	private final ConcurrentMap<K, LockBox> locks = new ConcurrentHashMap<K, LockBox>();
+
+	public final C getLock(final K key) {
+
+		LockBox box = ConcurrentUtils.createIfAbsentUnchecked(this.locks, key, new ConcurrentInitializer<LockBox>() {
+			@Override
+			public LockBox get() throws ConcurrentException {
+				return new LockBox(key);
+			}
+		});
+
+		return box.get();
 	}
 
 	protected Reference<C> newReference(C c) {
