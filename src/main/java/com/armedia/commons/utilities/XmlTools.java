@@ -24,6 +24,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.commons.io.input.XmlStreamReader;
+import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
@@ -83,6 +85,35 @@ public class XmlTools {
 			schema = null;
 		}
 		return schema;
+	}
+
+	/**
+	 * Perform the actual XML loading from the given stream reader, and assuming the root element is
+	 * an element of the given targetClass. This is equivalent to invoking
+	 * {@code unmarshal(targetClass, null, in)}.
+	 *
+	 * @param targetClass
+	 * @param in
+	 * @return The unmarshalled object
+	 * @throws JAXBException
+	 */
+	public static <T> T unmarshal(final Class<T> targetClass, final XmlStreamReader in) throws JAXBException {
+		return XmlTools.unmarshal(targetClass, null, in);
+	}
+
+	/**
+	 * Perform the actual XML loading from the given stream reader using the named schema, and
+	 * assuming the root element is an element of the given targetClass.
+	 *
+	 * @param targetClass
+	 * @param schemaName
+	 * @param in
+	 * @return The unmarshalled object
+	 * @throws JAXBException
+	 */
+	public static <T> T unmarshal(final Class<T> targetClass, final String schemaName, final XmlStreamReader in)
+		throws JAXBException {
+		return XmlTools.doUnmarshal(targetClass, schemaName, in);
 	}
 
 	/**
@@ -174,11 +205,9 @@ public class XmlTools {
 		if (src == null) { throw new IllegalArgumentException(
 			String.format("No reader to read %s from", targetClass.getName())); }
 		Unmarshaller u = XmlTools.getUnmarshaller(schemaName, targetClass);
-		if (src instanceof Reader) {
-			return targetClass.cast(u.unmarshal(Reader.class.cast(src)));
-		} else {
-			return targetClass.cast(u.unmarshal(InputStream.class.cast(src)));
-		}
+		if (src instanceof XmlStreamReader) { return targetClass.cast(u.unmarshal(XmlStreamReader.class.cast(src))); }
+		if (src instanceof Reader) { return targetClass.cast(u.unmarshal(Reader.class.cast(src))); }
+		return targetClass.cast(u.unmarshal(InputStream.class.cast(src)));
 	}
 
 	public static String marshal(Object target) throws JAXBException {
@@ -257,6 +286,24 @@ public class XmlTools {
 		XmlTools.doMarshal(target, schemaName, w, format);
 	}
 
+	public static void marshal(final Object target, final XmlStreamWriter out) throws JAXBException {
+		XmlTools.marshal(target, null, out, XmlTools.DEFAULT_FORMAT);
+	}
+
+	public static void marshal(final Object target, final XmlStreamWriter out, boolean format) throws JAXBException {
+		XmlTools.marshal(target, null, out, format);
+	}
+
+	public static void marshal(final Object target, final String schemaName, final XmlStreamWriter out)
+		throws JAXBException {
+		XmlTools.marshal(target, schemaName, out, XmlTools.DEFAULT_FORMAT);
+	}
+
+	public static void marshal(final Object target, final String schemaName, final XmlStreamWriter out, boolean format)
+		throws JAXBException {
+		XmlTools.doMarshal(target, schemaName, out, format);
+	}
+
 	/**
 	 * Returns a valid JAXB {@link Marshaller} instance supporting the given classes, as per the
 	 * named schema (may be {@code null}).
@@ -292,10 +339,14 @@ public class XmlTools {
 		if (format) {
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		}
+		if (out instanceof XmlStreamWriter) {
+			m.marshal(target, XmlStreamWriter.class.cast(out));
+			return;
+		}
 		if (out instanceof Writer) {
 			m.marshal(target, Writer.class.cast(out));
-		} else {
-			m.marshal(target, OutputStream.class.cast(out));
+			return;
 		}
+		m.marshal(target, OutputStream.class.cast(out));
 	}
 }
