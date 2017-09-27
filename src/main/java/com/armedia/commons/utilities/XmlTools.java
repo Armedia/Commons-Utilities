@@ -21,11 +21,11 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.commons.io.input.XmlStreamReader;
-import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
@@ -97,7 +97,7 @@ public class XmlTools {
 	 * @return The unmarshalled object
 	 * @throws JAXBException
 	 */
-	public static <T> T unmarshal(final Class<T> targetClass, final XmlStreamReader in) throws JAXBException {
+	public static <T> T unmarshal(final Class<T> targetClass, final XMLStreamReader in) throws JAXBException {
 		return XmlTools.unmarshal(targetClass, null, in);
 	}
 
@@ -111,7 +111,7 @@ public class XmlTools {
 	 * @return The unmarshalled object
 	 * @throws JAXBException
 	 */
-	public static <T> T unmarshal(final Class<T> targetClass, final String schemaName, final XmlStreamReader in)
+	public static <T> T unmarshal(final Class<T> targetClass, final String schemaName, final XMLStreamReader in)
 		throws JAXBException {
 		return XmlTools.doUnmarshal(targetClass, schemaName, in);
 	}
@@ -205,7 +205,7 @@ public class XmlTools {
 		if (src == null) { throw new IllegalArgumentException(
 			String.format("No reader to read %s from", targetClass.getName())); }
 		Unmarshaller u = XmlTools.getUnmarshaller(schemaName, targetClass);
-		if (src instanceof XmlStreamReader) { return targetClass.cast(u.unmarshal(XmlStreamReader.class.cast(src))); }
+		if (src instanceof XMLStreamReader) { return targetClass.cast(u.unmarshal(XMLStreamReader.class.cast(src))); }
 		if (src instanceof Reader) { return targetClass.cast(u.unmarshal(Reader.class.cast(src))); }
 		return targetClass.cast(u.unmarshal(InputStream.class.cast(src)));
 	}
@@ -286,20 +286,20 @@ public class XmlTools {
 		XmlTools.doMarshal(target, schemaName, w, format);
 	}
 
-	public static void marshal(final Object target, final XmlStreamWriter out) throws JAXBException {
+	public static void marshal(final Object target, final XMLStreamWriter out) throws JAXBException {
 		XmlTools.marshal(target, null, out, XmlTools.DEFAULT_FORMAT);
 	}
 
-	public static void marshal(final Object target, final XmlStreamWriter out, boolean format) throws JAXBException {
+	public static void marshal(final Object target, final XMLStreamWriter out, boolean format) throws JAXBException {
 		XmlTools.marshal(target, null, out, format);
 	}
 
-	public static void marshal(final Object target, final String schemaName, final XmlStreamWriter out)
+	public static void marshal(final Object target, final String schemaName, final XMLStreamWriter out)
 		throws JAXBException {
 		XmlTools.marshal(target, schemaName, out, XmlTools.DEFAULT_FORMAT);
 	}
 
-	public static void marshal(final Object target, final String schemaName, final XmlStreamWriter out, boolean format)
+	public static void marshal(final Object target, final String schemaName, final XMLStreamWriter out, boolean format)
 		throws JAXBException {
 		XmlTools.doMarshal(target, schemaName, out, format);
 	}
@@ -339,8 +339,8 @@ public class XmlTools {
 		if (format) {
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		}
-		if (out instanceof XmlStreamWriter) {
-			m.marshal(target, XmlStreamWriter.class.cast(out));
+		if (out instanceof XMLStreamWriter) {
+			m.marshal(target, XMLStreamWriter.class.cast(out));
 			return;
 		}
 		if (out instanceof Writer) {
