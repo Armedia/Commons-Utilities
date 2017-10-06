@@ -2156,15 +2156,14 @@ public class Tools {
 		return Tools.splitEscaped(value, Tools.DEFAULT_SEPARATOR);
 	}
 
-	public static final List<String> splitEscaped(String value, Character separator) {
-		if (separator == null) { throw new IllegalArgumentException("Must provide a separator character"); }
+	public static final List<String> splitEscaped(String value, char separator) {
 		List<String> values = new ArrayList<String>();
 		if (value != null) {
 			Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
 			Matcher matcher = splitter.matcher(value);
 			int previous = 0;
 			String replacer = String.format("\\\\\\Q%s\\E", separator);
-			String replacement = separator.toString();
+			String replacement = String.valueOf(separator);
 			while (matcher.find()) {
 				String current = value.substring(previous, matcher.start());
 				values.add(current.replaceAll(replacer, replacement));
