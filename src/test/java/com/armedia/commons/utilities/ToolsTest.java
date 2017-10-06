@@ -1121,34 +1121,17 @@ public class ToolsTest {
 
 	private static enum TestEnumA {
 		//
-		A,
-		B,
-		C,
-		D,
-		E
+		A, B, C, D, E
 	}
 
 	private static enum TestEnumB {
 		//
-		Z,
-		X,
-		Y,
-		W,
-		V
+		Z, X, Y, W, V
 	}
 
 	private static enum TestEnumC {
 		//
-		a,
-		b,
-		c,
-		d,
-		e,
-		z,
-		x,
-		y,
-		w,
-		v
+		a, b, c, d, e, z, x, y, w, v
 	}
 
 	@Test
@@ -1249,5 +1232,51 @@ public class ToolsTest {
 		expC.add(TestEnumC.x);
 		Assert.assertEquals(expC, setC);
 
+	}
+
+	@Test
+	public void testSplitter() {
+		String str = null;
+		List<String> expected = null;
+		List<String> result = null;
+
+		expected = Collections.emptyList();
+		result = Tools.splitCSVEscaped(null);
+		Assert.assertEquals(expected, result);
+
+		expected = Arrays.asList("");
+		result = Tools.splitCSVEscaped("");
+		Assert.assertEquals(expected, result);
+
+		try {
+			Tools.splitEscaped(null, null);
+			Assert.fail("Did not fail with a null separator");
+		} catch (IllegalArgumentException e) {
+			// all is well
+		}
+
+		expected = Collections.emptyList();
+		result = Tools.splitEscaped(null, ',');
+		Assert.assertEquals(expected, result);
+
+		str = "a&b&c&d&&e&f\\&g";
+		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f&g");
+		result = Tools.splitEscaped(str, '&');
+		Assert.assertEquals(expected, result);
+
+		str = "a.b.c.d..e.f\\.g";
+		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f.g");
+		result = Tools.splitEscaped(str, '.');
+		Assert.assertEquals(expected, result);
+
+		str = ",a,b,c,d,,e,f\\,g,";
+		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
+		result = Tools.splitEscaped(str, ',');
+		Assert.assertEquals(expected, result);
+
+		str = ",a,b,c,d,,e,f\\,g,";
+		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
+		result = Tools.splitCSVEscaped(str);
+		Assert.assertEquals(expected, result);
 	}
 }

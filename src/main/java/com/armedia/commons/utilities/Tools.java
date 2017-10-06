@@ -43,6 +43,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -1393,8 +1394,10 @@ public class Tools {
 
 	/**
 	 * Decodes the given object to a {@link Long} value using valueOf(), but returns the ifNull
-	 * value if the string is null. The method first attempts to do a class cast, then a class cast
-	 * to Number, and then resorts to valueOf().
+	 * value if t public static final char DEFAULT_SEPARATOR = ',';
+	 *
+	 * he string is null. The method first attempts to do a class cast, then a class cast to Number,
+	 * and then resorts to valueOf().
 	 *
 	 * @param o
 	 *
@@ -2146,4 +2149,33 @@ public class Tools {
 		}
 		return f;
 	}
+
+	public static final char DEFAULT_SEPARATOR = ',';
+
+	public static final List<String> splitCSVEscaped(String value) {
+		return Tools.splitEscaped(value, Tools.DEFAULT_SEPARATOR);
+	}
+
+	public static final List<String> splitEscaped(String value, Character separator) {
+		if (separator == null) { throw new IllegalArgumentException("Must provide a separator character"); }
+		List<String> values = new ArrayList<String>();
+		if (value != null) {
+			Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
+			Matcher matcher = splitter.matcher(value);
+			int previous = 0;
+			String replacer = String.format("\\\\\\Q%s\\E", separator);
+			String replacement = separator.toString();
+			while (matcher.find()) {
+				String current = value.substring(previous, matcher.start());
+				values.add(current.replaceAll(replacer, replacement));
+				previous = matcher.end();
+			}
+			if (previous <= value.length()) {
+				String current = value.substring(previous);
+				values.add(current.replaceAll(replacer, replacement));
+			}
+		}
+		return values;
+	}
+
 }
