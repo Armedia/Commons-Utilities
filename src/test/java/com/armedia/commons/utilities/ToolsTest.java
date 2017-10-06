@@ -1248,13 +1248,6 @@ public class ToolsTest {
 		result = Tools.splitCSVEscaped("");
 		Assert.assertEquals(expected, result);
 
-		try {
-			Tools.splitEscaped(null, null);
-			Assert.fail("Did not fail with a null separator");
-		} catch (IllegalArgumentException e) {
-			// all is well
-		}
-
 		expected = Collections.emptyList();
 		result = Tools.splitEscaped(null, ',');
 		Assert.assertEquals(expected, result);
