@@ -2156,25 +2156,43 @@ public class Tools {
 		return Tools.splitEscaped(value, Tools.DEFAULT_SEPARATOR);
 	}
 
+	public static final String joinCSVEscaped(List<String> values) {
+		return Tools.joinEscaped(values, Tools.DEFAULT_SEPARATOR);
+	}
+
 	public static final List<String> splitEscaped(String value, char separator) {
+		if (value == null) { return null; }
 		List<String> values = new ArrayList<String>();
-		if (value != null) {
-			Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
-			Matcher matcher = splitter.matcher(value);
-			int previous = 0;
-			String replacer = String.format("\\\\\\Q%s\\E", separator);
-			String replacement = String.valueOf(separator);
-			while (matcher.find()) {
-				String current = value.substring(previous, matcher.start());
-				values.add(current.replaceAll(replacer, replacement));
-				previous = matcher.end();
-			}
-			if (previous <= value.length()) {
-				String current = value.substring(previous);
-				values.add(current.replaceAll(replacer, replacement));
-			}
+		Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
+		Matcher matcher = splitter.matcher(value);
+		int previous = 0;
+		String replacer = String.format("\\\\\\Q%s\\E", separator);
+		String replacement = String.valueOf(separator);
+		while (matcher.find()) {
+			String current = value.substring(previous, matcher.start());
+			values.add(current.replaceAll(replacer, replacement));
+			previous = matcher.end();
+		}
+		if (previous <= value.length()) {
+			String current = value.substring(previous);
+			values.add(current.replaceAll(replacer, replacement));
 		}
 		return values;
 	}
 
+	public static final String joinEscaped(List<String> values, char separator) {
+		if (values == null) { return null; }
+		StringBuilder sb = new StringBuilder();
+		String replacer = String.format("\\Q%s\\E", separator);
+		String replacement = String.format("\\\\%s", separator);
+		boolean first = true;
+		for (String str : values) {
+			if (!first) {
+				sb.append(separator);
+			}
+			sb.append(str.replaceAll(replacer, replacement));
+			first = false;
+		}
+		return sb.toString();
+	}
 }
