@@ -2156,7 +2156,7 @@ public class Tools {
 		return Tools.splitEscaped(value, Tools.DEFAULT_SEPARATOR);
 	}
 
-	public static final String joinCSVEscaped(List<String> values) {
+	public static final String joinCSVEscaped(Collection<String> values) {
 		return Tools.joinEscaped(values, Tools.DEFAULT_SEPARATOR);
 	}
 
@@ -2189,7 +2189,7 @@ public class Tools {
 		return Tools.joinEscaped(Arrays.asList(values), separator);
 	}
 
-	public static final String joinEscaped(List<String> values, char separator) {
+	public static final String joinEscaped(Collection<String> values, char separator) {
 		if (values == null) { return null; }
 		StringBuilder sb = new StringBuilder();
 		String replacer = String.format("\\Q%s\\E", separator);
