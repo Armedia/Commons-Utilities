@@ -2153,18 +2153,18 @@ public class Tools {
 	public static final char DEFAULT_SEPARATOR = ',';
 
 	public static final List<String> splitCSVEscaped(String value) {
-		return Tools.splitEscaped(value, Tools.DEFAULT_SEPARATOR);
+		return Tools.splitEscaped(Tools.DEFAULT_SEPARATOR, value);
 	}
 
 	public static final String joinCSVEscaped(Collection<String> values) {
-		return Tools.joinEscaped(values, Tools.DEFAULT_SEPARATOR);
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
 	public static final String joinCSVEscaped(String... values) {
 		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
-	public static final List<String> splitEscaped(String value, char separator) {
+	public static final List<String> splitEscaped(char separator, String value) {
 		if (value == null) { return null; }
 		List<String> values = new ArrayList<String>();
 		Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
@@ -2186,10 +2186,10 @@ public class Tools {
 
 	public static final String joinEscaped(char separator, String... values) {
 		if (values == null) { return null; }
-		return Tools.joinEscaped(Arrays.asList(values), separator);
+		return Tools.joinEscaped(separator, Arrays.asList(values));
 	}
 
-	public static final String joinEscaped(Collection<String> values, char separator) {
+	public static final String joinEscaped(char separator, Collection<String> values) {
 		if (values == null) { return null; }
 		StringBuilder sb = new StringBuilder();
 		String replacer = String.format("\\Q%s\\E", separator);

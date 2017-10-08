@@ -1253,45 +1253,45 @@ public class ToolsTest {
 		Assert.assertEquals(expected, Tools.splitCSVEscaped(Tools.joinCSVEscaped(result)));
 
 		expected = null;
-		result = Tools.splitEscaped(null, ',');
+		result = Tools.splitEscaped(',', null);
 		Assert.assertNull(result);
-		Assert.assertNull(Tools.joinEscaped(result, ','));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result, ','), ','));
+		Assert.assertNull(Tools.joinEscaped(',', result));
+		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 		str = "a&b&c&d&&e&f\\&g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f&g");
-		result = Tools.splitEscaped(str, '&');
+		result = Tools.splitEscaped('&', str);
 		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(result, '&'));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result, '&'), '&'));
+		Assert.assertEquals(str, Tools.joinEscaped('&', result));
+		Assert.assertEquals(expected, Tools.splitEscaped('&', Tools.joinEscaped('&', result)));
 
 		str = "a!b!c!d!!e!f\\!g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f!g");
-		result = Tools.splitEscaped(str, '!');
+		result = Tools.splitEscaped('!', str);
 		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(result, '!'));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result, '!'), '!'));
+		Assert.assertEquals(str, Tools.joinEscaped('!', result));
+		Assert.assertEquals(expected, Tools.splitEscaped('!', Tools.joinEscaped('!', result)));
 
 		str = "a.b.c.d..e.f\\.g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f.g");
-		result = Tools.splitEscaped(str, '.');
+		result = Tools.splitEscaped('.', str);
 		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(result, '.'));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result, '.'), '.'));
+		Assert.assertEquals(str, Tools.joinEscaped('.', result));
+		Assert.assertEquals(expected, Tools.splitEscaped('.', Tools.joinEscaped('.', result)));
 
 		str = ",a,b,c,d,,e,f\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
-		result = Tools.splitEscaped(str, ',');
+		result = Tools.splitEscaped(',', str);
 		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(result, ','));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result, ','), ','));
+		Assert.assertEquals(str, Tools.joinEscaped(',', result));
+		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 		str = ",a,b,c,d,,e,f\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
 		result = Tools.splitCSVEscaped(str);
 		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(result, ','));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result, ','), ','));
+		Assert.assertEquals(str, Tools.joinEscaped(',', result));
+		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 	}
 }
