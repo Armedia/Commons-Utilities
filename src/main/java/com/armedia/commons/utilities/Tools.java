@@ -2160,6 +2160,10 @@ public class Tools {
 		return Tools.joinEscaped(values, Tools.DEFAULT_SEPARATOR);
 	}
 
+	public static final String joinCSVEscaped(String... values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
+	}
+
 	public static final List<String> splitEscaped(String value, char separator) {
 		if (value == null) { return null; }
 		List<String> values = new ArrayList<String>();
@@ -2180,6 +2184,11 @@ public class Tools {
 		return values;
 	}
 
+	public static final String joinEscaped(char separator, String... values) {
+		if (values == null) { return null; }
+		return Tools.joinEscaped(Arrays.asList(values), separator);
+	}
+
 	public static final String joinEscaped(List<String> values, char separator) {
 		if (values == null) { return null; }
 		StringBuilder sb = new StringBuilder();
@@ -2190,6 +2199,8 @@ public class Tools {
 			if (!first) {
 				sb.append(separator);
 			}
+			// Cover against null-values
+			str = String.valueOf(str);
 			sb.append(str.replaceAll(replacer, replacement));
 			first = false;
 		}
