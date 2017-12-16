@@ -1,13 +1,14 @@
 package com.armedia.commons.utilities;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -37,7 +38,8 @@ public abstract class PooledWorkers<S, Q> {
 	private final AtomicBoolean terminated = new AtomicBoolean(false);
 	private int threadCount = 0;
 	private ThreadPoolExecutor executor = null;
-	private final Map<Long, Thread> blockedThreads = new ConcurrentHashMap<Long, Thread>();
+	private final Collection<Thread> threads = new ArrayList<Thread>();
+	private final Set<Long> blocked = new HashSet<Long>();
 
 	private final class Worker implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
@@ -67,14 +69,14 @@ public abstract class PooledWorkers<S, Q> {
 					if (this.waitForWork && !PooledWorkers.this.terminated.get()) {
 						final Thread thread = Thread.currentThread();
 						try {
-							PooledWorkers.this.blockedThreads.put(thread.getId(), thread);
+							PooledWorkers.this.blocked.add(thread.getId());
 							next = PooledWorkers.this.workQueue.take();
 						} catch (InterruptedException e) {
 							thread.interrupt();
 							this.log.debug("Thread interrupted - worker exiting the work polling loop");
 							return;
 						} finally {
-							PooledWorkers.this.blockedThreads.remove(thread.getId());
+							PooledWorkers.this.blocked.remove(thread.getId());
 						}
 					} else {
 						next = PooledWorkers.this.workQueue.poll();
@@ -89,6 +91,9 @@ public abstract class PooledWorkers<S, Q> {
 					}
 
 					try {
+						// Make sure the interruption status is cleared just before we invoke the
+						// processing method
+						Thread.interrupted();
 						process(state, next);
 					} catch (Exception e) {
 						this.log.error(String.format("Failed to process item %s", next), e);
@@ -190,7 +195,7 @@ public abstract class PooledWorkers<S, Q> {
 			this.activeCounter.set(0);
 			this.futures.clear();
 			this.terminated.set(false);
-			this.blockedThreads.clear();
+			this.threads.clear();
 			Worker worker = new Worker(waitForWork);
 			ThreadFactory threadFactory = Executors.defaultThreadFactory();
 			name = StringUtils.strip(name);
@@ -202,7 +207,9 @@ public abstract class PooledWorkers<S, Q> {
 
 					@Override
 					public Thread newThread(Runnable r) {
-						return new Thread(group, r, String.format("%s-%d", prefix, this.counter.incrementAndGet()));
+						Thread t = new Thread(group, r, String.format("%s-%d", prefix, this.counter.incrementAndGet()));
+						PooledWorkers.this.threads.add(t);
+						return t;
 					}
 				};
 			}
@@ -230,10 +237,20 @@ public abstract class PooledWorkers<S, Q> {
 				// We're done, we must wait until all workers are waiting
 				this.log.debug(String.format("Waiting for %d workers to finish processing", this.threadCount));
 				// First, wake any blocked threads
-				for (Thread t : this.blockedThreads.values()) {
-					t.interrupt();
+				for (Thread t : this.threads) {
+					if (this.blocked.contains(t.getId())) {
+						switch (t.getState()) {
+							case TIMED_WAITING:
+							case WAITING:
+								t.interrupt();
+								break;
+							default:
+								// Do nothing - it will exit on its own
+						}
+					}
 				}
-				this.blockedThreads.clear();
+				this.threads.clear();
+
 				for (Future<?> future : this.futures) {
 					try {
 						future.get();
