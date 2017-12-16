@@ -9,16 +9,20 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,22 +170,44 @@ public abstract class PooledWorkers<S, Q> {
 	}
 
 	public final boolean start(int threadCount) {
-		return start(threadCount, true);
+		return start(threadCount, null, true);
+	}
+
+	public final boolean start(int threadCount, String name) {
+		return start(threadCount, null, true);
 	}
 
 	public final boolean start(int threadCount, boolean waitForWork) {
+		return start(threadCount, null, waitForWork);
+	}
+
+	public final boolean start(int threadCount, String name, boolean waitForWork) {
 		final Lock l = this.lock.writeLock();
 		l.lock();
 		try {
 			if (this.executor != null) { return false; }
-			this.threadCount = threadCount;
+			this.threadCount = Math.max(1, threadCount);
 			this.activeCounter.set(0);
 			this.futures.clear();
 			this.terminated.set(false);
 			this.blockedThreads.clear();
 			Worker worker = new Worker(waitForWork);
-			this.executor = new ThreadPoolExecutor(threadCount, threadCount, 30, TimeUnit.SECONDS,
-				new LinkedBlockingQueue<Runnable>());
+			ThreadFactory threadFactory = Executors.defaultThreadFactory();
+			name = StringUtils.strip(name);
+			if (!StringUtils.isEmpty(name)) {
+				final String prefix = name;
+				final ThreadGroup group = new ThreadGroup(String.format("Threads for PooledWorkers task [%s]", name));
+				threadFactory = new ThreadFactory() {
+					private final AtomicLong counter = new AtomicLong(0);
+
+					@Override
+					public Thread newThread(Runnable r) {
+						return new Thread(group, r, String.format("%s-%d", prefix, this.counter.incrementAndGet()));
+					}
+				};
+			}
+			this.executor = new ThreadPoolExecutor(this.threadCount, this.threadCount, 30, TimeUnit.SECONDS,
+				new LinkedBlockingQueue<Runnable>(), threadFactory);
 			for (int i = 0; i < this.threadCount; i++) {
 				this.futures.add(this.executor.submit(worker));
 			}
