@@ -3,14 +3,17 @@ package com.armedia.commons.utilities;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -27,27 +30,18 @@ public abstract class PooledWorkers<S, Q> {
 	private final AtomicInteger activeCounter;
 
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
-	private Q exitValue = null;
+	private final AtomicBoolean terminated = new AtomicBoolean(false);
 	private int threadCount = 0;
 	private ThreadPoolExecutor executor = null;
+	private final Map<Long, Thread> blockedThreads = new ConcurrentHashMap<Long, Thread>();
 
 	private final class Worker implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
 
 		private final boolean blocking;
-		private final Q exitValue;
 
-		private Worker(Q exitValue) {
-			this(true, exitValue);
-		}
-
-		private Worker(boolean blocking, Q exitValue) {
-			this.exitValue = exitValue;
+		private Worker(boolean blocking) {
 			this.blocking = blocking;
-		}
-
-		private boolean isExitValue(Object o) {
-			return ((this.exitValue != null) && (o == this.exitValue));
 		}
 
 		@Override
@@ -66,30 +60,24 @@ public abstract class PooledWorkers<S, Q> {
 						this.log.trace("Polling the queue...");
 					}
 					Q next = null;
-					if (this.blocking) {
+					if (this.blocking && !PooledWorkers.this.terminated.get()) {
+						final Thread thread = Thread.currentThread();
 						try {
+							PooledWorkers.this.blockedThreads.put(thread.getId(), thread);
 							next = PooledWorkers.this.workQueue.take();
 						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
+							thread.interrupt();
+							this.log.debug("Thread interrupted - worker exiting the work polling loop");
 							return;
+						} finally {
+							PooledWorkers.this.blockedThreads.remove(thread.getId());
 						}
 					} else {
 						next = PooledWorkers.this.workQueue.poll();
 						if (next == null) {
-							this.log.debug("Exiting the work polling loop");
+							this.log.debug("Queue empty - worker exiting the work polling loop");
 							return;
 						}
-					}
-
-					// We compare instances, and not values, because we're interested
-					// in seeing if the EXACT exit value flag is used, not one that
-					// looks the same out of some unfortunate coincidence. By checking
-					// instances, we ensure that we will not exit the loop prematurely
-					// due to a value collision.
-					if (isExitValue(next)) {
-						// Work complete
-						this.log.debug("Exiting the work polling loop");
-						return;
 					}
 
 					if (this.log.isDebugEnabled()) {
@@ -177,26 +165,21 @@ public abstract class PooledWorkers<S, Q> {
 		}
 	}
 
-	public final boolean start(int threadCount, Q exitValue) {
-		return start(threadCount, exitValue, true);
-	}
-
 	public final boolean start(int threadCount) {
-		return start(threadCount, null, false);
+		return start(threadCount, true);
 	}
 
-	public final boolean start(int threadCount, Q exitValue, boolean blocking) {
+	public final boolean start(int threadCount, boolean blocking) {
 		final Lock l = this.lock.writeLock();
 		l.lock();
 		try {
 			if (this.executor != null) { return false; }
-			if (blocking
-				&& (exitValue == null)) { throw new IllegalArgumentException("Blocking mode requires an exit value"); }
 			this.threadCount = threadCount;
-			this.exitValue = exitValue;
 			this.activeCounter.set(0);
 			this.futures.clear();
-			Worker worker = new Worker(exitValue);
+			this.terminated.set(false);
+			this.blockedThreads.clear();
+			Worker worker = new Worker(blocking);
 			this.executor = new ThreadPoolExecutor(threadCount, threadCount, 30, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>());
 			for (int i = 0; i < this.threadCount; i++) {
@@ -214,51 +197,36 @@ public abstract class PooledWorkers<S, Q> {
 		l.lock();
 		try {
 			this.log.debug("Signaling work completion for the workers");
-			boolean waitCleanly = true;
-			if (this.exitValue != null) {
-				for (int i = 0; i < this.threadCount; i++) {
-					try {
-						this.workQueue.put(this.exitValue);
-					} catch (InterruptedException e) {
-						waitCleanly = false;
-						// Here we have a problem: we're timing out while adding the exit
-						// values...
-						this.log.warn("Interrupted while attempting to request executor thread termination", e);
-						Thread.currentThread().interrupt();
-						this.executor.shutdownNow();
-						break;
-					}
-				}
-			}
+			this.terminated.set(true);
 
 			List<Q> remaining = new ArrayList<Q>();
 			try {
 				// We're done, we must wait until all workers are waiting
-				if (waitCleanly) {
-					this.log.debug(String.format("Waiting for %d workers to finish processing", this.threadCount));
-					for (Future<?> future : this.futures) {
-						try {
-							future.get();
-						} catch (InterruptedException e) {
-							this.log.warn(
-								"Interrupted while waiting for an executor thread to exit, forcing the shutdown", e);
-							Thread.currentThread().interrupt();
-							this.executor.shutdownNow();
-							break;
-						} catch (ExecutionException e) {
-							this.log.warn("An executor thread raised an exception", e);
-						} catch (CancellationException e) {
-							this.log.warn("An executor thread was canceled!", e);
-						}
-					}
-					this.log.debug("All the workers are done.");
+				this.log.debug(String.format("Waiting for %d workers to finish processing", this.threadCount));
+				// First, wake any blocked threads
+				for (Thread t : this.blockedThreads.values()) {
+					t.interrupt();
 				}
+				this.blockedThreads.clear();
+				for (Future<?> future : this.futures) {
+					try {
+						future.get();
+					} catch (InterruptedException e) {
+						this.log.warn("Interrupted while waiting for an executor thread to exit, forcing the shutdown",
+							e);
+						Thread.currentThread().interrupt();
+						this.executor.shutdownNow();
+						break;
+					} catch (ExecutionException e) {
+						this.log.warn("An executor thread raised an exception", e);
+					} catch (CancellationException e) {
+						this.log.warn("An executor thread was canceled!", e);
+					}
+				}
+				this.log.debug("All the workers are done.");
 			} finally {
 				this.workQueue.drainTo(remaining);
 				for (Q v : remaining) {
-					if ((this.exitValue != null) && (v == this.exitValue)) {
-						continue;
-					}
 					this.log.error(String.format("WORK LEFT PENDING IN THE QUEUE: %s", v));
 				}
 			}
@@ -307,7 +275,6 @@ public abstract class PooledWorkers<S, Q> {
 				} finally {
 					this.executor = null;
 					this.threadCount = 0;
-					this.exitValue = null;
 				}
 			}
 		} finally {
