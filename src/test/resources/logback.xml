@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+<configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{ISO8601} [%-16t] %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.armedia.commons.utilities" level="DEBUG"/>
+
+	<logger name="console" level="INFO">
+		<appender-ref ref="stdout"/>
+	</logger>
+
+	<root level="INFO">
+		<appender-ref ref="stdout"/>
+	</root>
+</configuration>
