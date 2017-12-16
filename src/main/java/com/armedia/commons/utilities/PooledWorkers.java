@@ -38,10 +38,10 @@ public abstract class PooledWorkers<S, Q> {
 	private final class Worker implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
 
-		private final boolean blocking;
+		private final boolean waitForWork;
 
-		private Worker(boolean blocking) {
-			this.blocking = blocking;
+		private Worker(boolean waitForWork) {
+			this.waitForWork = waitForWork;
 		}
 
 		@Override
@@ -60,7 +60,7 @@ public abstract class PooledWorkers<S, Q> {
 						this.log.trace("Polling the queue...");
 					}
 					Q next = null;
-					if (this.blocking && !PooledWorkers.this.terminated.get()) {
+					if (this.waitForWork && !PooledWorkers.this.terminated.get()) {
 						final Thread thread = Thread.currentThread();
 						try {
 							PooledWorkers.this.blockedThreads.put(thread.getId(), thread);
@@ -169,7 +169,7 @@ public abstract class PooledWorkers<S, Q> {
 		return start(threadCount, true);
 	}
 
-	public final boolean start(int threadCount, boolean blocking) {
+	public final boolean start(int threadCount, boolean waitForWork) {
 		final Lock l = this.lock.writeLock();
 		l.lock();
 		try {
@@ -179,7 +179,7 @@ public abstract class PooledWorkers<S, Q> {
 			this.futures.clear();
 			this.terminated.set(false);
 			this.blockedThreads.clear();
-			Worker worker = new Worker(blocking);
+			Worker worker = new Worker(waitForWork);
 			this.executor = new ThreadPoolExecutor(threadCount, threadCount, 30, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>());
 			for (int i = 0; i < this.threadCount; i++) {
