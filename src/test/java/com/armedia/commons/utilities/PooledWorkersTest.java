@@ -10,10 +10,10 @@ public class PooledWorkersTest {
 	@Test
 	public void testBlocking() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
-		PooledWorkers<Object, String> pw = new PooledWorkers<Object, String>() {
+		PooledWorkers<Object, Object, String> pw = new PooledWorkers<Object, Object, String>() {
 
 			@Override
-			protected Object prepare() throws Exception {
+			protected Object initialize(Object o) throws Exception {
 				return null;
 			}
 
@@ -28,7 +28,7 @@ public class PooledWorkersTest {
 			}
 		};
 
-		pw.start(4, "Blocking", true);
+		pw.start(null, 4, "Blocking", true);
 		final int testCount = 100;
 		Assert.assertEquals(0, data.get());
 		for (int i = 1; i <= testCount; i++) {
@@ -41,10 +41,10 @@ public class PooledWorkersTest {
 	@Test
 	public void testInterrupt() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
-		PooledWorkers<Object, String> pw = new PooledWorkers<Object, String>() {
+		PooledWorkers<Object, Object, String> pw = new PooledWorkers<Object, Object, String>() {
 
 			@Override
-			protected Object prepare() throws Exception {
+			protected Object initialize(Object o) throws Exception {
 				return null;
 			}
 
@@ -59,7 +59,7 @@ public class PooledWorkersTest {
 			}
 		};
 
-		pw.start(4, "Interrupt", true);
+		pw.start(null, 4, "Interrupt", true);
 		final int testCount = 100;
 		Assert.assertEquals(0, data.get());
 		for (int i = 1; i <= testCount; i++) {
@@ -75,10 +75,10 @@ public class PooledWorkersTest {
 	@Test
 	public void testNonBlocking() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
-		PooledWorkers<Object, String> pw = new PooledWorkers<Object, String>() {
+		PooledWorkers<Object, Object, String> pw = new PooledWorkers<Object, Object, String>() {
 
 			@Override
-			protected Object prepare() throws Exception {
+			protected Object initialize(Object o) throws Exception {
 				return null;
 			}
 
@@ -98,7 +98,7 @@ public class PooledWorkersTest {
 			pw.addWorkItem(String.format("%08x", i));
 		}
 		Assert.assertEquals(0, data.get());
-		pw.start(4, "NonBlocking", false);
+		pw.start(null, 4, "NonBlocking", false);
 		pw.waitForCompletion();
 		Assert.assertEquals(testCount, data.get());
 	}
