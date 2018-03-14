@@ -391,15 +391,16 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 			Worker worker = new Worker(initializer, waitForWork);
 			ThreadFactory threadFactory = Executors.defaultThreadFactory();
 			name = StringUtils.strip(name);
+			final String threadNameFormat = String.format("%s-%%0%dd", name, String.valueOf(threadCount).length());
 			if (!StringUtils.isEmpty(name)) {
-				final String prefix = name;
 				final ThreadGroup group = new ThreadGroup(String.format("Threads for PooledWorkers task [%s]", name));
 				threadFactory = new ThreadFactory() {
 					private final AtomicLong counter = new AtomicLong(0);
 
 					@Override
 					public Thread newThread(Runnable r) {
-						Thread t = new Thread(group, r, String.format("%s-%d", prefix, this.counter.incrementAndGet()));
+						Thread t = new Thread(group, r,
+							String.format(threadNameFormat, this.counter.incrementAndGet()));
 						PooledWorkers.this.threads.add(t);
 						return t;
 					}
