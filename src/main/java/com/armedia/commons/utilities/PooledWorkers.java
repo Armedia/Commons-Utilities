@@ -580,9 +580,11 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 	 * pending work to conclude. The maximum amount of time to wait is determined by
 	 * {@link #getDefaultMaxWait()} and {@link #getDefaultMaxWaitUnit()}.
 	 * </p>
+	 *
+	 * @return a list of items pending processing. Will never be {@code null}, but may be empty
 	 */
-	public final void waitForCompletion() {
-		waitForCompletion(0, null);
+	public List<ITEM> waitForCompletion() {
+		return waitForCompletion(0, null);
 	}
 
 	/**
@@ -597,17 +599,13 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 	 *
 	 * @param maxWait
 	 * @param timeUnit
+	 * @return a list of items pending processing. Will never be {@code null}, but may be empty
 	 */
-	public final void waitForCompletion(long maxWait, TimeUnit timeUnit) {
+	public final List<ITEM> waitForCompletion(long maxWait, TimeUnit timeUnit) {
 		final Lock l = this.lock.writeLock();
 		l.lock();
 		try {
-			List<ITEM> items = shutdown(false, maxWait, timeUnit);
-			if (items != null) {
-				for (ITEM item : items) {
-					this.log.error("WORK LEFT PENDING IN THE QUEUE: {}", item);
-				}
-			}
+			return shutdown(false, maxWait, timeUnit);
 		} finally {
 			l.unlock();
 		}
