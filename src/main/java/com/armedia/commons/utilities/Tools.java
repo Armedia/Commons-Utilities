@@ -2117,16 +2117,32 @@ public class Tools {
 
 	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values, String all,
 		boolean failOnUnknown) {
+		if (values == null) { return Tools.parseEnums(enumClass, null, all, failOnUnknown); }
+		StrTokenizer tok = StrTokenizer.getCSVInstance(values);
+		return Tools.parseEnums(enumClass, tok.getTokenList(), all, failOnUnknown);
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnums(Class<E> enumClass, Collection<String> values) {
+		return Tools.parseEnums(enumClass, values, null, true);
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnums(Class<E> enumClass, Collection<String> values, String all) {
+		return Tools.parseEnums(enumClass, values, all, true);
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnums(Class<E> enumClass, Collection<String> values,
+		boolean failOnUnknown) {
+		return Tools.parseEnums(enumClass, values, null, failOnUnknown);
+	}
+
+	public static <E extends Enum<E>> Set<E> parseEnums(Class<E> enumClass, Collection<String> values, String all,
+		boolean failOnUnknown) {
 		if ((enumClass == null)
 			|| !enumClass.isEnum()) { throw new IllegalArgumentException("Must provide an enum class"); }
 		Set<E> ret = EnumSet.noneOf(enumClass);
-		if (values == null) { return ret; }
-		StrTokenizer tok = StrTokenizer.getCSVInstance(values);
-		for (String str : tok.getTokenList()) {
-			if ((all != null) && Tools.equals(all, str)) {
-				ret = EnumSet.allOf(enumClass);
-				break;
-			}
+		if ((values == null) || values.isEmpty()) { return ret; }
+		for (String str : values) {
+			if ((all != null) && Tools.equals(all, str)) { return EnumSet.allOf(enumClass); }
 			try {
 				ret.add(Enum.valueOf(enumClass, str));
 			} catch (IllegalArgumentException e) {
