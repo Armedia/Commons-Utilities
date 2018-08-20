@@ -5,28 +5,9 @@
 	<name>OSGi Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>0.3.27</version>
+	<version>0.3.28</version>
 	<description>A set of utility classes for use by OSGi modules</description>
 	<packaging>bundle</packaging>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.build.target>1.6</project.build.target>
-
-		<project.osgi.repoName>NONE</project.osgi.repoName>
-		<project.osgi.repoUrl>file:///${user.home}/OSGi/releases</project.osgi.repoUrl>
-	</properties>
-
-	<scm>
-		<connection>scm:svn:http://project.armedia.com/svn/Commons/${project.artifactId}</connection>
-		<developerConnection>scm:svn:http://${user.name}@project.armedia.com/svn/Commons/${project.artifactId}/trunk</developerConnection>
-		<url>http://project.armedia.com/svn/Commons/${project.artifactId}</url>
-	</scm>
-
-	<issueManagement>
-		<system>JIRA</system>
-		<url>https://project.armedia.com/jira/browse/UTILITIES</url>
-	</issueManagement>
 
 	<organization>
 		<name>Armedia</name>
@@ -48,6 +29,18 @@
 			<timezone>-6</timezone>
 		</developer>
 	</developers>
+
+	<scm>
+		<connection>scm:git@gitlab.armedia.com:commons/utilities.git</connection>
+	</scm>
+
+	<properties>
+		<maven.min-version>3.2.2</maven.min-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.target>1.6</project.build.target>
+		<project.osgi.repoName>NONE</project.osgi.repoName>
+		<project.osgi.repoUrl>file:///${user.home}/OSGi/releases</project.osgi.repoUrl>
+	</properties>
 
 	<distributionManagement>
 		<repository>
