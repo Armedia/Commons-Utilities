@@ -5,7 +5,7 @@
 	<name>OSGi Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>0.3.28</version>
+	<version>0.4.0</version>
 	<description>A set of utility classes for use by OSGi modules</description>
 	<packaging>bundle</packaging>
 
@@ -37,7 +37,7 @@
 	<properties>
 		<maven.min-version>3.2.2</maven.min-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.build.target>1.6</project.build.target>
+		<project.build.target>1.8</project.build.target>
 		<project.osgi.repoName>NONE</project.osgi.repoName>
 		<project.osgi.repoUrl>file:///${user.home}/OSGi/releases</project.osgi.repoUrl>
 	</properties>
