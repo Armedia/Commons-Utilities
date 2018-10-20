@@ -61,7 +61,7 @@ public class Tools {
 	private static final int PRIME_HALF;
 	private static final List<Integer> PRIMES;
 	static {
-		Set<String> s = new HashSet<String>();
+		Set<String> s = new HashSet<>();
 		s.add("TRUE");
 		s.add("T");
 		s.add("YES");
@@ -573,7 +573,7 @@ public class Tools {
 	 */
 	private static String arrayString(Object[] a) {
 		if (a == null) { return null; }
-		return Tools.iteratorString(new ArrayIterator<Object>(a));
+		return Tools.iteratorString(new ArrayIterator<>(a));
 	}
 
 	/**
@@ -654,6 +654,7 @@ public class Tools {
 	 * @return the first non-null reference within the provided list of references, or {@code null}
 	 *         if all references are {@code null}
 	 */
+	@SafeVarargs
 	public static <T extends Object> T coalesce(T o, T... others) {
 		int pos = Tools.firstNonNull(o, others);
 		if (pos == 0) { return o; }
@@ -672,6 +673,7 @@ public class Tools {
 	 * @return the index of the first non-{@code null} reference within the provided list of
 	 *         references, or {@code -1} if all references are {@code null}
 	 */
+	@SafeVarargs
 	public static <T extends Object> int firstNonNull(T o, T... others) {
 		if (o != null) { return 0; }
 		int i = 0;
@@ -693,6 +695,7 @@ public class Tools {
 	 * @return the index of the first {@code null} reference within the provided list of references,
 	 *         or {@code -1} if all references are non-{@code null}
 	 */
+	@SafeVarargs
 	public static <T extends Object> int firstNull(T o, T... others) {
 		if (o == null) { return 0; }
 		int i = 0;
@@ -844,9 +847,9 @@ public class Tools {
 		if (m.isEmpty()) { return Collections.emptyMap(); }
 		final Map<K, V> ret;
 		if (m instanceof SortedMap<?, ?>) {
-			ret = new TreeMap<K, V>(m);
+			ret = new TreeMap<>(m);
 		} else {
-			ret = new HashMap<K, V>(m);
+			ret = new HashMap<>(m);
 		}
 		return Collections.unmodifiableMap(ret);
 	}
@@ -864,7 +867,7 @@ public class Tools {
 			}
 		}
 		if (l.isEmpty()) { return Collections.emptyList(); }
-		return Collections.unmodifiableList(new ArrayList<T>(l));
+		return Collections.unmodifiableList(new ArrayList<>(l));
 	}
 
 	public static <T> Set<T> freezeCopy(Set<T> s) {
@@ -882,9 +885,9 @@ public class Tools {
 		if (s.isEmpty()) { return Collections.emptySet(); }
 		final Set<T> ret;
 		if (s instanceof SortedSet<?>) {
-			ret = new TreeSet<T>(s);
+			ret = new TreeSet<>(s);
 		} else {
-			ret = new HashSet<T>(s);
+			ret = new HashSet<>(s);
 		}
 		return Collections.unmodifiableSet(ret);
 	}
@@ -988,6 +991,7 @@ public class Tools {
 		return a.compareTo(b);
 	}
 
+	@SafeVarargs
 	public static <T extends Comparable<T>> T min(T a, T... others) {
 		T r = a;
 		for (T b : others) {
@@ -1005,6 +1009,7 @@ public class Tools {
 		return r;
 	}
 
+	@SafeVarargs
 	public static <T extends Comparable<T>> T max(T a, T... others) {
 		T r = a;
 		for (T b : others) {
@@ -1038,7 +1043,7 @@ public class Tools {
 	}
 
 	public static <T> List<T> toList(Enumeration<T> e) {
-		List<T> l = new ArrayList<T>();
+		List<T> l = new ArrayList<>();
 		while (e.hasMoreElements()) {
 			l.add(e.nextElement());
 		}
@@ -2067,6 +2072,7 @@ public class Tools {
 	 * @throws IllegalArgumentException
 	 *             if {@code target} is {@code null}
 	 */
+	@SafeVarargs
 	public static <K, V> void overlayMaps(Map<K, V> target, Map<K, V>... readable) {
 		if (target == null) { throw new IllegalArgumentException("Must provide a map to overlay the values to"); }
 		if ((readable == null) || (readable.length == 0)) { return; }
@@ -2182,7 +2188,7 @@ public class Tools {
 
 	public static final List<String> splitEscaped(char separator, String value) {
 		if (value == null) { return null; }
-		List<String> values = new ArrayList<String>();
+		List<String> values = new ArrayList<>();
 		Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
 		Matcher matcher = splitter.matcher(value);
 		int previous = 0;
