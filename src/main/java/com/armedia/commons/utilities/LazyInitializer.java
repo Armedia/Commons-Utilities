@@ -131,7 +131,7 @@ public class LazyInitializer<T> implements ConcurrentInitializer<T> {
 					if (initializer != null) {
 						try {
 							this.item = initializer.initialize();
-						} catch (Exception e) {
+						} catch (Throwable e) {
 							throw new ConcurrentException(e);
 						}
 					} else {
