@@ -28,15 +28,15 @@ import org.apache.commons.lang3.concurrent.ConcurrentUtils;
  * @author drivera@armedia.com
  *
  */
-public final class LockDispenser<K extends Object, C extends Object> {
+public final class LockDispenser<K, C> {
 
 	@FunctionalInterface
-	public static interface LockBuilder<K extends Object, C extends Object> {
+	public static interface LockBuilder<K, C> {
 		public C newLock(K key);
 	}
 
 	@FunctionalInterface
-	public static interface ReferenceBuilder<C extends Object> {
+	public static interface ReferenceBuilder<C> {
 		public Reference<C> newReference(C key);
 	}
 
