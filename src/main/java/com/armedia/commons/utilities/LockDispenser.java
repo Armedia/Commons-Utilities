@@ -12,9 +12,13 @@
 package com.armedia.commons.utilities;
 
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
@@ -24,15 +28,58 @@ import org.apache.commons.lang3.concurrent.ConcurrentUtils;
  * @author drivera@armedia.com
  *
  */
-public abstract class LockDispenser<K extends Object, C extends Object> {
+public final class LockDispenser<K extends Object, C extends Object> {
 
-	public static <K> LockDispenser<K, Object> getBasic() {
-		return new LockDispenser<K, Object>() {
-			@Override
-			protected Object newLock(K key) {
-				return new Object();
-			}
+	@FunctionalInterface
+	public static interface LockBuilder<K extends Object, C extends Object> {
+		public C newLock(K key);
+	}
+
+	@FunctionalInterface
+	public static interface ReferenceBuilder<C extends Object> {
+		public Reference<C> newReference(C key);
+	}
+
+	public static <C> ReferenceBuilder<C> getWeakReferenceBuilder() {
+		return (v) -> {
+			return new WeakReference<>(v);
 		};
+	}
+
+	public static <C> ReferenceBuilder<C> getSoftReferenceBuilder() {
+		return (v) -> {
+			return new SoftReference<>(v);
+		};
+	}
+
+	/**
+	 * <p>
+	 * Deprecated in favor of {@link #getSynchronized()}
+	 * </p>
+	 *
+	 * @return the same as {@link #getSynchronized()}
+	 */
+	@Deprecated
+	public static <K> LockDispenser<K, Object> getBasic() {
+		return LockDispenser.getSynchronized();
+	}
+
+	public static <K> LockDispenser<K, Object> getSynchronized() {
+		return new LockDispenser<>((k) -> {
+			return new Object();
+		});
+	}
+
+	public static <K> LockDispenser<K, ReentrantLock> getLock() {
+		return new LockDispenser<>((k) -> {
+			return new ReentrantLock();
+		});
+	}
+
+	public static <K> LockDispenser<K, ReentrantReadWriteLock> getReadWriteLock() {
+		return new LockDispenser<>((k) -> {
+			return new ReentrantReadWriteLock();
+		});
 	}
 
 	private class LockBox {
@@ -46,29 +93,37 @@ public abstract class LockDispenser<K extends Object, C extends Object> {
 
 		private synchronized C get() {
 			if ((this.lock == null) || (this.lock.get() == null)) {
-				this.lock = newReference(newLock(this.key));
+				C lock = LockDispenser.this.lockBuilder.newLock(this.key);
+				if (lock == null) { throw new RuntimeException(
+					"The LockBuilder must always return a non-null lock object instance"); }
+				this.lock = LockDispenser.this.referenceBuilder.newReference(lock);
+				if (this.lock == null) { throw new RuntimeException(
+					"The ReferenceBuilder must always return a non-null Reference<> instance"); }
 			}
 			return this.lock.get();
 		}
 	}
 
-	private final ConcurrentMap<K, LockBox> locks = new ConcurrentHashMap<K, LockBox>();
+	private final LockBuilder<K, C> lockBuilder;
+	private final ReferenceBuilder<C> referenceBuilder;
+	private final ConcurrentMap<K, LockBox> locks = new ConcurrentHashMap<>();
 
-	public final C getLock(final K key) {
+	public LockDispenser(LockBuilder<K, C> lockBuilder) {
+		this(lockBuilder, LockDispenser.getWeakReferenceBuilder());
+	}
 
-		LockBox box = ConcurrentUtils.createIfAbsentUnchecked(this.locks, key, new ConcurrentInitializer<LockBox>() {
+	public LockDispenser(LockBuilder<K, C> lockBuilder, ReferenceBuilder<C> referenceBuilder) {
+		this.lockBuilder = Objects.requireNonNull(lockBuilder, "Must provide a non-null LockBuilder instance");
+		this.referenceBuilder = Objects.requireNonNull(referenceBuilder,
+			"Must provide a non-null ReferenceBuilder instance");
+	}
+
+	public C getLock(final K key) {
+		return ConcurrentUtils.createIfAbsentUnchecked(this.locks, key, new ConcurrentInitializer<LockBox>() {
 			@Override
 			public LockBox get() throws ConcurrentException {
 				return new LockBox(key);
 			}
-		});
-
-		return box.get();
+		}).get();
 	}
-
-	protected Reference<C> newReference(C c) {
-		return new WeakReference<C>(c);
-	}
-
-	protected abstract C newLock(K key);
 }
