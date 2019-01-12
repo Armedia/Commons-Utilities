@@ -1,12 +1,12 @@
 /**
  * *******************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
  * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
  * STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011-2012. All Rights reserved.
- * 
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -20,7 +20,7 @@ import org.apache.commons.io.IOUtils;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public abstract class ResourceFile {
 
@@ -94,7 +94,7 @@ public abstract class ResourceFile {
 	 * Returns the resource to attempt for the given fallback attempt, or {@code null} if no further
 	 * attempts should be undertaken. The first attempt is always for the base name given with the
 	 * constructor, while all subsequent attempts can change the resource name completely.
-	 * 
+	 *
 	 * @param fallbackAttempt
 	 * @return the new name for the resource that should be attempted
 	 */
@@ -139,8 +139,7 @@ public abstract class ResourceFile {
 	}
 
 	public final byte[] getContents() throws IOException {
-		InputStream in = openInputStream();
-		try {
+		try (InputStream in = openInputStream()) {
 			byte[] data = IOUtils.toByteArray(in);
 			/*
 			if (this.log.isDebugEnabled()) {
@@ -149,8 +148,6 @@ public abstract class ResourceFile {
 			}
 			*/
 			return data;
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 

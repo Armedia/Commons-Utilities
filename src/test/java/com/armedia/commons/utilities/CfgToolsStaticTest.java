@@ -21,7 +21,6 @@ import java.util.UUID;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -58,10 +57,10 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		Properties props = new Properties();
-		InputStream in = CfgToolsStaticTest.class.getClassLoader().getResourceAsStream("cfgtools.properties");
-		props.load(in);
-		IOUtils.closeQuietly(in);
-		Map<String, String> cfg = new HashMap<String, String>();
+		try (InputStream in = CfgToolsStaticTest.class.getClassLoader().getResourceAsStream("cfgtools.properties")) {
+			props.load(in);
+		}
+		Map<String, String> cfg = new HashMap<>();
 		for (Map.Entry<Object, Object> e : props.entrySet()) {
 			cfg.put(e.getKey().toString(), e.getValue().toString());
 		}
@@ -167,16 +166,16 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@Test
 	public void testDecodeByteWithDefault() {
 		Assert.assertNull(CfgTools.decodeByte("byte.empty", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Byte.MIN_VALUE == CfgTools
-			.decodeByte("byte.empty", CfgToolsStaticTest.CONFIG, Byte.MIN_VALUE));
-		Assert.assertTrue(Byte.MAX_VALUE == CfgTools
-			.decodeByte("byte.empty", CfgToolsStaticTest.CONFIG, Byte.MAX_VALUE));
+		Assert
+			.assertTrue(Byte.MIN_VALUE == CfgTools.decodeByte("byte.empty", CfgToolsStaticTest.CONFIG, Byte.MIN_VALUE));
+		Assert
+			.assertTrue(Byte.MAX_VALUE == CfgTools.decodeByte("byte.empty", CfgToolsStaticTest.CONFIG, Byte.MAX_VALUE));
 
 		Assert.assertNull(CfgTools.decodeByte("byte.min.undef", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Byte.MIN_VALUE == CfgTools.decodeByte("byte.min.undef", CfgToolsStaticTest.CONFIG,
-			Byte.MIN_VALUE));
-		Assert.assertTrue(Byte.MAX_VALUE == CfgTools.decodeByte("byte.min.undef", CfgToolsStaticTest.CONFIG,
-			Byte.MAX_VALUE));
+		Assert.assertTrue(
+			Byte.MIN_VALUE == CfgTools.decodeByte("byte.min.undef", CfgToolsStaticTest.CONFIG, Byte.MIN_VALUE));
+		Assert.assertTrue(
+			Byte.MAX_VALUE == CfgTools.decodeByte("byte.min.undef", CfgToolsStaticTest.CONFIG, Byte.MAX_VALUE));
 
 		Assert.assertTrue(Byte.MIN_VALUE == CfgTools.decodeByte("byte.min", CfgToolsStaticTest.CONFIG, null));
 		Assert.assertTrue(Byte.MIN_VALUE == CfgTools.decodeByte("byte.min", CfgToolsStaticTest.CONFIG, Byte.MIN_VALUE));
@@ -251,11 +250,11 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 
 		Assert.assertNull(CfgTools.decodeByte(TestSettingString.BYTE_EMPTY, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Byte.MIN_VALUE == CfgTools.decodeByte(TestSettingString.BYTE_MIN, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Byte.MIN_VALUE == CfgTools.decodeByte(TestSettingString.BYTE_MIN_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Byte.MIN_VALUE == CfgTools.decodeByte(TestSettingString.BYTE_MIN_UNDEF, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Byte.MAX_VALUE == CfgTools.decodeByte(TestSettingString.BYTE_MAX, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Byte.MAX_VALUE == CfgTools.decodeByte(TestSettingString.BYTE_MAX_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Byte.MAX_VALUE == CfgTools.decodeByte(TestSettingString.BYTE_MAX_UNDEF, CfgToolsStaticTest.CONFIG));
 
 		try {
 			CfgTools.decodeByte(TestSetting.BYTE_OVER, CfgToolsStaticTest.CONFIG);
@@ -284,28 +283,28 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@Test
 	public void testDecodeShortWithDefault() {
 		Assert.assertNull(CfgTools.decodeShort("short.empty", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort("short.empty", CfgToolsStaticTest.CONFIG,
-			Short.MIN_VALUE));
-		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort("short.empty", CfgToolsStaticTest.CONFIG,
-			Short.MAX_VALUE));
+		Assert.assertTrue(
+			Short.MIN_VALUE == CfgTools.decodeShort("short.empty", CfgToolsStaticTest.CONFIG, Short.MIN_VALUE));
+		Assert.assertTrue(
+			Short.MAX_VALUE == CfgTools.decodeShort("short.empty", CfgToolsStaticTest.CONFIG, Short.MAX_VALUE));
 
 		Assert.assertNull(CfgTools.decodeShort("short.min.undef", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort("short.min.undef", CfgToolsStaticTest.CONFIG,
-			Short.MIN_VALUE));
-		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort("short.min.undef", CfgToolsStaticTest.CONFIG,
-			Short.MAX_VALUE));
+		Assert.assertTrue(
+			Short.MIN_VALUE == CfgTools.decodeShort("short.min.undef", CfgToolsStaticTest.CONFIG, Short.MIN_VALUE));
+		Assert.assertTrue(
+			Short.MAX_VALUE == CfgTools.decodeShort("short.min.undef", CfgToolsStaticTest.CONFIG, Short.MAX_VALUE));
 
 		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort("short.min", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort("short.min", CfgToolsStaticTest.CONFIG,
-			Short.MIN_VALUE));
-		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort("short.min", CfgToolsStaticTest.CONFIG,
-			Short.MAX_VALUE));
+		Assert.assertTrue(
+			Short.MIN_VALUE == CfgTools.decodeShort("short.min", CfgToolsStaticTest.CONFIG, Short.MIN_VALUE));
+		Assert.assertTrue(
+			Short.MIN_VALUE == CfgTools.decodeShort("short.min", CfgToolsStaticTest.CONFIG, Short.MAX_VALUE));
 
 		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort("short.max", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort("short.max", CfgToolsStaticTest.CONFIG,
-			Short.MIN_VALUE));
-		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort("short.max", CfgToolsStaticTest.CONFIG,
-			Short.MAX_VALUE));
+		Assert.assertTrue(
+			Short.MAX_VALUE == CfgTools.decodeShort("short.max", CfgToolsStaticTest.CONFIG, Short.MIN_VALUE));
+		Assert.assertTrue(
+			Short.MAX_VALUE == CfgTools.decodeShort("short.max", CfgToolsStaticTest.CONFIG, Short.MAX_VALUE));
 
 		try {
 			CfgTools.decodeShort("short.over", CfgToolsStaticTest.CONFIG, null);
@@ -366,21 +365,21 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	public void testDecodeShortConfigurationSetting() {
 		Assert.assertNull(CfgTools.decodeShort(TestSetting.SHORT_EMPTY, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort(TestSetting.SHORT_MIN, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort(TestSetting.SHORT_MIN_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Short.MIN_VALUE == CfgTools.decodeShort(TestSetting.SHORT_MIN_UNDEF, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort(TestSetting.SHORT_MAX, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort(TestSetting.SHORT_MAX_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Short.MAX_VALUE == CfgTools.decodeShort(TestSetting.SHORT_MAX_UNDEF, CfgToolsStaticTest.CONFIG));
 
 		Assert.assertNull(CfgTools.decodeShort(TestSettingString.SHORT_EMPTY, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MIN,
-			CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Short.MIN_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MIN_UNDEF,
-			CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MAX,
-			CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Short.MAX_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MAX_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Short.MIN_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MIN, CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Short.MIN_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MIN_UNDEF, CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Short.MAX_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MAX, CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Short.MAX_VALUE == CfgTools.decodeShort(TestSettingString.SHORT_MAX_UNDEF, CfgToolsStaticTest.CONFIG));
 
 		try {
 			CfgTools.decodeShort(TestSetting.SHORT_OVER, CfgToolsStaticTest.CONFIG);
@@ -409,10 +408,10 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@Test
 	public void testDecodeIntegerWithDefault() {
 		Assert.assertNull(CfgTools.decodeInteger("integer.empty", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger("integer.empty", CfgToolsStaticTest.CONFIG,
-			Integer.MIN_VALUE));
-		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger("integer.empty", CfgToolsStaticTest.CONFIG,
-			Integer.MAX_VALUE));
+		Assert.assertTrue(
+			Integer.MIN_VALUE == CfgTools.decodeInteger("integer.empty", CfgToolsStaticTest.CONFIG, Integer.MIN_VALUE));
+		Assert.assertTrue(
+			Integer.MAX_VALUE == CfgTools.decodeInteger("integer.empty", CfgToolsStaticTest.CONFIG, Integer.MAX_VALUE));
 
 		Assert.assertNull(CfgTools.decodeInteger("integer.min.undef", CfgToolsStaticTest.CONFIG, null));
 		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger("integer.min.undef", CfgToolsStaticTest.CONFIG,
@@ -421,16 +420,16 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 			Integer.MAX_VALUE));
 
 		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger("integer.min", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger("integer.min", CfgToolsStaticTest.CONFIG,
-			Integer.MIN_VALUE));
-		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger("integer.min", CfgToolsStaticTest.CONFIG,
-			Integer.MAX_VALUE));
+		Assert.assertTrue(
+			Integer.MIN_VALUE == CfgTools.decodeInteger("integer.min", CfgToolsStaticTest.CONFIG, Integer.MIN_VALUE));
+		Assert.assertTrue(
+			Integer.MIN_VALUE == CfgTools.decodeInteger("integer.min", CfgToolsStaticTest.CONFIG, Integer.MAX_VALUE));
 
 		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger("integer.max", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger("integer.max", CfgToolsStaticTest.CONFIG,
-			Integer.MIN_VALUE));
-		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger("integer.max", CfgToolsStaticTest.CONFIG,
-			Integer.MAX_VALUE));
+		Assert.assertTrue(
+			Integer.MAX_VALUE == CfgTools.decodeInteger("integer.max", CfgToolsStaticTest.CONFIG, Integer.MIN_VALUE));
+		Assert.assertTrue(
+			Integer.MAX_VALUE == CfgTools.decodeInteger("integer.max", CfgToolsStaticTest.CONFIG, Integer.MAX_VALUE));
 
 		try {
 			CfgTools.decodeInteger("integer.over", CfgToolsStaticTest.CONFIG, null);
@@ -491,22 +490,22 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@Test
 	public void testDecodeIntegerConfigurationSetting() {
 		Assert.assertNull(CfgTools.decodeInteger(TestSetting.INTEGER_EMPTY, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MIN,
-			CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MIN_UNDEF,
-			CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MAX,
-			CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MAX_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Integer.MIN_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MIN, CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Integer.MIN_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MIN_UNDEF, CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Integer.MAX_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MAX, CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Integer.MAX_VALUE == CfgTools.decodeInteger(TestSetting.INTEGER_MAX_UNDEF, CfgToolsStaticTest.CONFIG));
 
 		Assert.assertNull(CfgTools.decodeInteger(TestSettingString.INTEGER_EMPTY, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger(TestSettingString.INTEGER_MIN,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Integer.MIN_VALUE == CfgTools.decodeInteger(TestSettingString.INTEGER_MIN, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Integer.MIN_VALUE == CfgTools.decodeInteger(TestSettingString.INTEGER_MIN_UNDEF,
 			CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger(TestSettingString.INTEGER_MAX,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Integer.MAX_VALUE == CfgTools.decodeInteger(TestSettingString.INTEGER_MAX, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Integer.MAX_VALUE == CfgTools.decodeInteger(TestSettingString.INTEGER_MAX_UNDEF,
 			CfgToolsStaticTest.CONFIG));
 
@@ -537,16 +536,16 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@Test
 	public void testDecodeLongWithDefault() {
 		Assert.assertNull(CfgTools.decodeLong("long.empty", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Long.MIN_VALUE == CfgTools
-			.decodeLong("long.empty", CfgToolsStaticTest.CONFIG, Long.MIN_VALUE));
-		Assert.assertTrue(Long.MAX_VALUE == CfgTools
-			.decodeLong("long.empty", CfgToolsStaticTest.CONFIG, Long.MAX_VALUE));
+		Assert
+			.assertTrue(Long.MIN_VALUE == CfgTools.decodeLong("long.empty", CfgToolsStaticTest.CONFIG, Long.MIN_VALUE));
+		Assert
+			.assertTrue(Long.MAX_VALUE == CfgTools.decodeLong("long.empty", CfgToolsStaticTest.CONFIG, Long.MAX_VALUE));
 
 		Assert.assertNull(CfgTools.decodeLong("long.min.undef", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Long.MIN_VALUE == CfgTools.decodeLong("long.min.undef", CfgToolsStaticTest.CONFIG,
-			Long.MIN_VALUE));
-		Assert.assertTrue(Long.MAX_VALUE == CfgTools.decodeLong("long.min.undef", CfgToolsStaticTest.CONFIG,
-			Long.MAX_VALUE));
+		Assert.assertTrue(
+			Long.MIN_VALUE == CfgTools.decodeLong("long.min.undef", CfgToolsStaticTest.CONFIG, Long.MIN_VALUE));
+		Assert.assertTrue(
+			Long.MAX_VALUE == CfgTools.decodeLong("long.min.undef", CfgToolsStaticTest.CONFIG, Long.MAX_VALUE));
 
 		Assert.assertTrue(Long.MIN_VALUE == CfgTools.decodeLong("long.min", CfgToolsStaticTest.CONFIG, null));
 		Assert.assertTrue(Long.MIN_VALUE == CfgTools.decodeLong("long.min", CfgToolsStaticTest.CONFIG, Long.MIN_VALUE));
@@ -621,11 +620,11 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 
 		Assert.assertNull(CfgTools.decodeLong(TestSettingString.LONG_EMPTY, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Long.MIN_VALUE == CfgTools.decodeLong(TestSettingString.LONG_MIN, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Long.MIN_VALUE == CfgTools.decodeLong(TestSettingString.LONG_MIN_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Long.MIN_VALUE == CfgTools.decodeLong(TestSettingString.LONG_MIN_UNDEF, CfgToolsStaticTest.CONFIG));
 		Assert.assertTrue(Long.MAX_VALUE == CfgTools.decodeLong(TestSettingString.LONG_MAX, CfgToolsStaticTest.CONFIG));
-		Assert.assertTrue(Long.MAX_VALUE == CfgTools.decodeLong(TestSettingString.LONG_MAX_UNDEF,
-			CfgToolsStaticTest.CONFIG));
+		Assert.assertTrue(
+			Long.MAX_VALUE == CfgTools.decodeLong(TestSettingString.LONG_MAX_UNDEF, CfgToolsStaticTest.CONFIG));
 
 		try {
 			CfgTools.decodeLong(TestSetting.LONG_OVER, CfgToolsStaticTest.CONFIG);
@@ -655,10 +654,10 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@Test
 	public void testDecodeFloatWithDefault() {
 		Assert.assertNull(CfgTools.decodeFloat("float.empty", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Float.MIN_VALUE == CfgTools.decodeFloat("float.empty", CfgToolsStaticTest.CONFIG,
-			Float.MIN_VALUE));
-		Assert.assertTrue(Float.MAX_VALUE == CfgTools.decodeFloat("float.empty", CfgToolsStaticTest.CONFIG,
-			Float.MAX_VALUE));
+		Assert.assertTrue(
+			Float.MIN_VALUE == CfgTools.decodeFloat("float.empty", CfgToolsStaticTest.CONFIG, Float.MIN_VALUE));
+		Assert.assertTrue(
+			Float.MAX_VALUE == CfgTools.decodeFloat("float.empty", CfgToolsStaticTest.CONFIG, Float.MAX_VALUE));
 
 		Assert.assertNull(CfgTools.decodeFloat("float.min.undef", CfgToolsStaticTest.CONFIG, null));
 		CfgToolsStaticTest.assertEquals(-Float.MAX_VALUE,
@@ -733,7 +732,7 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 		Assert.assertTrue(Float.isInfinite(CfgTools.decodeFloat(TestSetting.FLOAT_OVER, CfgToolsStaticTest.CONFIG)));
 		Assert.assertTrue(Float.isInfinite(CfgTools.decodeFloat(TestSetting.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
 		Assert
-		.assertTrue(0 < Float.compare(0, CfgTools.decodeFloat(TestSetting.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
+			.assertTrue(0 < Float.compare(0, CfgTools.decodeFloat(TestSetting.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
 		try {
 			CfgTools.decodeFloat(TestSetting.BOOLEAN_TRUE, CfgToolsStaticTest.CONFIG);
 			Assert.fail("Failed when getting boolean.true as a float - should have failed to parse");
@@ -751,12 +750,12 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 		CfgToolsStaticTest.assertEquals(Float.MAX_VALUE,
 			CfgTools.decodeFloat(TestSettingString.FLOAT_MAX_UNDEF, CfgToolsStaticTest.CONFIG));
 
-		Assert.assertTrue(Float.isInfinite(CfgTools
-			.decodeFloat(TestSettingString.FLOAT_OVER, CfgToolsStaticTest.CONFIG)));
-		Assert.assertTrue(Float.isInfinite(CfgTools.decodeFloat(TestSettingString.FLOAT_UNDER,
-			CfgToolsStaticTest.CONFIG)));
-		Assert.assertTrue(0 < Float.compare(0,
-			CfgTools.decodeFloat(TestSettingString.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
+		Assert.assertTrue(
+			Float.isInfinite(CfgTools.decodeFloat(TestSettingString.FLOAT_OVER, CfgToolsStaticTest.CONFIG)));
+		Assert.assertTrue(
+			Float.isInfinite(CfgTools.decodeFloat(TestSettingString.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
+		Assert.assertTrue(
+			0 < Float.compare(0, CfgTools.decodeFloat(TestSettingString.FLOAT_UNDER, CfgToolsStaticTest.CONFIG)));
 		try {
 			CfgTools.decodeFloat(TestSettingString.BOOLEAN_TRUE, CfgToolsStaticTest.CONFIG);
 			Assert.fail("Failed when getting boolean.true as a float - should have failed to parse");
@@ -773,10 +772,10 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	@Test
 	public void testDecodeDoubleWithDefault() {
 		Assert.assertNull(CfgTools.decodeDouble("double.empty", CfgToolsStaticTest.CONFIG, null));
-		Assert.assertTrue(Double.MIN_VALUE == CfgTools.decodeDouble("double.empty", CfgToolsStaticTest.CONFIG,
-			Double.MIN_VALUE));
-		Assert.assertTrue(Double.MAX_VALUE == CfgTools.decodeDouble("double.empty", CfgToolsStaticTest.CONFIG,
-			Double.MAX_VALUE));
+		Assert.assertTrue(
+			Double.MIN_VALUE == CfgTools.decodeDouble("double.empty", CfgToolsStaticTest.CONFIG, Double.MIN_VALUE));
+		Assert.assertTrue(
+			Double.MAX_VALUE == CfgTools.decodeDouble("double.empty", CfgToolsStaticTest.CONFIG, Double.MAX_VALUE));
 
 		Assert.assertNull(CfgTools.decodeDouble("double.min.undef", CfgToolsStaticTest.CONFIG, null));
 		CfgToolsStaticTest.assertEquals(-Double.MAX_VALUE,
@@ -801,7 +800,7 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble("double.over", CfgToolsStaticTest.CONFIG, null)));
 		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble("double.under", CfgToolsStaticTest.CONFIG, null)));
 		Assert
-		.assertTrue(0 < Double.compare(0, CfgTools.decodeDouble("double.under", CfgToolsStaticTest.CONFIG, null)));
+			.assertTrue(0 < Double.compare(0, CfgTools.decodeDouble("double.under", CfgToolsStaticTest.CONFIG, null)));
 
 		try {
 			CfgTools.decodeDouble("boolean.true", CfgToolsStaticTest.CONFIG, null);
@@ -853,9 +852,9 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 
 		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSetting.DOUBLE_OVER, CfgToolsStaticTest.CONFIG)));
 		Assert
-		.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSetting.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
-		Assert.assertTrue(0 < Double.compare(0,
-			CfgTools.decodeDouble(TestSetting.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
+			.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSetting.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
+		Assert.assertTrue(
+			0 < Double.compare(0, CfgTools.decodeDouble(TestSetting.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
 		try {
 			CfgTools.decodeDouble(TestSetting.BOOLEAN_TRUE, CfgToolsStaticTest.CONFIG);
 			Assert.fail("Failed when getting boolean.true as a double - should have failed to parse");
@@ -873,12 +872,12 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 		CfgToolsStaticTest.assertEquals(Double.MAX_VALUE,
 			CfgTools.decodeDouble(TestSettingString.DOUBLE_MAX_UNDEF, CfgToolsStaticTest.CONFIG));
 
-		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSettingString.DOUBLE_OVER,
-			CfgToolsStaticTest.CONFIG)));
-		Assert.assertTrue(Double.isInfinite(CfgTools.decodeDouble(TestSettingString.DOUBLE_UNDER,
-			CfgToolsStaticTest.CONFIG)));
-		Assert.assertTrue(0 < Double.compare(0,
-			CfgTools.decodeDouble(TestSettingString.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
+		Assert.assertTrue(
+			Double.isInfinite(CfgTools.decodeDouble(TestSettingString.DOUBLE_OVER, CfgToolsStaticTest.CONFIG)));
+		Assert.assertTrue(
+			Double.isInfinite(CfgTools.decodeDouble(TestSettingString.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
+		Assert.assertTrue(
+			0 < Double.compare(0, CfgTools.decodeDouble(TestSettingString.DOUBLE_UNDER, CfgToolsStaticTest.CONFIG)));
 		try {
 			CfgTools.decodeDouble(TestSettingString.BOOLEAN_TRUE, CfgToolsStaticTest.CONFIG);
 			Assert.fail("Failed when getting boolean.true as a double - should have failed to parse");
@@ -957,13 +956,13 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 
 		Assert.assertNotNull(CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, null));
 		Assert.assertNotNull(CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, sample));
-		Assert.assertFalse(Arrays.equals(sample,
-			CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, null)));
-		Assert.assertFalse(Arrays.equals(sample,
-			CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, sample)));
+		Assert.assertFalse(
+			Arrays.equals(sample, CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, null)));
+		Assert.assertFalse(
+			Arrays.equals(sample, CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, sample)));
 
-		byte[] realData = Base64
-			.decodeBase64("c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
+		byte[] realData = Base64.decodeBase64(
+			"c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
 		Assert.assertArrayEquals(realData, CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, null));
 		Assert.assertArrayEquals(realData, CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG, sample));
 
@@ -981,8 +980,8 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	 */
 	@Test
 	public void testDecodeBinaryWithoutDefault() throws Throwable {
-		byte[] realData = Base64
-			.decodeBase64("c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
+		byte[] realData = Base64.decodeBase64(
+			"c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
 
 		Assert.assertNull(CfgTools.decodeBinary("binary.empty", CfgToolsStaticTest.CONFIG));
 		Assert.assertNotNull(CfgTools.decodeBinary("binary.sample", CfgToolsStaticTest.CONFIG));
@@ -1003,13 +1002,13 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 	 */
 	@Test
 	public void testDecodeBinaryConfigurationSetting() throws Throwable {
-		byte[] realData = Base64
-			.decodeBase64("c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
+		byte[] realData = Base64.decodeBase64(
+			"c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
 
 		byte[] dataTestSetting = null;
 
-		dataTestSetting = Base64
-			.decodeBase64("xy0dZm9C5zT/6ZCdq7ttZ2MHbHLpnqGIlWosnTmHD1v/k30tVc++fhtDdyY31k5tgPpfnDVzNgE4Au8eMvmjlr16e3hrFSuWhc7Bjb05vwodNHoIK0j9LHlO0vcp/WeptHpJlop3ThSYRnr3d/Hx1LkOE3gDpcyUmgeVTr97xkjH3tJgQhCEVzyPd593DHnBu8v0yC0QzJmI+H51Px2sLPlVsapDkztv1ORrwva2XFLhWHyI7C+294/DLHimdZD6qrpsktVXpolGkF09SZsnJvziuRgm/Zdq0gfVSVbjJy4ra8FN3iSegEWMGdg/GweyLyvOVqHFBjMTfg1IxltCzqF5xmQIDvox9CyuzAvYcsQk2/LCn6sciz93Wk5/xheiZIFZrtjx+A9aLfPqmMIDDsPJ4yXD0kgRtBBMzyEMkrTTswLOABmKI3JvMwtxH33vMeiqPTtvhts4gbo1xOUJMb6q0KYq6cs5f/vT5V2r8jHidJ+vc5ROYxi8Wb16js/lLW2AQzOO8Qi7KJZYGpFHB0oCXIuyUO8qvAPYDjX4RbT3Z5wX8bssVUglu/u4hr5i1eV6uR6AfnhueoXl8+duCpegQyNgIvuhUM2sfQYo/l7fIHu18kxKVPj2Tit1ruu1gUNKSNQUUliG0gdWi8xMcjaEIEwOPAihRgU5qDLS9kOd/UTNfdlS+TjtcS8zeT1QwedPD5M40hqmPtdnwv6ZUglcZSF2qlcu7WyimwmGfoyJXmXpK0c64yTL/2lKGsXQo5F12UIeZV82bRWY8FtWBZehM+5w50JLsbjb6kUh6T+Ly3xf8ge0OQdbw/Dp9EBxnhtuYUXeOpOwE0+QSFH15V1847gAGZTtRu2UpXG3vwF4Nn9PlY9HhUHg+redI3YMTs5Tgq/nauMrGmbkm33vDOVuGQ+7Amv0x5hX+jjNvR6oNYe5xEwr3mtRA5Tv9o0jcpkySDIygGbrjJRSIyH78EmgtE30WWIx2YT7qB61pD5nk1/UUHcyO6Z+3IB1Oc+n4ArdvXuGvDFpTT7eg1eKKZnPYg3NbOpAZRJYskZJaGAzCKf6DXDbkopASPZAm7yF/oNdYb3yw02dg4bGWrt6uwlnIYbEBcFVjfEqhEERRO92rhRwaw8fOjnWO3Ho33wv3dwkWdJ3gvAvK+xWHe0TSF2WkhlZZx//zzkDG+ZcXf1y7iPP+GeqZLUypLIrxB73sx6S7Evgj9KKHORDPSYr+S3zj/mgpDkCuhdldPr6rdz4F21DpwTcHOrA8he8r6gKYtUVqCBB2qaSZfUZGB+eo0p3ORyItURgLvYs8GnC9izVXv0tlDDLki0fkpFx7wfOHX4WbCcdIN+31RU6sRaj/Q==");
+		dataTestSetting = Base64.decodeBase64(
+			"xy0dZm9C5zT/6ZCdq7ttZ2MHbHLpnqGIlWosnTmHD1v/k30tVc++fhtDdyY31k5tgPpfnDVzNgE4Au8eMvmjlr16e3hrFSuWhc7Bjb05vwodNHoIK0j9LHlO0vcp/WeptHpJlop3ThSYRnr3d/Hx1LkOE3gDpcyUmgeVTr97xkjH3tJgQhCEVzyPd593DHnBu8v0yC0QzJmI+H51Px2sLPlVsapDkztv1ORrwva2XFLhWHyI7C+294/DLHimdZD6qrpsktVXpolGkF09SZsnJvziuRgm/Zdq0gfVSVbjJy4ra8FN3iSegEWMGdg/GweyLyvOVqHFBjMTfg1IxltCzqF5xmQIDvox9CyuzAvYcsQk2/LCn6sciz93Wk5/xheiZIFZrtjx+A9aLfPqmMIDDsPJ4yXD0kgRtBBMzyEMkrTTswLOABmKI3JvMwtxH33vMeiqPTtvhts4gbo1xOUJMb6q0KYq6cs5f/vT5V2r8jHidJ+vc5ROYxi8Wb16js/lLW2AQzOO8Qi7KJZYGpFHB0oCXIuyUO8qvAPYDjX4RbT3Z5wX8bssVUglu/u4hr5i1eV6uR6AfnhueoXl8+duCpegQyNgIvuhUM2sfQYo/l7fIHu18kxKVPj2Tit1ruu1gUNKSNQUUliG0gdWi8xMcjaEIEwOPAihRgU5qDLS9kOd/UTNfdlS+TjtcS8zeT1QwedPD5M40hqmPtdnwv6ZUglcZSF2qlcu7WyimwmGfoyJXmXpK0c64yTL/2lKGsXQo5F12UIeZV82bRWY8FtWBZehM+5w50JLsbjb6kUh6T+Ly3xf8ge0OQdbw/Dp9EBxnhtuYUXeOpOwE0+QSFH15V1847gAGZTtRu2UpXG3vwF4Nn9PlY9HhUHg+redI3YMTs5Tgq/nauMrGmbkm33vDOVuGQ+7Amv0x5hX+jjNvR6oNYe5xEwr3mtRA5Tv9o0jcpkySDIygGbrjJRSIyH78EmgtE30WWIx2YT7qB61pD5nk1/UUHcyO6Z+3IB1Oc+n4ArdvXuGvDFpTT7eg1eKKZnPYg3NbOpAZRJYskZJaGAzCKf6DXDbkopASPZAm7yF/oNdYb3yw02dg4bGWrt6uwlnIYbEBcFVjfEqhEERRO92rhRwaw8fOjnWO3Ho33wv3dwkWdJ3gvAvK+xWHe0TSF2WkhlZZx//zzkDG+ZcXf1y7iPP+GeqZLUypLIrxB73sx6S7Evgj9KKHORDPSYr+S3zj/mgpDkCuhdldPr6rdz4F21DpwTcHOrA8he8r6gKYtUVqCBB2qaSZfUZGB+eo0p3ORyItURgLvYs8GnC9izVXv0tlDDLki0fkpFx7wfOHX4WbCcdIN+31RU6sRaj/Q==");
 		Assert.assertNull(CfgTools.decodeBinary(TestSetting.BINARY_EMPTY, CfgToolsStaticTest.CONFIG));
 		Assert.assertNotNull(CfgTools.decodeBinary(TestSetting.BINARY_SAMPLE, CfgToolsStaticTest.CONFIG));
 		Assert.assertArrayEquals(realData, CfgTools.decodeBinary(TestSetting.BINARY_SAMPLE, CfgToolsStaticTest.CONFIG));
@@ -1023,8 +1022,8 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 			// All is well - this is expected
 		}
 
-		dataTestSetting = Base64
-			.decodeBase64("mgFLqv8Ljr6mAcqI8RcKfj9v0aMROcZP7MpXq2A6ZIPJmCLHmFP5niuEPu3swJikfHIhPr7e+czQVKsfc63KIsPnxz44BKRPTtoOvFE91mW+SoW5ep2U/IC+ytrRu88qyum+6BHqsnqMfeDf7bkbSgpHEuob9RFT9Ic/OLke6rpjxp/Kwq6+cbfK+nN0jVzV1WmuNJh3/S+H3f2L2uyteCXMHqxe710/n9s2Bu5+KuK607fNPt3jjFU2X1fnBSpofZK4izRMgTmp+SPMNt82+iMwRhuWodnByRrvcll5+qcj95Eeqkgtk0zA+BE1sCgBPHhO5jQn2JuLay+O4VOstLRnI6ZocXs+sS1T3GmSI6Yuvd7cvQQ9NFOA+eZcuphIdEVKB8ddAC2v3bg/AYq5pgYFQ+5x4N5zpivfzuPZcK84o7C9Uc/tTPXozTsWegLEsD14kL6M8Qu1OxnuDciNTEqI7TdMhb01fLny8ICdwv7gxH3IVmE64UqJh3Y7vq3+Xvj1As27/6ox3lQvM74CwOdaxlJSA1bGTtY3rTeb7dHN6BVwqM/vWjQ0q2T++MU6UU3zgRhrl4QCOYDFvjfcL22h5JpVem+hZgGthGi90DpVxraJFg2LPjDQQoWGKW84PU+ks4fX0MDjzpZgW8tgPD/6lh4+TTer2yCdON0ccgEvaCDQse4KGu7yQnQhySsepufuZ3dG5plFdI7dJYs8O1VIb2WOfPe01Kf6Kk06ylaHp71ZvxdTsNJesbXYzo0QETWNS+ECFY4Di/AnXRa56KQosNvyx7seaBsCIGdkLMLMUoB1HVTFe1POAiKB5BDQGyaYW9+WGB8MYG0mnpW3oZD2E5MKKm3iSHGwL2wBW1+OP4SaBQvtDpzcvHs1rM5z5pqmB97S8vNKgb4MQfPVwy/b8FmbYueV1H0am8CPZjCt0a1pSOR9LkmbrHAmwNf/WVYXDbbg4zg2V+rVBH8HAEnZGKe+ZbVMxnY1JCJd+JxdFaS1A2oNSDM91FlPmcQed2sWTV0ZfkarfyS5JZWTbRWwDciyzJ6YFXuMliwbXeOGrJolvDTi7x9t9BWbk9RaRwP9iOr2Wtq51ZWoA4yMo33yavWyqlRuC/v7O8xXlO7Avtug4mldKoldaFpYbCqfVliQiz8o5jO13cQuhkbfUpEwXKN+waBm+wd0jeBAbbu8rHkW+/0U+jSX75B9jXtdkMJivBf8sSCj6ED/iKiejZwnzLOPga3DgXOSJbk7mAeDTxeCwO5dIncOtQMxzsoq2UuRYct1V+DRGZSsJGeNTj3mwTbWCJpZB5PERpis1VDrkXcsDnZr4AHCKCwZShJEEBMipmkwzDFFJPGBrtMPiA==");
+		dataTestSetting = Base64.decodeBase64(
+			"mgFLqv8Ljr6mAcqI8RcKfj9v0aMROcZP7MpXq2A6ZIPJmCLHmFP5niuEPu3swJikfHIhPr7e+czQVKsfc63KIsPnxz44BKRPTtoOvFE91mW+SoW5ep2U/IC+ytrRu88qyum+6BHqsnqMfeDf7bkbSgpHEuob9RFT9Ic/OLke6rpjxp/Kwq6+cbfK+nN0jVzV1WmuNJh3/S+H3f2L2uyteCXMHqxe710/n9s2Bu5+KuK607fNPt3jjFU2X1fnBSpofZK4izRMgTmp+SPMNt82+iMwRhuWodnByRrvcll5+qcj95Eeqkgtk0zA+BE1sCgBPHhO5jQn2JuLay+O4VOstLRnI6ZocXs+sS1T3GmSI6Yuvd7cvQQ9NFOA+eZcuphIdEVKB8ddAC2v3bg/AYq5pgYFQ+5x4N5zpivfzuPZcK84o7C9Uc/tTPXozTsWegLEsD14kL6M8Qu1OxnuDciNTEqI7TdMhb01fLny8ICdwv7gxH3IVmE64UqJh3Y7vq3+Xvj1As27/6ox3lQvM74CwOdaxlJSA1bGTtY3rTeb7dHN6BVwqM/vWjQ0q2T++MU6UU3zgRhrl4QCOYDFvjfcL22h5JpVem+hZgGthGi90DpVxraJFg2LPjDQQoWGKW84PU+ks4fX0MDjzpZgW8tgPD/6lh4+TTer2yCdON0ccgEvaCDQse4KGu7yQnQhySsepufuZ3dG5plFdI7dJYs8O1VIb2WOfPe01Kf6Kk06ylaHp71ZvxdTsNJesbXYzo0QETWNS+ECFY4Di/AnXRa56KQosNvyx7seaBsCIGdkLMLMUoB1HVTFe1POAiKB5BDQGyaYW9+WGB8MYG0mnpW3oZD2E5MKKm3iSHGwL2wBW1+OP4SaBQvtDpzcvHs1rM5z5pqmB97S8vNKgb4MQfPVwy/b8FmbYueV1H0am8CPZjCt0a1pSOR9LkmbrHAmwNf/WVYXDbbg4zg2V+rVBH8HAEnZGKe+ZbVMxnY1JCJd+JxdFaS1A2oNSDM91FlPmcQed2sWTV0ZfkarfyS5JZWTbRWwDciyzJ6YFXuMliwbXeOGrJolvDTi7x9t9BWbk9RaRwP9iOr2Wtq51ZWoA4yMo33yavWyqlRuC/v7O8xXlO7Avtug4mldKoldaFpYbCqfVliQiz8o5jO13cQuhkbfUpEwXKN+waBm+wd0jeBAbbu8rHkW+/0U+jSX75B9jXtdkMJivBf8sSCj6ED/iKiejZwnzLOPga3DgXOSJbk7mAeDTxeCwO5dIncOtQMxzsoq2UuRYct1V+DRGZSsJGeNTj3mwTbWCJpZB5PERpis1VDrkXcsDnZr4AHCKCwZShJEEBMipmkwzDFFJPGBrtMPiA==");
 		Assert.assertNull(CfgTools.decodeBinary(TestSettingString.BINARY_EMPTY, CfgToolsStaticTest.CONFIG));
 		Assert.assertNotNull(CfgTools.decodeBinary(TestSettingString.BINARY_SAMPLE, CfgToolsStaticTest.CONFIG));
 		Assert.assertArrayEquals(realData,

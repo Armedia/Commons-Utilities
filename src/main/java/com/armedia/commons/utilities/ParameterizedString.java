@@ -1,12 +1,12 @@
 /**
  * *******************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
  * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
  * STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
- * 
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 
 /**
  * This serves as a utility string substitutor, which allows parameterized strings to be easily
@@ -28,9 +28,9 @@ import org.apache.commons.lang3.text.StrSubstitutor;
  * wish a parameter to be substituted for the word {@code "null"}, then you must explicitly set the
  * parameter to the string {@code "null"}. Setting a parameter to the {@code null} value has the
  * effect that the parameter will no longer be substituted in the string.
- * 
+ *
  * @author drivera@armedia.com
- * 
+ *
  */
 public class ParameterizedString implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -41,7 +41,7 @@ public class ParameterizedString implements Serializable {
 	public ParameterizedString(String pattern) {
 		if (pattern == null) { throw new IllegalArgumentException("The pattern may not be null"); }
 		this.pattern = pattern;
-		this.parameters = new HashMap<String, String>();
+		this.parameters = new HashMap<>();
 	}
 
 	public ParameterizedString getNewCopy() {
@@ -53,7 +53,7 @@ public class ParameterizedString implements Serializable {
 	}
 
 	public Set<String> getParameterNames() {
-		return new HashSet<String>(this.parameters.keySet());
+		return new HashSet<>(this.parameters.keySet());
 	}
 
 	public String getParameterValue(String name) {
@@ -71,7 +71,7 @@ public class ParameterizedString implements Serializable {
 	/**
 	 * Assigns the given parameter for subsitution. If {@code value} is {@code null} then this
 	 * invocation is identical to {@code clear(name)}.
-	 * 
+	 *
 	 * @param name
 	 * @param value
 	 * @return this {@link ParameterizedString} instance
@@ -86,7 +86,7 @@ public class ParameterizedString implements Serializable {
 
 	/**
 	 * Returns {@code true} if the named parameter has been set on this instance.
-	 * 
+	 *
 	 * @param name
 	 * @return {@code true} if the named parameter has been set on this instance
 	 */
@@ -97,7 +97,7 @@ public class ParameterizedString implements Serializable {
 	/**
 	 * Removes the given parameter's value from this instance. The parameter will no longer be
 	 * substituted.
-	 * 
+	 *
 	 * @param name
 	 * @return this {@link ParameterizedString} instance
 	 */
@@ -111,17 +111,17 @@ public class ParameterizedString implements Serializable {
 	/**
 	 * Returns the pattern string with all the parameters substituted to the values set via
 	 * {@link #set(String, String)}, and without substituting those that haven't been set.
-	 * 
+	 *
 	 * @return The evaluated string, with all existent parameters substituted
 	 */
 	public String evaluate() {
-		return StrSubstitutor.replace(this.pattern, this.parameters);
+		return StringSubstitutor.replace(this.pattern, this.parameters);
 	}
 
 	/**
 	 * Returns the evaluated version of this instance. This returns the same result as invoking
 	 * {@link #evaluate()} directly.
-	 * 
+	 *
 	 * @return the evaluated {@link ParameterizedString}
 	 */
 	@Override

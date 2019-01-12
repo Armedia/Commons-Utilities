@@ -46,9 +46,8 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
 
 /**
  * @author drivera@armedia.com
@@ -629,8 +628,10 @@ public class Tools {
 	 * @return a hashcode calculated from the given values
 	 */
 	public static int hashTool(final Object base, Integer superHash, Object... values) {
-		if (base == null) { throw new IllegalArgumentException(
-			"Must provide the base object for which the hashcode is being calculated"); }
+		if (base == null) {
+			throw new IllegalArgumentException(
+				"Must provide the base object for which the hashcode is being calculated");
+		}
 		int a = (base.getClass().hashCode() % Tools.PRIME_COUNT);
 		final int primeA = Tools.PRIMES.get(Math.abs(a));
 		final int primeB = Tools.PRIMES.get((a + Tools.PRIME_HALF) % Tools.PRIME_COUNT);
@@ -958,14 +959,16 @@ public class Tools {
 
 	public static String dumpStackTrace(Throwable t) {
 		if (t == null) { return null; }
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		t.printStackTrace(pw);
-		pw.flush();
-		sw.flush();
-		IOUtils.closeQuietly(pw);
-		IOUtils.closeQuietly(sw);
-		return sw.toString();
+		try (StringWriter sw = new StringWriter()) {
+			try (PrintWriter pw = new PrintWriter(sw)) {
+				t.printStackTrace(pw);
+				pw.flush();
+				sw.flush();
+				return sw.toString();
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Unexpected IOException raised while working in memory", e);
+		}
 	}
 
 	public static String dumpStackTrace() {
@@ -1902,8 +1905,9 @@ public class Tools {
 	 */
 	public static <T extends Throwable> T findRootCause(Throwable t, Class<T> targetClass) {
 		if (t == null) { return null; }
-		if (targetClass == null) { throw new IllegalArgumentException(
-			"Must supply a target class to compare against"); }
+		if (targetClass == null) {
+			throw new IllegalArgumentException("Must supply a target class to compare against");
+		}
 		while ((t.getCause() != null) && (t.getCause() != t)) {
 			if (targetClass.isInstance(t)) {
 				break;
@@ -2124,7 +2128,7 @@ public class Tools {
 	public static <E extends Enum<E>> Set<E> parseEnumCSV(Class<E> enumClass, String values, String all,
 		boolean failOnUnknown) {
 		if (values == null) { return Tools.parseEnums(enumClass, null, all, failOnUnknown); }
-		StrTokenizer tok = StrTokenizer.getCSVInstance(values);
+		StringTokenizer tok = StringTokenizer.getCSVInstance(values);
 		return Tools.parseEnums(enumClass, tok.getTokenList(), all, failOnUnknown);
 	}
 
@@ -2143,8 +2147,9 @@ public class Tools {
 
 	public static <E extends Enum<E>> Set<E> parseEnums(Class<E> enumClass, Collection<String> values, String all,
 		boolean failOnUnknown) {
-		if ((enumClass == null)
-			|| !enumClass.isEnum()) { throw new IllegalArgumentException("Must provide an enum class"); }
+		if ((enumClass == null) || !enumClass.isEnum()) {
+			throw new IllegalArgumentException("Must provide an enum class");
+		}
 		Set<E> ret = EnumSet.noneOf(enumClass);
 		if ((values == null) || values.isEmpty()) { return ret; }
 		for (String str : values) {
@@ -2153,8 +2158,10 @@ public class Tools {
 				ret.add(Enum.valueOf(enumClass, str));
 			} catch (IllegalArgumentException e) {
 				// Ignore the bad enum value
-				if (failOnUnknown) { throw new IllegalArgumentException(
-					String.format("The value [%s] is not a valid enum for %s", str, enumClass.getCanonicalName())); }
+				if (failOnUnknown) {
+					throw new IllegalArgumentException(
+						String.format("The value [%s] is not a valid enum for %s", str, enumClass.getCanonicalName()));
+				}
 			}
 		}
 		return ret;
