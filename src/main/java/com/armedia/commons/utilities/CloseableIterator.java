@@ -17,6 +17,20 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 
 	private E current = null;
 
+	protected class Result {
+		private final E value;
+		private final boolean found;
+
+		private Result(E value, boolean found) {
+			this.value = value;
+			this.found = found;
+		}
+	}
+
+	protected final Result found(E value) {
+		return new Result(value, true);
+	}
+
 	private void assertOpen() {
 		if (this.state == State.CLOSED) { throw new NoSuchElementException("This iterator is already closed"); }
 	}
@@ -27,30 +41,31 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 		if (this.state == State.READY) { return true; }
 
 		// Either WAITING or FETCHED, we need to check to see if we have a next element
-		final boolean ret;
+		final Result result;
 		try {
-			ret = checkNext();
+			result = findNext();
 		} catch (Exception e) {
 			close();
 			throw new RuntimeException("Failed to check for the next item in the iterator, closed automatically", e);
 		}
-		if (ret) {
+
+		if ((result != null) && result.found) {
+			this.current = result.value;
 			this.state = State.READY;
-		} else {
-			close();
+			return true;
 		}
-		return ret;
+
+		close();
+		return false;
 	}
 
 	@Override
 	public final E next() {
 		assertOpen();
 
-		if (!hasNext()) {
-			close();
-		}
+		if (!hasNext()) { throw new NoSuchElementException(); }
+
 		try {
-			this.current = getNext();
 			this.state = State.FETCHED;
 			return this.current;
 		} catch (Exception e) {
@@ -61,28 +76,16 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 
 	/**
 	 * <p>
-	 * Test to see whether more elements are available. This is analogous to the traditional
-	 * {@link Iterator#hasNext()} method.
+	 * Seek the next element in the collection, and return it (via {@link #found(Object)}), or
+	 * return a "not found" result (by returning {@code null}). This way {@code null}-values are
+	 * supported as valid. This method will be invoked at most once per element in the collection.
+	 * As soon as nothing ({@code null}) is returned, the iterator will be closed (via
+	 * {@link #close()}).
 	 * </p>
 	 *
 	 * @return {@code true} if there's another element to iterate over, {@code false} otherwise.
 	 */
-	protected abstract boolean checkNext() throws Exception;
-
-	/**
-	 * <p>
-	 * Retrieve the next element in the collection, or raise a {@link NoSuchElementException} if no
-	 * element exists. This method is analogous to the traditional {@link Iterator#next()} method.
-	 * </p>
-	 *
-	 * @return the next element in the iteration
-	 * @throws NoSuchElementException
-	 *             if no further elements exist
-	 * @throws Exception
-	 *             any exception raised by the actual seek process. This will cause the iterator to
-	 *             be closed
-	 */
-	protected abstract E getNext() throws Exception;
+	protected abstract Result findNext() throws Exception;
 
 	@Override
 	public final void remove() {
@@ -104,10 +107,12 @@ public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
 		if (this.state == State.CLOSED) { return; }
 		try {
 			doClose();
+		} catch (Exception e) {
+			// Do nothing...log it?
 		} finally {
 			this.state = State.CLOSED;
 		}
 	}
 
-	protected abstract void doClose();
+	protected abstract void doClose() throws Exception;
 }
