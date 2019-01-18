@@ -648,7 +648,7 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.CfgTools#decodeFloat(java.lang.String, java.util.Map, java.lang.Number)}
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeFloat(java.lang.String, java.util.Map, java.lang.Float)}
 	 * .
 	 */
 	@Test
@@ -766,7 +766,7 @@ public class CfgToolsStaticTest implements GoodServiceTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.CfgTools#decodeDouble(java.lang.String, java.util.Map, java.lang.Number)}
+	 * {@link com.armedia.commons.utilities.CfgTools#decodeDouble(java.lang.String, java.util.Map, java.lang.Double)}
 	 * .
 	 */
 	@Test

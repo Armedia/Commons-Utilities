@@ -768,7 +768,7 @@ public class CfgToolsTest implements GoodServiceTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getFloat(String, Number)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getFloat(String, Float)} .
 	 */
 	@Test
 	public void testGetFloatWithDefault() {
@@ -898,7 +898,7 @@ public class CfgToolsTest implements GoodServiceTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getDouble(String, Number)} .
+	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getDouble(String, Double)} .
 	 */
 	@Test
 	public void testGetDoubleWithDefault() {
