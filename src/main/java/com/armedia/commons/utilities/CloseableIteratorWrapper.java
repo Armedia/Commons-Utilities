@@ -18,8 +18,7 @@ public final class CloseableIteratorWrapper<E> extends CloseableIterator<E> {
 
 	@Override
 	protected Result findNext() throws Exception {
-		if (this.it.hasNext()) { return found(this.it.next()); }
-		return null;
+		return (this.it.hasNext() ? found(this.it.next()) : null);
 	}
 
 	@Override

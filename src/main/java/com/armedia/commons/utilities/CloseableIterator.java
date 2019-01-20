@@ -1,10 +1,9 @@
 package com.armedia.commons.utilities;
 
-import java.io.Closeable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public abstract class CloseableIterator<E> implements Closeable, Iterator<E> {
+public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E> {
 
 	private static enum State {
 		//
