@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
@@ -50,7 +51,7 @@ public class CfgTools implements Serializable {
 
 	@FunctionalInterface
 	private static interface DefaultProvider<V> {
-		public V getDefault(ValueConverter<V> converter);
+		public V getDefault(Function<Object, V> converter);
 	}
 
 	private static class SettingDefault<V> implements DefaultProvider<V> {
@@ -63,21 +64,14 @@ public class CfgTools implements Serializable {
 		}
 
 		@Override
-		public V getDefault(ValueConverter<V> converter) {
-			return converter.convert(this.setting.getDefaultValue());
+		public V getDefault(Function<Object, V> converter) {
+			return converter.apply(this.setting.getDefaultValue());
 		}
 	}
 
-	@FunctionalInterface
-	private static interface ValueConverter<V> {
-		public V convert(Object o);
-	}
+	private static final Function<Object, Object> CONV_Object = Function.identity();
 
-	private static final ValueConverter<Object> CONV_Object = (v) -> {
-		return v;
-	};
-
-	private static final ValueConverter<Boolean> CONV_Boolean = (v) -> {
+	private static final Function<Object, Boolean> CONV_Boolean = (v) -> {
 		if (v == null) { return null; }
 		if (Boolean.class.isInstance(v)) { return Boolean.class.cast(v); }
 		String str = Tools.toTrimmedString(v, true);
@@ -87,7 +81,7 @@ public class CfgTools implements Serializable {
 		return Boolean.valueOf(str);
 	};
 
-	private static final ValueConverter<Byte> CONV_Byte = (v) -> {
+	private static final Function<Object, Byte> CONV_Byte = (v) -> {
 		if (v == null) { return null; }
 		if (Number.class.isInstance(v)) { return Number.class.cast(v).byteValue(); }
 		String str = Tools.toTrimmedString(v, true);
@@ -95,7 +89,7 @@ public class CfgTools implements Serializable {
 		return Byte.valueOf(str);
 	};
 
-	private static final ValueConverter<Short> CONV_Short = (v) -> {
+	private static final Function<Object, Short> CONV_Short = (v) -> {
 		if (v == null) { return null; }
 		if (Number.class.isInstance(v)) { return Number.class.cast(v).shortValue(); }
 		String str = Tools.toTrimmedString(v, true);
@@ -103,7 +97,7 @@ public class CfgTools implements Serializable {
 		return Short.valueOf(str);
 	};
 
-	private static final ValueConverter<Integer> CONV_Integer = (v) -> {
+	private static final Function<Object, Integer> CONV_Integer = (v) -> {
 		if (v == null) { return null; }
 		if (Number.class.isInstance(v)) { return Number.class.cast(v).intValue(); }
 		String str = Tools.toTrimmedString(v, true);
@@ -111,7 +105,7 @@ public class CfgTools implements Serializable {
 		return Integer.valueOf(str);
 	};
 
-	private static final ValueConverter<Long> CONV_Long = (v) -> {
+	private static final Function<Object, Long> CONV_Long = (v) -> {
 		if (v == null) { return null; }
 		if (Number.class.isInstance(v)) { return Number.class.cast(v).longValue(); }
 		String str = Tools.toTrimmedString(v, true);
@@ -119,7 +113,7 @@ public class CfgTools implements Serializable {
 		return Long.valueOf(str);
 	};
 
-	private static final ValueConverter<Float> CONV_Float = (v) -> {
+	private static final Function<Object, Float> CONV_Float = (v) -> {
 		if (v == null) { return null; }
 		if (Number.class.isInstance(v)) { return Number.class.cast(v).floatValue(); }
 		String str = Tools.toTrimmedString(v, true);
@@ -127,7 +121,7 @@ public class CfgTools implements Serializable {
 		return Float.valueOf(str);
 	};
 
-	private static final ValueConverter<Double> CONV_Double = (v) -> {
+	private static final Function<Object, Double> CONV_Double = (v) -> {
 		if (v == null) { return null; }
 		if (Number.class.isInstance(v)) { return Number.class.cast(v).doubleValue(); }
 		String str = Tools.toTrimmedString(v, true);
@@ -135,7 +129,7 @@ public class CfgTools implements Serializable {
 		return Double.valueOf(str);
 	};
 
-	private static final ValueConverter<BigInteger> CONV_BigInteger = (v) -> {
+	private static final Function<Object, BigInteger> CONV_BigInteger = (v) -> {
 		if (v == null) { return null; }
 		if (BigInteger.class.isInstance(v)) { return BigInteger.class.cast(v); }
 		String str = Tools.toTrimmedString(v, true);
@@ -143,7 +137,7 @@ public class CfgTools implements Serializable {
 		return new BigInteger(str);
 	};
 
-	private static final ValueConverter<BigDecimal> CONV_BigDecimal = (v) -> {
+	private static final Function<Object, BigDecimal> CONV_BigDecimal = (v) -> {
 		if (v == null) { return null; }
 		if (BigDecimal.class.isInstance(v)) { return BigDecimal.class.cast(v); }
 		String str = Tools.toTrimmedString(v, true);
@@ -151,11 +145,11 @@ public class CfgTools implements Serializable {
 		return new BigDecimal(str);
 	};
 
-	private static final ValueConverter<String> CONV_String = (v) -> {
+	private static final Function<Object, String> CONV_String = (v) -> {
 		return Tools.toString(v);
 	};
 
-	private static final ValueConverter<byte[]> CONV_Binary = (v) -> {
+	private static final Function<Object, byte[]> CONV_Binary = (v) -> {
 		if (v == null) { return null; }
 		if (v.getClass().isArray()) {
 			Class<?> component = v.getClass().getComponentType();
@@ -179,26 +173,26 @@ public class CfgTools implements Serializable {
 	};
 
 	private static <V> V getValue(String label, Map<String, ?> settings, DefaultProvider<V> defaultValue,
-		ValueConverter<V> converter) {
+		Function<Object, V> converter) {
 		CfgTools.validateSetting(label);
 		Object raw = settings.get(label);
 		if ((raw == null) || StringUtils.EMPTY.equals(raw)) { return defaultValue.getDefault(converter); }
 
 		if (raw.getClass().isArray()) {
 			if (Array.getLength(raw) < 1) { return defaultValue.getDefault(converter); }
-			return converter.convert(Array.get(raw, 0));
+			return converter.apply(Array.get(raw, 0));
 		}
 
 		if (Collection.class.isInstance(raw)) {
 			Collection<?> c = Collection.class.cast(raw);
 			if (c.isEmpty()) { return null; }
-			return converter.convert(c.iterator().next());
+			return converter.apply(c.iterator().next());
 		}
 
-		return converter.convert(raw);
+		return converter.apply(raw);
 	}
 
-	private static <V> List<V> convertToList(Object raw, ValueConverter<V> converter) {
+	private static <V> List<V> convertToList(Object raw, Function<Object, V> converter) {
 		if (raw == null) { return Collections.emptyList(); }
 
 		if (raw.getClass().isArray()) {
@@ -207,7 +201,7 @@ public class CfgTools implements Serializable {
 
 			List<V> result = new ArrayList<>(length);
 			for (int i = 0; i < length; i++) {
-				result.add(converter.convert(Array.get(raw, i)));
+				result.add(converter.apply(Array.get(raw, i)));
 			}
 			return Tools.freezeList(result);
 		}
@@ -217,16 +211,16 @@ public class CfgTools implements Serializable {
 			if (c.isEmpty()) { return Collections.emptyList(); }
 			List<V> result = new ArrayList<>(c.size());
 			c.forEach((r) -> {
-				result.add(converter.convert(r));
+				result.add(converter.apply(r));
 			});
 			return Tools.freezeList(result);
 		}
 
-		return Collections.singletonList(converter.convert(raw));
+		return Collections.singletonList(converter.apply(raw));
 	}
 
 	private static <V> List<V> getValues(String label, Map<String, ?> settings, DefaultProvider<List<V>> defaultValue,
-		ValueConverter<V> converter) {
+		Function<Object, V> converter) {
 		CfgTools.validateSetting(label);
 		Object raw = settings.get(label);
 		if ((raw == null) || StringUtils.EMPTY.equals(raw)) {
