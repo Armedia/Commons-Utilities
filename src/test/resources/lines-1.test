@@ -1,0 +1,16 @@
+abc
+    # def
+fghi #  jlkfjsdlfkj d \ asdjkfldlfj
+
+1   \   
+2   \
+    3\
+    4\
+5
+
+                this line has leading spaces
+this line has trailing spaces                            
+
+And now we recurse...
+
+			@cp://lines-2.test
