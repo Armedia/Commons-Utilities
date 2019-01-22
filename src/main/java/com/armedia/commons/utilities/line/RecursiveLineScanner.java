@@ -17,26 +17,22 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import com.armedia.commons.utilities.Tools;
-import com.armedia.commons.utilities.line.LineScanner.Trim;
+import com.armedia.commons.utilities.line.LineScannerConfig.Feature;
 
 class RecursiveLineScanner {
 
 	protected static final Pattern CONTINUATION = Pattern.compile("(?<!\\\\)(?:\\\\{2})*\\\\$");
 
 	private final Set<String> visited = new LinkedHashSet<>();
-	private final Collection<LineSourceFactory> factories;
 	private final Map<String, AtomicLong> counters = new LinkedHashMap<>();
 	private final Map<String, Collection<String>> cache = new HashMap<>();
-	private final Trim trim;
-	private final int maxDepth;
-	private final boolean preserveEmptyLines;
 
-	public RecursiveLineScanner(Collection<LineSourceFactory> factories, Trim trim, int maxDepth,
-		boolean preserveEmptyLines) {
-		this.trim = trim;
+	private final Collection<LineSourceFactory> factories;
+	private final LineScannerConfig config;
+
+	public RecursiveLineScanner(Collection<LineSourceFactory> factories, LineScannerConfig config) {
 		this.factories = factories;
-		this.maxDepth = Math.max(-1, maxDepth);
-		this.preserveEmptyLines = preserveEmptyLines;
+		this.config = config;
 	}
 
 	public final Set<String> getVisited() {
@@ -51,12 +47,8 @@ class RecursiveLineScanner {
 		return this.counters;
 	}
 
-	public final Trim getTrim() {
-		return this.trim;
-	}
-
-	public final int getMaxDepth() {
-		return this.maxDepth;
+	public final LineScannerConfig getConfig() {
+		return this.config;
 	}
 
 	private LineSource getLineSource(final String sourceSpec, final LineSource relativeTo)
@@ -74,7 +66,30 @@ class RecursiveLineScanner {
 
 	private boolean isContinued(String line) {
 		// Ends on an uneven number of backslashes
-		return RecursiveLineScanner.CONTINUATION.matcher(line).find();
+		return this.config.hasFeature(Feature.CONTINUATION) && RecursiveLineScanner.CONTINUATION.matcher(line).find();
+	}
+
+	private String applyTrim(String s) {
+		return this.config.getTrim().apply(s);
+	}
+
+	private boolean isIgnoreLine(String s) {
+		return this.config.hasFeature(Feature.IGNORE_EMPTY_LINES) && StringUtils.isEmpty(s);
+	}
+
+	private boolean isComment(String str) {
+		return this.config.hasFeature(Feature.COMMENTS) && str.matches("^\\s*#.*$");
+	}
+
+	private boolean isRecursion(String str) {
+		return this.config.hasFeature(Feature.RECURSION) && str.matches("^\\s*@.*$");
+	}
+
+	private boolean shouldRecurse(String line, int nextDepth) {
+		if (!this.config.hasFeature(Feature.RECURSION)) { return false; }
+		if (!line.matches("^\\s*@.*$")) { return false; }
+		final int maxDepth = this.config.getMaxDepth();
+		return ((maxDepth < 0) || (nextDepth < maxDepth));
 	}
 
 	private Iterable<String> preprocess(LineSource ls) throws LineSourceException {
@@ -119,13 +134,13 @@ class RecursiveLineScanner {
 					continue;
 				}
 
-				String finalLine = this.trim.apply(line.toString());
+				String finalLine = applyTrim(line.toString());
 				line.setLength(0);
-				if (!finalLine.matches("^\\s*#.*$")) {
+				if (!isComment(finalLine)) {
 					// It's not a comment, so it's an "actionable" line
-					if (this.preserveEmptyLines || !StringUtils.isEmpty(finalLine)) {
+					if (!isIgnoreLine(finalLine)) {
 						result.add(finalLine);
-						if (!finalLine.matches("^\\s*@.*$")) {
+						if (!isRecursion(finalLine)) {
 							// If it's not a recursion request, then count it...
 							counter.incrementAndGet();
 						}
@@ -156,23 +171,19 @@ class RecursiveLineScanner {
 
 		for (String line : lines) {
 
-			// Is this a recursion?
-			if (line.matches("^\\s*@.*$")) {
-
-				// Are we clear to recurse?
-				if ((this.maxDepth < 0) || ((depth + 1) < this.maxDepth)) {
-					// Possible recursion!!
-					line = line.replaceAll("^\\s*@", "");
-					LineSource recursor = getLineSource(line, source);
-					if (recursor != null) {
-						// A recursion spec!! Recurse!!
-						if (!process(processor, recursor, true, depth + 1)) { return false; }
-						continue;
-					}
+			// Is this a recursion? Are we clear to recurse?
+			if (shouldRecurse(line, depth + 1)) {
+				// Possible recursion!!
+				line = line.replaceAll("^\\s*@", "");
+				LineSource recursor = getLineSource(line, source);
+				if (recursor != null) {
+					// A recursion spec!! Recurse!!
+					if (!process(processor, recursor, true, depth + 1)) { return false; }
+					continue;
 				}
-
-				// This is not a recursion request, so we simply process it as a normal line... ?
 			}
+
+			// This is not a recursion request, so we simply process it as a normal line... ?
 
 			// Not a recursion spec - process it!
 			Boolean result = processor.apply(line);

@@ -1,7 +1,6 @@
 package com.armedia.commons.utilities.line;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,97 +14,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.armedia.commons.utilities.Tools;
 
 public class LineScanner {
-
-	public static enum Trim {
-		//
-		NONE, //
-		LEADING {
-			@Override
-			public String apply(String s) {
-				return StringUtils.stripStart(s, null);
-			}
-		}, //
-		TRAILING {
-			@Override
-			public String apply(String s) {
-				return StringUtils.stripEnd(s, null);
-			}
-		}, //
-		BOTH {
-			@Override
-			public String apply(String s) {
-				return StringUtils.strip(s);
-			}
-		}, //
-			//
-		;
-
-		public String apply(String s) {
-			return s;
-		}
-	}
-
-	public static class Config implements Serializable, Cloneable {
-		private static final long serialVersionUID = 1L;
-
-		private Trim trim = LineScanner.DEFAULT_TRIM;
-		private int maxDepth = LineScanner.INFINITE_RECURSION;
-		private boolean preserveEmptyLines = LineScanner.DEFAULT_PRESERVE_EMPTY_LINES;
-
-		public Config() {
-		}
-
-		public Config(Config other) {
-			if (other != null) {
-				this.trim = other.getTrim();
-				this.maxDepth = other.getMaxDepth();
-				this.preserveEmptyLines = other.isPreserveEmptyLines();
-			}
-		}
-
-		public Config(Trim trim, Integer maxDepth, Boolean preserveEmptyLines) {
-			setTrim(trim);
-			setMaxDepth(maxDepth);
-			setPreserveEmptyLines(preserveEmptyLines);
-		}
-
-		public final Trim getTrim() {
-			return this.trim;
-		}
-
-		public final void setTrim(Trim trim) {
-			this.trim = Tools.coalesce(trim, LineScanner.DEFAULT_TRIM);
-		}
-
-		public final int getMaxDepth() {
-			return this.maxDepth;
-		}
-
-		public final void setMaxDepth(Integer maxDepth) {
-			if (maxDepth == null) {
-				this.maxDepth = LineScanner.INFINITE_RECURSION;
-			} else {
-				this.maxDepth = Math.max(LineScanner.INFINITE_RECURSION, this.maxDepth);
-			}
-		}
-
-		public final boolean isPreserveEmptyLines() {
-			return this.preserveEmptyLines;
-		}
-
-		public final void setPreserveEmptyLines(Boolean preserveEmptyLines) {
-			this.preserveEmptyLines = Tools.coalesce(preserveEmptyLines, LineScanner.DEFAULT_PRESERVE_EMPTY_LINES);
-		}
-	}
-
-	public static final Trim DEFAULT_TRIM = Trim.NONE;
-	public static final int INFINITE_RECURSION = -1;
-	public static final boolean DEFAULT_PRESERVE_EMPTY_LINES = false;
 
 	public static final Map<Integer, LineSourceFactory> DEFAULT_FACTORIES;
 	static {
@@ -198,9 +109,9 @@ public class LineScanner {
 		return scanLines(processor, null, sourceSpecs);
 	}
 
-	public Map<String, Long> scanLines(Function<String, Boolean> processor, Config config, String... sourceSpecs)
-		throws IOException, LineSourceException, LineProcessorException {
-		return scanLines(processor, config,
+	public Map<String, Long> scanLines(Function<String, Boolean> processor, LineScannerConfig lineScannerConfig,
+		String... sourceSpecs) throws IOException, LineSourceException, LineProcessorException {
+		return scanLines(processor, lineScannerConfig,
 			(sourceSpecs != null) && (sourceSpecs.length > 0) ? Arrays.asList(sourceSpecs) : Collections.emptyList());
 	}
 
@@ -209,18 +120,17 @@ public class LineScanner {
 		return scanLines(processor, null, sourceSpecs);
 	}
 
-	public Map<String, Long> scanLines(Function<String, Boolean> processor, Config config, Iterable<String> sourceSpecs)
-		throws IOException, LineSourceException, LineProcessorException {
+	public Map<String, Long> scanLines(Function<String, Boolean> processor, LineScannerConfig lineScannerConfig,
+		Iterable<String> sourceSpecs) throws IOException, LineSourceException, LineProcessorException {
 		Objects.requireNonNull(processor, "Must provide a non-null processor function");
 		if (sourceSpecs == null) {
 			sourceSpecs = Collections.emptyList();
 		}
 		Iterator<String> it = sourceSpecs.iterator();
 		if (!it.hasNext()) { return Collections.emptyMap(); }
-		config = new Config(config);
+		lineScannerConfig = new LineScannerConfig(lineScannerConfig);
 
-		RecursiveLineScanner rls = new RecursiveLineScanner(getSourceFactories(), config.trim, config.maxDepth,
-			config.preserveEmptyLines);
+		RecursiveLineScanner rls = new RecursiveLineScanner(getSourceFactories(), lineScannerConfig);
 		rls.process(processor, sourceSpecs);
 		Map<String, AtomicLong> counters = rls.getCounters();
 		Map<String, Long> result = new LinkedHashMap<>();

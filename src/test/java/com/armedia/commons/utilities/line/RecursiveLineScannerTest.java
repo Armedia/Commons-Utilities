@@ -5,7 +5,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.line.LineScanner.Trim;
+import com.armedia.commons.utilities.line.LineScannerConfig.Feature;
+import com.armedia.commons.utilities.line.LineScannerConfig.Trim;
 
 public class RecursiveLineScannerTest {
 
@@ -24,180 +25,188 @@ public class RecursiveLineScannerTest {
 		}
 	}
 
-	@Test
-	public void test() throws Exception {
+	private void run(LineScannerConfig config) throws Exception {
 		AtomicLong n = new AtomicLong(0);
 		RecursiveLineScanner rls = null;
-
 		LineSource ls = null;
 
 		n.set(0);
+		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), config);
 		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Raw lines:%n");
-		for (String l : ls.load()) {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-		}
-		ls.close();
-
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
+		System.out.printf("CONFIG: %s%n", config);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
 			return true;
 		}, ls);
 		ls.close();
+	}
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+	@Test
+	public void test() throws Exception {
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
-		n.set(0);
+		final LineScannerConfig config = new LineScannerConfig();
 
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.LEADING) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.TRAILING) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
-		n.set(0);
+		config //
+			.reset()//
+			.setTrim(Trim.BOTH) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
 
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures() //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.CONTINUATION) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
-		n.set(0);
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION) //
+		;
+		run(config);
 
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.IGNORE_EMPTY_LINES) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.IGNORE_EMPTY_LINES) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES) //
+		;
+		run(config);
 
-		n.set(0);
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
-		n.set(0);
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES) //
+		;
+		run(config);
 
-		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("Processed lines:%n");
-		rls.process((l) -> {
-			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
-			return true;
-		}, ls);
-		ls.close();
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.RECURSION) //
+		;
+		run(config);
+
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.RECURSION) //
+		;
+		run(config);
+
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.CONTINUATION, Feature.RECURSION) //
+		;
+		run(config);
+
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.RECURSION) //
+		;
+		run(config);
+
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
+
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
+
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
+
+		config //
+			.reset()//
+			.setTrim(Trim.NONE) //
+			.setMaxDepth(-1) //
+			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
+		;
+		run(config);
+
 	}
 
 }
