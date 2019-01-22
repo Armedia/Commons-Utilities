@@ -95,9 +95,33 @@ public class ResourceLoader {
 	}
 
 	public static URL getResourceOrFile(String uriOrPath) throws ResourceLoaderException {
-		final URI sourceUri;
+		return ResourceLoader.getResourceOrFile(uriOrPath, null);
+	}
+
+	public static URL getResourceOrFile(String uriOrPath, String relativeTo) throws ResourceLoaderException {
+		URI baseUri = null;
+		if (!StringUtils.isEmpty(relativeTo)) {
+			try {
+				baseUri = new URI(relativeTo).normalize();
+			} catch (URISyntaxException e) {
+				// Relative path is worthless as a URI...skip its use
+				baseUri = null;
+			}
+		}
+
+		URI sourceUri = null;
 		try {
-			sourceUri = new URI(uriOrPath);
+			if (baseUri != null) {
+				try {
+					sourceUri = baseUri.resolve(uriOrPath);
+				} catch (IllegalArgumentException e) {
+					throw new ResourceLoaderException(
+						String.format("Can't build a URI for [%s] relative to [%s]", uriOrPath, baseUri), e);
+				}
+			} else {
+				sourceUri = new URI(uriOrPath);
+			}
+
 			try {
 				URL resource = ResourceLoader.getResource(sourceUri);
 				if (resource != null) {
@@ -119,8 +143,17 @@ public class ResourceLoader {
 		// It's a local file... if the current source is another local file,
 		// and the given path isn't absolute, take its path to be relative to that one
 		try {
-			Path p = Paths.get(uriOrPath).toAbsolutePath().normalize();
-			File f = p.toFile();
+			Path b = null;
+			if (!StringUtils.isEmpty(relativeTo)) {
+				b = Paths.get(relativeTo);
+			}
+			Path p = null;
+			if (b != null) {
+				p = b.resolve(uriOrPath);
+			} else {
+				p = Paths.get(uriOrPath);
+			}
+			File f = p.toAbsolutePath().normalize().toFile();
 			if (!f.exists() || !f.isFile()) { return null; }
 			return f.toURI().toURL();
 		} catch (Exception e) {
@@ -131,7 +164,12 @@ public class ResourceLoader {
 	}
 
 	public static InputStream getResourceOrFileAsStream(String uriOrPath) throws ResourceLoaderException, IOException {
-		return ResourceLoader.getResourceOrFile(uriOrPath).openStream();
+		return ResourceLoader.getResourceOrFileAsStream(uriOrPath, null);
+	}
 
+	public static InputStream getResourceOrFileAsStream(String uriOrPath, String relativeTo)
+		throws ResourceLoaderException, IOException {
+		URL url = ResourceLoader.getResourceOrFile(uriOrPath, relativeTo);
+		return (url != null ? url.openStream() : null);
 	}
 }

@@ -32,8 +32,9 @@ class ResourceLineSourceFactory implements LineSourceFactory {
 			in = System.in;
 			close = false;
 		} else {
+			String relative = (relativeTo != null ? relativeTo.getId() : null);
 			try {
-				URL url = ResourceLoader.getResourceOrFile(resource);
+				URL url = ResourceLoader.getResourceOrFile(resource, relative);
 				if (url == null) {
 					// This, on the other hand, is an error
 					throw new LineSourceException(String.format("Couldn't find the resource at [%s]", resource));

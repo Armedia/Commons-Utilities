@@ -13,4 +13,4 @@ this line has trailing spaces
 
 And now we recurse...
 
-			@cp://lines-2.test
+			@lines-2.test
