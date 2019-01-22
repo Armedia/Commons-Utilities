@@ -71,6 +71,29 @@ public class CfgTools implements Serializable {
 
 	private static final Function<Object, Object> CONV_Object = Function.identity();
 
+	private static final class CONV_Enum<E extends Enum<E>> implements Function<Object, E> {
+
+		private final Class<E> enumClass;
+
+		CONV_Enum(Class<E> enumClass) {
+			this.enumClass = enumClass;
+		}
+
+		@Override
+		public E apply(Object o) {
+			if (o == null) { return null; }
+			if (this.enumClass.isInstance(o)) { return this.enumClass.cast(o); }
+			if (Number.class.isInstance(o)) {
+				int pos = Number.class.cast(o).intValue();
+				E[] e = this.enumClass.getEnumConstants();
+				if ((pos >= 0) && (pos < e.length)) { return e[pos]; }
+			}
+			// Not a number, not an enum, must turn into a string and try to parse
+			return Enum.valueOf(this.enumClass, Tools.toString(o));
+		}
+
+	}
+
 	private static final Function<Object, Boolean> CONV_Boolean = (v) -> {
 		if (v == null) { return null; }
 		if (Boolean.class.isInstance(v)) { return Boolean.class.cast(v); }
@@ -239,7 +262,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static Object decodeObject(String label, Map<String, ?> settings, Object defaultValue) {
 		return CfgTools.getValue(label, settings, (c) -> {
@@ -254,7 +277,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static Object decodeObject(String label, Map<String, ?> settings) {
 		return CfgTools.decodeObject(label, settings, null);
@@ -269,7 +292,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static Object decodeObject(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -283,7 +306,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static List<Object> decodeObjects(String label, Map<String, ?> settings, List<Object> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> {
@@ -299,7 +322,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as a {@link Object} value
 	 */
 	public static List<Object> decodeObjects(String label, Map<String, ?> settings) {
 		return CfgTools.decodeObjects(label, settings, null);
@@ -315,11 +338,108 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as a {@link Object} value
 	 */
 	public static List<Object> decodeObjects(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		return CfgTools.getValues(setting.getLabel(), settings, new SettingDefault<>(setting), CfgTools.CONV_Object);
+	}
+
+	/**
+	 * Decode the named setting from the given map as an {@link Enum} value, returning the value
+	 * stored (may be {@code null}), or {@code defaultValue} if it's not defined.
+	 *
+	 * @param label
+	 * @param settings
+	 * @param defaultValue
+	 * @return the named setting from the given map as a {@link Enum} value
+	 */
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Map<String, ?> settings,
+		E defaultValue) {
+		return CfgTools.getValue(label, settings, (c) -> {
+			return defaultValue;
+		}, new CONV_Enum<>(enumClass));
+	}
+
+	/**
+	 * Decode the named setting from the given map as an {@link Enum} value, returning the value
+	 * stored (may be {@code null}), or {@code null} if it's not defined. This is equivalent to
+	 * calling {@link #decodeEnum(String, Class, Map, Enum) decodeEnum(label, Class<E> enumClass,
+	 * settings, null)}
+	 *
+	 * @param label
+	 * @param settings
+	 * @return the named setting from the given map as an {@link Enum} value
+	 */
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Map<String, ?> settings) {
+		return CfgTools.decodeEnum(label, enumClass, settings, null);
+	}
+
+	/**
+	 * Decode the given setting from the given map as an {@link Enum} value, returning the value
+	 * stored (may be {@code null}), or the setting's {@link ConfigurationSetting#getDefaultValue()
+	 * default value} if it's not defined. This is equivalent to calling
+	 * {@link #decodeEnum(String, Class, Map, Enum) decodeEnum(setting.getLabel(), settings,
+	 * setting.getDefaultValue())}.
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return the named setting from the given map as an {@link Enum} value
+	 */
+	public static <E extends Enum<E>> E decodeEnum(ConfigurationSetting setting, Class<E> enumClass,
+		Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return CfgTools.getValue(setting.getLabel(), settings, new SettingDefault<>(setting),
+			new CONV_Enum<>(enumClass));
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of {@link Enum} values,
+	 * returning the List stored (may be {@code null}), or {@code defaultValue} if it's not defined.
+	 *
+	 * @param label
+	 * @param settings
+	 * @param defaultValue
+	 * @return the named setting from the given map as a {@link Enum} value
+	 */
+	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass, Map<String, ?> settings,
+		List<E> defaultValue) {
+		return CfgTools.getValues(label, settings, (c) -> {
+			return defaultValue;
+		}, new CONV_Enum<>(enumClass));
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of @link Enum} values,
+	 * returning the list stored (may be {@code null}), or {@code null} if it's not defined. This is
+	 * equivalent to calling {@link #decodeEnums(String, Class, Map, List) decodeEnums(label,
+	 * settings, null)}
+	 *
+	 * @param label
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Enum} value
+	 */
+	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass, Map<String, ?> settings) {
+		return CfgTools.decodeEnums(label, enumClass, settings, null);
+	}
+
+	/**
+	 * Decode the given setting from the given map as a {@link List} of {@link Enum} values,
+	 * returning the list stored (may be {@code null}), or the setting's
+	 * {@link ConfigurationSetting#getDefaultValue() default value} (converted to a
+	 * List&lt;Enum&gt;) if it's not defined. This is equivalent to calling
+	 * {@link #decodeEnums(String, Class, Map, List) decodeEnums(setting.getLabel(), settings,
+	 * setting.getDefaultValue())}.
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Enum} value
+	 */
+	public static <E extends Enum<E>> List<E> decodeEnums(ConfigurationSetting setting, Class<E> enumClass,
+		Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return CfgTools.getValues(setting.getLabel(), settings, new SettingDefault<>(setting),
+			new CONV_Enum<>(enumClass));
 	}
 
 	/**
@@ -395,7 +515,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as a {@link List} of {@link Boolean} values
 	 */
 	public static List<Boolean> decodeBooleans(String label, Map<String, ?> settings) {
 		return CfgTools.decodeBooleans(label, settings, null);
@@ -412,7 +532,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Boolean} value
+	 * @return the named setting from the given map as a {@link List} of {@link Boolean} values
 	 */
 	public static List<Boolean> decodeBooleans(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -474,7 +594,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Byte} value
+	 * @return the named setting from the given map as a {@link List} of {@link Byte} values
 	 */
 	public static List<Byte> decodeBytes(String label, Map<String, ?> settings, List<Byte> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> {
@@ -491,7 +611,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Byte} value
+	 * @return the named setting from the given map as a {@link List} of {@link Byte} values
 	 */
 	public static List<Byte> decodeBytes(String label, Map<String, ?> settings) {
 		return CfgTools.decodeBytes(label, settings, null);
@@ -508,7 +628,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Byte} value
+	 * @return the named setting from the given map as a {@link List} of {@link Byte} values
 	 */
 	public static List<Byte> decodeBytes(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -521,6 +641,7 @@ public class CfgTools implements Serializable {
 	 * returned is converted into a Short using a best-effort strategy.
 	 *
 	 * @param label
+	 *            {@link List} of
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Short} value
@@ -587,7 +708,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Short} value
+	 * @return the named setting from the given map as a {@link List} of {@link Short} values
 	 */
 	public static List<Short> decodeShorts(String label, Map<String, ?> settings) {
 		return CfgTools.decodeShorts(label, settings, null);
@@ -604,7 +725,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Short} value
+	 * @return the named setting from the given map as a {@link List} of {@link Short} values
 	 */
 	public static List<Short> decodeShorts(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -619,7 +740,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Integer} value
+	 * @return the named setting from the given map as a {@link List} of {@link Integer} values
 	 */
 	public static Integer decodeInteger(String label, Map<String, ?> settings, Integer defaultValue) {
 		return CfgTools.getValue(label, settings, (c) -> {
@@ -667,7 +788,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Integer} value
+	 * @return the named setting from the given map as a {@link List} of {@link Integer} values
 	 */
 	public static List<Integer> decodeIntegers(String label, Map<String, ?> settings, List<Integer> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> {
@@ -684,7 +805,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Integer} value
+	 * @return the named setting from the given map as a {@link List} of {@link Integer} values
 	 */
 	public static List<Integer> decodeIntegers(String label, Map<String, ?> settings) {
 		return CfgTools.decodeIntegers(label, settings, null);
@@ -701,7 +822,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Integer} value
+	 * @return the named setting from the given map as a {@link List} of {@link Integer} values
 	 */
 	public static List<Integer> decodeIntegers(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -763,7 +884,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Long} value
+	 * @return the named setting from the given map as a {@link List} of {@link Long} values
 	 */
 	public static List<Long> decodeLongs(String label, Map<String, ?> settings, List<Long> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> {
@@ -780,7 +901,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Long} value
+	 * @return the named setting from the given map as a {@link List} of {@link Long} values
 	 */
 	public static List<Long> decodeLongs(String label, Map<String, ?> settings) {
 		return CfgTools.decodeLongs(label, settings, null);
@@ -797,7 +918,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Long} value
+	 * @return the named setting from the given map as a {@link List} of {@link Long} values
 	 */
 	public static List<Long> decodeLongs(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -859,7 +980,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Float} value
+	 * @return the named setting from the given map as a {@link List} of {@link Float} values
 	 */
 	public static List<Float> decodeFloats(String label, Map<String, ?> settings, List<Float> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> {
@@ -876,7 +997,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Float} value
+	 * @return the named setting from the given map as a {@link List} of {@link Float} values
 	 */
 	public static List<Float> decodeFloats(String label, Map<String, ?> settings) {
 		return CfgTools.decodeFloats(label, settings, null);
@@ -893,7 +1014,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Float} value
+	 * @return the named setting from the given map as a {@link List} of {@link Float} values
 	 */
 	public static List<Float> decodeFloats(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -955,7 +1076,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Double} value
+	 * @return the named setting from the given map as a {@link List} of {@link Double} values
 	 */
 	public static List<Double> decodeDoubles(String label, Map<String, ?> settings, List<Double> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> {
@@ -972,7 +1093,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Double} value
+	 * @return the named setting from the given map as a {@link List} of {@link Double} values
 	 */
 	public static List<Double> decodeDoubles(String label, Map<String, ?> settings) {
 		return CfgTools.decodeDoubles(label, settings, null);
@@ -989,7 +1110,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link Double} value
+	 * @return the named setting from the given map as a {@link List} of {@link Double} values
 	 */
 	public static List<Double> decodeDoubles(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -1053,7 +1174,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link BigInteger} value
+	 * @return the named setting from the given map as a {@link List} of {@link BigInteger} values
 	 */
 	public static List<BigInteger> decodeBigIntegers(String label, Map<String, ?> settings,
 		List<BigInteger> defaultValue) {
@@ -1071,7 +1192,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link BigInteger} value
+	 * @return the named setting from the given map as a {@link List} of {@link BigInteger} values
 	 */
 	public static List<BigInteger> decodeBigIntegers(String label, Map<String, ?> settings) {
 		return CfgTools.decodeBigIntegers(label, settings, null);
@@ -1088,7 +1209,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link BigInteger} value
+	 * @return the named setting from the given map as a {@link List} of {@link BigInteger} values
 	 */
 	public static List<BigInteger> decodeBigIntegers(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -1153,7 +1274,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link BigDecimal} value
+	 * @return the named setting from the given map as a {@link List} of {@link BigDecimal} values
 	 */
 	public static List<BigDecimal> decodeBigDecimals(String label, Map<String, ?> settings,
 		List<BigDecimal> defaultValue) {
@@ -1171,7 +1292,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link BigDecimal} value
+	 * @return the named setting from the given map as a {@link List} of {@link BigDecimal} values
 	 */
 	public static List<BigDecimal> decodeBigDecimals(String label, Map<String, ?> settings) {
 		return CfgTools.decodeBigDecimals(label, settings, null);
@@ -1188,7 +1309,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link BigDecimal} value
+	 * @return the named setting from the given map as a {@link List} of {@link BigDecimal} values
 	 */
 	public static List<BigDecimal> decodeBigDecimals(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -1251,7 +1372,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link String} value
+	 * @return the named setting from the given map as a {@link List} of {@link String} values
 	 */
 	public static List<String> decodeStrings(String label, Map<String, ?> settings, List<String> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> {
@@ -1268,7 +1389,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@link String} value
+	 * @return the named setting from the given map as a {@link List} of {@link String} values
 	 */
 	public static List<String> decodeStrings(String label, Map<String, ?> settings) {
 		return CfgTools.decodeStrings(label, settings, null);
@@ -1285,7 +1406,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@link String} value
+	 * @return the named setting from the given map as a {@link List} of {@link String} values
 	 */
 	public static List<String> decodeStrings(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
@@ -1357,7 +1478,7 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@code byte[]} value
+	 * @return the named setting from the given map as a {@link List} of {@code byte[]} values
 	 */
 	public static List<byte[]> decodeBinaries(String label, Map<String, ?> settings, List<byte[]> defaultValue)
 		throws DecoderException {
@@ -1379,7 +1500,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param label
 	 * @param settings
-	 * @return the named setting from the given map as a {@code byte[]} value
+	 * @return the named setting from the given map as a {@link List} of {@code byte[]} values
 	 * @throws DecoderException
 	 */
 	public static List<byte[]> decodeBinaries(String label, Map<String, ?> settings) throws DecoderException {
@@ -1397,7 +1518,7 @@ public class CfgTools implements Serializable {
 	 *
 	 * @param setting
 	 * @param settings
-	 * @return the named setting from the given map as a {@code byte[]} value
+	 * @return the named setting from the given map as a {@link List} of {@code byte[]} values
 	 */
 	public static List<byte[]> decodeBinaries(ConfigurationSetting setting, Map<String, ?> settings)
 		throws DecoderException {
@@ -1470,6 +1591,30 @@ public class CfgTools implements Serializable {
 
 	public List<Object> getObjects(ConfigurationSetting setting) {
 		return CfgTools.decodeObjects(setting, this.settings);
+	}
+
+	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass, E defaultValue) {
+		return CfgTools.decodeEnum(setting, enumClass, this.settings, defaultValue);
+	}
+
+	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass) {
+		return CfgTools.decodeEnum(setting, enumClass, this.settings);
+	}
+
+	public <E extends Enum<E>> E getEnum(ConfigurationSetting setting, Class<E> enumClass) {
+		return CfgTools.decodeEnum(setting, enumClass, this.settings);
+	}
+
+	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass, List<E> defaultValue) {
+		return CfgTools.decodeEnums(setting, enumClass, this.settings, defaultValue);
+	}
+
+	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass) {
+		return CfgTools.decodeEnums(setting, enumClass, this.settings);
+	}
+
+	public <E extends Enum<E>> List<E> getEnums(ConfigurationSetting setting, Class<E> enumClass) {
+		return CfgTools.decodeEnums(setting, enumClass, this.settings);
 	}
 
 	public Boolean getBoolean(String setting, Boolean defaultValue) {
