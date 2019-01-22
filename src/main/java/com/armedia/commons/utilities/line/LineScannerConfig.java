@@ -46,6 +46,7 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 		CONTINUATION, //
 		RECURSION, //
 		IGNORE_EMPTY_LINES, //
+		CONTINUED_NEWLINES, //
 		//
 		;
 	}

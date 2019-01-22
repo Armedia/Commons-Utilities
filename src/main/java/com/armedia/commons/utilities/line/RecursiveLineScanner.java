@@ -105,6 +105,10 @@ class RecursiveLineScanner {
 		return ((maxDepth < 0) || (nextDepth < maxDepth));
 	}
 
+	private boolean isContinuedNewlines() {
+		return this.config.hasFeature(Feature.CONTINUED_NEWLINES);
+	}
+
 	private Iterable<Line> preprocess(LineSource ls) throws LineSourceException {
 		Collection<Line> result = this.cache.get(ls.getId());
 		if (result == null) {
@@ -137,8 +141,10 @@ class RecursiveLineScanner {
 				if (ls.isSupportsContinuation() && isContinued(rawLine)) {
 					// Remove the last character, which is a backslash
 					rawLine = rawLine.substring(0, rawLine.length() - 1);
-					// Add a newline (?)
-					rawLine = String.format("%s%n", rawLine);
+					// Add a newline
+					if (isContinuedNewlines()) {
+						rawLine = String.format("%s%n", rawLine);
+					}
 					continuing = true;
 				}
 
