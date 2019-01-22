@@ -188,7 +188,7 @@ class RecursiveLineScanner {
 		for (Line line : lines) {
 
 			// Is this a recursion? Are we clear to recurse?
-			if (source.isSupportsRecursion() && shouldRecurse(line.str, depth + 1)) {
+			if (shouldRecurse(line.str, depth + 1)) {
 				// Possible recursion!!
 				LineSource recursor = getLineSource(line);
 				if (recursor != null) {
@@ -221,7 +221,7 @@ class RecursiveLineScanner {
 
 	final boolean process(final Function<String, Boolean> processor, Iterable<String> source)
 		throws IOException, LineProcessorException, LineSourceException {
-		return process(processor, new LineSource(UUID.randomUUID().toString(), false, true) {
+		return process(processor, new LineSource(UUID.randomUUID().toString(), false) {
 			@Override
 			public Iterable<String> load() throws LineSourceException {
 				return source;
