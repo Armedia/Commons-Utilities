@@ -178,7 +178,7 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 		if (maxDepth == null) {
 			this.maxDepth = LineScannerConfig.INFINITE_RECURSION;
 		} else {
-			this.maxDepth = Math.max(LineScannerConfig.INFINITE_RECURSION, this.maxDepth);
+			this.maxDepth = Math.max(LineScannerConfig.INFINITE_RECURSION, maxDepth);
 		}
 		return this;
 	}

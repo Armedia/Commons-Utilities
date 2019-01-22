@@ -33,7 +33,7 @@ public class RecursiveLineScannerTest {
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), config);
 		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		System.out.printf("CONFIG: %s%n", config);
+		System.out.printf("%n%nCONFIG: %s%n", config);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -50,159 +50,129 @@ public class RecursiveLineScannerTest {
 		config //
 			.reset()//
 			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
-			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
 			.setTrim(Trim.LEADING) //
-			.setMaxDepth(-1) //
-			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
 			.setTrim(Trim.TRAILING) //
-			.setMaxDepth(-1) //
-			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
 			.setTrim(Trim.BOTH) //
-			.setMaxDepth(-1) //
-			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
+			.setMaxDepth(0);
+		run(config);
+
+		config //
+			.reset()//
+			.setMaxDepth(1);
+		run(config);
+
+		config //
+			.reset()//
 			.setFeatures() //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.CONTINUATION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.IGNORE_EMPTY_LINES) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS, Feature.IGNORE_EMPTY_LINES) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.CONTINUATION, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);
 
 		config //
 			.reset()//
-			.setTrim(Trim.NONE) //
-			.setMaxDepth(-1) //
 			.setFeatures(Feature.COMMENTS, Feature.CONTINUATION, Feature.IGNORE_EMPTY_LINES, Feature.RECURSION) //
 		;
 		run(config);

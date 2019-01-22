@@ -25,10 +25,22 @@ class RecursiveLineScanner {
 
 	private final Set<String> visited = new LinkedHashSet<>();
 	private final Map<String, AtomicLong> counters = new LinkedHashMap<>();
-	private final Map<String, Collection<String>> cache = new HashMap<>();
+	private final Map<String, Collection<Line>> cache = new HashMap<>();
 
 	private final Collection<LineSourceFactory> factories;
 	private final LineScannerConfig config;
+
+	private static class Line {
+		private final LineSource source;
+		private final long position;
+		private final String str;
+
+		private Line(LineSource source, long position, String str) {
+			this.source = source;
+			this.position = position;
+			this.str = str;
+		}
+	}
 
 	public RecursiveLineScanner(Collection<LineSourceFactory> factories, LineScannerConfig config) {
 		this.factories = factories;
@@ -51,14 +63,16 @@ class RecursiveLineScanner {
 		return this.config;
 	}
 
-	private LineSource getLineSource(final String sourceSpec, final LineSource relativeTo)
-		throws IOException, LineProcessorException {
+	private LineSource getLineSource(final Line line) throws IOException, LineProcessorException {
 		for (LineSourceFactory f : this.factories) {
 			try {
-				LineSource ls = f.newInstance(sourceSpec, relativeTo);
+				LineSource ls = f.newInstance(line.str.replaceAll("^\\s*@", ""), line.source);
 				if (ls != null) { return ls; }
 			} catch (LineSourceException e) {
-				throw new LineProcessorException(String.format("Failed to read the lines from [%s]", sourceSpec), e);
+				throw new LineProcessorException(
+					String.format("Failed to read the lines from [%s] (referenced from [%s], line # %d)", line.str,
+						line.source.getId(), line.position),
+					e);
 			}
 		}
 		return null;
@@ -92,8 +106,8 @@ class RecursiveLineScanner {
 		return ((maxDepth < 0) || (nextDepth < maxDepth));
 	}
 
-	private Iterable<String> preprocess(LineSource ls) throws LineSourceException {
-		Collection<String> result = this.cache.get(ls.getId());
+	private Iterable<Line> preprocess(LineSource ls) throws LineSourceException {
+		Collection<Line> result = this.cache.get(ls.getId());
 		if (result == null) {
 			AtomicLong counter = this.counters.get(ls.getId());
 			if (counter == null) {
@@ -114,7 +128,9 @@ class RecursiveLineScanner {
 			StringBuilder line = new StringBuilder();
 			boolean continuing = false;
 
+			long pos = 0;
 			for (String rawLine : ls.load()) {
+				++pos;
 				// We protect against null lines, just to be robust and safe
 				rawLine = Tools.coalesce(rawLine, StringUtils.EMPTY);
 
@@ -139,7 +155,7 @@ class RecursiveLineScanner {
 				if (!isComment(finalLine)) {
 					// It's not a comment, so it's an "actionable" line
 					if (!isIgnoreLine(finalLine)) {
-						result.add(finalLine);
+						result.add(new Line(ls, pos, finalLine));
 						if (!isRecursion(finalLine)) {
 							// If it's not a recursion request, then count it...
 							counter.incrementAndGet();
@@ -156,11 +172,11 @@ class RecursiveLineScanner {
 
 		if (!this.visited.add(source.getId())) {
 			// Recursion loop!!
-			throw new LineProcessorException(String.format(
-				"The line source [%s] has already been visited in this recursion: %s", source.getId(), this.visited));
+			throw new LineProcessorException(
+				String.format("The line source [%s] has already been visited: %s", source.getId(), this.visited));
 		}
 
-		Iterable<String> lines = preprocess(source);
+		Iterable<Line> lines = preprocess(source);
 		if (closeAfterRead) {
 			try {
 				source.close();
@@ -169,13 +185,12 @@ class RecursiveLineScanner {
 			}
 		}
 
-		for (String line : lines) {
+		for (Line line : lines) {
 
 			// Is this a recursion? Are we clear to recurse?
-			if (shouldRecurse(line, depth + 1)) {
+			if (shouldRecurse(line.str, depth + 1)) {
 				// Possible recursion!!
-				line = line.replaceAll("^\\s*@", "");
-				LineSource recursor = getLineSource(line, source);
+				LineSource recursor = getLineSource(line);
 				if (recursor != null) {
 					// A recursion spec!! Recurse!!
 					if (!process(processor, recursor, true, depth + 1)) { return false; }
@@ -186,7 +201,7 @@ class RecursiveLineScanner {
 			// This is not a recursion request, so we simply process it as a normal line... ?
 
 			// Not a recursion spec - process it!
-			Boolean result = processor.apply(line);
+			Boolean result = processor.apply(line.str);
 			if ((result != null) && !result.booleanValue()) {
 				// We've been asked to stop!!! so stop!
 				return false;
