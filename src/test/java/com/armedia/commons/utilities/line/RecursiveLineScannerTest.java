@@ -32,7 +32,7 @@ public class RecursiveLineScannerTest {
 		LineSource ls = null;
 
 		n.set(0);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Raw lines:%n");
 		for (String l : ls.load()) {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -41,7 +41,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -51,7 +51,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -61,7 +61,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -71,7 +71,7 @@ public class RecursiveLineScannerTest {
 		n.set(0);
 
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, -1, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -81,7 +81,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -91,7 +91,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -101,7 +101,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -111,7 +111,7 @@ public class RecursiveLineScannerTest {
 		n.set(0);
 
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, -1, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -121,7 +121,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -131,7 +131,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -141,7 +141,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -151,7 +151,7 @@ public class RecursiveLineScannerTest {
 		n.set(0);
 
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, 0, true);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -161,7 +161,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.NONE, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -171,7 +171,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.LEADING, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -181,7 +181,7 @@ public class RecursiveLineScannerTest {
 
 		n.set(0);
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.TRAILING, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
@@ -191,7 +191,7 @@ public class RecursiveLineScannerTest {
 		n.set(0);
 
 		rls = new RecursiveLineScanner(LineScanner.DEFAULT_FACTORIES.values(), Trim.BOTH, 0, false);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test");
+		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
 		System.out.printf("Processed lines:%n");
 		rls.process((l) -> {
 			System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l);
