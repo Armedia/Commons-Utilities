@@ -44,4 +44,19 @@ public abstract class LineSource implements AutoCloseable {
 	public void close() throws Exception {
 		// Do nothing...
 	}
+
+	public static LineSource wrap(String id, Iterable<String> strings) {
+		return LineSource.wrap(id, strings, false);
+	}
+
+	public static LineSource wrap(String id, final Iterable<String> strings, boolean supportsContinuation) {
+		Objects.requireNonNull(id, "Must provide a non-null ID string");
+		Objects.requireNonNull(strings, "Must provide a non-null Iterable<String> instance");
+		return new LineSource(id, supportsContinuation) {
+			@Override
+			public Iterable<String> load() throws LineSourceException {
+				return strings;
+			}
+		};
+	}
 }

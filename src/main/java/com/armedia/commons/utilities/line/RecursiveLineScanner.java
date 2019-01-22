@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -213,19 +212,14 @@ class RecursiveLineScanner {
 		return true;
 	}
 
+	final boolean process(final Function<String, Boolean> processor, Iterable<String> source)
+		throws IOException, LineProcessorException, LineSourceException {
+		return process(processor, LineSource.wrap("<ROOT>", source, false));
+	}
+
 	final boolean process(final Function<String, Boolean> processor, LineSource root)
 		throws IOException, LineProcessorException, LineSourceException {
 		return process(Objects.requireNonNull(processor, "Must provide a non-null Processor instance to process with"),
 			Objects.requireNonNull(root, "Must provide a non-null LineSource instance to process from"), false, 0);
-	}
-
-	final boolean process(final Function<String, Boolean> processor, Iterable<String> source)
-		throws IOException, LineProcessorException, LineSourceException {
-		return process(processor, new LineSource(UUID.randomUUID().toString(), false) {
-			@Override
-			public Iterable<String> load() throws LineSourceException {
-				return source;
-			}
-		});
 	}
 }
