@@ -135,7 +135,7 @@ class RecursiveLineScanner {
 				rawLine = Tools.coalesce(rawLine, StringUtils.EMPTY);
 
 				// Are we continuing further?
-				if (isContinued(rawLine)) {
+				if (ls.isSupportsContinuation() && isContinued(rawLine)) {
 					// Remove the last character, which is a backslash
 					rawLine = rawLine.substring(0, rawLine.length() - 1);
 					// Add a newline (?)
@@ -188,7 +188,7 @@ class RecursiveLineScanner {
 		for (Line line : lines) {
 
 			// Is this a recursion? Are we clear to recurse?
-			if (shouldRecurse(line.str, depth + 1)) {
+			if (source.isSupportsRecursion() && shouldRecurse(line.str, depth + 1)) {
 				// Possible recursion!!
 				LineSource recursor = getLineSource(line);
 				if (recursor != null) {
@@ -221,7 +221,7 @@ class RecursiveLineScanner {
 
 	final boolean process(final Function<String, Boolean> processor, Iterable<String> source)
 		throws IOException, LineProcessorException, LineSourceException {
-		return process(processor, new LineSource(UUID.randomUUID().toString()) {
+		return process(processor, new LineSource(UUID.randomUUID().toString(), false, true) {
 			@Override
 			public Iterable<String> load() throws LineSourceException {
 				return source;

@@ -16,12 +16,32 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class LineSource implements AutoCloseable {
 
 	private final String id;
+	private final boolean supportsContinuation;
+	private final boolean supportsRecursion;
 
 	protected LineSource(String id) {
+		this(id, true, true);
+	}
+
+	protected LineSource(String id, boolean supportsContinuation) {
+		this(id, supportsContinuation, true);
+	}
+
+	protected LineSource(String id, boolean supportsContinuation, boolean supportsRecursion) {
 		this.id = StringUtils.strip(Objects.requireNonNull(id, "Must provide a non-null ID string"));
 		if (StringUtils.isEmpty(id)) {
 			throw new IllegalArgumentException("The ID string may not be an empty or blank string");
 		}
+		this.supportsContinuation = supportsContinuation;
+		this.supportsRecursion = supportsRecursion;
+	}
+
+	public final boolean isSupportsContinuation() {
+		return this.supportsContinuation;
+	}
+
+	public final boolean isSupportsRecursion() {
+		return this.supportsRecursion;
 	}
 
 	public final String getId() {
