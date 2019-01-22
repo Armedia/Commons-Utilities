@@ -17,7 +17,7 @@ class ResourceLineSourceFactory implements LineSourceFactory {
 	private static final String STDIN_ID = "<STDIN>";
 
 	@Override
-	public LineSource newInstance(String resource) throws LineSourceException {
+	public LineSource newInstance(String resource, LineSource relativeTo) throws LineSourceException {
 		if (StringUtils.isBlank(resource)) { return null; }
 		resource = StringUtils.strip(resource);
 

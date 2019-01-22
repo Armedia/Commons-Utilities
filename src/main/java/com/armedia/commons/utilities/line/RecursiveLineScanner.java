@@ -59,10 +59,11 @@ class RecursiveLineScanner {
 		return this.maxDepth;
 	}
 
-	private LineSource getLineSource(final String sourceSpec) throws IOException, LineProcessorException {
+	private LineSource getLineSource(final String sourceSpec, final LineSource relativeTo)
+		throws IOException, LineProcessorException {
 		for (LineSourceFactory f : this.factories) {
 			try {
-				LineSource ls = f.newInstance(sourceSpec);
+				LineSource ls = f.newInstance(sourceSpec, relativeTo);
 				if (ls != null) { return ls; }
 			} catch (LineSourceException e) {
 				throw new LineProcessorException(String.format("Failed to read the lines from [%s]", sourceSpec), e);
@@ -162,7 +163,7 @@ class RecursiveLineScanner {
 				if ((this.maxDepth < 0) || ((depth + 1) < this.maxDepth)) {
 					// Possible recursion!!
 					line = line.replaceAll("^\\s*@", "");
-					LineSource recursor = getLineSource(line);
+					LineSource recursor = getLineSource(line, source);
 					if (recursor != null) {
 						// A recursion spec!! Recurse!!
 						if (!process(processor, recursor, true, depth + 1)) { return false; }
