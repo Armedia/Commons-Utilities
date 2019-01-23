@@ -21,8 +21,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.armedia.commons.utilities.ResourceLoader;
-
 public class ResourceLoaderTest {
 
 	@Test
@@ -92,11 +90,11 @@ public class ResourceLoaderTest {
 			"classpath", "cp", "resource", "res"
 		};
 		List<Pair<String, Long>> sums = new ArrayList<>();
-		sums.add(Pair.of("1e69890c0a5acb92a7f21f707471505bbb32f646a408f4e3dae5a7949f62015d", 65536L));
-		sums.add(Pair.of("ad77bcbc77546d3d882f6d1fd731970e2865cb07973b6067c416caa97a8ee544", 65536L));
-		sums.add(Pair.of("4198124aeae024dc6b88a87627742c5bf0ac286f0389d0b8f4ec9ba8ed14ffb3", 65536L));
-		sums.add(Pair.of("2866c88c068ccf395f4eb5584a1b623e82d06ac25a77a1b23c1ef79f069a3a5c", 65536L));
-		sums.add(Pair.of("dc1a9c7ac5eabf3ea6c3b4b72396b94d6e71a97a42710b3cd9d07e0f0d953a4d", 65536L));
+		sums.add(Pair.of("6cc185511bf9ef6e765c1fbeace1ad443e6b1e62abd04370fc116eb1a1c7897b", 65536L));
+		sums.add(Pair.of("15783f3468c564cf3bc35cc563107144e939bd01862c7aacbe85e2f155b3f625", 65536L));
+		sums.add(Pair.of("302d19781b0f03bfcad9399ef6e97d3c24d2a16b0ad3fed400971483893b3c8e", 65536L));
+		sums.add(Pair.of("e7b584d724d308a33f4c7a55eb4fa143358e3d8e32c95b211bea09549e6b86bf", 65536L));
+		sums.add(Pair.of("11185d2bb878c66f18b52d67f67da46225b07f66de4fd8124e07c9cbfd931111", 65536L));
 		Map<String, String> verifier = new HashMap<>();
 		for (int i = 0; i <= (sums.size() + 1); i++) {
 			for (int p = 0; p < cp.length; p++) {
@@ -147,7 +145,7 @@ public class ResourceLoaderTest {
 				// Supported, but may be unreachable (i.e. http:// or https:// on standalone
 				// networkless systems)
 				Number n = Number.class.cast(result);
-				Assert.assertNotNull(url);
+				Assert.assertNotNull(str, url);
 				Assert.assertNull(raised);
 
 				byte[] data = null;
@@ -213,11 +211,11 @@ public class ResourceLoaderTest {
 			"classpath", "cp", "resource", "res"
 		};
 		List<Pair<String, Long>> sums = new ArrayList<>();
-		sums.add(Pair.of("1e69890c0a5acb92a7f21f707471505bbb32f646a408f4e3dae5a7949f62015d", 65536L));
-		sums.add(Pair.of("ad77bcbc77546d3d882f6d1fd731970e2865cb07973b6067c416caa97a8ee544", 65536L));
-		sums.add(Pair.of("4198124aeae024dc6b88a87627742c5bf0ac286f0389d0b8f4ec9ba8ed14ffb3", 65536L));
-		sums.add(Pair.of("2866c88c068ccf395f4eb5584a1b623e82d06ac25a77a1b23c1ef79f069a3a5c", 65536L));
-		sums.add(Pair.of("dc1a9c7ac5eabf3ea6c3b4b72396b94d6e71a97a42710b3cd9d07e0f0d953a4d", 65536L));
+		sums.add(Pair.of("6cc185511bf9ef6e765c1fbeace1ad443e6b1e62abd04370fc116eb1a1c7897b", 65536L));
+		sums.add(Pair.of("15783f3468c564cf3bc35cc563107144e939bd01862c7aacbe85e2f155b3f625", 65536L));
+		sums.add(Pair.of("302d19781b0f03bfcad9399ef6e97d3c24d2a16b0ad3fed400971483893b3c8e", 65536L));
+		sums.add(Pair.of("e7b584d724d308a33f4c7a55eb4fa143358e3d8e32c95b211bea09549e6b86bf", 65536L));
+		sums.add(Pair.of("11185d2bb878c66f18b52d67f67da46225b07f66de4fd8124e07c9cbfd931111", 65536L));
 		Map<String, String> verifier = new HashMap<>();
 		for (int i = 0; i <= (sums.size() + 1); i++) {
 			for (int p = 0; p < cp.length; p++) {
@@ -267,7 +265,7 @@ public class ResourceLoaderTest {
 				// Supported, but may be unreachable (i.e. http:// or https:// on standalone
 				// networkless systems)
 				Number n = Number.class.cast(result);
-				Assert.assertNotNull(url);
+				Assert.assertNotNull(uri, url);
 				Assert.assertNull(raised);
 
 				byte[] data = null;
