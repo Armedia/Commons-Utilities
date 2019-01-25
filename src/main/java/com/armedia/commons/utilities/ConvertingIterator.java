@@ -1,13 +1,14 @@
 package com.armedia.commons.utilities;
 
 import java.util.Iterator;
+import java.util.function.Function;
 
 public class ConvertingIterator<A, B> implements Iterator<B> {
 
 	protected final Iterator<A> iterator;
-	protected final Converter<A, B> converter;
+	protected final Function<A, B> converter;
 
-	public ConvertingIterator(Iterator<A> iterator, Converter<A, B> converter) {
+	public ConvertingIterator(Iterator<A> iterator, Function<A, B> converter) {
 		if (iterator == null) { throw new IllegalArgumentException("Must provide a non-null Iterator instance"); }
 		if (converter == null) { throw new IllegalArgumentException("Must provide a non-null Converter instance"); }
 		this.iterator = iterator;
@@ -23,7 +24,7 @@ public class ConvertingIterator<A, B> implements Iterator<B> {
 	public final B next() {
 		A a = this.iterator.next();
 		if (a == null) { return null; }
-		return this.converter.convert(a);
+		return this.converter.apply(a);
 	}
 
 	@Override

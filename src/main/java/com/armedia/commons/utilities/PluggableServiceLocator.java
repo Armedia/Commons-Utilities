@@ -3,6 +3,7 @@ package com.armedia.commons.utilities;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
+import java.util.function.BiConsumer;
 
 /**
  * <p>
@@ -16,25 +17,12 @@ import java.util.ServiceLoader;
  */
 public class PluggableServiceLocator<S> implements Iterable<S> {
 
-	/**
-	 * <p>
-	 * This interface helps in detecting errors which would otherwise be silently ignored while
-	 * searching for pluggable services.
-	 * </p>
-	 *
-	 * @author Diego Rivera
-	 *
-	 */
-	public static interface ErrorListener {
-		public void errorRaised(Class<?> serviceClass, Throwable t);
-	}
-
 	private final ClassLoader classLoader;
 	private final Class<S> serviceClass;
 	private final ServiceLoader<S> loader;
 
 	private PluggableServiceSelector<S> defaultSelector = null;
-	private ErrorListener listener = null;
+	private BiConsumer<Class<?>, Throwable> listener = null;
 	private boolean hideErrors = false;
 
 	public PluggableServiceLocator(Class<S> serviceClass) {
@@ -51,10 +39,12 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 
 	public PluggableServiceLocator(Class<S> serviceClass, ClassLoader classLoader,
 		PluggableServiceSelector<S> defaultSelector) {
-		if (serviceClass == null) { throw new IllegalArgumentException(
-			"Must provide a service class for which to locate instances"); }
-		if (classLoader == null) { throw new IllegalArgumentException(
-			"Must provide a classloader in which to locate instances"); }
+		if (serviceClass == null) {
+			throw new IllegalArgumentException("Must provide a service class for which to locate instances");
+		}
+		if (classLoader == null) {
+			throw new IllegalArgumentException("Must provide a classloader in which to locate instances");
+		}
 		this.classLoader = classLoader;
 		this.serviceClass = serviceClass;
 		this.loader = ServiceLoader.load(this.serviceClass, classLoader);
@@ -87,11 +77,11 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		this.defaultSelector = defaultSelector;
 	}
 
-	public final ErrorListener getErrorListener() {
+	public final BiConsumer<Class<?>, Throwable> getErrorListener() {
 		return this.listener;
 	}
 
-	public final void setErrorListener(ErrorListener listener) {
+	public final void setErrorListener(BiConsumer<Class<?>, Throwable> listener) {
 		this.listener = listener;
 	}
 
@@ -160,11 +150,12 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 */
 	public final Iterator<S> getAll(final PluggableServiceSelector<S> selector) {
 		return new Iterator<S>() {
-			private final PluggableServiceSelector<S> finalSelector = (selector == null ? PluggableServiceLocator.this.defaultSelector
+			private final PluggableServiceSelector<S> finalSelector = (selector == null
+				? PluggableServiceLocator.this.defaultSelector
 				: selector);
 			private final Class<S> serviceClass = PluggableServiceLocator.this.serviceClass;
 			private final Iterator<S> it = PluggableServiceLocator.this.loader.iterator();
-			private final ErrorListener listener = PluggableServiceLocator.this.listener;
+			private final BiConsumer<Class<?>, Throwable> listener = PluggableServiceLocator.this.listener;
 			private final boolean hideErrors = PluggableServiceLocator.this.hideErrors;
 
 			private S current = null;
@@ -179,7 +170,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 							if (!this.hideErrors) {
 								if (this.listener == null) { throw t; }
 								try {
-									this.listener.errorRaised(this.serviceClass, t);
+									this.listener.accept(this.serviceClass, t);
 								} catch (Throwable t2) {
 									// Do nothing...
 								}
@@ -189,7 +180,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 							if (!this.hideErrors) {
 								if (this.listener == null) { throw t; }
 								try {
-									this.listener.errorRaised(this.serviceClass, t);
+									this.listener.accept(this.serviceClass, t);
 								} catch (Throwable t2) {
 									// Do nothing...
 								}

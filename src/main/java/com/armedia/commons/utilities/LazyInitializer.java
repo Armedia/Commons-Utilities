@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
@@ -12,7 +13,7 @@ public class LazyInitializer<T> implements ConcurrentInitializer<T> {
 
 	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 	private final Condition condition = this.rwLock.writeLock().newCondition();
-	private final Initializer<T> defaultInitializer;
+	private final Supplier<T> defaultInitializer;
 	private final T defaultValue;
 
 	private volatile boolean initialized = false;
@@ -22,7 +23,7 @@ public class LazyInitializer<T> implements ConcurrentInitializer<T> {
 		this(null, null);
 	}
 
-	public LazyInitializer(Initializer<T> defaultInitializer) {
+	public LazyInitializer(Supplier<T> defaultInitializer) {
 		this(defaultInitializer, null);
 	}
 
@@ -30,7 +31,7 @@ public class LazyInitializer<T> implements ConcurrentInitializer<T> {
 		this(null, defaultValue);
 	}
 
-	public LazyInitializer(Initializer<T> defaultInitializer, T defaultValue) {
+	public LazyInitializer(Supplier<T> defaultInitializer, T defaultValue) {
 		this.defaultInitializer = defaultInitializer;
 		this.defaultValue = defaultValue;
 	}
@@ -122,7 +123,7 @@ public class LazyInitializer<T> implements ConcurrentInitializer<T> {
 		return get(this.defaultInitializer);
 	}
 
-	public T get(Initializer<T> initializer) throws ConcurrentException {
+	public T get(Supplier<T> initializer) throws ConcurrentException {
 		if (!this.initialized) {
 			this.rwLock.writeLock().lock();
 			try {
@@ -130,7 +131,7 @@ public class LazyInitializer<T> implements ConcurrentInitializer<T> {
 					initializer = Tools.coalesce(initializer, this.defaultInitializer);
 					if (initializer != null) {
 						try {
-							this.item = initializer.initialize();
+							this.item = initializer.get();
 						} catch (Throwable e) {
 							throw new ConcurrentException(e);
 						}

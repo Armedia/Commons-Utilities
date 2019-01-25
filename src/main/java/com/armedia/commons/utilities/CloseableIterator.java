@@ -2,6 +2,7 @@ package com.armedia.commons.utilities;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E> {
 
@@ -114,4 +115,25 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 	}
 
 	protected abstract void doClose() throws Exception;
+
+	protected Stream<E> configureStream(Stream<E> stream) {
+		// Make sure we add the close handler
+		return stream.onClose(this::close);
+	}
+
+	public Stream<E> stream() {
+		return configureStream(StreamTools.fromIterator(this));
+	}
+
+	public Stream<E> stream(boolean parallel) {
+		return configureStream(StreamTools.fromIterator(this, parallel));
+	}
+
+	public Stream<E> stream(int characteristics) {
+		return configureStream(StreamTools.fromIterator(this, characteristics));
+	}
+
+	public Stream<E> stream(int characteristics, boolean parallel) {
+		return configureStream(StreamTools.fromIterator(this, characteristics, parallel));
+	}
 }
