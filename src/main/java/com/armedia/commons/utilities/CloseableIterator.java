@@ -122,18 +122,18 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 	}
 
 	public Stream<E> stream() {
-		return configureStream(StreamTools.fromIterator(this));
+		return configureStream(StreamTools.of(this));
 	}
 
 	public Stream<E> stream(boolean parallel) {
-		return configureStream(StreamTools.fromIterator(this, parallel));
+		return configureStream(StreamTools.of(this, parallel));
 	}
 
 	public Stream<E> stream(int characteristics) {
-		return configureStream(StreamTools.fromIterator(this, characteristics));
+		return configureStream(StreamTools.of(this, characteristics));
 	}
 
 	public Stream<E> stream(int characteristics, boolean parallel) {
-		return configureStream(StreamTools.fromIterator(this, characteristics, parallel));
+		return configureStream(StreamTools.of(this, characteristics, parallel));
 	}
 }
