@@ -37,7 +37,9 @@ public class LineScanner {
 	public final Collection<LineSourceFactory> getSourceFactories() {
 		this.lock.readLock().lock();
 		try {
-			return new ArrayList<>(this.factories.values());
+			Collection<LineSourceFactory> ret = new ArrayList<>(this.factories.values());
+			ret.addAll(LineScanner.DEFAULT_FACTORIES.values()); // Append the defaults
+			return ret;
 		} finally {
 			this.lock.readLock().unlock();
 		}
