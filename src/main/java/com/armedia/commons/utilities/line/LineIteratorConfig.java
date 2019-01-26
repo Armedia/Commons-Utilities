@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.armedia.commons.utilities.Tools;
 
-public final class LineScannerConfig implements Serializable, Cloneable {
+public final class LineIteratorConfig implements Serializable, Cloneable {
 	public static enum Trim {
 		//
 		NONE, //
@@ -54,20 +54,20 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1L;
 
 	public static final int INFINITE_RECURSION = -1;
-	public static final int DEFAULT_MAX_DEPTH = LineScannerConfig.INFINITE_RECURSION;
-	public static final Set<LineScannerConfig.Feature> DEFAULT_FEATURES = Tools
-		.freezeSet(EnumSet.allOf(LineScannerConfig.Feature.class));
-	public static final LineScannerConfig.Trim DEFAULT_TRIM = LineScannerConfig.Trim.NONE;
+	public static final int DEFAULT_MAX_DEPTH = LineIteratorConfig.INFINITE_RECURSION;
+	public static final Set<LineIteratorConfig.Feature> DEFAULT_FEATURES = Tools
+		.freezeSet(EnumSet.allOf(LineIteratorConfig.Feature.class));
+	public static final LineIteratorConfig.Trim DEFAULT_TRIM = LineIteratorConfig.Trim.NONE;
 
-	private LineScannerConfig.Trim trim = LineScannerConfig.DEFAULT_TRIM;
-	private int maxDepth = LineScannerConfig.INFINITE_RECURSION;
-	private final Set<LineScannerConfig.Feature> features = EnumSet.noneOf(LineScannerConfig.Feature.class);
+	private LineIteratorConfig.Trim trim = LineIteratorConfig.DEFAULT_TRIM;
+	private int maxDepth = LineIteratorConfig.INFINITE_RECURSION;
+	private final Set<LineIteratorConfig.Feature> features = EnumSet.noneOf(LineIteratorConfig.Feature.class);
 
-	public LineScannerConfig() {
-		this.features.addAll(LineScannerConfig.DEFAULT_FEATURES);
+	public LineIteratorConfig() {
+		this.features.addAll(LineIteratorConfig.DEFAULT_FEATURES);
 	}
 
-	public LineScannerConfig(LineScannerConfig other) {
+	public LineIteratorConfig(LineIteratorConfig other) {
 		this();
 		if (other != null) {
 			this.trim = other.getTrim();
@@ -77,29 +77,29 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 		}
 	}
 
-	public LineScannerConfig reset() {
-		this.trim = LineScannerConfig.DEFAULT_TRIM;
-		this.maxDepth = LineScannerConfig.DEFAULT_MAX_DEPTH;
+	public LineIteratorConfig reset() {
+		this.trim = LineIteratorConfig.DEFAULT_TRIM;
+		this.maxDepth = LineIteratorConfig.DEFAULT_MAX_DEPTH;
 		this.features.clear();
-		this.features.addAll(LineScannerConfig.DEFAULT_FEATURES);
+		this.features.addAll(LineIteratorConfig.DEFAULT_FEATURES);
 		return this;
 	}
 
-	public Set<LineScannerConfig.Feature> getFeatures() {
+	public Set<LineIteratorConfig.Feature> getFeatures() {
 		return this.features;
 	}
 
-	public LineScannerConfig addFeature(LineScannerConfig.Feature feature) {
+	public LineIteratorConfig addFeature(LineIteratorConfig.Feature feature) {
 		return addFeatures(Objects.requireNonNull(feature, "Must provide a non-null Feature to add"));
 	}
 
-	public LineScannerConfig removeFeature(LineScannerConfig.Feature feature) {
+	public LineIteratorConfig removeFeature(LineIteratorConfig.Feature feature) {
 		return removeFeatures(Objects.requireNonNull(feature, "Must provide a non-null Feature to remove"));
 	}
 
-	public LineScannerConfig addFeatures(LineScannerConfig.Feature... features) {
+	public LineIteratorConfig addFeatures(LineIteratorConfig.Feature... features) {
 		if (features != null) {
-			for (LineScannerConfig.Feature f : features) {
+			for (LineIteratorConfig.Feature f : features) {
 				if (f != null) {
 					this.features.add(f);
 				}
@@ -108,9 +108,9 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 		return this;
 	}
 
-	public LineScannerConfig removeFeatures(LineScannerConfig.Feature... features) {
+	public LineIteratorConfig removeFeatures(LineIteratorConfig.Feature... features) {
 		if (features != null) {
-			for (LineScannerConfig.Feature f : features) {
+			for (LineIteratorConfig.Feature f : features) {
 				if (f != null) {
 					this.features.remove(f);
 				}
@@ -119,26 +119,26 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 		return this;
 	}
 
-	public LineScannerConfig addFeatures(Collection<LineScannerConfig.Feature> features) {
+	public LineIteratorConfig addFeatures(Collection<LineIteratorConfig.Feature> features) {
 		if (features != null) {
 			features.stream().filter(Objects::nonNull).sequential().forEachOrdered(this.features::remove);
 		}
 		return this;
 	}
 
-	public LineScannerConfig removeFeatures(Collection<LineScannerConfig.Feature> features) {
+	public LineIteratorConfig removeFeatures(Collection<LineIteratorConfig.Feature> features) {
 		if (features != null) {
 			features.stream().filter(Objects::nonNull).sequential().forEachOrdered(this.features::remove);
 		}
 		return this;
 	}
 
-	public LineScannerConfig setFeatures(LineScannerConfig.Feature... features) {
+	public LineIteratorConfig setFeatures(LineIteratorConfig.Feature... features) {
 		this.features.clear();
 		if (features == null) {
-			this.features.addAll(LineScannerConfig.DEFAULT_FEATURES);
+			this.features.addAll(LineIteratorConfig.DEFAULT_FEATURES);
 		} else {
-			for (LineScannerConfig.Feature f : features) {
+			for (LineIteratorConfig.Feature f : features) {
 				if (f != null) {
 					this.features.add(f);
 				}
@@ -147,27 +147,27 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 		return this;
 	}
 
-	public LineScannerConfig setFeatures(Collection<LineScannerConfig.Feature> features) {
+	public LineIteratorConfig setFeatures(Collection<LineIteratorConfig.Feature> features) {
 		this.features.clear();
 		if (features == null) {
-			this.features.addAll(LineScannerConfig.DEFAULT_FEATURES);
+			this.features.addAll(LineIteratorConfig.DEFAULT_FEATURES);
 		} else {
 			features.stream().filter(Objects::nonNull).sequential().forEachOrdered(this.features::add);
 		}
 		return this;
 	}
 
-	public boolean hasFeature(LineScannerConfig.Feature f) {
+	public boolean hasFeature(LineIteratorConfig.Feature f) {
 		if (f == null) { throw new IllegalArgumentException("Must provide a non-null feature"); }
 		return this.features.contains(f);
 	}
 
-	public LineScannerConfig.Trim getTrim() {
+	public LineIteratorConfig.Trim getTrim() {
 		return this.trim;
 	}
 
-	public LineScannerConfig setTrim(LineScannerConfig.Trim trim) {
-		this.trim = Tools.coalesce(trim, LineScannerConfig.DEFAULT_TRIM);
+	public LineIteratorConfig setTrim(LineIteratorConfig.Trim trim) {
+		this.trim = Tools.coalesce(trim, LineIteratorConfig.DEFAULT_TRIM);
 		return this;
 	}
 
@@ -175,16 +175,16 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 		return this.maxDepth;
 	}
 
-	public LineScannerConfig setMaxDepth(Integer maxDepth) {
+	public LineIteratorConfig setMaxDepth(Integer maxDepth) {
 		if (maxDepth == null) {
-			this.maxDepth = LineScannerConfig.INFINITE_RECURSION;
+			this.maxDepth = LineIteratorConfig.INFINITE_RECURSION;
 		} else {
-			this.maxDepth = Math.max(LineScannerConfig.INFINITE_RECURSION, maxDepth);
+			this.maxDepth = Math.max(LineIteratorConfig.INFINITE_RECURSION, maxDepth);
 		}
 		return this;
 	}
 
-	public LineScannerConfig copyFrom(LineScannerConfig other) {
+	public LineIteratorConfig copyFrom(LineIteratorConfig other) {
 		if (other != null) {
 			this.maxDepth = other.getMaxDepth();
 			this.trim = other.getTrim();
@@ -204,7 +204,7 @@ public final class LineScannerConfig implements Serializable, Cloneable {
 	@Override
 	public boolean equals(Object obj) {
 		if (!Tools.baseEquals(this, obj)) { return false; }
-		LineScannerConfig other = LineScannerConfig.class.cast(obj);
+		LineIteratorConfig other = LineIteratorConfig.class.cast(obj);
 		if (this.trim != other.trim) { return false; }
 		if (this.maxDepth != other.maxDepth) { return false; }
 		if (!Tools.equals(this.features, other.features)) { return false; }

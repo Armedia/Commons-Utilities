@@ -14,3 +14,6 @@ this line has trailing spaces
 And now we recurse...
 
 			@lines-2.test
+			
+this line happens after the recursion
+so we should still be able to read these

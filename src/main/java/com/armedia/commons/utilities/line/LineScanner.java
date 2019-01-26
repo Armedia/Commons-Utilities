@@ -1,6 +1,5 @@
 package com.armedia.commons.utilities.line;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,10 +8,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Function;
 
 import com.armedia.commons.utilities.Tools;
 
@@ -104,38 +101,28 @@ public class LineScanner {
 		}
 	}
 
-	public Map<String, Long> scanLines(Function<String, Boolean> processor, String... sourceSpecs)
-		throws IOException, LineSourceException, LineProcessorException {
-		return scanLines(processor, null, sourceSpecs);
+	public LineIterator iterator(String... sourceSpecs) {
+		return iterator(null, sourceSpecs);
 	}
 
-	public Map<String, Long> scanLines(Function<String, Boolean> processor, LineScannerConfig lineScannerConfig,
-		String... sourceSpecs) throws IOException, LineSourceException, LineProcessorException {
-		return scanLines(processor, lineScannerConfig,
+	public LineIterator iterator(LineIteratorConfig config, String... sourceSpecs) {
+		return iterator(config,
 			(sourceSpecs != null) && (sourceSpecs.length > 0) ? Arrays.asList(sourceSpecs) : Collections.emptyList());
 	}
 
-	public Map<String, Long> scanLines(Function<String, Boolean> processor, Iterable<String> sourceSpecs)
-		throws IOException, LineSourceException, LineProcessorException {
-		return scanLines(processor, null, sourceSpecs);
+	public LineIterator iterator(Collection<String> sourceSpecs) {
+		return iterator(null, sourceSpecs);
 	}
 
-	public Map<String, Long> scanLines(Function<String, Boolean> processor, LineScannerConfig lineScannerConfig,
-		Iterable<String> sourceSpecs) throws IOException, LineSourceException, LineProcessorException {
-		Objects.requireNonNull(processor, "Must provide a non-null processor function");
+	public LineIterator iterator(LineIteratorConfig config, Collection<String> sourceSpecs) {
 		if (sourceSpecs == null) {
 			sourceSpecs = Collections.emptyList();
 		}
 		Iterator<String> it = sourceSpecs.iterator();
-		if (!it.hasNext()) { return Collections.emptyMap(); }
-		lineScannerConfig = new LineScannerConfig(lineScannerConfig);
+		if (!it.hasNext()) { return LineIterator.NULL_ITERATOR; }
+		config = new LineIteratorConfig(config);
 
-		RecursiveLineScanner rls = new RecursiveLineScanner(getSourceFactories(), lineScannerConfig);
-		rls.process(processor, sourceSpecs);
-		Map<String, AtomicLong> counters = rls.getCounters();
-		Map<String, Long> result = new LinkedHashMap<>();
-		counters.forEach((k, v) -> result.put(k, v.get()));
-		return result;
+		return new LineIterator(getSourceFactories(), config, sourceSpecs);
 	}
 
 }
