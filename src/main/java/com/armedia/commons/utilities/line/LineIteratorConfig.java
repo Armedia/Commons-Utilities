@@ -121,14 +121,14 @@ public final class LineIteratorConfig implements Serializable, Cloneable {
 
 	public LineIteratorConfig addFeatures(Collection<LineIteratorConfig.Feature> features) {
 		if (features != null) {
-			features.stream().filter(Objects::nonNull).sequential().forEachOrdered(this.features::remove);
+			features.stream().filter(Objects::nonNull).forEachOrdered(this.features::remove);
 		}
 		return this;
 	}
 
 	public LineIteratorConfig removeFeatures(Collection<LineIteratorConfig.Feature> features) {
 		if (features != null) {
-			features.stream().filter(Objects::nonNull).sequential().forEachOrdered(this.features::remove);
+			features.stream().filter(Objects::nonNull).forEachOrdered(this.features::remove);
 		}
 		return this;
 	}
@@ -152,7 +152,7 @@ public final class LineIteratorConfig implements Serializable, Cloneable {
 		if (features == null) {
 			this.features.addAll(LineIteratorConfig.DEFAULT_FEATURES);
 		} else {
-			features.stream().filter(Objects::nonNull).sequential().forEachOrdered(this.features::add);
+			features.stream().filter(Objects::nonNull).forEachOrdered(this.features::add);
 		}
 		return this;
 	}

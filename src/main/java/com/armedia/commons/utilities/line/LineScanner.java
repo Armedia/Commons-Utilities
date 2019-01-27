@@ -61,8 +61,7 @@ public class LineScanner {
 		// because we need to preserve the order in which factories are added
 		this.lock.writeLock().lock();
 		try {
-			factories.stream().filter(Objects::nonNull).sequential()
-				.forEach(f -> this.factories.put(System.identityHashCode(f), f));
+			factories.stream().filter(Objects::nonNull).forEach(f -> this.factories.put(System.identityHashCode(f), f));
 			return this;
 		} finally {
 			this.lock.writeLock().unlock();
@@ -85,7 +84,7 @@ public class LineScanner {
 		// because we need to preserve the order in which factories are added
 		this.lock.writeLock().lock();
 		try {
-			factories.stream().filter(Objects::nonNull).sequential()
+			factories.stream().filter(Objects::nonNull)
 				.forEach(f -> this.factories.remove(System.identityHashCode(f), f));
 			return this;
 		} finally {
