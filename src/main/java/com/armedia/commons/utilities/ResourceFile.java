@@ -22,7 +22,7 @@ import org.apache.commons.io.IOUtils;
  * @author drivera@armedia.com
  *
  */
-public abstract class ResourceFile {
+public class ResourceFile {
 
 	// private final Logger log = Logger.getLogger(ResourceFile.class);
 
