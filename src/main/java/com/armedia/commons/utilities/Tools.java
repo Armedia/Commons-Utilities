@@ -639,8 +639,10 @@ public class Tools {
 		if (superHash != null) {
 			b.appendSuper(superHash);
 		}
-		for (Object o : values) {
-			b.append(o);
+		if (values != null) {
+			for (Object o : values) {
+				b.append(o);
+			}
 		}
 		return b.toHashCode();
 	}
@@ -1605,42 +1607,6 @@ public class Tools {
 		}
 		sb.append("$");
 		return sb.toString();
-	}
-
-	/**
-	 * Returns a hashcode for the given object values, using the base object's hashCode() result as
-	 * a seed source, and the given prime number as the hash multiplier. This is useful in generated
-	 * hashCode() methods.
-	 *
-	 * @param base
-	 * @param prime
-	 * @param values
-	 *
-	 */
-	public static int hashTool(final Object base, final int prime, Object... values) {
-		return Tools.hashTool(base, prime, Arrays.asList(values));
-	}
-
-	/**
-	 * Returns a hashcode for the given object values, using the base object's hashCode() result as
-	 * a seed source, and the given prime number as the hash multiplier. This is useful in generated
-	 * hashCode() methods.
-	 *
-	 * @param base
-	 * @param prime
-	 * @param values
-	 *
-	 */
-	public static int hashTool(final Object base, final int prime, List<?> values) {
-		int hash = base.getClass().hashCode();
-		if (!values.isEmpty()) {
-			for (Object o : values) {
-				hash = (hash * prime) + ((o != null) ? o.hashCode() : 0);
-			}
-		} else {
-			throw new IllegalArgumentException("You must provide more information to produce a hash");
-		}
-		return hash;
 	}
 
 	/**
