@@ -10,25 +10,17 @@ public class PooledWorkersTest {
 	@Test
 	public void testBlocking() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
-		PooledWorkers<Object, Object, String> pw = new PooledWorkers<Object, Object, String>() {
-
-			@Override
-			protected Object initialize(Object o) throws Exception {
-				return null;
-			}
-
-			@Override
-			protected void process(Object state, String item) throws InterruptedException {
-				data.incrementAndGet();
+		PooledWorkers<Object, String> pw = new PooledWorkers<>();
+		PooledWorkersLogic<Object, String> logic = (o, s) -> {
+			data.incrementAndGet();
+			try {
 				Thread.sleep(10);
-			}
-
-			@Override
-			protected void cleanup(Object state) {
+			} catch (InterruptedException e) {
+				Assert.fail("Unexpected InterruptedException caught");
 			}
 		};
 
-		pw.start(null, 4, "Blocking", true);
+		pw.start(logic, 4, "Blocking", true);
 		final int testCount = 100;
 		Assert.assertEquals(0, data.get());
 		for (int i = 1; i <= testCount; i++) {
@@ -41,25 +33,17 @@ public class PooledWorkersTest {
 	@Test
 	public void testInterrupt() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
-		PooledWorkers<Object, Object, String> pw = new PooledWorkers<Object, Object, String>() {
-
-			@Override
-			protected Object initialize(Object o) throws Exception {
-				return null;
-			}
-
-			@Override
-			protected void process(Object state, String item) throws InterruptedException {
-				data.incrementAndGet();
+		PooledWorkers<Object, String> pw = new PooledWorkers<>();
+		PooledWorkersLogic<Object, String> logic = (o, s) -> {
+			data.incrementAndGet();
+			try {
 				Thread.sleep(10);
-			}
-
-			@Override
-			protected void cleanup(Object state) {
+			} catch (InterruptedException e) {
+				Assert.fail("Unexpected InterruptedException caught");
 			}
 		};
 
-		pw.start(null, 4, "Interrupt", true);
+		pw.start(logic, 4, "Interrupt", true);
 		final int testCount = 100;
 		Assert.assertEquals(0, data.get());
 		for (int i = 1; i <= testCount; i++) {
@@ -75,21 +59,13 @@ public class PooledWorkersTest {
 	@Test
 	public void testNonBlocking() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
-		PooledWorkers<Object, Object, String> pw = new PooledWorkers<Object, Object, String>() {
-
-			@Override
-			protected Object initialize(Object o) throws Exception {
-				return null;
-			}
-
-			@Override
-			protected void process(Object state, String item) throws InterruptedException {
-				data.incrementAndGet();
+		PooledWorkers<Object, String> pw = new PooledWorkers<>();
+		PooledWorkersLogic<Object, String> logic = (o, s) -> {
+			data.incrementAndGet();
+			try {
 				Thread.sleep(10);
-			}
-
-			@Override
-			protected void cleanup(Object state) {
+			} catch (InterruptedException e) {
+				Assert.fail("Unexpected InterruptedException caught");
 			}
 		};
 
@@ -98,7 +74,7 @@ public class PooledWorkersTest {
 			pw.addWorkItem(String.format("%08x", i));
 		}
 		Assert.assertEquals(0, data.get());
-		pw.start(null, 4, "NonBlocking", false);
+		pw.start(logic, 4, "NonBlocking", false);
 		pw.waitForCompletion();
 		Assert.assertEquals(testCount, data.get());
 	}

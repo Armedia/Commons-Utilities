@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -35,20 +36,20 @@ import org.slf4j.LoggerFactory;
  *
  * @author Diego Rivera &lt;diego.rivera@armedia.com&gt;
  *
- * @param <INITIALIZER>
- *            The initializer class that will be fed into {@link #initialize(Object)}
  * @param <STATE>
- *            The state class that will be produced by {@link #initialize(Object)} and consumed by
- *            {@link #process(Object, Object)}
+ *            The state class that will be produced by {@link PooledWorkersLogic#initialize()} and
+ *            consumed by {@link PooledWorkersLogic#process(Object, Object)} and
+ *            {@link PooledWorkersLogic#cleanup(Object)}
  * @param <ITEM>
- *            The item class that will be processed by {@link #process(Object, Object)}
+ *            The item class that will be processed by
+ *            {@link PooledWorkersLogic#process(Object, Object)}
  *
  */
-public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
-	protected final Logger log = LoggerFactory.getLogger(getClass());
-
+public final class PooledWorkers<STATE, ITEM> {
 	protected static final long DEFAULT_MAX_WAIT = 5;
 	protected static final TimeUnit DEFAULT_MAX_WAIT_UNIT = TimeUnit.MINUTES;
+
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final BlockingQueue<ITEM> workQueue;
 	private final List<Future<?>> futures;
@@ -59,27 +60,27 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 	private final AtomicBoolean terminated = new AtomicBoolean(false);
 	private int threadCount = 0;
 	private ThreadPoolExecutor executor = null;
-	private final Collection<Thread> threads = new ArrayList<Thread>();
-	private final Set<Long> blocked = new HashSet<Long>();
+	private final Collection<Thread> threads = new ArrayList<>();
+	private final Set<Long> blocked = new HashSet<>();
 
-	private final class Worker implements Runnable {
+	private final class Task implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
 
 		private final boolean waitForWork;
-		private final INITIALIZER initializer;
+		private final PooledWorkersLogic<STATE, ITEM> logic;
 
-		private Worker(INITIALIZER initializer, boolean waitForWork) {
+		private Task(PooledWorkersLogic<STATE, ITEM> logic, boolean waitForWork) {
 			this.waitForWork = waitForWork;
-			this.initializer = initializer;
+			this.logic = logic;
 		}
 
 		@Override
 		public void run() {
 			final STATE state;
 			try {
-				state = initialize(this.initializer);
-			} catch (Throwable t) {
-				workerThreadExited("Failed to initialize the worker state", null, t);
+				state = this.logic.initialize();
+			} catch (Exception e) {
+				workerThreadExited("Failed to initialize the worker state", null, e);
 				return;
 			}
 			PooledWorkers.this.activeCounter.incrementAndGet();
@@ -118,16 +119,16 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 						// Make sure the interruption status is cleared just before we invoke the
 						// processing method
 						Thread.interrupted();
-						process(state, item);
-					} catch (Throwable t) {
-						processingFailed(state, item, t);
+						this.logic.process(state, item);
+					} catch (Exception e) {
+						this.logic.handleFailure(state, item, e);
 					}
 				}
-			} catch (Throwable t) {
-				workerThreadExited("Unexpected exception raised", state, t);
+			} catch (Exception e) {
+				workerThreadExited("Unexpected exception raised", state, e);
 			} finally {
 				PooledWorkers.this.activeCounter.decrementAndGet();
-				cleanup(state);
+				this.logic.cleanup(state);
 			}
 		}
 	}
@@ -150,62 +151,20 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 	 * @param backlogSize
 	 */
 	public PooledWorkers(int backlogSize) {
-		this.workQueue = (backlogSize <= 0 ? new LinkedBlockingQueue<ITEM>()
-			: new ArrayBlockingQueue<ITEM>(backlogSize));
-		this.futures = new LinkedList<Future<?>>();
+		this.workQueue = (backlogSize <= 0 ? new LinkedBlockingQueue<>() : new ArrayBlockingQueue<>(backlogSize));
+		this.futures = new LinkedList<>();
 		this.activeCounter = new AtomicInteger(0);
 	}
 
 	/**
-	 * Produce a worker thread's state, presumably constructed from the given initialization data
-	 * (which can be {@code null}).
-	 *
-	 * @param initializer
-	 *            the given initialization data to construct the state from
-	 * @return a worker thread's state
-	 * @throws Exception
-	 */
-	protected abstract STATE initialize(INITIALIZER initializer) throws Exception;
-
-	/**
-	 * Process the given work item using the given state information (which can only be {@code null}
-	 * if the invocation to {@link #initialize(Object)} returned {@code null}).
-	 *
-	 * @param state
-	 *            the worker thread's state
-	 * @param item
-	 *            the item to process
-	 * @throws Exception
-	 */
-	protected abstract void process(STATE state, ITEM item) throws Exception;
-
-	/**
-	 * Callback to indicate that an exception was raised while processing a work item
-	 *
-	 * @param state
-	 * @param item
-	 * @param thrown
-	 */
-	protected void processingFailed(STATE state, ITEM item, Throwable thrown) {
-		this.log.error("Failed to process item {}", item, thrown);
-	}
-
-	/**
-	 * Callback to perform cleanup on each worker thread's state after processing has concluded
-	 *
-	 * @param state
-	 */
-	protected abstract void cleanup(STATE state);
-
-	/**
 	 * Callback to process the termination of a worker thread. Invoked before
-	 * {@link #cleanup(Object)} is invoked upon the passed state. If {@code state} is {@code null},
-	 * it means that the initialization of the thread's state data failed and thus {@code thrown}
-	 * will not be {@code null}. If {@code thrown} is not {@code null} it means an unexpected
-	 * exception was raised during normal processing of the queue (i.e. an {@link OutOfMemoryError}
-	 * or some other unforeseeable problem), or during initialization (see the previous case when
-	 * {@code state} is {@code null}). The {@code message} is never {@code null}, and describes the
-	 * exit situation.
+	 * {@link PooledWorkersLogic#cleanup(Object)} is invoked upon the passed state. If {@code state}
+	 * is {@code null}, it means that the initialization of the thread's state data failed and thus
+	 * {@code thrown} will not be {@code null}. If {@code thrown} is not {@code null} it means an
+	 * unexpected exception was raised during normal processing of the queue (i.e. an
+	 * {@link OutOfMemoryError} or some other unforeseeable problem), or during initialization (see
+	 * the previous case when {@code state} is {@code null}). The {@code message} is never
+	 * {@code null}, and describes the exit situation.
 	 *
 	 * @param message
 	 * @param state
@@ -297,7 +256,7 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 		final Lock l = this.lock.readLock();
 		l.lock();
 		try {
-			List<ITEM> ret = new ArrayList<ITEM>();
+			List<ITEM> ret = new ArrayList<>();
 			this.workQueue.drainTo(ret);
 			return ret;
 		} finally {
@@ -336,24 +295,24 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 	}
 
 	/**
-	 * @see PooledWorkers#start(Object, int, String, boolean)
+	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
 	 */
-	public final boolean start(INITIALIZER initializer, int threadCount) {
-		return start(initializer, threadCount, null, true);
+	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount) {
+		return start(logic, threadCount, null, true);
 	}
 
 	/**
-	 * @see PooledWorkers#start(Object, int, String, boolean)
+	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
 	 */
-	public final boolean start(INITIALIZER initializer, int threadCount, String name) {
-		return start(initializer, threadCount, null, true);
+	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount, String name) {
+		return start(logic, threadCount, null, true);
 	}
 
 	/**
-	 * @see PooledWorkers#start(Object, int, String, boolean)
+	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
 	 */
-	public final boolean start(INITIALIZER initializer, int threadCount, boolean waitForWork) {
-		return start(initializer, threadCount, null, waitForWork);
+	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount, boolean waitForWork) {
+		return start(logic, threadCount, null, waitForWork);
 	}
 
 	/**
@@ -364,12 +323,8 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 	 * parameter ({@code true} = wait, {@code false} = no wait). It returns {@code true} if the work
 	 * was started, or {@code false} if the work had already been started.
 	 * </p>
-	 * <p>
-	 * The {@code initializer} parameter is passed directly in the invocation of
-	 * {@link #initialize(Object)} in order for each thread to construct its worker's state.
-	 * </p>
 	 *
-	 * @param initializer
+	 * @param logic
 	 * @param threadCount
 	 * @param name
 	 * @param waitForWork
@@ -378,7 +333,9 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 	 * @return {@code true} if the work was started, or {@code false} if the work had already been
 	 *         started.
 	 */
-	public final boolean start(INITIALIZER initializer, int threadCount, String name, boolean waitForWork) {
+	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount, String name,
+		boolean waitForWork) {
+		Objects.requireNonNull(logic, "Must provide the logic that these workers will apply");
 		final Lock l = this.lock.writeLock();
 		l.lock();
 		try {
@@ -388,7 +345,7 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 			this.futures.clear();
 			this.terminated.set(false);
 			this.threads.clear();
-			Worker worker = new Worker(initializer, waitForWork);
+			Task task = new Task(logic, waitForWork);
 			ThreadFactory threadFactory = Executors.defaultThreadFactory();
 			name = StringUtils.strip(name);
 			final String threadNameFormat = String.format("%s-%%0%dd", name, String.valueOf(threadCount).length());
@@ -409,7 +366,7 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 			this.executor = new ThreadPoolExecutor(this.threadCount, this.threadCount, 30, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>(), threadFactory);
 			for (int i = 0; i < this.threadCount; i++) {
-				this.futures.add(this.executor.submit(worker));
+				this.futures.add(this.executor.submit(task));
 			}
 			this.executor.shutdown();
 			return true;
@@ -461,7 +418,7 @@ public abstract class PooledWorkers<INITIALIZER, STATE, ITEM> {
 				this.log.debug("Signaling work completion for the workers");
 				this.terminated.set(true);
 
-				List<ITEM> remaining = new ArrayList<ITEM>();
+				List<ITEM> remaining = new ArrayList<>();
 				try {
 					// We're done, we must wait until all workers are waiting
 					this.log.debug("Waiting for {} workers to finish processing", this.threadCount);
