@@ -73,10 +73,12 @@ public class CfgTools implements Serializable {
 
 	private static final class CONV_Enum<E extends Enum<E>> implements Function<Object, E> {
 
+		private final Function<String, E> invalidHandler;
 		private final Class<E> enumClass;
 
-		CONV_Enum(Class<E> enumClass) {
+		CONV_Enum(Class<E> enumClass, Function<String, E> invalidHandler) {
 			this.enumClass = enumClass;
+			this.invalidHandler = invalidHandler;
 		}
 
 		@Override
@@ -87,9 +89,21 @@ public class CfgTools implements Serializable {
 				int pos = Number.class.cast(o).intValue();
 				E[] e = this.enumClass.getEnumConstants();
 				if ((pos >= 0) && (pos < e.length)) { return e[pos]; }
+				// Numbers aren't valid as enum values
+				if (this.invalidHandler != null) { return this.invalidHandler.apply(o.toString()); }
+				throw new IllegalArgumentException(
+					String.format("The %s number [%s] is not a valid index for enum type %s (the maximum index is %d)",
+						o, this.enumClass.getCanonicalName(), e.length - 1));
 			}
+
 			// Not a number, not an enum, must turn into a string and try to parse
-			return Enum.valueOf(this.enumClass, Tools.toString(o));
+			final String s = Tools.toString(o);
+			try {
+				return Enum.valueOf(this.enumClass, s);
+			} catch (final IllegalArgumentException e) {
+				if (this.invalidHandler != null) { return this.invalidHandler.apply(s); }
+				throw e;
+			}
 		}
 
 	}
@@ -247,9 +261,7 @@ public class CfgTools implements Serializable {
 		CfgTools.validateSetting(label);
 		Object raw = settings.get(label);
 		if ((raw == null) || StringUtils.EMPTY.equals(raw)) {
-			return defaultValue.getDefault((v) -> {
-				return CfgTools.convertToList(v, converter);
-			});
+			return defaultValue.getDefault((v) -> CfgTools.convertToList(v, converter));
 		}
 
 		return CfgTools.convertToList(raw, converter);
@@ -265,9 +277,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static Object decodeObject(String label, Map<String, ?> settings, Object defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Object);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Object);
 	}
 
 	/**
@@ -309,9 +319,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static List<Object> decodeObjects(String label, Map<String, ?> settings, List<Object> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Object);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Object);
 	}
 
 	/**
@@ -352,13 +360,12 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @param defaultValue
-	 * @return the named setting from the given map as a {@link Enum} value
+	 * @return the named setting from the given map as a {@link Enum} value, or {@code null} if the
+	 *         setting's value is not a valid enumerated value for the given enum class
 	 */
-	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Map<String, ?> settings,
-		E defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, new CONV_Enum<>(enumClass));
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Function<String, E> invalidHandler,
+		Map<String, ?> settings, E defaultValue) {
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, new CONV_Enum<>(enumClass, invalidHandler));
 	}
 
 	/**
@@ -370,9 +377,14 @@ public class CfgTools implements Serializable {
 	 * @param label
 	 * @param settings
 	 * @return the named setting from the given map as an {@link Enum} value
+	 * @throws IllegalArgumentException
+	 *             if the setting's value doesn't correspond to one of the given enum class's values
+	 *             - i.e. if {@link Enum#valueOf(Class, String) Enum.valueOf(enumClass, value)}
+	 *             raises it
 	 */
-	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Map<String, ?> settings) {
-		return CfgTools.decodeEnum(label, enumClass, settings, null);
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Function<String, E> invalidHandler,
+		Map<String, ?> settings) {
+		return CfgTools.decodeEnum(label, enumClass, invalidHandler, settings, null);
 	}
 
 	/**
@@ -385,12 +397,72 @@ public class CfgTools implements Serializable {
 	 * @param setting
 	 * @param settings
 	 * @return the named setting from the given map as an {@link Enum} value
+	 * @throws IllegalArgumentException
+	 *             if the setting's value doesn't correspond to one of the given enum class's values
+	 *             - i.e. if {@link Enum#valueOf(Class, String) Enum.valueOf(enumClass, value)}
+	 *             raises it
+	 */
+	public static <E extends Enum<E>> E decodeEnum(ConfigurationSetting setting, Class<E> enumClass,
+		Function<String, E> invalidHandler, Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return CfgTools.getValue(setting.getLabel(), settings, new SettingDefault<>(setting),
+			new CONV_Enum<>(enumClass, invalidHandler));
+	}
+
+	/**
+	 * Decode the named setting from the given map as an {@link Enum} value, returning the value
+	 * stored (may be {@code null}), or {@code defaultValue} if it's not defined.
+	 *
+	 * @param label
+	 * @param settings
+	 * @param defaultValue
+	 * @return the named setting from the given map as a {@link Enum} value
+	 * @throws IllegalArgumentException
+	 *             if the setting's value doesn't correspond to one of the given enum class's values
+	 *             - i.e. if {@link Enum#valueOf(Class, String) Enum.valueOf(enumClass, value)}
+	 *             raises it
+	 */
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Map<String, ?> settings,
+		E defaultValue) {
+		return CfgTools.decodeEnum(label, enumClass, null, settings, defaultValue);
+	}
+
+	/**
+	 * Decode the named setting from the given map as an {@link Enum} value, returning the value
+	 * stored (may be {@code null}), or {@code null} if it's not defined. This is equivalent to
+	 * calling {@link #decodeEnum(String, Class, Map, Enum) decodeEnum(label, Class<E> enumClass,
+	 * settings, null)}
+	 *
+	 * @param label
+	 * @param settings
+	 * @return the named setting from the given map as an {@link Enum} value
+	 * @throws IllegalArgumentException
+	 *             if the setting's value doesn't correspond to one of the given enum class's values
+	 *             - i.e. if {@link Enum#valueOf(Class, String) Enum.valueOf(enumClass, value)}
+	 *             raises it
+	 */
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Map<String, ?> settings) {
+		return CfgTools.decodeEnum(label, enumClass, null, settings, null);
+	}
+
+	/**
+	 * Decode the given setting from the given map as an {@link Enum} value, returning the value
+	 * stored (may be {@code null}), or the setting's {@link ConfigurationSetting#getDefaultValue()
+	 * default value} if it's not defined. This is equivalent to calling
+	 * {@link #decodeEnum(String, Class, Map, Enum) decodeEnum(setting.getLabel(), settings,
+	 * setting.getDefaultValue())}.
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return the named setting from the given map as an {@link Enum} value
+	 * @throws IllegalArgumentException
+	 *             if the setting's value doesn't correspond to one of the given enum class's values
+	 *             - i.e. if {@link Enum#valueOf(Class, String) Enum.valueOf(enumClass, value)}
+	 *             raises it
 	 */
 	public static <E extends Enum<E>> E decodeEnum(ConfigurationSetting setting, Class<E> enumClass,
 		Map<String, ?> settings) {
-		CfgTools.validateSetting(setting);
-		return CfgTools.getValue(setting.getLabel(), settings, new SettingDefault<>(setting),
-			new CONV_Enum<>(enumClass));
+		return CfgTools.decodeEnum(setting, enumClass, null, settings);
 	}
 
 	/**
@@ -401,12 +473,66 @@ public class CfgTools implements Serializable {
 	 * @param settings
 	 * @param defaultValue
 	 * @return the named setting from the given map as a {@link Enum} value
+	 * @throws IllegalArgumentException
+	 *             if one of the setting's values doesn't correspond to one of the given enum
+	 *             class's values - i.e. if {@link Enum#valueOf(Class, String)
+	 *             Enum.valueOf(enumClass, value)} raises it
+	 */
+	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass,
+		Function<String, E> invalidHandler, Map<String, ?> settings, List<E> defaultValue) {
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, new CONV_Enum<>(enumClass, invalidHandler));
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of @link Enum} values,
+	 * returning the list stored (may be {@code null}), or {@code null} if it's not defined. This is
+	 * equivalent to calling {@link #decodeEnums(String, Class, Map, List) decodeEnums(label,
+	 * settings, null)}
+	 *
+	 * @param label
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Enum} value
+	 */
+	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass,
+		Function<String, E> invalidHandler, Map<String, ?> settings) {
+		return CfgTools.decodeEnums(label, enumClass, invalidHandler, settings, null);
+	}
+
+	/**
+	 * Decode the given setting from the given map as a {@link List} of {@link Enum} values,
+	 * returning the list stored (may be {@code null}), or the setting's
+	 * {@link ConfigurationSetting#getDefaultValue() default value} (converted to a
+	 * List&lt;Enum&gt;) if it's not defined. This is equivalent to calling
+	 * {@link #decodeEnums(String, Class, Map, List) decodeEnums(setting.getLabel(), settings,
+	 * setting.getDefaultValue())}.
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Enum} value
+	 */
+	public static <E extends Enum<E>> List<E> decodeEnums(ConfigurationSetting setting, Class<E> enumClass,
+		Function<String, E> invalidHandler, Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return CfgTools.getValues(setting.getLabel(), settings, new SettingDefault<>(setting),
+			new CONV_Enum<>(enumClass, invalidHandler));
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of {@link Enum} values,
+	 * returning the List stored (may be {@code null}), or {@code defaultValue} if it's not defined.
+	 *
+	 * @param label
+	 * @param settings
+	 * @param defaultValue
+	 * @return the named setting from the given map as a {@link Enum} value
+	 * @throws IllegalArgumentException
+	 *             if one of the setting's values doesn't correspond to one of the given enum
+	 *             class's values - i.e. if {@link Enum#valueOf(Class, String)
+	 *             Enum.valueOf(enumClass, value)} raises it
 	 */
 	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass, Map<String, ?> settings,
 		List<E> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, new CONV_Enum<>(enumClass));
+		return CfgTools.decodeEnums(label, enumClass, null, settings, defaultValue);
 	}
 
 	/**
@@ -420,7 +546,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Enum} value
 	 */
 	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass, Map<String, ?> settings) {
-		return CfgTools.decodeEnums(label, enumClass, settings, null);
+		return CfgTools.decodeEnums(label, enumClass, null, settings, null);
 	}
 
 	/**
@@ -437,9 +563,7 @@ public class CfgTools implements Serializable {
 	 */
 	public static <E extends Enum<E>> List<E> decodeEnums(ConfigurationSetting setting, Class<E> enumClass,
 		Map<String, ?> settings) {
-		CfgTools.validateSetting(setting);
-		return CfgTools.getValues(setting.getLabel(), settings, new SettingDefault<>(setting),
-			new CONV_Enum<>(enumClass));
+		return CfgTools.decodeEnums(setting, enumClass, null, settings);
 	}
 
 	/**
@@ -1603,6 +1727,35 @@ public class CfgTools implements Serializable {
 
 	public <E extends Enum<E>> E getEnum(ConfigurationSetting setting, Class<E> enumClass) {
 		return CfgTools.decodeEnum(setting, enumClass, this.settings);
+	}
+
+	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass, Function<String, E> invalidHandler,
+		E defaultValue) {
+		return CfgTools.decodeEnum(setting, enumClass, invalidHandler, this.settings, defaultValue);
+	}
+
+	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass, Function<String, E> invalidHandler) {
+		return CfgTools.decodeEnum(setting, enumClass, invalidHandler, this.settings);
+	}
+
+	public <E extends Enum<E>> E getEnum(ConfigurationSetting setting, Class<E> enumClass,
+		Function<String, E> invalidHandler) {
+		return CfgTools.decodeEnum(setting, enumClass, invalidHandler, this.settings);
+	}
+
+	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass, Function<String, E> invalidHandler,
+		List<E> defaultValue) {
+		return CfgTools.decodeEnums(setting, enumClass, invalidHandler, this.settings, defaultValue);
+	}
+
+	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass,
+		Function<String, E> invalidHandler) {
+		return CfgTools.decodeEnums(setting, enumClass, invalidHandler, this.settings);
+	}
+
+	public <E extends Enum<E>> List<E> getEnums(ConfigurationSetting setting, Class<E> enumClass,
+		Function<String, E> invalidHandler) {
+		return CfgTools.decodeEnums(setting, enumClass, invalidHandler, this.settings);
 	}
 
 	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass, List<E> defaultValue) {
