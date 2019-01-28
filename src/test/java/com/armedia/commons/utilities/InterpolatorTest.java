@@ -14,12 +14,7 @@ public class InterpolatorTest {
 
 	@Test
 	public void testInterpolator() {
-		Interpolator i = new Interpolator() {
-			@Override
-			protected String substitute(String expression) throws Exception {
-				return null;
-			}
-		};
+		Interpolator i = new Interpolator();
 
 		Assert.assertEquals(Interpolator.DEFAULT_FAIL, i.getFailMode());
 		Assert.assertEquals(Interpolator.DEFAULT_PREFIX, i.getPrefix());
@@ -40,12 +35,7 @@ public class InterpolatorTest {
 		for (String prefix : prefixes) {
 			for (String suffix : suffixes) {
 				for (FailMode failMode : FailMode.values()) {
-					Interpolator i = new Interpolator(failMode, prefix, suffix) {
-						@Override
-						protected String substitute(String expression) throws Exception {
-							return null;
-						}
-					};
+					Interpolator i = new Interpolator(failMode, prefix, suffix);
 					Assert.assertEquals(failMode, i.getFailMode());
 					Assert.assertEquals(prefix, i.getPrefix());
 					Assert.assertEquals(suffix, i.getSuffix());
@@ -56,7 +46,7 @@ public class InterpolatorTest {
 
 	@Test
 	public void testInterpolateString() {
-		final Map<String, String> values = new HashMap<String, String>();
+		final Map<String, String> values = new HashMap<>();
 		String[] names = {
 			"alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliett", "kilo",
 			"lima", "mike", "november", "oscar", "papa", "romeo", "sierra", "tango", "uniform", "victor", "whiskey",
@@ -67,16 +57,11 @@ public class InterpolatorTest {
 		for (String n : names) {
 			values.put(n, DigestUtils.md5Hex(n));
 		}
-		Interpolator i = new Interpolator() {
-			@Override
-			protected String substitute(String expression) throws Exception {
-				return values.get(expression);
-			}
-		};
+		Interpolator i = new Interpolator();
 
 		String source = "The quick brown @@[alpha]@@ jumped over the crazy @@[seven]@@ @@[crap]@@ end of line";
 		String expected = "The quick brown 2c1743a391305fbf367df8e4f069f9f9 jumped over the crazy bb3aec0fdcdbc2974890f805c585d432 @@[crap]@@ end of line";
-		String actual = i.interpolate(source);
+		String actual = i.interpolate((s) -> values.get(s), source);
 		Assert.assertEquals(expected, actual);
 	}
 

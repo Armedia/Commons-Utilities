@@ -12,10 +12,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class Interpolator {
+public class Interpolator {
 
 	public static class ExpressionException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
@@ -73,13 +75,12 @@ public abstract class Interpolator {
 		NONE,
 
 		/**
-		 * Only fail if an exception is raised during {@link Interpolator#substitute(String)}
+		 * Only fail if an exception is raised during the mapping function
 		 */
 		EXCEPTION,
 
 		/**
-		 * Fail with an {@link ExpressionException} if any error results from
-		 * {@link Interpolator#substitute(String)}
+		 * Fail with an {@link ExpressionException} if any error results from the mapping function
 		 */
 		ALL
 		//
@@ -133,29 +134,13 @@ public abstract class Interpolator {
 		return ((expression != null) && !expression.isEmpty());
 	}
 
-	/**
-	 * Resolve the given expression, resulting in either a textual value to substitute in its stead,
-	 * a {@code null} value indicating that the expression resolved to a {@code null} value (i.e.
-	 * missing variable, bad object field name, etc.), or any type of exception raising additional
-	 * errors such as syntax errors or naming issues.
-	 *
-	 * @param expression
-	 *            the expression to find a substitution for
-	 * @return the value to substitute the expression with, or {@code null} if there is no valid
-	 *         substitution but the expression's syntax is valid
-	 * @throws Exception
-	 *             if there is an expression syntax issue, or if there are any other errors during
-	 *             value resolution
-	 */
-	protected abstract String substitute(String expression) throws Exception;
-
-	public String interpolate(String string) {
+	public String interpolate(Function<String, String> mapper, String string) {
 		// Should we instead explode? For now, just return null...
 		if (string == null) { return null; }
 
 		StringWriter w = new StringWriter();
 		try {
-			interpolate(new StringReader(string), w);
+			interpolate(mapper, new StringReader(string), w);
 		} catch (IOException e) {
 			// This doesn't happen...but still raise something if it does
 			throw new RuntimeException("Unexpected IOException while writing in memory", e);
@@ -169,17 +154,19 @@ public abstract class Interpolator {
 		return w.toString();
 	}
 
-	public void interpolate(InputStream in, OutputStream out) throws IOException {
-		interpolate(in, out, Charset.defaultCharset());
+	public void interpolate(Function<String, String> mapper, InputStream in, OutputStream out) throws IOException {
+		interpolate(mapper, in, out, Charset.defaultCharset());
 	}
 
-	public void interpolate(InputStream in, OutputStream out, String encoding) throws IOException, ExpressionException {
+	public void interpolate(Function<String, String> mapper, InputStream in, OutputStream out, String encoding)
+		throws IOException, ExpressionException {
 		if (in == null) { throw new IllegalArgumentException("Must provide a valid InputStream"); }
 		if (out == null) { throw new IllegalArgumentException("Must provide a valid OutputStream"); }
-		interpolate(in, out, (encoding != null ? Charset.forName(encoding) : Charset.defaultCharset()));
+		interpolate(mapper, in, out, (encoding != null ? Charset.forName(encoding) : Charset.defaultCharset()));
 	}
 
-	public void interpolate(InputStream in, OutputStream out, Charset charset) throws IOException {
+	public void interpolate(Function<String, String> mapper, InputStream in, OutputStream out, Charset charset)
+		throws IOException {
 		if (in == null) { throw new IllegalArgumentException("Must provide a valid reader"); }
 		if (out == null) { throw new IllegalArgumentException("Must provide a valid writer"); }
 		if (charset == null) {
@@ -187,12 +174,13 @@ public abstract class Interpolator {
 		}
 		Reader r = new InputStreamReader(in, charset);
 		Writer w = new OutputStreamWriter(out, charset);
-		interpolate(r, w);
+		interpolate(mapper, r, w);
 	}
 
-	public void interpolate(Reader in, Writer out) throws IOException {
-		if (in == null) { throw new IllegalArgumentException("Must provide a valid Reader"); }
-		if (out == null) { throw new IllegalArgumentException("Must provide a valid Writer"); }
+	public void interpolate(Function<String, String> mapper, Reader in, Writer out) throws IOException {
+		Objects.requireNonNull(mapper, "Must provide a non-null mapping function");
+		Objects.requireNonNull(in, "Must provide a non-null Reader");
+		Objects.requireNonNull(out, "Must provide a non-null Writer");
 		final LineNumberReader r = new LineNumberReader(in);
 		out = new BufferedWriter(out);
 		boolean first = true;
@@ -249,7 +237,7 @@ public abstract class Interpolator {
 					}
 				} else {
 					try {
-						result = substitute(expression);
+						result = mapper.apply(expression);
 					} catch (Exception e) {
 						switch (this.failMode) {
 							case ALL: // Fall-through
