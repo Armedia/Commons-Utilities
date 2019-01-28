@@ -1,5 +1,7 @@
 package com.armedia.commons.utilities;
 
+import java.util.function.BiConsumer;
+
 @FunctionalInterface
 public interface PooledWorkersLogic<STATE, ITEM> {
 
@@ -16,4 +18,7 @@ public interface PooledWorkersLogic<STATE, ITEM> {
 	public default void cleanup(STATE state) {
 	}
 
+	public static <STATE, ITEM> PooledWorkersLogic<STATE, ITEM> of(BiConsumer<STATE, ITEM> processor) {
+		return new FunctionalPooledWorkersLogic<>(processor);
+	}
 }
