@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.apache.commons.codec.DecoderException;
@@ -73,10 +74,10 @@ public class CfgTools implements Serializable {
 
 	private static final class CONV_Enum<E extends Enum<E>> implements Function<Object, E> {
 
-		private final Function<String, E> invalidHandler;
+		private final BiFunction<Object, Exception, E> invalidHandler;
 		private final Class<E> enumClass;
 
-		CONV_Enum(Class<E> enumClass, Function<String, E> invalidHandler) {
+		CONV_Enum(Class<E> enumClass, BiFunction<Object, Exception, E> invalidHandler) {
 			this.enumClass = enumClass;
 			this.invalidHandler = invalidHandler;
 		}
@@ -90,7 +91,7 @@ public class CfgTools implements Serializable {
 				E[] e = this.enumClass.getEnumConstants();
 				if ((pos >= 0) && (pos < e.length)) { return e[pos]; }
 				// Numbers aren't valid as enum values
-				if (this.invalidHandler != null) { return this.invalidHandler.apply(o.toString()); }
+				if (this.invalidHandler != null) { return this.invalidHandler.apply(o, null); }
 				throw new IllegalArgumentException(
 					String.format("The %s number [%s] is not a valid index for enum type %s (the maximum index is %d)",
 						o, this.enumClass.getCanonicalName(), e.length - 1));
@@ -101,7 +102,7 @@ public class CfgTools implements Serializable {
 			try {
 				return Enum.valueOf(this.enumClass, s);
 			} catch (final IllegalArgumentException e) {
-				if (this.invalidHandler != null) { return this.invalidHandler.apply(s); }
+				if (this.invalidHandler != null) { return this.invalidHandler.apply(s, e); }
 				throw e;
 			}
 		}
@@ -363,8 +364,8 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Enum} value, or {@code null} if the
 	 *         setting's value is not a valid enumerated value for the given enum class
 	 */
-	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Function<String, E> invalidHandler,
-		Map<String, ?> settings, E defaultValue) {
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass,
+		BiFunction<Object, Exception, E> invalidHandler, Map<String, ?> settings, E defaultValue) {
 		return CfgTools.getValue(label, settings, (c) -> defaultValue, new CONV_Enum<>(enumClass, invalidHandler));
 	}
 
@@ -382,8 +383,8 @@ public class CfgTools implements Serializable {
 	 *             - i.e. if {@link Enum#valueOf(Class, String) Enum.valueOf(enumClass, value)}
 	 *             raises it
 	 */
-	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass, Function<String, E> invalidHandler,
-		Map<String, ?> settings) {
+	public static <E extends Enum<E>> E decodeEnum(String label, Class<E> enumClass,
+		BiFunction<Object, Exception, E> invalidHandler, Map<String, ?> settings) {
 		return CfgTools.decodeEnum(label, enumClass, invalidHandler, settings, null);
 	}
 
@@ -403,7 +404,7 @@ public class CfgTools implements Serializable {
 	 *             raises it
 	 */
 	public static <E extends Enum<E>> E decodeEnum(ConfigurationSetting setting, Class<E> enumClass,
-		Function<String, E> invalidHandler, Map<String, ?> settings) {
+		BiFunction<Object, Exception, E> invalidHandler, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		return CfgTools.getValue(setting.getLabel(), settings, new SettingDefault<>(setting),
 			new CONV_Enum<>(enumClass, invalidHandler));
@@ -479,7 +480,7 @@ public class CfgTools implements Serializable {
 	 *             Enum.valueOf(enumClass, value)} raises it
 	 */
 	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass,
-		Function<String, E> invalidHandler, Map<String, ?> settings, List<E> defaultValue) {
+		BiFunction<Object, Exception, E> invalidHandler, Map<String, ?> settings, List<E> defaultValue) {
 		return CfgTools.getValues(label, settings, (c) -> defaultValue, new CONV_Enum<>(enumClass, invalidHandler));
 	}
 
@@ -494,7 +495,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Enum} value
 	 */
 	public static <E extends Enum<E>> List<E> decodeEnums(String label, Class<E> enumClass,
-		Function<String, E> invalidHandler, Map<String, ?> settings) {
+		BiFunction<Object, Exception, E> invalidHandler, Map<String, ?> settings) {
 		return CfgTools.decodeEnums(label, enumClass, invalidHandler, settings, null);
 	}
 
@@ -511,7 +512,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Enum} value
 	 */
 	public static <E extends Enum<E>> List<E> decodeEnums(ConfigurationSetting setting, Class<E> enumClass,
-		Function<String, E> invalidHandler, Map<String, ?> settings) {
+		BiFunction<Object, Exception, E> invalidHandler, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		return CfgTools.getValues(setting.getLabel(), settings, new SettingDefault<>(setting),
 			new CONV_Enum<>(enumClass, invalidHandler));
@@ -1680,6 +1681,10 @@ public class CfgTools implements Serializable {
 		return CfgTools.hasValue(setting.getLabel(), settings);
 	}
 
+	public static <A, B, C> BiFunction<A, B, C> ignoreFailures() {
+		return (a, b) -> null;
+	}
+
 	private Map<String, ?> settings;
 
 	public CfgTools() {
@@ -1729,32 +1734,33 @@ public class CfgTools implements Serializable {
 		return CfgTools.decodeEnum(setting, enumClass, this.settings);
 	}
 
-	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass, Function<String, E> invalidHandler,
-		E defaultValue) {
+	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass,
+		BiFunction<Object, Exception, E> invalidHandler, E defaultValue) {
 		return CfgTools.decodeEnum(setting, enumClass, invalidHandler, this.settings, defaultValue);
 	}
 
-	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass, Function<String, E> invalidHandler) {
+	public <E extends Enum<E>> E getEnum(String setting, Class<E> enumClass,
+		BiFunction<Object, Exception, E> invalidHandler) {
 		return CfgTools.decodeEnum(setting, enumClass, invalidHandler, this.settings);
 	}
 
 	public <E extends Enum<E>> E getEnum(ConfigurationSetting setting, Class<E> enumClass,
-		Function<String, E> invalidHandler) {
+		BiFunction<Object, Exception, E> invalidHandler) {
 		return CfgTools.decodeEnum(setting, enumClass, invalidHandler, this.settings);
 	}
 
-	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass, Function<String, E> invalidHandler,
-		List<E> defaultValue) {
+	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass,
+		BiFunction<Object, Exception, E> invalidHandler, List<E> defaultValue) {
 		return CfgTools.decodeEnums(setting, enumClass, invalidHandler, this.settings, defaultValue);
 	}
 
 	public <E extends Enum<E>> List<E> getEnums(String setting, Class<E> enumClass,
-		Function<String, E> invalidHandler) {
+		BiFunction<Object, Exception, E> invalidHandler) {
 		return CfgTools.decodeEnums(setting, enumClass, invalidHandler, this.settings);
 	}
 
 	public <E extends Enum<E>> List<E> getEnums(ConfigurationSetting setting, Class<E> enumClass,
-		Function<String, E> invalidHandler) {
+		BiFunction<Object, Exception, E> invalidHandler) {
 		return CfgTools.decodeEnums(setting, enumClass, invalidHandler, this.settings);
 	}
 
