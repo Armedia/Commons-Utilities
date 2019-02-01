@@ -40,6 +40,8 @@ public class XmlTools {
 
 	private static final boolean DEFAULT_FORMAT = false;
 
+	private static final Class<?>[] NO_CLASSES = {};
+
 	// private static final Logger LOG = Logger.getLogger(XmlTools.class);
 
 	/**
@@ -185,7 +187,7 @@ public class XmlTools {
 	public static Unmarshaller getUnmarshaller(final String schemaName, Class<?>... targetClasses)
 		throws JAXBException {
 		if (targetClasses == null) {
-			targetClasses = new Class[0];
+			targetClasses = XmlTools.NO_CLASSES;
 		}
 
 		Unmarshaller u = XmlTools.getContext(targetClasses).createUnmarshaller();
@@ -315,7 +317,7 @@ public class XmlTools {
 	 */
 	public static Marshaller getMarshaller(final String schemaName, Class<?>... targetClasses) throws JAXBException {
 		if (targetClasses == null) {
-			targetClasses = new Class[0];
+			targetClasses = XmlTools.NO_CLASSES;
 		}
 
 		Marshaller m = XmlTools.getContext(targetClasses).createMarshaller();
