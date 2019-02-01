@@ -413,6 +413,8 @@ public class Tools {
 		PRIME_HALF = Tools.PRIME_COUNT / 2;
 	}
 
+	public static final String NL = String.format("%n");
+
 	public static Boolean toBoolean(Object o) {
 		if (o == null) { return null; }
 		if (o instanceof Boolean) { return Boolean.class.cast(o); }

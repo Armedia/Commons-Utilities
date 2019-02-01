@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 
 public final class LazyFormatter {
 
-	public static final String NL = String.format("%n");
 	private static final Object[] NO_ARGS = {};
 
 	private final Supplier<String> supplier;
