@@ -198,4 +198,12 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 	public static <T> LazySupplier<T> fromSupplier(Supplier<T> defaultInitializer, T defaultValue) {
 		return new LazySupplier<>((defaultInitializer != null ? () -> defaultInitializer.get() : null), defaultValue);
 	}
+
+	public static <T> LazySupplier<T> fromInitializer(ConcurrentInitializer<T> defaultInitializer) {
+		return LazySupplier.fromInitializer(defaultInitializer, null);
+	}
+
+	public static <T> LazySupplier<T> fromInitializer(ConcurrentInitializer<T> defaultInitializer, T defaultValue) {
+		return new LazySupplier<>((defaultInitializer != null ? () -> defaultInitializer.get() : null), defaultValue);
+	}
 }
