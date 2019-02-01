@@ -6,6 +6,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.Tools;
@@ -15,6 +17,7 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 	private final Condition condition = this.rwLock.writeLock().newCondition();
 	private final CheckedSupplier<T> defaultInitializer;
+	private final ConcurrentInitializer<T> concurrentInitializer;
 	private final T defaultValue;
 
 	private volatile boolean initialized = false;
@@ -35,6 +38,13 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 	public LazySupplier(CheckedSupplier<T> defaultInitializer, T defaultValue) {
 		this.defaultInitializer = defaultInitializer;
 		this.defaultValue = defaultValue;
+		this.concurrentInitializer = () -> {
+			try {
+				return getChecked();
+			} catch (Exception e) {
+				throw new ConcurrentException(e.getMessage(), e);
+			}
+		};
 	}
 
 	public boolean isDefaulted() {
@@ -152,6 +162,10 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 	@Override
 	public T getChecked() throws Exception {
 		return getChecked(this.defaultInitializer);
+	}
+
+	public ConcurrentInitializer<T> asInitializer() {
+		return this.concurrentInitializer;
 	}
 
 	public T getChecked(CheckedSupplier<T> initializer) throws Exception {
