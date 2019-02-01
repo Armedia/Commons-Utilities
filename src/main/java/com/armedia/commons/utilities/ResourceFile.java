@@ -56,9 +56,7 @@ public class ResourceFile {
 			String fbext = getFallbackExtension(++attempt);
 			if (fbext == null) {
 				/*
-				if (this.log.isDebugEnabled()) {
-					this.log.debug(String.format("Resource %s not found after %d attempts", this.description, attempt));
-				}
+				this.log.debug("Resource {} not found after {} attempts", this.description, attempt);
 				*/
 				this.url = null;
 				this.resolved = true;
@@ -68,22 +66,16 @@ public class ResourceFile {
 
 			String newName = String.format("%s.%s", this.baseName, fbext);
 			/*
-			if (this.log.isDebugEnabled()) {
-				this.log.debug(String.format("Searching for %s as [%s] (fallback attempt #%d)", this.description,
-					newName, attempt));
-			}
+			this.log.debug("Searching for {} as [{}] (fallback attempt #{})", this.description, newName, attempt);
 			*/
 			url = this.cl.getResource(newName);
 		}
 
 		/*
-		if (this.log.isDebugEnabled()) {
-			if (attempt == 0) {
-				this.log.debug(String.format("Resource %s at: %s", this.description, url.toString()));
-			} else {
-				this.log.debug(String.format("Resource %s found on fallback attempt %d at: %s", this.description,
-					attempt, url.toString()));
-			}
+		if (attempt == 0) {
+			this.log.debug("Resource {} at: {}", this.description, url);
+		} else {
+			this.log.debug("Resource {} found on fallback attempt {} at: {}", this.description, attempt, url);
 		}
 		*/
 		this.url = url;
@@ -105,10 +97,7 @@ public class ResourceFile {
 	public final InputStream openInputStream() throws IOException {
 		if (!exists()) { throw new IOException(String.format("Resource [%s] doesn't exist", this.baseName)); }
 		/*
-		if (this.log.isDebugEnabled()) {
-			this.log.debug(String.format("Opening an inputstream for resource [%s] from: %s", this.baseName,
-				this.url.toString()));
-		}
+		this.log.debug("Opening an inputstream for resource [{}] from: {}", this.baseName, this.url);
 		*/
 		return this.url.openStream();
 	}
@@ -130,10 +119,8 @@ public class ResourceFile {
 		}
 		String str = new String(getContents(), encoding);
 		/*
-		if (this.log.isDebugEnabled()) {
-			this.log.debug(String.format("Returning the string contents for resource [%s], encoding %s:%n%s",
-				this.baseName, encoding.name(), str));
-		}
+		this.log.debug("Returning the string contents for resource [{}], encoding {}:{}{}", this.baseName,
+			encoding.name(), Tools.NL, str);
 		*/
 		return str;
 	}
@@ -142,10 +129,7 @@ public class ResourceFile {
 		try (InputStream in = openInputStream()) {
 			byte[] data = IOUtils.toByteArray(in);
 			/*
-			if (this.log.isDebugEnabled()) {
-				this.log.debug(String.format("Loaded %d bytes for resource [%s] from: %s", data.length, this.baseName,
-					this.url.toString()));
-			}
+			this.log.debug("Loaded {} bytes for resource [{}] from: {}", data.length, this.baseName, this.url);
 			*/
 			return data;
 		}

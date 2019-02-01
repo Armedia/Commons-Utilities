@@ -68,13 +68,12 @@ public class XmlTools {
 		final Schema schema;
 		if (schemaName != null) {
 			/*
-			if (XmlTools.LOG.isDebugEnabled()) {
-				XmlTools.LOG.debug(String.format("Loading schema '%s'", schemaName));
-			}
+			XmlTools.LOG.debug("Loading schema [{}]", schemaName);
 			*/
 			final URL schemaUrl = Thread.currentThread().getContextClassLoader().getResource(schemaName);
-			if (schemaUrl == null) { throw new JAXBException(
-				String.format("Failed to load the schema from '%s'", schemaName)); }
+			if (schemaUrl == null) {
+				throw new JAXBException(String.format("Failed to load the schema from '%s'", schemaName));
+			}
 			try {
 				SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 				schema = sf.newSchema(schemaUrl);
@@ -202,8 +201,9 @@ public class XmlTools {
 	private static <T> T doUnmarshal(final Class<T> targetClass, final String schemaName, final Object src)
 		throws JAXBException {
 		if (targetClass == null) { throw new IllegalArgumentException("Must supply a class to unmarshal"); }
-		if (src == null) { throw new IllegalArgumentException(
-			String.format("No reader to read %s from", targetClass.getName())); }
+		if (src == null) {
+			throw new IllegalArgumentException(String.format("No reader to read %s from", targetClass.getName()));
+		}
 		Unmarshaller u = XmlTools.getUnmarshaller(schemaName, targetClass);
 		if (src instanceof XMLStreamReader) { return targetClass.cast(u.unmarshal(XMLStreamReader.class.cast(src))); }
 		if (src instanceof Reader) { return targetClass.cast(u.unmarshal(Reader.class.cast(src))); }
@@ -331,8 +331,9 @@ public class XmlTools {
 	private static void doMarshal(Object target, final String schemaName, Object out, boolean format)
 		throws JAXBException {
 		if (target == null) { throw new IllegalArgumentException("Must supply an object to marshal"); }
-		if (out == null) { throw new IllegalArgumentException(
-			String.format("Nowhere to write %s to", target.getClass().getName())); }
+		if (out == null) {
+			throw new IllegalArgumentException(String.format("Nowhere to write %s to", target.getClass().getName()));
+		}
 
 		Marshaller m = XmlTools.getMarshaller(schemaName, target.getClass());
 		m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");

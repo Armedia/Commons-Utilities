@@ -477,9 +477,9 @@ public final class PooledWorkers<STATE, ITEM> {
 					int pending = this.activeCounter.get();
 					if (pending > 0) {
 						try {
-							this.log.debug(String.format(
-								"Waiting an additional 60 seconds for worker termination as a contingency (%d pending workers)",
-								pending));
+							this.log.debug(
+								"Waiting an additional 60 seconds for worker termination as a contingency ({} pending workers)",
+								pending);
 							this.executor.awaitTermination(1, TimeUnit.MINUTES);
 						} catch (InterruptedException e) {
 							this.log.warn("Interrupted while waiting for immediate executor termination", e);
