@@ -21,8 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.concurrent.ConcurrentException;
-import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
 import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 
 /**
@@ -107,11 +105,6 @@ public final class LockDispenser<K, C> {
 	}
 
 	public C getLock(final K key) {
-		return ConcurrentUtils.createIfAbsentUnchecked(this.locks, key, new ConcurrentInitializer<LockBox>() {
-			@Override
-			public LockBox get() throws ConcurrentException {
-				return new LockBox(key);
-			}
-		}).get();
+		return ConcurrentUtils.createIfAbsentUnchecked(this.locks, key, () -> new LockBox(key)).get();
 	}
 }
