@@ -5,6 +5,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.armedia.commons.utilities.function.TriConsumer;
+
 /**
  * <p>
  * This implementation of {@link PooledWorkersLogic} serves as a simple gateway to functional

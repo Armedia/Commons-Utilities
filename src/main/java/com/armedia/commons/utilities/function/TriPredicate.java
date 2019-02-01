@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.function;
 
 import java.util.Objects;
 import java.util.function.Predicate;
