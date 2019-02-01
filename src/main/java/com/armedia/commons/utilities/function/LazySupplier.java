@@ -115,7 +115,7 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 	}
 
 	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
-		boolean ret = false;
+		boolean ret = true;
 		if (!this.initialized) {
 			this.rwLock.writeLock().lock();
 			try {
