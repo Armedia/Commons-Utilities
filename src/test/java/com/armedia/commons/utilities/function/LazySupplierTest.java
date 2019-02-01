@@ -439,6 +439,23 @@ public class LazySupplierTest {
 			Assert.assertSame(uuid.get(), future.get());
 			Assert.assertTrue(future.isDone());
 			Assert.assertTrue(called.get());
+			called.set(false);
+			future = executor.submit(() -> {
+				// First things first... await
+				worker.set(Thread.currentThread());
+				barrier.await();
+				final LazySupplier<String> S = supplier.get();
+				try {
+					Assert.assertTrue(S.isInitialized());
+					return S.await();
+				} finally {
+					called.set(true);
+				}
+			});
+			barrier.await();
+			Assert.assertSame(uuid.get(), future.get());
+			Assert.assertTrue(future.isDone());
+			Assert.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(() -> {
@@ -576,6 +593,23 @@ public class LazySupplierTest {
 			Assert.assertNotNull(worker.get());
 			Assert.assertNotSame(Thread.currentThread(), worker.get());
 			Assert.assertSame(uuid.get(), supplier.get().get());
+			Assert.assertSame(uuid.get(), future.get());
+			Assert.assertTrue(future.isDone());
+			Assert.assertTrue(called.get());
+			called.set(false);
+			future = executor.submit(() -> {
+				// First things first... await
+				worker.set(Thread.currentThread());
+				barrier.await();
+				final LazySupplier<String> S = supplier.get();
+				try {
+					Assert.assertTrue(S.isInitialized());
+					return S.awaitUninterruptibly();
+				} finally {
+					called.set(true);
+				}
+			});
+			barrier.await();
 			Assert.assertSame(uuid.get(), future.get());
 			Assert.assertTrue(future.isDone());
 			Assert.assertTrue(called.get());
@@ -733,6 +767,26 @@ public class LazySupplierTest {
 			Assert.assertNotNull(worker.get());
 			Assert.assertNotSame(Thread.currentThread(), worker.get());
 			Assert.assertSame(uuid.get(), supplier.get().get());
+			futureRet = future.get();
+			Assert.assertSame(uuid.get(), futureRet.getLeft());
+			Assert.assertFalse(futureRet.getRight());
+			Assert.assertTrue(future.isDone());
+			Assert.assertTrue(called.get());
+			called.set(false);
+			future = executor.submit(() -> {
+				// First things first... await
+				worker.set(Thread.currentThread());
+				barrier.await();
+				final Pair<Long, TimeUnit> to = timeout.get();
+				final LazySupplier<String> S = supplier.get();
+				try {
+					Assert.assertTrue(S.isInitialized());
+					return S.await(to.getLeft(), to.getRight());
+				} finally {
+					called.set(true);
+				}
+			});
+			barrier.await();
 			futureRet = future.get();
 			Assert.assertSame(uuid.get(), futureRet.getLeft());
 			Assert.assertFalse(futureRet.getRight());
@@ -902,10 +956,10 @@ public class LazySupplierTest {
 				}
 			};
 
+			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(uuid.get()));
 			called.set(false);
-			timeout.set(new Date(System.currentTimeMillis() + 1000));
 
 			future = executor.submit(waiter);
 			barrier.await();
@@ -934,7 +988,28 @@ public class LazySupplierTest {
 			Assert.assertFalse(futureRet.getRight());
 			Assert.assertTrue(future.isDone());
 			Assert.assertTrue(called.get());
+			called.set(false);
+			future = executor.submit(() -> {
+				// First things first... await
+				worker.set(Thread.currentThread());
+				barrier.await();
+				final Date to = timeout.get();
+				final LazySupplier<String> S = supplier.get();
+				try {
+					Assert.assertTrue(S.isInitialized());
+					return S.awaitUntil(to);
+				} finally {
+					called.set(true);
+				}
+			});
+			barrier.await();
+			futureRet = future.get();
+			Assert.assertSame(uuid.get(), futureRet.getLeft());
+			Assert.assertFalse(futureRet.getRight());
+			Assert.assertTrue(future.isDone());
+			Assert.assertTrue(called.get());
 
+			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(() -> {
 				throw new Exception(uuid.get());
@@ -981,6 +1056,7 @@ public class LazySupplierTest {
 			Assert.assertFalse(futureRet.getRight());
 			Assert.assertTrue(called.get());
 
+			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(uuid.get()));
 			called.set(false);
