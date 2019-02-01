@@ -6,6 +6,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.armedia.commons.utilities.Tools;
 
 public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
@@ -53,7 +55,7 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 		}
 	}
 
-	public void await() throws InterruptedException {
+	public T await() throws InterruptedException {
 		if (!this.initialized) {
 			this.rwLock.writeLock().lock();
 			try {
@@ -65,9 +67,10 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 				this.rwLock.writeLock().unlock();
 			}
 		}
+		return this.item;
 	}
 
-	public void awaitUninterruptibly() {
+	public T awaitUninterruptibly() {
 		if (!this.initialized) {
 			this.rwLock.writeLock().lock();
 			try {
@@ -79,42 +82,54 @@ public class LazySupplier<T> implements Supplier<T>, CheckedSupplier<T> {
 				this.rwLock.writeLock().unlock();
 			}
 		}
+		return this.item;
 	}
 
-	public long awaitNanos(long nanosTimeout) throws InterruptedException {
+	public Pair<T, Long> awaitNanos(long nanosTimeout) throws InterruptedException {
+		Long ret = null;
 		if (!this.initialized) {
 			this.rwLock.writeLock().lock();
 			try {
 				if (!this.initialized) {
-					long ret = this.condition.awaitNanos(nanosTimeout);
-					this.condition.signal();
-					return ret;
+					ret = this.condition.awaitNanos(nanosTimeout);
+					if (this.initialized) {
+						this.condition.signal();
+						ret = null;
+					}
 				}
 			} finally {
 				this.rwLock.writeLock().unlock();
 			}
 		}
-		return 0;
+		return Pair.of(this.item, ret);
 	}
 
-	public boolean await(long time, TimeUnit unit) throws InterruptedException {
-		return (awaitNanos(unit.toNanos(time)) > 0);
+	public Pair<T, Boolean> await(long time, TimeUnit unit) throws InterruptedException {
+		unit = Tools.coalesce(unit, TimeUnit.MILLISECONDS);
+		Pair<T, Long> p = awaitNanos(unit.toNanos(time));
+		if (p.getRight() != null) {
+			return Pair.of(null, Boolean.TRUE);
+		} else {
+			return Pair.of(p.getLeft(), Boolean.FALSE);
+		}
 	}
 
-	public boolean awaitUntil(Date deadline) throws InterruptedException {
+	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
+		boolean ret = false;
 		if (!this.initialized) {
 			this.rwLock.writeLock().lock();
 			try {
 				if (!this.initialized) {
-					boolean ret = this.condition.awaitUntil(deadline);
-					this.condition.signal();
-					return ret;
+					ret = this.condition.awaitUntil(deadline);
+					if (ret) {
+						this.condition.signal();
+					}
 				}
 			} finally {
 				this.rwLock.writeLock().unlock();
 			}
 		}
-		return false;
+		return Pair.of(this.item, !ret);
 	}
 
 	@Override
