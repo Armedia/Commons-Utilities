@@ -183,9 +183,7 @@ public class CfgTools implements Serializable {
 		return new BigDecimal(str);
 	};
 
-	private static final Function<Object, String> CONV_String = (v) -> {
-		return Tools.toString(v);
-	};
+	private static final Function<Object, String> CONV_String = Tools::toString;
 
 	private static final Function<Object, byte[]> CONV_Binary = (v) -> {
 		if (v == null) { return null; }
@@ -248,9 +246,7 @@ public class CfgTools implements Serializable {
 			Collection<?> c = Collection.class.cast(raw);
 			if (c.isEmpty()) { return Collections.emptyList(); }
 			List<V> result = new ArrayList<>(c.size());
-			c.forEach((r) -> {
-				result.add(converter.apply(r));
-			});
+			c.forEach((r) -> result.add(converter.apply(r)));
 			return Tools.freezeList(result);
 		}
 
@@ -578,9 +574,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Boolean} value
 	 */
 	public static Boolean decodeBoolean(String label, Map<String, ?> settings, Boolean defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Boolean);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Boolean);
 	}
 
 	/**
@@ -626,9 +620,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Boolean} value
 	 */
 	public static List<Boolean> decodeBooleans(String label, Map<String, ?> settings, List<Boolean> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Boolean);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Boolean);
 	}
 
 	/**
@@ -675,9 +667,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Byte} value
 	 */
 	public static Byte decodeByte(String label, Map<String, ?> settings, Byte defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Byte);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Byte);
 	}
 
 	/**
@@ -722,9 +712,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link List} of {@link Byte} values
 	 */
 	public static List<Byte> decodeBytes(String label, Map<String, ?> settings, List<Byte> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Byte);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Byte);
 	}
 
 	/**
@@ -772,9 +760,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Short} value
 	 */
 	public static Short decodeShort(String label, Map<String, ?> settings, Short defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Short);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Short);
 	}
 
 	/**
@@ -819,9 +805,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Short} value
 	 */
 	public static List<Short> decodeShorts(String label, Map<String, ?> settings, List<Short> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Short);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Short);
 	}
 
 	/**
@@ -868,9 +852,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link List} of {@link Integer} values
 	 */
 	public static Integer decodeInteger(String label, Map<String, ?> settings, Integer defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Integer);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Integer);
 	}
 
 	/**
@@ -916,9 +898,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link List} of {@link Integer} values
 	 */
 	public static List<Integer> decodeIntegers(String label, Map<String, ?> settings, List<Integer> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Integer);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Integer);
 	}
 
 	/**
@@ -965,9 +945,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Long} value
 	 */
 	public static Long decodeLong(String label, Map<String, ?> settings, Long defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Long);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Long);
 	}
 
 	/**
@@ -1012,9 +990,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link List} of {@link Long} values
 	 */
 	public static List<Long> decodeLongs(String label, Map<String, ?> settings, List<Long> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Long);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Long);
 	}
 
 	/**
@@ -1061,9 +1037,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Float} value
 	 */
 	public static Float decodeFloat(String label, Map<String, ?> settings, Float defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Float);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Float);
 	}
 
 	/**
@@ -1108,9 +1082,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link List} of {@link Float} values
 	 */
 	public static List<Float> decodeFloats(String label, Map<String, ?> settings, List<Float> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Float);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Float);
 	}
 
 	/**
@@ -1157,9 +1129,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Double} value
 	 */
 	public static Double decodeDouble(String label, Map<String, ?> settings, Double defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Double);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Double);
 	}
 
 	/**
@@ -1204,9 +1174,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link List} of {@link Double} values
 	 */
 	public static List<Double> decodeDoubles(String label, Map<String, ?> settings, List<Double> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_Double);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Double);
 	}
 
 	/**
@@ -1253,9 +1221,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link BigInteger} value
 	 */
 	public static BigInteger decodeBigInteger(String label, Map<String, ?> settings, BigInteger defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_BigInteger);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_BigInteger);
 	}
 
 	/**
@@ -1303,9 +1269,7 @@ public class CfgTools implements Serializable {
 	 */
 	public static List<BigInteger> decodeBigIntegers(String label, Map<String, ?> settings,
 		List<BigInteger> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_BigInteger);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_BigInteger);
 	}
 
 	/**
@@ -1353,9 +1317,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link BigDecimal} value
 	 */
 	public static BigDecimal decodeBigDecimal(String label, Map<String, ?> settings, BigDecimal defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_BigDecimal);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_BigDecimal);
 	}
 
 	/**
@@ -1403,9 +1365,7 @@ public class CfgTools implements Serializable {
 	 */
 	public static List<BigDecimal> decodeBigDecimals(String label, Map<String, ?> settings,
 		List<BigDecimal> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_BigDecimal);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_BigDecimal);
 	}
 
 	/**
@@ -1453,9 +1413,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link String} value
 	 */
 	public static String decodeString(String label, Map<String, ?> settings, String defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_String);
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_String);
 	}
 
 	/**
@@ -1500,9 +1458,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link List} of {@link String} values
 	 */
 	public static List<String> decodeStrings(String label, Map<String, ?> settings, List<String> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> {
-			return defaultValue;
-		}, CfgTools.CONV_String);
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_String);
 	}
 
 	/**
@@ -1551,9 +1507,7 @@ public class CfgTools implements Serializable {
 	public static byte[] decodeBinary(String label, Map<String, ?> settings, byte[] defaultValue)
 		throws DecoderException {
 		try {
-			return CfgTools.getValue(label, settings, (c) -> {
-				return defaultValue;
-			}, CfgTools.CONV_Binary);
+			return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Binary);
 		} catch (ValueDecoderException e) {
 			throw new DecoderException(e.getMessage(), e);
 		}
@@ -1608,9 +1562,7 @@ public class CfgTools implements Serializable {
 	public static List<byte[]> decodeBinaries(String label, Map<String, ?> settings, List<byte[]> defaultValue)
 		throws DecoderException {
 		try {
-			return CfgTools.getValues(label, settings, (c) -> {
-				return defaultValue;
-			}, CfgTools.CONV_Binary);
+			return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Binary);
 		} catch (ValueDecoderException e) {
 			throw new DecoderException(e.getMessage(), e);
 		}
@@ -1679,10 +1631,6 @@ public class CfgTools implements Serializable {
 	public static boolean hasValue(ConfigurationSetting setting, Map<String, ?> settings) {
 		CfgTools.validateSetting(setting);
 		return CfgTools.hasValue(setting.getLabel(), settings);
-	}
-
-	public static <A, B, C> BiFunction<A, B, C> ignoreFailures() {
-		return (a, b) -> null;
 	}
 
 	private Map<String, ?> settings;

@@ -240,9 +240,7 @@ public class PluggableServiceLocatorTest {
 		badLocator = new PluggableServiceLocator<>(BadServiceTest.class);
 		Assert.assertFalse(badLocator.isHideErrors());
 		final AtomicReference<Throwable> exception = new AtomicReference<>();
-		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> {
-			exception.set(e);
-		};
+		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
 		badLocator.setErrorListener(listener);
 		Assert.assertSame(listener, badLocator.getErrorListener());
 		try {
@@ -375,9 +373,7 @@ public class PluggableServiceLocatorTest {
 
 		badLocator = new PluggableServiceLocator<>(BadServiceTest.class);
 		final AtomicReference<Throwable> exception = new AtomicReference<>();
-		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> {
-			exception.set(e);
-		};
+		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
 		badLocator.setErrorListener(listener);
 		Assert.assertSame(listener, badLocator.getErrorListener());
 		Assert.assertFalse(badLocator.getAll().hasNext());
@@ -524,9 +520,7 @@ public class PluggableServiceLocatorTest {
 
 		badLocator = new PluggableServiceLocator<>(BadServiceTest.class);
 		final AtomicReference<Throwable> exception = new AtomicReference<>();
-		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> {
-			exception.set(e);
-		};
+		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
 		badLocator.setErrorListener(listener);
 		Assert.assertSame(listener, badLocator.getErrorListener());
 		Assert.assertFalse(badLocator.iterator().hasNext());
