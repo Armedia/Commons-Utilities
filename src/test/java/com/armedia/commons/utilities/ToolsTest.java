@@ -988,17 +988,17 @@ public class ToolsTest {
 		final UUID newUuid = UUID.randomUUID();
 		// freezeCopy
 		final List<Object> nullList = null;
-		final List<Object> list = new ArrayList<Object>();
+		final List<Object> list = new ArrayList<>();
 		List<Object> frozenList = null;
 
 		final Set<Object> nullSet = null;
-		final Set<Object> set = new HashSet<Object>();
-		final Set<Object> sortedSet = new TreeSet<Object>();
+		final Set<Object> set = new HashSet<>();
+		final Set<Object> sortedSet = new TreeSet<>();
 		Set<Object> frozenSet = null;
 
 		final Map<Object, Object> nullMap = null;
-		final Map<Object, Object> map = new HashMap<Object, Object>();
-		final Map<Object, Object> sortedMap = new TreeMap<Object, Object>();
+		final Map<Object, Object> map = new HashMap<>();
+		final Map<Object, Object> sortedMap = new TreeMap<>();
 		Map<Object, Object> frozenMap = null;
 
 		for (int i = 0; i < 5; i++) {
@@ -1293,5 +1293,25 @@ public class ToolsTest {
 		Assert.assertEquals(str, Tools.joinEscaped(',', result));
 		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
+		str = ",a,b,c,d,,e,f\\\\,g,";
+		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\,g", "");
+		result = Tools.splitEscaped(str);
+		Assert.assertEquals(expected, result);
+		Assert.assertEquals(str, Tools.joinEscaped(',', result));
+		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+
+		str = ",a,b,c,d,,e,f\\\\\\,g,";
+		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\,g", "");
+		result = Tools.splitEscaped(str);
+		Assert.assertEquals(expected, result);
+		Assert.assertEquals(str, Tools.joinEscaped(',', result));
+		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+
+		str = ",a,b,c,d,,e,f\\\\\\\\,g,";
+		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\\\,g", "");
+		result = Tools.splitEscaped(str);
+		Assert.assertEquals(expected, result);
+		Assert.assertEquals(str, Tools.joinEscaped(',', result));
+		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 	}
 }
