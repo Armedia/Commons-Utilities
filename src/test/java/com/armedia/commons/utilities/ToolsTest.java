@@ -1241,16 +1241,16 @@ public class ToolsTest {
 		List<String> result = null;
 
 		expected = null;
-		result = Tools.splitCSVEscaped(null);
+		result = Tools.splitEscaped(null);
 		Assert.assertNull(result);
-		Assert.assertNull(Tools.joinCSVEscaped(result));
-		Assert.assertEquals(expected, Tools.splitCSVEscaped(Tools.joinCSVEscaped(result)));
+		Assert.assertNull(Tools.joinEscaped(result));
+		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result)));
 
 		expected = Arrays.asList("");
-		result = Tools.splitCSVEscaped("");
+		result = Tools.splitEscaped("");
 		Assert.assertEquals(expected, result);
-		Assert.assertEquals("", Tools.joinCSVEscaped(result));
-		Assert.assertEquals(expected, Tools.splitCSVEscaped(Tools.joinCSVEscaped(result)));
+		Assert.assertEquals("", Tools.joinEscaped(result));
+		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result)));
 
 		expected = null;
 		result = Tools.splitEscaped(',', null);
@@ -1288,7 +1288,7 @@ public class ToolsTest {
 
 		str = ",a,b,c,d,,e,f\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
-		result = Tools.splitCSVEscaped(str);
+		result = Tools.splitEscaped(str);
 		Assert.assertEquals(expected, result);
 		Assert.assertEquals(str, Tools.joinEscaped(',', result));
 		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));

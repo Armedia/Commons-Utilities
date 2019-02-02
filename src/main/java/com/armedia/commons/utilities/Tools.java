@@ -43,8 +43,10 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringTokenizer;
@@ -2149,36 +2151,70 @@ public class Tools {
 
 	public static final char DEFAULT_SEPARATOR = ',';
 
-	public static final List<String> splitCSVEscaped(String value) {
+	public static final List<String> splitEscaped(String value) {
 		return Tools.splitEscaped(Tools.DEFAULT_SEPARATOR, value);
 	}
 
-	public static final String joinCSVEscaped(Collection<String> values) {
+	public static final Iterator<String> splitEscapedIterator(String value) {
+		return Tools.splitEscapedIterator(Tools.DEFAULT_SEPARATOR, value);
+	}
+
+	public static final Stream<String> splitEscapedStream(String value) {
+		return Tools.splitEscapedStream(Tools.DEFAULT_SEPARATOR, value);
+	}
+
+	public static final String joinEscaped(String... values) {
 		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
-	public static final String joinCSVEscaped(String... values) {
+	public static final String joinEscaped(Iterable<String> values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
+	}
+
+	public static final String joinEscaped(Iterator<String> values) {
 		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
 	public static final List<String> splitEscaped(char separator, String value) {
 		if (value == null) { return null; }
 		List<String> values = new ArrayList<>();
-		Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
-		Matcher matcher = splitter.matcher(value);
-		int previous = 0;
-		String replacer = String.format("\\\\\\Q%s\\E", separator);
-		String replacement = String.valueOf(separator);
-		while (matcher.find()) {
-			String current = value.substring(previous, matcher.start());
-			values.add(current.replaceAll(replacer, replacement));
-			previous = matcher.end();
-		}
-		if (previous <= value.length()) {
-			String current = value.substring(previous);
-			values.add(current.replaceAll(replacer, replacement));
-		}
+		Tools.splitEscapedIterator(separator, value).forEachRemaining(values::add);
 		return values;
+	}
+
+	public static final Iterator<String> splitEscapedIterator(char separator, String value) {
+		if (value == null) { return null; }
+		return new CloseableIterator<String>() {
+			final Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
+			final Matcher matcher = this.splitter.matcher(value);
+			private int previous = 0;
+			private final String replacer = String.format("\\\\\\Q%s\\E", separator);
+			private final String replacement = String.valueOf(separator);
+
+			@Override
+			protected CloseableIterator<String>.Result findNext() throws Exception {
+				if (this.matcher.find()) {
+					String current = value.substring(this.previous, this.matcher.start());
+					this.previous = this.matcher.end();
+					return found(current.replaceAll(this.replacer, this.replacement));
+				}
+				if (this.previous <= value.length()) {
+					String current = value.substring(this.previous);
+					this.previous = value.length() + 1;
+					return found(current.replaceAll(this.replacer, this.replacement));
+				}
+				return null;
+			}
+
+			@Override
+			protected void doClose() throws Exception {
+			}
+		};
+	}
+
+	public static final Stream<String> splitEscapedStream(char separator, String value) {
+		if (value == null) { return null; }
+		return StreamTools.of(Tools.splitEscapedIterator(separator, value));
 	}
 
 	public static final String joinEscaped(char separator, String... values) {
@@ -2186,21 +2222,26 @@ public class Tools {
 		return Tools.joinEscaped(separator, Arrays.asList(values));
 	}
 
-	public static final String joinEscaped(char separator, Collection<String> values) {
+	public static final String joinEscaped(char separator, Iterable<String> values) {
 		if (values == null) { return null; }
-		StringBuilder sb = new StringBuilder();
+		return Tools.joinEscaped(separator, values.iterator());
+	}
+
+	public static final String joinEscaped(char separator, Iterator<String> values) {
+		if (values == null) { return null; }
+		if (!values.hasNext()) { return ""; }
 		String replacer = String.format("\\Q%s\\E", separator);
 		String replacement = String.format("\\\\%s", separator);
-		boolean first = true;
-		for (String str : values) {
-			if (!first) {
-				sb.append(separator);
-			}
-			// Cover against null-values
-			str = String.valueOf(str);
-			sb.append(str.replaceAll(replacer, replacement));
-			first = false;
-		}
+
+		String str = values.next();
+		if (!values.hasNext()) { return str; }
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(str.replaceAll(replacer, replacement));
+
+		Consumer<String> consumer = (s) -> sb.append(separator);
+		values
+			.forEachRemaining(consumer.andThen((s) -> sb.append(String.valueOf(s).replaceAll(replacer, replacement))));
 		return sb.toString();
 	}
 }
