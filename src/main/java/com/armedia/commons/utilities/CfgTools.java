@@ -1633,6 +1633,10 @@ public class CfgTools implements Serializable {
 		return CfgTools.hasValue(setting.getLabel(), settings);
 	}
 
+	public static <A, B, C> BiFunction<A, B, C> ignoreFailures() {
+		return (a, b) -> null;
+	}
+
 	private Map<String, ?> settings;
 
 	public CfgTools() {
