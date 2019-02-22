@@ -46,12 +46,12 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 		this.caseInsensitiveMap = ((m != null) ? Tools.freezeMap(m) : null);
 	}
 
-	public boolean isCaseSensitive() {
+	public final boolean isCaseSensitive() {
 		return (this.caseInsensitiveMap == null);
 	}
 
 	@Override
-	public E unmarshal(String v) throws Exception {
+	public final E unmarshal(String v) throws Exception {
 		if (v == null) { return null; }
 		// If there's no CI map, then valueOf() *must* return a valid value
 		if (this.caseInsensitiveMap == null) { return Enum.valueOf(this.enumClass, v); }
@@ -66,7 +66,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 	}
 
 	@Override
-	public String marshal(E v) throws Exception {
+	public final String marshal(E v) throws Exception {
 		if (v == null) { return null; }
 		return v.name();
 	}
