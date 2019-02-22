@@ -17,8 +17,8 @@ import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author drivera@armedia.com
@@ -35,34 +35,21 @@ public class BinaryEncodingTest implements GoodServiceTest {
 		this.random.nextBytes(src);
 		BinaryEncoding e = BinaryEncoding.HEX;
 		String data = Hex.encodeHexString(src);
-		Assert.assertEquals(data, e.encode(src));
-		Assert.assertArrayEquals(src, e.decode(data));
+		Assertions.assertEquals(data, e.encode(src));
+		Assertions.assertArrayEquals(src, e.decode(data));
 
-		Assert.assertNull(e.encode(null));
-		Assert.assertNull(e.decode(null));
-		Assert.assertEquals(0, e.decode("").length);
-		Assert.assertEquals(0, e.encode(BinaryEncodingTest.EMPTY).length());
+		Assertions.assertNull(e.encode(null));
+		Assertions.assertNull(e.decode(null));
+		Assertions.assertEquals(0, e.decode("").length);
+		Assertions.assertEquals(0, e.encode(BinaryEncodingTest.EMPTY).length());
 
-		Assert.assertNull(e.normalize(null));
-		Assert.assertEquals(data, e.normalize(data));
-		Assert.assertEquals(data, e.normalize(data.toUpperCase()));
-		Assert.assertEquals(data, e.normalize(data.toLowerCase()));
+		Assertions.assertNull(e.normalize(null));
+		Assertions.assertEquals(data, e.normalize(data));
+		Assertions.assertEquals(data, e.normalize(data.toUpperCase()));
+		Assertions.assertEquals(data, e.normalize(data.toLowerCase()));
 
-		data = String.format("%sa", data);
-		try {
-			e.decode(data);
-			Assert.fail("Failed to raise IllegalArgumentException");
-		} catch (IllegalArgumentException ex) {
-			// All is well
-		}
-
-		data = String.format("%sg", data);
-		try {
-			e.decode(data);
-			Assert.fail("Failed to raise IllegalArgumentException");
-		} catch (IllegalArgumentException ex) {
-			// All is well
-		}
+		Assertions.assertThrows(IllegalArgumentException.class, () -> e.decode(String.format("%sa", data)));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> e.decode(String.format("%sg", data)));
 	}
 
 	@Test
@@ -71,32 +58,26 @@ public class BinaryEncodingTest implements GoodServiceTest {
 		this.random.nextBytes(src);
 		BinaryEncoding e = BinaryEncoding.BASE64;
 		String data = Base64.encodeBase64String(src);
-		Assert.assertEquals(data, e.encode(src));
-		Assert.assertArrayEquals(src, e.decode(data));
+		Assertions.assertEquals(data, e.encode(src));
+		Assertions.assertArrayEquals(src, e.decode(data));
 
-		Assert.assertNull(e.encode(null));
-		Assert.assertNull(e.decode(null));
-		Assert.assertEquals(0, e.decode("").length);
-		Assert.assertEquals(0, e.encode(BinaryEncodingTest.EMPTY).length());
+		Assertions.assertNull(e.encode(null));
+		Assertions.assertNull(e.decode(null));
+		Assertions.assertEquals(0, e.decode("").length);
+		Assertions.assertEquals(0, e.encode(BinaryEncodingTest.EMPTY).length());
 
-		Assert.assertNull(e.normalize(null));
-		Assert.assertEquals(data, e.normalize(data));
+		Assertions.assertNull(e.normalize(null));
+		Assertions.assertEquals(data, e.normalize(data));
 
-		data = String.format("%s a", data);
-		try {
-			e.decode(data);
-			Assert.fail("Failed to raise IllegalArgumentException");
-		} catch (IllegalArgumentException ex) {
-			// All is well
+		{
+			String decodeMe = String.format("%s a", data);
+			Assertions.assertThrows(IllegalArgumentException.class, () -> e.decode(decodeMe));
 		}
 
 		data = data.replace(' ', 'a');
-		data = String.format("%s$", data);
-		try {
-			e.decode(data);
-			Assert.fail("Failed to raise IllegalArgumentException");
-		} catch (IllegalArgumentException ex) {
-			// All is well
+		{
+			String decodeMe = String.format("%s$", data);
+			Assertions.assertThrows(IllegalArgumentException.class, () -> e.decode(decodeMe));
 		}
 	}
 
@@ -109,16 +90,16 @@ public class BinaryEncodingTest implements GoodServiceTest {
 		final String src = b.toString();
 		byte[] data = src.getBytes(Charset.forName("UTF-8"));
 		BinaryEncoding e = BinaryEncoding.STRING;
-		Assert.assertArrayEquals(data, e.decode(src));
-		Assert.assertEquals(src, e.encode(data));
+		Assertions.assertArrayEquals(data, e.decode(src));
+		Assertions.assertEquals(src, e.encode(data));
 
-		Assert.assertNull(e.encode(null));
-		Assert.assertNull(e.decode(null));
-		Assert.assertEquals(0, e.decode("").length);
-		Assert.assertEquals(0, e.encode(BinaryEncodingTest.EMPTY).length());
+		Assertions.assertNull(e.encode(null));
+		Assertions.assertNull(e.decode(null));
+		Assertions.assertEquals(0, e.decode("").length);
+		Assertions.assertEquals(0, e.encode(BinaryEncodingTest.EMPTY).length());
 
-		Assert.assertNull(e.normalize(null));
-		Assert.assertEquals(src, e.normalize(src));
+		Assertions.assertNull(e.normalize(null));
+		Assertions.assertEquals(src, e.normalize(src));
 	}
 
 	/**
@@ -127,18 +108,14 @@ public class BinaryEncodingTest implements GoodServiceTest {
 	 */
 	@Test
 	public void testIdentify() {
-		Assert.assertNull(BinaryEncoding.identify(null));
+		Assertions.assertNull(BinaryEncoding.identify(null));
 		String[] good = {
 			"string", "String", "sTrInG", "STRING", "    string    ", "hex", "Hex", "hEx", "HEX", "    hex    ",
 			"base64", "Base64", "bAsE64", "BASE64", "    base64    "
 		};
 		for (String s : good) {
-			Assert.assertNotNull(BinaryEncoding.identify(s));
+			Assertions.assertNotNull(BinaryEncoding.identify(s));
 		}
-		try {
-			BinaryEncoding.identify("");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
+		Assertions.assertThrows(IllegalArgumentException.class, () -> BinaryEncoding.identify(""));
 	}
 }

@@ -13,8 +13,8 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class GlobberTest implements GoodServiceTest {
 
@@ -91,8 +91,8 @@ public class GlobberTest implements GoodServiceTest {
 			final Pattern p = Globber.asPattern(d[0]);
 			final Matcher m = p.matcher(d[1]);
 			final boolean expected = Boolean.valueOf(d[2]).booleanValue();
-			Assert.assertEquals(String.format("While matching %s (%s)", Arrays.toString(d), p.pattern()), expected,
-				m.matches());
+			Assertions.assertEquals(expected, m.matches(),
+				String.format("While matching %s (%s)", Arrays.toString(d), p.pattern()));
 		}
 	}
 }

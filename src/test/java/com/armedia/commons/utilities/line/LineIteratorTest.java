@@ -2,8 +2,8 @@ package com.armedia.commons.utilities.line;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.armedia.commons.utilities.line.LineIteratorConfig.Feature;
 import com.armedia.commons.utilities.line.LineIteratorConfig.Trim;
@@ -21,7 +21,7 @@ public class LineIteratorTest {
 			"abcde \\\\\\\\\\", //
 		};
 		for (int i = 0; i < data.length; i++) {
-			Assert.assertTrue(data[i], ((i % 2) != 0) == LineIterator.CONTINUATION.matcher(data[i]).find());
+			Assertions.assertTrue(((i % 2) != 0) == LineIterator.CONTINUATION.matcher(data[i]).find(), data[i]);
 		}
 	}
 

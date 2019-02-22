@@ -11,8 +11,8 @@
  */
 package com.armedia.commons.utilities;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -37,7 +37,7 @@ public class ComparisonTest implements GoodServiceTest {
 			Integer a = Integer.class.cast(o[0]);
 			Integer b = Integer.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 		Object[][] stringData = {
 			{
@@ -56,7 +56,7 @@ public class ComparisonTest implements GoodServiceTest {
 			String a = String.class.cast(o[0]);
 			String b = String.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 	}
 
@@ -76,7 +76,7 @@ public class ComparisonTest implements GoodServiceTest {
 			Integer a = Integer.class.cast(o[0]);
 			Integer b = Integer.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 		Object[][] stringData = {
 			{
@@ -95,7 +95,7 @@ public class ComparisonTest implements GoodServiceTest {
 			String a = String.class.cast(o[0]);
 			String b = String.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 	}
 
@@ -115,7 +115,7 @@ public class ComparisonTest implements GoodServiceTest {
 			Integer a = Integer.class.cast(o[0]);
 			Integer b = Integer.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 		Object[][] stringData = {
 			{
@@ -134,7 +134,7 @@ public class ComparisonTest implements GoodServiceTest {
 			String a = String.class.cast(o[0]);
 			String b = String.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 	}
 
@@ -154,7 +154,7 @@ public class ComparisonTest implements GoodServiceTest {
 			Integer a = Integer.class.cast(o[0]);
 			Integer b = Integer.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 		Object[][] stringData = {
 			{
@@ -173,7 +173,7 @@ public class ComparisonTest implements GoodServiceTest {
 			String a = String.class.cast(o[0]);
 			String b = String.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 	}
 
@@ -193,7 +193,7 @@ public class ComparisonTest implements GoodServiceTest {
 			Integer a = Integer.class.cast(o[0]);
 			Integer b = Integer.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 		Object[][] stringData = {
 			{
@@ -212,7 +212,7 @@ public class ComparisonTest implements GoodServiceTest {
 			String a = String.class.cast(o[0]);
 			String b = String.class.cast(o[1]);
 			Boolean result = Boolean.class.cast(o[2]);
-			Assert.assertEquals(result, comparison.matches(a, b));
+			Assertions.assertEquals(result, comparison.matches(a, b));
 		}
 	}
 
@@ -235,9 +235,9 @@ public class ComparisonTest implements GoodServiceTest {
 			Comparison a = Comparison.class.cast(o[0]);
 			for (int i = 1; i < o.length; i++) {
 				final String symbol = String.valueOf(o[i]);
-				Assert.assertEquals(a, Comparison.decode(symbol));
+				Assertions.assertEquals(a, Comparison.decode(symbol));
 			}
 		}
-		Assert.assertNull(Comparison.decode(null));
+		Assertions.assertNull(Comparison.decode(null));
 	}
 }

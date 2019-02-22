@@ -4,8 +4,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class XmlEnumAdapterTest {
 
@@ -42,21 +42,21 @@ public class XmlEnumAdapterTest {
 		XmlEnumAdapter<?> adapter = null;
 
 		adapter = newAdapter(CaseSensitive.class);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 
 		adapter = newAdapter(CaseInsensitive.class);
-		Assert.assertFalse(adapter.isCaseSensitive());
+		Assertions.assertFalse(adapter.isCaseSensitive());
 
 		adapter = newAdapter(Empty.class);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 
 		@SuppressWarnings("rawtypes")
 		Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class);
 		try {
 			c.newInstance(Object.class);
-			Assert.fail("Did not fail with a non-enum class");
+			Assertions.fail("Did not fail with a non-enum class");
 		} catch (InvocationTargetException e) {
-			Assert.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
 		}
 	}
 
@@ -69,72 +69,65 @@ public class XmlEnumAdapterTest {
 		XmlEnumAdapter<?> adapter = null;
 
 		adapter = newAdapter(CaseSensitive.class, null);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 		adapter = newAdapter(CaseSensitive.class, true);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 		adapter = newAdapter(CaseSensitive.class, false);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 
 		adapter = newAdapter(CaseInsensitive.class, null);
-		Assert.assertFalse(adapter.isCaseSensitive());
+		Assertions.assertFalse(adapter.isCaseSensitive());
 		adapter = newAdapter(CaseInsensitive.class, true);
-		Assert.assertFalse(adapter.isCaseSensitive());
+		Assertions.assertFalse(adapter.isCaseSensitive());
 		adapter = newAdapter(CaseInsensitive.class, false);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 
 		adapter = newAdapter(Empty.class, null);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 		adapter = newAdapter(Empty.class, true);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 		adapter = newAdapter(Empty.class, false);
-		Assert.assertTrue(adapter.isCaseSensitive());
+		Assertions.assertTrue(adapter.isCaseSensitive());
 
 		@SuppressWarnings("rawtypes")
 		Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class, Boolean.class);
 		try {
 			c.newInstance(Object.class, null);
-			Assert.fail("Did not fail with a non-enum class");
+			Assertions.fail("Did not fail with a non-enum class");
 		} catch (InvocationTargetException e) {
-			Assert.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
 		}
 		try {
 			c.newInstance(Object.class, Boolean.FALSE);
-			Assert.fail("Did not fail with a non-enum class");
+			Assertions.fail("Did not fail with a non-enum class");
 		} catch (InvocationTargetException e) {
-			Assert.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
 		}
 		try {
 			c.newInstance(Object.class, Boolean.TRUE);
-			Assert.fail("Did not fail with a non-enum class");
+			Assertions.fail("Did not fail with a non-enum class");
 		} catch (InvocationTargetException e) {
-			Assert.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
 		}
 	}
 
 	private <E extends Enum<E>> void testUnmarshalString(Class<E> enumClass) throws Exception {
-		XmlEnumAdapter<E> adapter = null;
-
 		// Autodetect case sensitivity
-		adapter = newAdapter(enumClass, null);
-		Assert.assertNull(adapter.unmarshal(null));
+		XmlEnumAdapter<E> adapter = newAdapter(enumClass, null);
+		Assertions.assertNull(adapter.unmarshal(null));
 
 		for (E e : enumClass.getEnumConstants()) {
-			Assert.assertSame(String.format("%s::%s", enumClass.getCanonicalName(), e.name()), e,
-				adapter.unmarshal(e.name()));
+			Assertions.assertSame(e, adapter.unmarshal(e.name()),
+				String.format("%s::%s", enumClass.getCanonicalName(), e.name()));
 			if (!adapter.isCaseSensitive()) {
-				Assert.assertSame(String.format("%s::%s", enumClass.getCanonicalName(), e.name().toUpperCase()), e,
-					adapter.unmarshal(e.name().toUpperCase()));
-				Assert.assertSame(String.format("%s::%s", enumClass.getCanonicalName(), e.name().toLowerCase()), e,
-					adapter.unmarshal(e.name().toLowerCase()));
+				Assertions.assertSame(e, adapter.unmarshal(e.name().toUpperCase()),
+					String.format("%s::%s", enumClass.getCanonicalName(), e.name().toUpperCase()));
+				Assertions.assertSame(e, adapter.unmarshal(e.name().toLowerCase()),
+					String.format("%s::%s", enumClass.getCanonicalName(), e.name().toLowerCase()));
 			}
 		}
 
-		try {
-			adapter.unmarshal(UUID.randomUUID().toString());
-			Assert.fail(String.format("%s did not fail with a known-invalid value", enumClass.getCanonicalName()));
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
+		Assertions.assertThrows(IllegalArgumentException.class, () -> adapter.unmarshal(UUID.randomUUID().toString()));
 	}
 
 	@Test
@@ -148,11 +141,11 @@ public class XmlEnumAdapterTest {
 		XmlEnumAdapter<E> adapter = null;
 
 		adapter = newAdapter(enumClass, null);
-		Assert.assertNull(adapter.marshal(null));
+		Assertions.assertNull(adapter.marshal(null));
 
 		for (E e : enumClass.getEnumConstants()) {
-			Assert.assertEquals(String.format("%s::%s", enumClass.getCanonicalName(), e.name()), e.name(),
-				adapter.marshal(e));
+			Assertions.assertEquals(e.name(), adapter.marshal(e),
+				String.format("%s::%s", enumClass.getCanonicalName(), e.name()));
 		}
 	}
 

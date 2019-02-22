@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author drivera@armedia.com
@@ -57,13 +57,13 @@ public class FileNameToolsTest implements GoodServiceTest {
 		};
 		for (String[] values : testData) {
 			char sep = values[0].charAt(0);
-			Assert.assertEquals(values[2], FileNameTools.removeEdgeSeparators(values[1], sep));
+			Assertions.assertEquals(values[2], FileNameTools.removeEdgeSeparators(values[1], sep));
 			String a = values[1].replace('|', File.separatorChar);
 			String b = values[2].replace('|', File.separatorChar);
-			Assert.assertEquals(b, FileNameTools.removeEdgeSeparators(a));
+			Assertions.assertEquals(b, FileNameTools.removeEdgeSeparators(a));
 		}
-		Assert.assertNull(FileNameTools.removeEdgeSeparators(null));
-		Assert.assertNull(FileNameTools.removeEdgeSeparators(null, '|'));
+		Assertions.assertNull(FileNameTools.removeEdgeSeparators(null));
+		Assertions.assertNull(FileNameTools.removeEdgeSeparators(null, '|'));
 	}
 
 	/**
@@ -98,13 +98,13 @@ public class FileNameToolsTest implements GoodServiceTest {
 		};
 		for (String[] values : testData) {
 			char sep = values[0].charAt(0);
-			Assert.assertEquals(values[2], FileNameTools.removeLeadingSeparators(values[1], sep));
+			Assertions.assertEquals(values[2], FileNameTools.removeLeadingSeparators(values[1], sep));
 			String a = values[1].replace('|', File.separatorChar);
 			String b = values[2].replace('|', File.separatorChar);
-			Assert.assertEquals(b, FileNameTools.removeLeadingSeparators(a));
+			Assertions.assertEquals(b, FileNameTools.removeLeadingSeparators(a));
 		}
-		Assert.assertNull(FileNameTools.removeLeadingSeparators(null));
-		Assert.assertNull(FileNameTools.removeLeadingSeparators(null, '|'));
+		Assertions.assertNull(FileNameTools.removeLeadingSeparators(null));
+		Assertions.assertNull(FileNameTools.removeLeadingSeparators(null, '|'));
 	}
 
 	/**
@@ -139,13 +139,13 @@ public class FileNameToolsTest implements GoodServiceTest {
 		};
 		for (String[] values : testData) {
 			char sep = values[0].charAt(0);
-			Assert.assertEquals(values[2], FileNameTools.removeTrailingSeparators(values[1], sep));
+			Assertions.assertEquals(values[2], FileNameTools.removeTrailingSeparators(values[1], sep));
 			String a = values[1].replace('|', File.separatorChar);
 			String b = values[2].replace('|', File.separatorChar);
-			Assert.assertEquals(b, FileNameTools.removeTrailingSeparators(a));
+			Assertions.assertEquals(b, FileNameTools.removeTrailingSeparators(a));
 		}
-		Assert.assertNull(FileNameTools.removeTrailingSeparators(null));
-		Assert.assertNull(FileNameTools.removeTrailingSeparators(null, '|'));
+		Assertions.assertNull(FileNameTools.removeTrailingSeparators(null));
+		Assertions.assertNull(FileNameTools.removeTrailingSeparators(null, '|'));
 	}
 
 	/**
@@ -179,13 +179,13 @@ public class FileNameToolsTest implements GoodServiceTest {
 		};
 		for (String[] values : testData) {
 			char sep = values[0].charAt(0);
-			Assert.assertEquals(values[2], FileNameTools.singleSeparators(values[1], sep));
+			Assertions.assertEquals(values[2], FileNameTools.singleSeparators(values[1], sep));
 			String a = values[1].replace('|', File.separatorChar);
 			String b = values[2].replace('|', File.separatorChar);
-			Assert.assertEquals(b, FileNameTools.singleSeparators(a));
+			Assertions.assertEquals(b, FileNameTools.singleSeparators(a));
 		}
-		Assert.assertNull(FileNameTools.singleSeparators(null));
-		Assert.assertNull(FileNameTools.singleSeparators(null, '|'));
+		Assertions.assertNull(FileNameTools.singleSeparators(null));
+		Assertions.assertNull(FileNameTools.singleSeparators(null, '|'));
 	}
 
 	/**
@@ -221,10 +221,10 @@ public class FileNameToolsTest implements GoodServiceTest {
 		};
 		for (String[] values : testData) {
 			char sep = values[0].charAt(0);
-			Assert.assertEquals(values[2], FileNameTools.basename(values[1], sep));
+			Assertions.assertEquals(values[2], FileNameTools.basename(values[1], sep));
 			String a = values[1].replace('|', File.separatorChar);
 			String b = values[2].replace('|', File.separatorChar);
-			Assert.assertEquals(b, FileNameTools.basename(a));
+			Assertions.assertEquals(b, FileNameTools.basename(a));
 		}
 	}
 
@@ -270,10 +270,10 @@ public class FileNameToolsTest implements GoodServiceTest {
 		for (String[] values : testData) {
 			char sep = values[0].charAt(0);
 			String msg = String.format("While testing %s", Arrays.toString(values));
-			Assert.assertEquals(msg, values[2], FileNameTools.dirname(values[1], sep));
+			Assertions.assertEquals(values[2], FileNameTools.dirname(values[1], sep), msg);
 			String a = values[1].replace('|', File.separatorChar);
 			String b = values[2].replace('|', File.separatorChar);
-			Assert.assertEquals(msg, b, FileNameTools.dirname(a));
+			Assertions.assertEquals(b, FileNameTools.dirname(a), msg);
 		}
 	}
 
@@ -322,55 +322,28 @@ public class FileNameToolsTest implements GoodServiceTest {
 			List<String> l = null;
 
 			l = FileNameTools.tokenize(str, sep);
-			Assert.assertArrayEquals(expected, l.toArray(empty));
+			Assertions.assertArrayEquals(expected, l.toArray(empty));
 
 			l = FileNameTools.tokenize(str.replace(sep, File.separatorChar));
-			Assert.assertArrayEquals(expected, l.toArray(empty));
+			Assertions.assertArrayEquals(expected, l.toArray(empty));
 
-			l = new ArrayList<String>();
+			l = new ArrayList<>();
 			FileNameTools.tokenize(l, str, sep);
-			Assert.assertArrayEquals(expected, l.toArray(empty));
+			Assertions.assertArrayEquals(expected, l.toArray(empty));
 
-			l = new ArrayList<String>();
+			l = new ArrayList<>();
 			FileNameTools.tokenize(l, str.replace(sep, File.separatorChar));
-			Assert.assertArrayEquals(expected, l.toArray(empty));
+			Assertions.assertArrayEquals(expected, l.toArray(empty));
 		}
-		try {
-			FileNameTools.tokenize(null);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			FileNameTools.tokenize(new ArrayList<String>(), null);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			FileNameTools.tokenize(null, File.separatorChar);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			FileNameTools.tokenize(new ArrayList<String>(), null, File.separatorChar);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			FileNameTools.tokenize(null, "/a/b/c");
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			FileNameTools.tokenize(null, "/a/b/c", File.separatorChar);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
+		Assertions.assertThrows(IllegalArgumentException.class, () -> FileNameTools.tokenize(null));
+		Assertions.assertThrows(IllegalArgumentException.class,
+			() -> FileNameTools.tokenize(new ArrayList<String>(), null));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> FileNameTools.tokenize(null, File.separatorChar));
+		Assertions.assertThrows(IllegalArgumentException.class,
+			() -> FileNameTools.tokenize(new ArrayList<String>(), null, File.separatorChar));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> FileNameTools.tokenize(null, "/a/b/c"));
+		Assertions.assertThrows(IllegalArgumentException.class,
+			() -> FileNameTools.tokenize(null, "/a/b/c", File.separatorChar));
 	}
 
 	private String[] splitEmptyAsNull(String str, String splitters) {
@@ -451,21 +424,12 @@ public class FileNameToolsTest implements GoodServiceTest {
 			final boolean leading = expected.startsWith(String.valueOf(sep));
 			final boolean trailing = expected.endsWith(String.valueOf(sep));
 			List<String> tokens = Arrays.asList(arr);
-			Assert.assertEquals(expected, FileNameTools.reconstitute(tokens, leading, trailing, sep));
-			Assert.assertEquals(expected.replace(sep, File.separatorChar),
+			Assertions.assertEquals(expected, FileNameTools.reconstitute(tokens, leading, trailing, sep));
+			Assertions.assertEquals(expected.replace(sep, File.separatorChar),
 				FileNameTools.reconstitute(tokens, leading, trailing));
 		}
-		try {
-			FileNameTools.reconstitute(null, true, false);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		try {
-			FileNameTools.reconstitute(null, true, false, File.separatorChar);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
+		Assertions.assertThrows(IllegalArgumentException.class, () -> FileNameTools.reconstitute(null, true, false));
+		Assertions.assertThrows(IllegalArgumentException.class,
+			() -> FileNameTools.reconstitute(null, true, false, File.separatorChar));
 	}
 }

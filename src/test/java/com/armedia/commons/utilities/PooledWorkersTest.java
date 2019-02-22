@@ -2,8 +2,8 @@ package com.armedia.commons.utilities;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PooledWorkersTest {
 
@@ -16,18 +16,18 @@ public class PooledWorkersTest {
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
-				Assert.fail("Unexpected InterruptedException caught");
+				Assertions.fail("Unexpected InterruptedException caught");
 			}
 		};
 
 		pw.start(logic, 4, "Blocking", true);
 		final int testCount = 100;
-		Assert.assertEquals(0, data.get());
+		Assertions.assertEquals(0, data.get());
 		for (int i = 1; i <= testCount; i++) {
 			pw.addWorkItem(String.format("%08x", i));
 		}
 		pw.waitForCompletion();
-		Assert.assertEquals(testCount, data.get());
+		Assertions.assertEquals(testCount, data.get());
 	}
 
 	@Test
@@ -39,13 +39,13 @@ public class PooledWorkersTest {
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
-				Assert.fail("Unexpected InterruptedException caught");
+				Assertions.fail("Unexpected InterruptedException caught");
 			}
 		};
 
 		pw.start(logic, 4, "Interrupt", true);
 		final int testCount = 100;
-		Assert.assertEquals(0, data.get());
+		Assertions.assertEquals(0, data.get());
 		for (int i = 1; i <= testCount; i++) {
 			pw.addWorkItem(String.format("%08x", i));
 		}
@@ -53,7 +53,7 @@ public class PooledWorkersTest {
 			Thread.sleep(100);
 		}
 		pw.waitForCompletion();
-		Assert.assertEquals(testCount, data.get());
+		Assertions.assertEquals(testCount, data.get());
 	}
 
 	@Test
@@ -65,7 +65,7 @@ public class PooledWorkersTest {
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
-				Assert.fail("Unexpected InterruptedException caught");
+				Assertions.fail("Unexpected InterruptedException caught");
 			}
 		};
 
@@ -73,9 +73,9 @@ public class PooledWorkersTest {
 		for (int i = 1; i <= testCount; i++) {
 			pw.addWorkItem(String.format("%08x", i));
 		}
-		Assert.assertEquals(0, data.get());
+		Assertions.assertEquals(0, data.get());
 		pw.start(logic, 4, "NonBlocking", false);
 		pw.waitForCompletion();
-		Assert.assertEquals(testCount, data.get());
+		Assertions.assertEquals(testCount, data.get());
 	}
 }

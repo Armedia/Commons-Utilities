@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author drivera@armedia.com
@@ -46,8 +46,8 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 	@Test
 	public void testByteBuffer() {
 		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
-		Assert.assertEquals(BinaryMemoryBuffer.DEFAULT_CHUNK_SIZE, b.getChunkSize());
-		Assert.assertEquals(0, b.getAllocatedSize());
+		Assertions.assertEquals(BinaryMemoryBuffer.DEFAULT_CHUNK_SIZE, b.getChunkSize());
+		Assertions.assertEquals(0, b.getAllocatedSize());
 		b.close();
 	}
 
@@ -63,11 +63,11 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		for (int chunkSize : chunkSizes) {
 			BinaryMemoryBuffer b = new BinaryMemoryBuffer(chunkSize);
 			if (chunkSize < BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE) {
-				Assert.assertEquals(BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE, b.getChunkSize());
+				Assertions.assertEquals(BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE, b.getChunkSize());
 			} else {
-				Assert.assertEquals(chunkSize, b.getChunkSize());
+				Assertions.assertEquals(chunkSize, b.getChunkSize());
 			}
-			Assert.assertEquals(0, b.getAllocatedSize());
+			Assertions.assertEquals(0, b.getAllocatedSize());
 			b.close();
 		}
 	}
@@ -79,9 +79,9 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 	public void testWriteInt() throws IOException {
 		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
 		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
-			Assert.assertEquals(i, b.getCurrentSize());
+			Assertions.assertEquals(i, b.getCurrentSize());
 			b.write(BinaryMemoryBufferTest.FWD[i]);
-			Assert.assertEquals(i + 1, b.getCurrentSize());
+			Assertions.assertEquals(i + 1, b.getCurrentSize());
 		}
 		b.close();
 	}
@@ -95,16 +95,11 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 	public void testWriteByteArray() throws IOException {
 		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
 		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
-			Assert.assertEquals(i * BinaryMemoryBufferTest.FWD.length, b.getCurrentSize());
+			Assertions.assertEquals(i * BinaryMemoryBufferTest.FWD.length, b.getCurrentSize());
 			b.write(BinaryMemoryBufferTest.FWD);
-			Assert.assertEquals((i + 1) * BinaryMemoryBufferTest.FWD.length, b.getCurrentSize());
+			Assertions.assertEquals((i + 1) * BinaryMemoryBufferTest.FWD.length, b.getCurrentSize());
 		}
-		try {
-			b.write(null);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
+		Assertions.assertThrows(NullPointerException.class, () -> b.write(null));
 		b.close();
 	}
 
@@ -116,93 +111,46 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 	 */
 	@Test
 	public void testWriteByteArrayIntInt() throws IOException {
-		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
-		try {
-			b.write(null, 0, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write(null, 0, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write(null, -1, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write(null, -1, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write(null, 0, BinaryMemoryBufferTest.FWD.length);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write(null, 1, BinaryMemoryBufferTest.FWD.length);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
+		try (BinaryMemoryBuffer b = new BinaryMemoryBuffer()) {
+			Assertions.assertThrows(NullPointerException.class, () -> b.write(null, 0, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> b.write(null, 0, -1));
+			Assertions.assertThrows(NullPointerException.class, () -> b.write(null, -1, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> b.write(null, -1, -1));
+			Assertions.assertThrows(NullPointerException.class,
+				() -> b.write(null, 0, BinaryMemoryBufferTest.FWD.length));
+			Assertions.assertThrows(NullPointerException.class,
+				() -> b.write(null, 1, BinaryMemoryBufferTest.FWD.length));
+
+			b.write(BinaryMemoryBufferTest.FWD, 0, 0);
+			Assertions.assertThrows(IllegalArgumentException.class, () -> b.write(BinaryMemoryBufferTest.FWD, 0, -1));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> b.write(BinaryMemoryBufferTest.FWD, -1, 0));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> b.write(BinaryMemoryBufferTest.FWD, -1, -1));
+
+			b.write(BinaryMemoryBufferTest.FWD, 0, BinaryMemoryBufferTest.FWD.length);
+			Assertions.assertThrows(IllegalArgumentException.class,
+				() -> b.write(BinaryMemoryBufferTest.FWD, 1, BinaryMemoryBufferTest.FWD.length));
 		}
 
-		b.write(BinaryMemoryBufferTest.FWD, 0, 0);
-		try {
-			b.write(BinaryMemoryBufferTest.FWD, 0, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-		try {
-			b.write(BinaryMemoryBufferTest.FWD, -1, 0);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-		try {
-			b.write(BinaryMemoryBufferTest.FWD, -1, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-		b.write(BinaryMemoryBufferTest.FWD, 0, BinaryMemoryBufferTest.FWD.length);
-		try {
-			b.write(BinaryMemoryBufferTest.FWD, 1, BinaryMemoryBufferTest.FWD.length);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
+		try (BinaryMemoryBuffer b = new BinaryMemoryBuffer()) {
+			long writeCount = 0;
+			for (int o = 0; o < BinaryMemoryBufferTest.FWD.length; o++) {
+				int maxLen = Math.min(BinaryMemoryBufferTest.FWD.length / 2, BinaryMemoryBufferTest.FWD.length - o);
+				for (int l = 0; l < maxLen; l++) {
+					b.write(BinaryMemoryBufferTest.FWD, o, l);
 
-		b.close();
-		b = new BinaryMemoryBuffer();
+					writeCount += l;
+					Assertions.assertEquals(writeCount, b.getCurrentSize());
 
-		long writeCount = 0;
-		for (int o = 0; o < BinaryMemoryBufferTest.FWD.length; o++) {
-			int maxLen = Math.min(BinaryMemoryBufferTest.FWD.length / 2, BinaryMemoryBufferTest.FWD.length - o);
-			for (int l = 0; l < maxLen; l++) {
-				b.write(BinaryMemoryBufferTest.FWD, o, l);
-
-				writeCount += l;
-				Assert.assertEquals(writeCount, b.getCurrentSize());
-
-				long x = (writeCount / b.getChunkSize());
-				long y = (writeCount % b.getChunkSize());
-				if (y > 0) {
-					x++;
+					long x = (writeCount / b.getChunkSize());
+					long y = (writeCount % b.getChunkSize());
+					if (y > 0) {
+						x++;
+					}
+					Assertions.assertEquals((x * b.getChunkSize()), b.getAllocatedSize(),
+						String.format("Failure with offset %d, length %d", o, l));
 				}
-				Assert.assertEquals(String.format("Failure with offset %d, length %d", o, l), (x * b.getChunkSize()),
-					b.getAllocatedSize());
 			}
 		}
-		b.close();
 	}
 
 	@Test
@@ -213,8 +161,8 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		for (int chunkSize = BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
 			for (int writeCount : writeCounts) {
 				BinaryMemoryBuffer b = new BinaryMemoryBuffer(chunkSize);
-				Assert.assertEquals(chunkSize, b.getChunkSize());
-				Assert.assertEquals(0, b.getAllocatedSize());
+				Assertions.assertEquals(chunkSize, b.getChunkSize());
+				Assertions.assertEquals(0, b.getAllocatedSize());
 
 				for (int c = 0; c < writeCount; c++) {
 					b.write(BinaryMemoryBufferTest.FWD);
@@ -226,8 +174,8 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 				if (y > 0) {
 					x++;
 				}
-				Assert.assertEquals(String.format("Failure with chunk size %d, write count %d", chunkSize, writeCount),
-					x * chunkSize, b.getAllocatedSize());
+				Assertions.assertEquals(x * chunkSize, b.getAllocatedSize(),
+					String.format("Failure with chunk size %d, write count %d", chunkSize, writeCount));
 				b.close();
 			}
 		}
@@ -241,14 +189,14 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		for (int chunkSize = BinaryMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
 			for (int writeCount : writeCounts) {
 				BinaryMemoryBuffer b = new BinaryMemoryBuffer(chunkSize);
-				Assert.assertEquals(chunkSize, b.getChunkSize());
-				Assert.assertEquals(0, b.getCurrentSize());
+				Assertions.assertEquals(chunkSize, b.getChunkSize());
+				Assertions.assertEquals(0, b.getCurrentSize());
 
 				for (int c = 0; c < writeCount; c++) {
 					b.write(BinaryMemoryBufferTest.FWD);
 				}
 
-				Assert.assertEquals(BinaryMemoryBufferTest.FWD.length * writeCount, b.getCurrentSize());
+				Assertions.assertEquals(BinaryMemoryBufferTest.FWD.length * writeCount, b.getCurrentSize());
 				b.close();
 			}
 		}
@@ -262,126 +210,56 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		BinaryMemoryBuffer buf = new BinaryMemoryBuffer();
 		buf.write(BinaryMemoryBufferTest.FWD);
 		buf.close();
-		try {
-			buf.write(BinaryMemoryBufferTest.REV);
-			Assert.fail("Should have failed with IOException");
-		} catch (IOException e) {
-			// All is well
-		}
-		try {
-			buf.write(BinaryMemoryBufferTest.REV, 30, 40);
-			Assert.fail("Should have failed with IOException");
-		} catch (IOException e) {
-			// All is well
-		}
-		try {
-			buf.write(BinaryMemoryBufferTest.FWD[30]);
-			Assert.fail("Should have failed with IOException");
-		} catch (IOException e) {
-			// All is well
-		}
+		Assertions.assertThrows(IOException.class, () -> buf.write(BinaryMemoryBufferTest.REV));
+		Assertions.assertThrows(IOException.class, () -> buf.write(BinaryMemoryBufferTest.REV, 30, 40));
+		Assertions.assertThrows(IOException.class, () -> buf.write(BinaryMemoryBufferTest.FWD[30]));
 	}
 
 	@Test
 	public void testInput() throws IOException {
+		byte[] buf = new byte[BinaryMemoryBufferTest.FWD.length];
 		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
 		b.write(BinaryMemoryBufferTest.FWD);
 		b.write(BinaryMemoryBufferTest.REV);
-		InputStream in = b.getInputStream();
-		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
-			int r = in.read();
-			Assert.assertTrue(r >= 0);
-			Assert.assertEquals(BinaryMemoryBufferTest.FWD[i], (byte) r);
-		}
-		for (int i = 0; i < BinaryMemoryBufferTest.REV.length; i++) {
-			int r = in.read();
-			Assert.assertTrue(r >= 0);
-			Assert.assertEquals(BinaryMemoryBufferTest.REV[i], (byte) r);
-		}
-		byte[] buf = new byte[BinaryMemoryBufferTest.FWD.length];
-
-		in = b.getInputStream();
-		in.read(buf);
-		Assert.assertArrayEquals(BinaryMemoryBufferTest.FWD, buf);
-		in.read(buf, 0, buf.length);
-		Assert.assertArrayEquals(BinaryMemoryBufferTest.REV, buf);
-
-		try {
-			in.read(null);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
+		try (InputStream in = b.getInputStream()) {
+			for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i++) {
+				int r = in.read();
+				Assertions.assertTrue(r >= 0);
+				Assertions.assertEquals(BinaryMemoryBufferTest.FWD[i], (byte) r);
+			}
+			for (int i = 0; i < BinaryMemoryBufferTest.REV.length; i++) {
+				int r = in.read();
+				Assertions.assertTrue(r >= 0);
+				Assertions.assertEquals(BinaryMemoryBufferTest.REV[i], (byte) r);
+			}
 		}
 
-		try {
-			in.read(null, 0, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
+		try (InputStream in = b.getInputStream()) {
+			in.read(buf);
+			Assertions.assertArrayEquals(BinaryMemoryBufferTest.FWD, buf);
+			in.read(buf, 0, buf.length);
+			Assertions.assertArrayEquals(BinaryMemoryBufferTest.REV, buf);
+
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, 0, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, 0, -1));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, -1, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, -1, -1));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null));
+			Assertions.assertEquals(0, in.read(buf, 0, 0));
+
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, 0, -1));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, -1, 0));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, -1, -1));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, 1, (int) b.getCurrentSize()));
+
+			b.close();
+			Assertions.assertEquals(-1, in.read());
+			Assertions.assertEquals(0, in.read(buf, 0, 0));
+			Assertions.assertEquals(-1, in.read(buf));
+			Assertions.assertEquals(-1, in.read(buf, 0, 10));
 		}
 
-		try {
-			in.read(null, 0, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
-
-		try {
-			in.read(null, -1, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
-
-		try {
-			in.read(null, -1, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
-		try {
-			in.read(null);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
-
-		Assert.assertEquals(0, in.read(buf, 0, 0));
-
-		try {
-			in.read(buf, 0, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-
-		try {
-			in.read(buf, -1, 0);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-
-		try {
-			in.read(buf, -1, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-
-		try {
-			in.read(buf, 1, (int) b.getCurrentSize());
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-
-		b.close();
-		Assert.assertEquals(-1, in.read());
-		Assert.assertEquals(0, in.read(buf, 0, 0));
-		Assert.assertEquals(-1, in.read(buf));
-		Assert.assertEquals(-1, in.read(buf, 0, 10));
 	}
 
 	@Test
@@ -390,7 +268,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
 		final InputStream in = b.getInputStream();
 		final AtomicInteger counter = new AtomicInteger(0);
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final int blockTimeMs = 100;
 		final int itemCount = 64;
@@ -421,9 +299,9 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 						if (r == -1) { return; }
 						// Tolerate 10ms difference...
 						// This check tells us if we really did block
-						Assert.assertTrue((end - now) >= ((blockTimeMs * 4) / 5));
+						Assertions.assertTrue((end - now) >= ((blockTimeMs * 4) / 5));
 						// This ensures we read the expected value
-						Assert.assertEquals(b, (byte) r);
+						Assertions.assertEquals(b, (byte) r);
 						// This ensures we account for a successful read
 						counter.incrementAndGet();
 					}
@@ -448,7 +326,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 			t.interrupt();
 		} catch (BrokenBarrierException e) {
 		}
-		Assert.assertFalse("Thread start barrier broken", startBarrier.isBroken());
+		Assertions.assertFalse(startBarrier.isBroken(), "Thread start barrier broken");
 
 		// Ensure we don't write until the reader thread is ready to read
 		for (int i = 0; i < BinaryMemoryBufferTest.FWD.length; i += itemStep) {
@@ -458,12 +336,12 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 			final byte w = BinaryMemoryBufferTest.FWD[i];
 			try {
 				ioBarrier.await();
-				Assert.assertFalse("IO barrier broken in assertion", ioBarrier.isBroken());
+				Assertions.assertFalse(ioBarrier.isBroken(), "IO barrier broken in assertion");
 			} catch (InterruptedException e) {
 				t.interrupt();
-				Assert.fail(String.format("IO barrier broken due to thread interruption (%d)", w));
+				Assertions.fail(String.format("IO barrier broken due to thread interruption (%d)", w));
 			} catch (BrokenBarrierException e) {
-				Assert.fail(String.format("IO barrier broken due to broken barrier exception (%d)", w));
+				Assertions.fail(String.format("IO barrier broken due to broken barrier exception (%d)", w));
 			} finally {
 				ioBarrier.reset();
 			}
@@ -485,10 +363,11 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		t.interrupt();
 		Throwable ex = thrown.get();
 		try {
-			if (ex != null) { throw new RuntimeException(String.format(
-				"Failed to complete the read, caught an exception: %s", ex), ex); }
-			Assert.assertTrue("Failed to complete the read - failed early", finished.get());
-			Assert.assertEquals("Failed to complete the read - fell short", itemCount, counter.get());
+			if (ex != null) {
+				Assertions.fail(String.format("Failed to complete the read, caught an exception: %s", ex), ex);
+			}
+			Assertions.assertTrue(finished.get(), "Failed to complete the read - failed early");
+			Assertions.assertEquals(itemCount, counter.get(), "Failed to complete the read - fell short");
 		} finally {
 			b.close();
 		}
@@ -497,10 +376,10 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 	@Test
 	public void testBlockingInputClosure() {
 		BinaryMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<InputStream> in = new AtomicReference<InputStream>();
+		final AtomicReference<InputStream> in = new AtomicReference<>();
 
 		{
 			Runnable[] readers = {
@@ -510,7 +389,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 						try {
 							started.set(true);
 							int r = in.get().read();
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -523,7 +402,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 							byte[] buf = new byte[128];
 							started.set(true);
 							int r = in.get().read(buf);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -536,7 +415,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 							byte[] buf = new byte[128];
 							started.set(true);
 							int r = in.get().read(buf, 10, 20);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -571,7 +450,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 				if (ex != null) {
 					Thread.currentThread().interrupt();
 				}
-				Assert.assertTrue(started.get());
+				Assertions.assertTrue(started.get());
 
 				b.close();
 				try {
@@ -579,7 +458,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
-				Assert.assertTrue(finished.get());
+				Assertions.assertTrue(finished.get());
 			}
 		}
 	}
@@ -587,10 +466,10 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 	@Test
 	public void testBlockingInputPartialRead() throws IOException {
 		BinaryMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<InputStream> in = new AtomicReference<InputStream>();
+		final AtomicReference<InputStream> in = new AtomicReference<>();
 
 		{
 			Runnable[] readers = {
@@ -600,7 +479,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 						try {
 							started.set(true);
 							int r = in.get().read();
-							Assert.assertFalse(r == -1);
+							Assertions.assertFalse(r == -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -613,7 +492,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 							byte[] buf = new byte[128];
 							started.set(true);
 							int r = in.get().read(buf);
-							Assert.assertEquals(r, 1);
+							Assertions.assertEquals(r, 1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -626,7 +505,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 							byte[] buf = new byte[128];
 							started.set(true);
 							int r = in.get().read(buf, 0, 128);
-							Assert.assertEquals(r, 1);
+							Assertions.assertEquals(r, 1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -661,7 +540,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 				if (ex != null) {
 					Thread.currentThread().interrupt();
 				}
-				Assert.assertTrue(started.get());
+				Assertions.assertTrue(started.get());
 
 				b.write(0);
 				try {
@@ -669,7 +548,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
-				Assert.assertTrue(finished.get());
+				Assertions.assertTrue(finished.get());
 				b.close();
 			}
 		}
@@ -678,10 +557,10 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 	@Test
 	public void testBlockingInputInterruption() {
 		BinaryMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<InputStream> in = new AtomicReference<InputStream>();
+		final AtomicReference<InputStream> in = new AtomicReference<>();
 
 		{
 			Runnable[] readers = {
@@ -691,7 +570,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 						try {
 							started.set(true);
 							int r = in.get().read();
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -704,7 +583,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 							byte[] buf = new byte[128];
 							started.set(true);
 							int r = in.get().read(buf);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -717,7 +596,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 							byte[] buf = new byte[128];
 							started.set(true);
 							int r = in.get().read(buf, 10, 20);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -752,7 +631,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 				if (ex != null) {
 					Thread.currentThread().interrupt();
 				}
-				Assert.assertTrue(started.get());
+				Assertions.assertTrue(started.get());
 				try {
 					// Wait for the thread to be in the read() call
 					Thread.sleep(200);
@@ -766,9 +645,9 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
-				Assert.assertFalse(finished.get());
-				Assert.assertNotNull(thrown.get());
-				Assert.assertEquals(IOException.class, thrown.get().getClass());
+				Assertions.assertFalse(finished.get());
+				Assertions.assertNotNull(thrown.get());
+				Assertions.assertEquals(IOException.class, thrown.get().getClass());
 			}
 		}
 	}
@@ -782,7 +661,7 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		b.write(random);
 
 		InputStream in = b.getInputStream();
-		Assert.assertTrue(in.markSupported());
+		Assertions.assertTrue(in.markSupported());
 		int start = r.nextInt(512);
 		int length = r.nextInt(random.length - start);
 		if (length < 512) {
@@ -790,23 +669,23 @@ public class BinaryMemoryBufferTest implements GoodServiceTest {
 		}
 
 		long available = in.available();
-		Assert.assertEquals(random.length, in.available());
+		Assertions.assertEquals(random.length, in.available());
 		in.skip(start);
-		Assert.assertEquals(available - start, in.available());
+		Assertions.assertEquals(available - start, in.available());
 		in.mark(-1);
 		byte[] segment = new byte[length];
 		System.arraycopy(random, start, segment, 0, length);
 		for (int i = 0; i < length; i++) {
 			final int v = in.read();
-			Assert.assertFalse(v == -1);
-			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], (byte) v);
+			Assertions.assertFalse(v == -1);
+			Assertions.assertEquals(segment[i], (byte) v, String.format("Failed to read byte %d", i));
 		}
 		in.reset();
-		Assert.assertEquals(available - start, in.available());
+		Assertions.assertEquals(available - start, in.available());
 		for (int i = 0; i < length; i++) {
 			final int v = in.read();
-			Assert.assertFalse(v == -1);
-			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], (byte) v);
+			Assertions.assertFalse(v == -1);
+			Assertions.assertEquals(segment[i], (byte) v, String.format("Failed to read byte %d", i));
 		}
 
 		b.close();

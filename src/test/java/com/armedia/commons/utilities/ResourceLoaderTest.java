@@ -18,8 +18,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ResourceLoaderTest {
 
@@ -57,7 +57,7 @@ public class ResourceLoaderTest {
 					expect = false;
 				}
 			}
-			Assert.assertEquals(expect, ResourceLoader.isSupported(uri));
+			Assertions.assertEquals(expect, ResourceLoader.isSupported(uri));
 		});
 	}
 
@@ -68,9 +68,9 @@ public class ResourceLoaderTest {
 		urlData.add(Pair.of("https://www.google.com", -1L));
 
 		try {
-			Assert.assertNull(ResourceLoader.getResource((URI) null));
+			Assertions.assertNull(ResourceLoader.getResource((URI) null));
 		} catch (Throwable t) {
-			Assert.fail("Failed to accept a null URI");
+			Assertions.fail("Failed to accept a null URI");
 		}
 
 		try {
@@ -136,8 +136,8 @@ public class ResourceLoaderTest {
 
 			if (result == null) {
 				// Supported, but should be missing
-				Assert.assertNull(url);
-				Assert.assertNull(raised);
+				Assertions.assertNull(url);
+				Assertions.assertNull(raised);
 				return;
 			}
 
@@ -145,8 +145,8 @@ public class ResourceLoaderTest {
 				// Supported, but may be unreachable (i.e. http:// or https:// on standalone
 				// networkless systems)
 				Number n = Number.class.cast(result);
-				Assert.assertNotNull(str, url);
-				Assert.assertNull(raised);
+				Assertions.assertNotNull(url, str);
+				Assertions.assertNull(raised);
 
 				byte[] data = null;
 				String actualSum = null;
@@ -156,7 +156,7 @@ public class ResourceLoaderTest {
 					actualSum = StringUtils.lowerCase(DigestUtils.sha256Hex(data));
 				} catch (IOException e) {
 					if (n.longValue() >= 0) {
-						Assert.fail(String.format("Failed to read from the URL [%s]: %s", str, e.getMessage()));
+						Assertions.fail(String.format("Failed to read from the URL [%s]: %s", str, e.getMessage()));
 						return;
 					}
 				}
@@ -164,19 +164,20 @@ public class ResourceLoaderTest {
 				// Only check the size if we expect to find it and know the size beforehand
 				// a negative value means we expect to find it, but won't know the size beforehand
 				if (n.longValue() >= 0) {
-					Assert.assertEquals(n.longValue(), data.length);
+					Assertions.assertEquals(n.longValue(), data.length);
 				}
 
 				String expectedSum = StringUtils.lowerCase(verifier.get(str));
 				if (expectedSum != null) {
-					Assert.assertEquals(expectedSum, actualSum);
+					Assertions.assertEquals(expectedSum, actualSum);
 				}
 				return;
 			}
 
 			if (Throwable.class == result) {
 				// Not supported, should have raised an exception
-				Assert.assertNotNull(String.format("Did not raise an exception for known-bad URL [%s]", str), raised);
+				Assertions.assertNotNull(raised,
+					String.format("Did not raise an exception for known-bad URL [%s]", str));
 			}
 
 		});
@@ -189,9 +190,9 @@ public class ResourceLoaderTest {
 		urlData.add(Pair.of("https://www.google.com", -1L));
 
 		try {
-			Assert.assertNull(ResourceLoader.getResource((URI) null));
+			Assertions.assertNull(ResourceLoader.getResource((URI) null));
 		} catch (Throwable t) {
-			Assert.fail("Failed to accept a null URI");
+			Assertions.fail("Failed to accept a null URI");
 		}
 
 		try {
@@ -256,8 +257,8 @@ public class ResourceLoaderTest {
 
 			if (result == null) {
 				// Supported, but should be missing
-				Assert.assertNull(url);
-				Assert.assertNull(raised);
+				Assertions.assertNull(url);
+				Assertions.assertNull(raised);
 				return;
 			}
 
@@ -265,8 +266,8 @@ public class ResourceLoaderTest {
 				// Supported, but may be unreachable (i.e. http:// or https:// on standalone
 				// networkless systems)
 				Number n = Number.class.cast(result);
-				Assert.assertNotNull(uri, url);
-				Assert.assertNull(raised);
+				Assertions.assertNotNull(url, uri);
+				Assertions.assertNull(raised);
 
 				byte[] data = null;
 				String actualSum = null;
@@ -276,7 +277,7 @@ public class ResourceLoaderTest {
 					actualSum = StringUtils.lowerCase(DigestUtils.sha256Hex(data));
 				} catch (IOException e) {
 					if (n.longValue() >= 0) {
-						Assert.fail(String.format("Failed to read from the URL [%s]: %s", uri, e.getMessage()));
+						Assertions.fail(String.format("Failed to read from the URL [%s]: %s", uri, e.getMessage()));
 						return;
 					}
 				}
@@ -284,19 +285,20 @@ public class ResourceLoaderTest {
 				// Only check the size if we expect to find it and know the size beforehand
 				// a negative value means we expect to find it, but won't know the size beforehand
 				if (n.longValue() >= 0) {
-					Assert.assertEquals(n.longValue(), data.length);
+					Assertions.assertEquals(n.longValue(), data.length);
 				}
 
 				String expectedSum = StringUtils.lowerCase(verifier.get(uri));
 				if (expectedSum != null) {
-					Assert.assertEquals(expectedSum, actualSum);
+					Assertions.assertEquals(expectedSum, actualSum);
 				}
 				return;
 			}
 
 			if (Throwable.class == result) {
 				// Not supported, should have raised an exception
-				Assert.assertNotNull(String.format("Did not raise an exception for known-bad URL [%s]", uri), raised);
+				Assertions.assertNotNull(raised,
+					String.format("Did not raise an exception for known-bad URL [%s]", uri));
 			}
 
 		});

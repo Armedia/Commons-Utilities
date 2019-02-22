@@ -14,25 +14,25 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class LazySupplierTest {
 
 	private static final CheckedSupplier<String> FAIL_SUPP = () -> {
-		Assert.fail("This supplier should not have been invoked");
+		Assertions.fail("This supplier should not have been invoked");
 		return null;
 	};
 
 	@Test
 	public void testLazySupplier() {
 		LazySupplier<String> supplier = new LazySupplier<>();
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
@@ -42,20 +42,20 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = new LazySupplier<>(uuidSupplier);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>((CheckedSupplier<String>) null);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
@@ -64,20 +64,20 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = new LazySupplier<>(uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>((String) null);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
@@ -88,36 +88,36 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = new LazySupplier<>(null, null);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuidSupplier, null);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(null, uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuidSupplier, uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
@@ -126,48 +126,48 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = new LazySupplier<>();
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(() -> uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(() -> {
 			throw new Exception(uuid);
 		});
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		try {
 			supplier.get();
-			Assert.fail("Did not raise an explicit exception");
+			Assertions.fail("Did not raise an explicit exception");
 		} catch (Exception e) {
-			Assert.assertSame(uuid, e.getCause().getMessage());
+			Assertions.assertSame(uuid, e.getCause().getMessage());
 		}
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		AtomicBoolean called = new AtomicBoolean(false);
-		Assert.assertSame(uuid, supplier.get(() -> {
+		Assertions.assertSame(uuid, supplier.get(() -> {
 			called.set(true);
 			return uuid;
 		}));
-		Assert.assertTrue(called.get());
+		Assertions.assertTrue(called.get());
 	}
 
 	@Test
@@ -177,48 +177,48 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = new LazySupplier<>();
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(() -> uuid));
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(() -> uuid));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(() -> uuid2));
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(() -> uuid2));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(null));
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(null));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>();
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		try {
 			supplier.get(() -> {
 				throw new RuntimeException(uuid);
 			});
-			Assert.fail("Did not raise an explicit exception");
+			Assertions.fail("Did not raise an explicit exception");
 		} catch (Exception e) {
-			Assert.assertSame(uuid, e.getCause().getMessage());
+			Assertions.assertSame(uuid, e.getCause().getMessage());
 		}
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		AtomicBoolean called = new AtomicBoolean(false);
-		Assert.assertSame(uuid, supplier.get(() -> {
+		Assertions.assertSame(uuid, supplier.get(() -> {
 			called.set(true);
 			return uuid;
 		}));
-		Assert.assertTrue(called.get());
+		Assertions.assertTrue(called.get());
 	}
 
 	@Test
@@ -227,48 +227,48 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = new LazySupplier<>();
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.getChecked());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.getChecked());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.getChecked());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.getChecked());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(() -> uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.getChecked());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.getChecked());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(() -> {
 			throw new Exception(uuid);
 		});
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		try {
 			supplier.getChecked();
-			Assert.fail("Did not raise an explicit exception");
+			Assertions.fail("Did not raise an explicit exception");
 		} catch (Exception e) {
-			Assert.assertSame(uuid, e.getMessage());
+			Assertions.assertSame(uuid, e.getMessage());
 		}
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		AtomicBoolean called = new AtomicBoolean(false);
-		Assert.assertSame(uuid, supplier.get(() -> {
+		Assertions.assertSame(uuid, supplier.get(() -> {
 			called.set(true);
 			return uuid;
 		}));
-		Assert.assertTrue(called.get());
+		Assertions.assertTrue(called.get());
 	}
 
 	@Test
@@ -278,48 +278,48 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = new LazySupplier<>();
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(() -> uuid));
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(() -> uuid));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(() -> uuid2));
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(() -> uuid2));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>(uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(null));
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(null));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = new LazySupplier<>();
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		try {
 			supplier.getChecked(() -> {
 				throw new Exception(uuid);
 			});
-			Assert.fail("Did not raise an explicit exception");
+			Assertions.fail("Did not raise an explicit exception");
 		} catch (Exception e) {
-			Assert.assertSame(uuid, e.getMessage());
+			Assertions.assertSame(uuid, e.getMessage());
 		}
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
 		AtomicBoolean called = new AtomicBoolean(false);
-		Assert.assertSame(uuid, supplier.get(() -> {
+		Assertions.assertSame(uuid, supplier.get(() -> {
 			called.set(true);
 			return uuid;
 		}));
-		Assert.assertTrue(called.get());
+		Assertions.assertTrue(called.get());
 	}
 
 	@Test
@@ -329,20 +329,20 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = LazySupplier.fromSupplier(uuidSupplier);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = LazySupplier.fromSupplier(null);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
@@ -353,36 +353,36 @@ public class LazySupplierTest {
 		LazySupplier<String> supplier = null;
 
 		supplier = LazySupplier.fromSupplier(null, null);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertNull(supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = LazySupplier.fromSupplier(uuidSupplier, null);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = LazySupplier.fromSupplier(null, uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertTrue(supplier.isDefaulted());
-		Assert.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
 		supplier = LazySupplier.fromSupplier(uuidSupplier, uuid);
-		Assert.assertFalse(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get());
-		Assert.assertTrue(supplier.isInitialized());
-		Assert.assertFalse(supplier.isDefaulted());
-		Assert.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
@@ -401,9 +401,9 @@ public class LazySupplierTest {
 				barrier.await();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					String ret = S.await();
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return ret;
 				} finally {
 					called.set(true);
@@ -416,7 +416,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case BLOCKED:
@@ -425,20 +425,20 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
-			Assert.assertSame(uuid.get(), supplier.get().get());
-			Assert.assertSame(uuid.get(), future.get());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertSame(uuid.get(), supplier.get().get());
+			Assertions.assertSame(uuid.get(), future.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 			called.set(false);
 			future = executor.submit(() -> {
 				// First things first... await
@@ -446,16 +446,16 @@ public class LazySupplierTest {
 				barrier.await();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return S.await();
 				} finally {
 					called.set(true);
 				}
 			});
 			barrier.await();
-			Assert.assertSame(uuid.get(), future.get());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), future.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(() -> {
@@ -465,7 +465,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			Thread.State state = null;
 			outer: while (true) {
 				state = worker.get().getState();
@@ -476,29 +476,29 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
+			Assertions.assertFalse(called.get());
 			try {
 				supplier.get().getChecked();
-				Assert.fail("Did not raise an exception");
+				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
-				Assert.assertSame(uuid.get(), t.getMessage());
+				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
-			Assert.assertNotSame(Thread.State.NEW, state);
-			Assert.assertNotSame(Thread.State.RUNNABLE, state);
-			Assert.assertNotSame(Thread.State.TERMINATED, state);
-			Assert.assertNotSame(Thread.State.TIMED_WAITING, state);
-			Assert.assertFalse(called.get());
-			Assert.assertFalse(future.isDone());
+			Assertions.assertNotSame(Thread.State.NEW, state);
+			Assertions.assertNotSame(Thread.State.RUNNABLE, state);
+			Assertions.assertNotSame(Thread.State.TERMINATED, state);
+			Assertions.assertNotSame(Thread.State.TIMED_WAITING, state);
+			Assertions.assertFalse(called.get());
+			Assertions.assertFalse(future.isDone());
 			supplier.get().get(uuid::get);
-			Assert.assertSame(uuid.get(), future.get());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), future.get());
+			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(uuid.get()));
@@ -506,7 +506,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case BLOCKED:
@@ -515,27 +515,27 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
 
 			worker.get().interrupt();
 			try {
 				future.get();
-				Assert.fail("Did not fail chaining the InterrupedException");
+				Assertions.fail("Did not fail chaining the InterrupedException");
 			} catch (ExecutionException e) {
 				// Make sure we were interrupted
-				Assert.assertTrue(InterruptedException.class.isInstance(e.getCause()));
+				Assertions.assertTrue(InterruptedException.class.isInstance(e.getCause()));
 			}
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 		} finally {
 			executor.shutdownNow();
 			executor.awaitTermination(1, TimeUnit.MINUTES);
@@ -558,9 +558,9 @@ public class LazySupplierTest {
 				barrier.await();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					String ret = S.awaitUninterruptibly();
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return ret;
 				} finally {
 					called.set(true);
@@ -573,7 +573,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case BLOCKED:
@@ -582,20 +582,20 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
-			Assert.assertSame(uuid.get(), supplier.get().get());
-			Assert.assertSame(uuid.get(), future.get());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertSame(uuid.get(), supplier.get().get());
+			Assertions.assertSame(uuid.get(), future.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 			called.set(false);
 			future = executor.submit(() -> {
 				// First things first... await
@@ -603,16 +603,16 @@ public class LazySupplierTest {
 				barrier.await();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return S.awaitUninterruptibly();
 				} finally {
 					called.set(true);
 				}
 			});
 			barrier.await();
-			Assert.assertSame(uuid.get(), future.get());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), future.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(() -> {
@@ -622,7 +622,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			Thread.State state = null;
 			outer: while (true) {
 				state = worker.get().getState();
@@ -633,29 +633,29 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
+			Assertions.assertFalse(called.get());
 			try {
 				supplier.get().getChecked();
-				Assert.fail("Did not raise an exception");
+				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
-				Assert.assertSame(uuid.get(), t.getMessage());
+				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
-			Assert.assertNotSame(Thread.State.NEW, state);
-			Assert.assertNotSame(Thread.State.RUNNABLE, state);
-			Assert.assertNotSame(Thread.State.TERMINATED, state);
-			Assert.assertNotSame(Thread.State.TIMED_WAITING, state);
-			Assert.assertFalse(called.get());
-			Assert.assertFalse(future.isDone());
+			Assertions.assertNotSame(Thread.State.NEW, state);
+			Assertions.assertNotSame(Thread.State.RUNNABLE, state);
+			Assertions.assertNotSame(Thread.State.TERMINATED, state);
+			Assertions.assertNotSame(Thread.State.TIMED_WAITING, state);
+			Assertions.assertFalse(called.get());
+			Assertions.assertFalse(future.isDone());
 			supplier.get().get(uuid::get);
-			Assert.assertSame(uuid.get(), future.get());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), future.get());
+			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(uuid.get()));
@@ -663,7 +663,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case BLOCKED:
@@ -672,16 +672,16 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
 
 			worker.get().interrupt(); // This should now have no effect
 			Thread.sleep(100);
@@ -693,19 +693,19 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(future.isDone());
-			Assert.assertFalse(called.get());
-			Assert.assertSame(uuid.get(), supplier.get().get());
-			Assert.assertSame(uuid.get(), future.get());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertFalse(future.isDone());
+			Assertions.assertFalse(called.get());
+			Assertions.assertSame(uuid.get(), supplier.get().get());
+			Assertions.assertSame(uuid.get(), future.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 		} finally {
 			executor.shutdownNow();
 			executor.awaitTermination(1, TimeUnit.MINUTES);
@@ -731,9 +731,9 @@ public class LazySupplierTest {
 				final Pair<Long, TimeUnit> to = timeout.get();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.await(to.getLeft(), to.getRight());
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return ret;
 				} finally {
 					called.set(true);
@@ -747,7 +747,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case TIMED_WAITING:
@@ -755,7 +755,7 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
@@ -763,15 +763,15 @@ public class LazySupplierTest {
 				}
 			}
 			Thread.sleep(100);
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
-			Assert.assertSame(uuid.get(), supplier.get().get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertSame(uuid.get(), supplier.get().get());
 			futureRet = future.get();
-			Assert.assertSame(uuid.get(), futureRet.getLeft());
-			Assert.assertFalse(futureRet.getRight());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), futureRet.getLeft());
+			Assertions.assertFalse(futureRet.getRight());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 			called.set(false);
 			future = executor.submit(() -> {
 				// First things first... await
@@ -780,7 +780,7 @@ public class LazySupplierTest {
 				final Pair<Long, TimeUnit> to = timeout.get();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return S.await(to.getLeft(), to.getRight());
 				} finally {
 					called.set(true);
@@ -788,10 +788,10 @@ public class LazySupplierTest {
 			});
 			barrier.await();
 			futureRet = future.get();
-			Assert.assertSame(uuid.get(), futureRet.getLeft());
-			Assert.assertFalse(futureRet.getRight());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), futureRet.getLeft());
+			Assertions.assertFalse(futureRet.getRight());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(() -> {
@@ -801,7 +801,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			Thread.State state = null;
 			outer: while (true) {
 				state = worker.get().getState();
@@ -811,33 +811,33 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
+			Assertions.assertFalse(called.get());
 			try {
 				supplier.get().getChecked();
-				Assert.fail("Did not raise an exception");
+				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
-				Assert.assertSame(uuid.get(), t.getMessage());
+				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
-			Assert.assertNotSame(Thread.State.NEW, state);
-			Assert.assertNotSame(Thread.State.RUNNABLE, state);
-			Assert.assertNotSame(Thread.State.TERMINATED, state);
-			Assert.assertNotSame(Thread.State.BLOCKED, state);
-			Assert.assertNotSame(Thread.State.WAITING, state);
-			Assert.assertFalse(called.get());
-			Assert.assertFalse(future.isDone());
+			Assertions.assertNotSame(Thread.State.NEW, state);
+			Assertions.assertNotSame(Thread.State.RUNNABLE, state);
+			Assertions.assertNotSame(Thread.State.TERMINATED, state);
+			Assertions.assertNotSame(Thread.State.BLOCKED, state);
+			Assertions.assertNotSame(Thread.State.WAITING, state);
+			Assertions.assertFalse(called.get());
+			Assertions.assertFalse(future.isDone());
 			Thread.sleep(100);
 			supplier.get().get(uuid::get);
 			futureRet = future.get();
-			Assert.assertSame(uuid.get(), futureRet.getLeft());
-			Assert.assertFalse(futureRet.getRight());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), futureRet.getLeft());
+			Assertions.assertFalse(futureRet.getRight());
+			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
 			supplier.set(new LazySupplier<>(uuid.get()));
@@ -845,7 +845,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case TIMED_WAITING:
@@ -853,27 +853,27 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
 
 			worker.get().interrupt();
 			try {
 				future.get();
-				Assert.fail("Did not fail chaining the InterrupedException");
+				Assertions.fail("Did not fail chaining the InterrupedException");
 			} catch (ExecutionException e) {
 				// Make sure we were interrupted
-				Assert.assertTrue(InterruptedException.class.isInstance(e.getCause()));
+				Assertions.assertTrue(InterruptedException.class.isInstance(e.getCause()));
 			}
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 
 			timeout.set(Pair.of(1L, TimeUnit.SECONDS));
 			uuid.set(UUID.randomUUID().toString());
@@ -887,18 +887,18 @@ public class LazySupplierTest {
 				final Pair<Long, TimeUnit> to = timeout.get();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.await(to.getLeft(), to.getRight());
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					return ret;
 				} finally {
 					called.set(true);
 				}
 			});
 			barrier.await();
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
-			Assert.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertFalse(called.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case TIMED_WAITING:
@@ -906,7 +906,7 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
@@ -916,11 +916,11 @@ public class LazySupplierTest {
 			long now = System.nanoTime();
 			Thread.sleep(2100);
 			long duration = (System.nanoTime() - now);
-			Assert.assertTrue(called.get());
-			Assert.assertTrue(TimeUnit.NANOSECONDS.toSeconds(duration) >= 2);
+			Assertions.assertTrue(called.get());
+			Assertions.assertTrue(TimeUnit.NANOSECONDS.toSeconds(duration) >= 2);
 			futureRet = future.get();
-			Assert.assertTrue(futureRet.getRight());
-			Assert.assertTrue(called.get());
+			Assertions.assertTrue(futureRet.getRight());
+			Assertions.assertTrue(called.get());
 
 		} finally {
 			executor.shutdownNow();
@@ -947,9 +947,9 @@ public class LazySupplierTest {
 				final Date to = timeout.get();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.awaitUntil(to);
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return ret;
 				} finally {
 					called.set(true);
@@ -963,7 +963,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case TIMED_WAITING:
@@ -971,7 +971,7 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
@@ -979,15 +979,15 @@ public class LazySupplierTest {
 				}
 			}
 			Thread.sleep(100);
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
-			Assert.assertSame(uuid.get(), supplier.get().get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertSame(uuid.get(), supplier.get().get());
 			futureRet = future.get();
-			Assert.assertSame(uuid.get(), futureRet.getLeft());
-			Assert.assertFalse(futureRet.getRight());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), futureRet.getLeft());
+			Assertions.assertFalse(futureRet.getRight());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 			called.set(false);
 			future = executor.submit(() -> {
 				// First things first... await
@@ -996,7 +996,7 @@ public class LazySupplierTest {
 				final Date to = timeout.get();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertTrue(S.isInitialized());
+					Assertions.assertTrue(S.isInitialized());
 					return S.awaitUntil(to);
 				} finally {
 					called.set(true);
@@ -1004,10 +1004,10 @@ public class LazySupplierTest {
 			});
 			barrier.await();
 			futureRet = future.get();
-			Assert.assertSame(uuid.get(), futureRet.getLeft());
-			Assert.assertFalse(futureRet.getRight());
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), futureRet.getLeft());
+			Assertions.assertFalse(futureRet.getRight());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 
 			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
@@ -1018,7 +1018,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			Thread.State state = null;
 			outer: while (true) {
 				state = worker.get().getState();
@@ -1028,33 +1028,33 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
+			Assertions.assertFalse(called.get());
 			try {
 				supplier.get().getChecked();
-				Assert.fail("Did not raise an exception");
+				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
-				Assert.assertSame(uuid.get(), t.getMessage());
+				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
-			Assert.assertNotSame(Thread.State.NEW, state);
-			Assert.assertNotSame(Thread.State.RUNNABLE, state);
-			Assert.assertNotSame(Thread.State.TERMINATED, state);
-			Assert.assertNotSame(Thread.State.BLOCKED, state);
-			Assert.assertNotSame(Thread.State.WAITING, state);
-			Assert.assertFalse(called.get());
-			Assert.assertFalse(future.isDone());
+			Assertions.assertNotSame(Thread.State.NEW, state);
+			Assertions.assertNotSame(Thread.State.RUNNABLE, state);
+			Assertions.assertNotSame(Thread.State.TERMINATED, state);
+			Assertions.assertNotSame(Thread.State.BLOCKED, state);
+			Assertions.assertNotSame(Thread.State.WAITING, state);
+			Assertions.assertFalse(called.get());
+			Assertions.assertFalse(future.isDone());
 			Thread.sleep(100);
 			supplier.get().get(uuid::get);
 			futureRet = future.get();
-			Assert.assertSame(uuid.get(), futureRet.getLeft());
-			Assert.assertFalse(futureRet.getRight());
-			Assert.assertTrue(called.get());
+			Assertions.assertSame(uuid.get(), futureRet.getLeft());
+			Assertions.assertFalse(futureRet.getRight());
+			Assertions.assertTrue(called.get());
 
 			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
@@ -1063,7 +1063,7 @@ public class LazySupplierTest {
 
 			future = executor.submit(waiter);
 			barrier.await();
-			Assert.assertNotNull(worker.get());
+			Assertions.assertNotNull(worker.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case TIMED_WAITING:
@@ -1071,27 +1071,27 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
 						break inner;
 				}
 			}
-			Assert.assertFalse(called.get());
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
 
 			worker.get().interrupt();
 			try {
 				future.get();
-				Assert.fail("Did not fail chaining the InterrupedException");
+				Assertions.fail("Did not fail chaining the InterrupedException");
 			} catch (ExecutionException e) {
 				// Make sure we were interrupted
-				Assert.assertTrue(InterruptedException.class.isInstance(e.getCause()));
+				Assertions.assertTrue(InterruptedException.class.isInstance(e.getCause()));
 			}
-			Assert.assertTrue(future.isDone());
-			Assert.assertTrue(called.get());
+			Assertions.assertTrue(future.isDone());
+			Assertions.assertTrue(called.get());
 
 			timeout.set(new Date(System.currentTimeMillis() + 1000));
 			uuid.set(UUID.randomUUID().toString());
@@ -1105,18 +1105,18 @@ public class LazySupplierTest {
 				final Date to = timeout.get();
 				final LazySupplier<String> S = supplier.get();
 				try {
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.awaitUntil(to);
-					Assert.assertFalse(S.isInitialized());
+					Assertions.assertFalse(S.isInitialized());
 					return ret;
 				} finally {
 					called.set(true);
 				}
 			});
 			barrier.await();
-			Assert.assertNotNull(worker.get());
-			Assert.assertNotSame(Thread.currentThread(), worker.get());
-			Assert.assertFalse(called.get());
+			Assertions.assertNotNull(worker.get());
+			Assertions.assertNotSame(Thread.currentThread(), worker.get());
+			Assertions.assertFalse(called.get());
 			outer: while (true) {
 				inner: switch (worker.get().getState()) {
 					case TIMED_WAITING:
@@ -1124,7 +1124,7 @@ public class LazySupplierTest {
 						break outer;
 
 					case TERMINATED:
-						Assert.fail("The waiter thread died on us");
+						Assertions.fail("The waiter thread died on us");
 						break inner;
 
 					default:
@@ -1134,11 +1134,11 @@ public class LazySupplierTest {
 			long now = System.nanoTime();
 			Thread.sleep(2100);
 			long duration = (System.nanoTime() - now);
-			Assert.assertTrue(called.get());
-			Assert.assertTrue(TimeUnit.NANOSECONDS.toSeconds(duration) >= 2);
+			Assertions.assertTrue(called.get());
+			Assertions.assertTrue(TimeUnit.NANOSECONDS.toSeconds(duration) >= 2);
 			futureRet = future.get();
-			Assert.assertTrue(futureRet.getRight());
-			Assert.assertTrue(called.get());
+			Assertions.assertTrue(futureRet.getRight());
+			Assertions.assertTrue(called.get());
 
 		} finally {
 			executor.shutdownNow();

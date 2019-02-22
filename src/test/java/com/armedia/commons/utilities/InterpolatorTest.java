@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.armedia.commons.utilities.Interpolator.FailMode;
 
@@ -16,9 +16,9 @@ public class InterpolatorTest {
 	public void testInterpolator() {
 		Interpolator i = new Interpolator();
 
-		Assert.assertEquals(Interpolator.DEFAULT_FAIL, i.getFailMode());
-		Assert.assertEquals(Interpolator.DEFAULT_PREFIX, i.getPrefix());
-		Assert.assertEquals(Interpolator.DEFAULT_SUFFIX, i.getSuffix());
+		Assertions.assertEquals(Interpolator.DEFAULT_FAIL, i.getFailMode());
+		Assertions.assertEquals(Interpolator.DEFAULT_PREFIX, i.getPrefix());
+		Assertions.assertEquals(Interpolator.DEFAULT_SUFFIX, i.getSuffix());
 	}
 
 	@Test
@@ -36,9 +36,9 @@ public class InterpolatorTest {
 			for (String suffix : suffixes) {
 				for (FailMode failMode : FailMode.values()) {
 					Interpolator i = new Interpolator(failMode, prefix, suffix);
-					Assert.assertEquals(failMode, i.getFailMode());
-					Assert.assertEquals(prefix, i.getPrefix());
-					Assert.assertEquals(suffix, i.getSuffix());
+					Assertions.assertEquals(failMode, i.getFailMode());
+					Assertions.assertEquals(prefix, i.getPrefix());
+					Assertions.assertEquals(suffix, i.getSuffix());
 				}
 			}
 		}
@@ -62,7 +62,7 @@ public class InterpolatorTest {
 		String source = "The quick brown @@[alpha]@@ jumped over the crazy @@[seven]@@ @@[crap]@@ end of line";
 		String expected = "The quick brown 2c1743a391305fbf367df8e4f069f9f9 jumped over the crazy bb3aec0fdcdbc2974890f805c585d432 @@[crap]@@ end of line";
 		String actual = i.interpolate((s) -> values.get(s), source);
-		Assert.assertEquals(expected, actual);
+		Assertions.assertEquals(expected, actual);
 	}
 
 	@Test

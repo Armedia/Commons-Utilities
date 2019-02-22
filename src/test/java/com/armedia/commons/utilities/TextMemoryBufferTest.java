@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.armedia.commons.utilities.TextMemoryBuffer.TextMemoryBufferReader;
 
@@ -39,7 +39,7 @@ public class TextMemoryBufferTest {
 	private static final char[] REV = new char[256];
 
 	static {
-		List<Character> a = new ArrayList<Character>();
+		List<Character> a = new ArrayList<>();
 		for (int i = 0; i < 65536; i++) {
 			try {
 				if (!Character.isDefined(i)) {
@@ -83,8 +83,8 @@ public class TextMemoryBufferTest {
 	@Test
 	public void testCharBuffer() {
 		TextMemoryBuffer b = new TextMemoryBuffer();
-		Assert.assertEquals(TextMemoryBuffer.DEFAULT_CHUNK_SIZE, b.getChunkSize());
-		Assert.assertEquals(0, b.getAllocatedSize());
+		Assertions.assertEquals(TextMemoryBuffer.DEFAULT_CHUNK_SIZE, b.getChunkSize());
+		Assertions.assertEquals(0, b.getAllocatedSize());
 		b.close();
 	}
 
@@ -99,11 +99,11 @@ public class TextMemoryBufferTest {
 		for (int chunkSize : chunkSizes) {
 			TextMemoryBuffer b = new TextMemoryBuffer(chunkSize);
 			if (chunkSize < TextMemoryBuffer.MINIMUM_CHUNK_SIZE) {
-				Assert.assertEquals(TextMemoryBuffer.MINIMUM_CHUNK_SIZE, b.getChunkSize());
+				Assertions.assertEquals(TextMemoryBuffer.MINIMUM_CHUNK_SIZE, b.getChunkSize());
 			} else {
-				Assert.assertEquals(chunkSize, b.getChunkSize());
+				Assertions.assertEquals(chunkSize, b.getChunkSize());
 			}
-			Assert.assertEquals(0, b.getAllocatedSize());
+			Assertions.assertEquals(0, b.getAllocatedSize());
 			b.close();
 		}
 	}
@@ -115,9 +115,9 @@ public class TextMemoryBufferTest {
 	public void testWrite() throws IOException {
 		TextMemoryBuffer b = new TextMemoryBuffer();
 		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
-			Assert.assertEquals(i, b.getCurrentSize());
+			Assertions.assertEquals(i, b.getCurrentSize());
 			b.write(TextMemoryBufferTest.FWD[i]);
-			Assert.assertEquals(i + 1, b.getCurrentSize());
+			Assertions.assertEquals(i + 1, b.getCurrentSize());
 		}
 		b.close();
 	}
@@ -131,16 +131,11 @@ public class TextMemoryBufferTest {
 	public void testWriteByteArray() throws IOException {
 		TextMemoryBuffer b = new TextMemoryBuffer();
 		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
-			Assert.assertEquals(i * TextMemoryBufferTest.FWD.length, b.getCurrentSize());
+			Assertions.assertEquals(i * TextMemoryBufferTest.FWD.length, b.getCurrentSize());
 			b.write(TextMemoryBufferTest.FWD);
-			Assert.assertEquals((i + 1) * TextMemoryBufferTest.FWD.length, b.getCurrentSize());
+			Assertions.assertEquals((i + 1) * TextMemoryBufferTest.FWD.length, b.getCurrentSize());
 		}
-		try {
-			b.write((char[]) null);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
+		Assertions.assertThrows(NullPointerException.class, () -> b.write((char[]) null));
 		b.close();
 	}
 
@@ -152,93 +147,46 @@ public class TextMemoryBufferTest {
 	 */
 	@Test
 	public void testWriteByteArrayIntInt() throws IOException {
-		TextMemoryBuffer b = new TextMemoryBuffer();
-		try {
-			b.write((char[]) null, 0, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write((char[]) null, 0, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write((char[]) null, -1, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write((char[]) null, -1, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write((char[]) null, 0, TextMemoryBufferTest.FWD.length);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
-		}
-		try {
-			b.write((char[]) null, 1, TextMemoryBufferTest.FWD.length);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// This is ok
+		try (TextMemoryBuffer b = new TextMemoryBuffer()) {
+			Assertions.assertThrows(NullPointerException.class, () -> b.write((char[]) null, 0, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> b.write((char[]) null, 0, -1));
+			Assertions.assertThrows(NullPointerException.class, () -> b.write((char[]) null, -1, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> b.write((char[]) null, -1, -1));
+			Assertions.assertThrows(NullPointerException.class,
+				() -> b.write((char[]) null, 0, TextMemoryBufferTest.FWD.length));
+			Assertions.assertThrows(NullPointerException.class,
+				() -> b.write((char[]) null, 1, TextMemoryBufferTest.FWD.length));
+
+			b.write(TextMemoryBufferTest.FWD, 0, 0);
+			Assertions.assertThrows(IllegalArgumentException.class, () -> b.write(TextMemoryBufferTest.FWD, 0, -1));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> b.write(TextMemoryBufferTest.FWD, -1, 0));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> b.write(TextMemoryBufferTest.FWD, -1, -1));
+
+			b.write(TextMemoryBufferTest.FWD, 0, TextMemoryBufferTest.FWD.length);
+			Assertions.assertThrows(IllegalArgumentException.class,
+				() -> b.write(TextMemoryBufferTest.FWD, 1, TextMemoryBufferTest.FWD.length));
 		}
 
-		b.write(TextMemoryBufferTest.FWD, 0, 0);
-		try {
-			b.write(TextMemoryBufferTest.FWD, 0, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-		try {
-			b.write(TextMemoryBufferTest.FWD, -1, 0);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-		try {
-			b.write(TextMemoryBufferTest.FWD, -1, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-		b.write(TextMemoryBufferTest.FWD, 0, TextMemoryBufferTest.FWD.length);
-		try {
-			b.write(TextMemoryBufferTest.FWD, 1, TextMemoryBufferTest.FWD.length);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
+		try (TextMemoryBuffer b = new TextMemoryBuffer()) {
+			long writeCount = 0;
+			for (int o = 0; o < TextMemoryBufferTest.FWD.length; o++) {
+				int maxLen = Math.min(TextMemoryBufferTest.FWD.length / 2, TextMemoryBufferTest.FWD.length - o);
+				for (int l = 0; l < maxLen; l++) {
+					b.write(TextMemoryBufferTest.FWD, o, l);
 
-		b.close();
-		b = new TextMemoryBuffer();
+					writeCount += l;
+					Assertions.assertEquals(writeCount, b.getCurrentSize());
 
-		long writeCount = 0;
-		for (int o = 0; o < TextMemoryBufferTest.FWD.length; o++) {
-			int maxLen = Math.min(TextMemoryBufferTest.FWD.length / 2, TextMemoryBufferTest.FWD.length - o);
-			for (int l = 0; l < maxLen; l++) {
-				b.write(TextMemoryBufferTest.FWD, o, l);
-
-				writeCount += l;
-				Assert.assertEquals(writeCount, b.getCurrentSize());
-
-				long x = (writeCount / b.getChunkSize());
-				long y = (writeCount % b.getChunkSize());
-				if (y > 0) {
-					x++;
+					long x = (writeCount / b.getChunkSize());
+					long y = (writeCount % b.getChunkSize());
+					if (y > 0) {
+						x++;
+					}
+					Assertions.assertEquals((x * b.getChunkSize()), b.getAllocatedSize(),
+						String.format("Failure with offset %d, length %d", o, l));
 				}
-				Assert.assertEquals(String.format("Failure with offset %d, length %d", o, l), (x * b.getChunkSize()),
-					b.getAllocatedSize());
 			}
 		}
-		b.close();
 	}
 
 	@Test
@@ -249,8 +197,8 @@ public class TextMemoryBufferTest {
 		for (int chunkSize = TextMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
 			for (int writeCount : writeCounts) {
 				TextMemoryBuffer b = new TextMemoryBuffer(chunkSize);
-				Assert.assertEquals(chunkSize, b.getChunkSize());
-				Assert.assertEquals(0, b.getAllocatedSize());
+				Assertions.assertEquals(chunkSize, b.getChunkSize());
+				Assertions.assertEquals(0, b.getAllocatedSize());
 
 				for (int c = 0; c < writeCount; c++) {
 					b.write(TextMemoryBufferTest.FWD);
@@ -262,8 +210,8 @@ public class TextMemoryBufferTest {
 				if (y > 0) {
 					x++;
 				}
-				Assert.assertEquals(String.format("Failure with chunk size %d, write count %d", chunkSize, writeCount),
-					x * chunkSize, b.getAllocatedSize());
+				Assertions.assertEquals(x * chunkSize, b.getAllocatedSize(),
+					String.format("Failure with chunk size %d, write count %d", chunkSize, writeCount));
 				b.close();
 			}
 		}
@@ -277,14 +225,14 @@ public class TextMemoryBufferTest {
 		for (int chunkSize = TextMemoryBuffer.MINIMUM_CHUNK_SIZE; chunkSize < 512; chunkSize++) {
 			for (int writeCount : writeCounts) {
 				TextMemoryBuffer b = new TextMemoryBuffer(chunkSize);
-				Assert.assertEquals(chunkSize, b.getChunkSize());
-				Assert.assertEquals(0, b.getCurrentSize());
+				Assertions.assertEquals(chunkSize, b.getChunkSize());
+				Assertions.assertEquals(0, b.getCurrentSize());
 
 				for (int c = 0; c < writeCount; c++) {
 					b.write(TextMemoryBufferTest.FWD);
 				}
 
-				Assert.assertEquals(TextMemoryBufferTest.FWD.length * writeCount, b.getCurrentSize());
+				Assertions.assertEquals(TextMemoryBufferTest.FWD.length * writeCount, b.getCurrentSize());
 				b.close();
 			}
 		}
@@ -298,126 +246,55 @@ public class TextMemoryBufferTest {
 		TextMemoryBuffer buf = new TextMemoryBuffer();
 		buf.write(TextMemoryBufferTest.FWD);
 		buf.close();
-		try {
-			buf.write(TextMemoryBufferTest.REV);
-			Assert.fail("Should have failed with IOException");
-		} catch (IOException e) {
-			// All is well
-		}
-		try {
-			buf.write(TextMemoryBufferTest.REV, 30, 40);
-			Assert.fail("Should have failed with IOException");
-		} catch (IOException e) {
-			// All is well
-		}
-		try {
-			buf.write(TextMemoryBufferTest.FWD[30]);
-			Assert.fail("Should have failed with IOException");
-		} catch (IOException e) {
-			// All is well
-		}
+		Assertions.assertThrows(IOException.class, () -> buf.write(TextMemoryBufferTest.REV));
+		Assertions.assertThrows(IOException.class, () -> buf.write(TextMemoryBufferTest.REV, 30, 40));
+		Assertions.assertThrows(IOException.class, () -> buf.write(TextMemoryBufferTest.FWD[30]));
 	}
 
 	@Test
 	public void testInput() throws IOException {
+		char[] buf = new char[TextMemoryBufferTest.FWD.length];
 		TextMemoryBuffer b = new TextMemoryBuffer();
 		b.write(TextMemoryBufferTest.FWD);
 		b.write(TextMemoryBufferTest.REV);
-		Reader in = b.getReader();
-		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
-			int r = in.read();
-			Assert.assertTrue(r >= 0);
-			Assert.assertEquals(TextMemoryBufferTest.FWD[i], r);
-		}
-		for (int i = 0; i < TextMemoryBufferTest.REV.length; i++) {
-			int r = in.read();
-			Assert.assertTrue(r >= 0);
-			Assert.assertEquals(TextMemoryBufferTest.REV[i], r);
-		}
-		char[] buf = new char[TextMemoryBufferTest.FWD.length];
-
-		in = b.getReader();
-		in.read(buf);
-		Assert.assertArrayEquals(TextMemoryBufferTest.FWD, buf);
-		in.read(buf, 0, buf.length);
-		Assert.assertArrayEquals(TextMemoryBufferTest.REV, buf);
-
-		try {
-			in.read((char[]) null);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
+		try (Reader in = b.getReader()) {
+			for (int i = 0; i < TextMemoryBufferTest.FWD.length; i++) {
+				int r = in.read();
+				Assertions.assertTrue(r >= 0);
+				Assertions.assertEquals(TextMemoryBufferTest.FWD[i], r);
+			}
+			for (int i = 0; i < TextMemoryBufferTest.REV.length; i++) {
+				int r = in.read();
+				Assertions.assertTrue(r >= 0);
+				Assertions.assertEquals(TextMemoryBufferTest.REV[i], r);
+			}
 		}
 
-		try {
-			in.read(null, 0, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
+		try (Reader in = b.getReader()) {
+			in.read(buf);
+			Assertions.assertArrayEquals(TextMemoryBufferTest.FWD, buf);
+			in.read(buf, 0, buf.length);
+			Assertions.assertArrayEquals(TextMemoryBufferTest.REV, buf);
 
-		try {
-			in.read(null, 0, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
+			Assertions.assertThrows(NullPointerException.class, () -> in.read((char[]) null));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, 0, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, 0, -1));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, -1, 0));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read(null, -1, -1));
+			Assertions.assertThrows(NullPointerException.class, () -> in.read((char[]) null));
 
-		try {
-			in.read(null, -1, 0);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
+			Assertions.assertEquals(0, in.read(buf, 0, 0));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, 0, -1));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, -1, 0));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, -1, -1));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> in.read(buf, 1, (int) b.getCurrentSize()));
 
-		try {
-			in.read(null, -1, -1);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
+			b.close();
+			Assertions.assertEquals(-1, in.read());
+			Assertions.assertEquals(0, in.read(buf, 0, 0));
+			Assertions.assertEquals(-1, in.read(buf));
+			Assertions.assertEquals(-1, in.read(buf, 0, 10));
 		}
-		try {
-			in.read((char[]) null);
-			Assert.fail("Failed to raise a NullPointerException");
-		} catch (NullPointerException e) {
-			// All is well
-		}
-
-		Assert.assertEquals(0, in.read(buf, 0, 0));
-
-		try {
-			in.read(buf, 0, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-
-		try {
-			in.read(buf, -1, 0);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-
-		try {
-			in.read(buf, -1, -1);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-
-		try {
-			in.read(buf, 1, (int) b.getCurrentSize());
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// This is ok
-		}
-
-		b.close();
-		Assert.assertEquals(-1, in.read());
-		Assert.assertEquals(0, in.read(buf, 0, 0));
-		Assert.assertEquals(-1, in.read(buf));
-		Assert.assertEquals(-1, in.read(buf, 0, 10));
 	}
 
 	@Test
@@ -426,7 +303,7 @@ public class TextMemoryBufferTest {
 		TextMemoryBuffer b = new TextMemoryBuffer();
 		final Reader in = b.getReader();
 		final AtomicInteger counter = new AtomicInteger(0);
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final int blockTimeMs = 100;
 		final int itemCount = 64;
@@ -457,9 +334,9 @@ public class TextMemoryBufferTest {
 						if (r == -1) { return; }
 						// Tolerate 10ms difference...
 						// This check tells us if we really did block
-						Assert.assertTrue((end - now) >= ((blockTimeMs * 4) / 5));
+						Assertions.assertTrue((end - now) >= ((blockTimeMs * 4) / 5));
 						// This ensures we read the expected value
-						Assert.assertEquals(b, r);
+						Assertions.assertEquals(b, r);
 						// This ensures we account for a successful read
 						counter.incrementAndGet();
 					}
@@ -484,7 +361,7 @@ public class TextMemoryBufferTest {
 			t.interrupt();
 		} catch (BrokenBarrierException e) {
 		}
-		Assert.assertFalse("Thread start barrier broken", startBarrier.isBroken());
+		Assertions.assertFalse(startBarrier.isBroken(), "Thread start barrier broken");
 
 		// Ensure we don't write until the reader thread is ready to read
 		for (int i = 0; i < TextMemoryBufferTest.FWD.length; i += itemStep) {
@@ -494,12 +371,12 @@ public class TextMemoryBufferTest {
 			final char w = TextMemoryBufferTest.FWD[i];
 			try {
 				ioBarrier.await();
-				Assert.assertFalse("IO barrier broken in assertion", ioBarrier.isBroken());
+				Assertions.assertFalse(ioBarrier.isBroken(), "IO barrier broken in assertion");
 			} catch (InterruptedException e) {
 				t.interrupt();
-				Assert.fail(String.format("IO barrier broken due to thread interruption (%s)", w));
+				Assertions.fail(String.format("IO barrier broken due to thread interruption (%s)", w));
 			} catch (BrokenBarrierException e) {
-				Assert.fail(String.format("IO barrier broken due to broken barrier exception (%s)", w));
+				Assertions.fail(String.format("IO barrier broken due to broken barrier exception (%s)", w));
 			} finally {
 				ioBarrier.reset();
 			}
@@ -521,10 +398,12 @@ public class TextMemoryBufferTest {
 		t.interrupt();
 		Throwable ex = thrown.get();
 		try {
-			if (ex != null) { throw new RuntimeException(String.format(
-				"Failed to complete the read, caught an exception: %s", ex), ex); }
-			Assert.assertTrue("Failed to complete the read - failed early", finished.get());
-			Assert.assertEquals("Failed to complete the read - fell short", itemCount, counter.get());
+			if (ex != null) {
+				throw new RuntimeException(String.format("Failed to complete the read, caught an exception: %s", ex),
+					ex);
+			}
+			Assertions.assertTrue(finished.get(), "Failed to complete the read - failed early");
+			Assertions.assertEquals(itemCount, counter.get(), "Failed to complete the read - fell short");
 		} finally {
 			b.close();
 		}
@@ -533,10 +412,10 @@ public class TextMemoryBufferTest {
 	@Test
 	public void testBlockingInputClosure() {
 		TextMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<Reader> in = new AtomicReference<Reader>();
+		final AtomicReference<Reader> in = new AtomicReference<>();
 
 		{
 			Runnable[] readers = {
@@ -546,7 +425,7 @@ public class TextMemoryBufferTest {
 						try {
 							started.set(true);
 							int r = in.get().read();
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -559,7 +438,7 @@ public class TextMemoryBufferTest {
 							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -572,7 +451,7 @@ public class TextMemoryBufferTest {
 							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf, 10, 20);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -607,7 +486,7 @@ public class TextMemoryBufferTest {
 				if (ex != null) {
 					Thread.currentThread().interrupt();
 				}
-				Assert.assertTrue(started.get());
+				Assertions.assertTrue(started.get());
 
 				b.close();
 				try {
@@ -615,7 +494,7 @@ public class TextMemoryBufferTest {
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
-				Assert.assertTrue(finished.get());
+				Assertions.assertTrue(finished.get());
 			}
 		}
 	}
@@ -623,10 +502,10 @@ public class TextMemoryBufferTest {
 	@Test
 	public void testBlockingInputPartialRead() throws IOException {
 		TextMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<Reader> in = new AtomicReference<Reader>();
+		final AtomicReference<Reader> in = new AtomicReference<>();
 
 		{
 			Runnable[] readers = {
@@ -636,7 +515,7 @@ public class TextMemoryBufferTest {
 						try {
 							started.set(true);
 							int r = in.get().read();
-							Assert.assertFalse(r == -1);
+							Assertions.assertFalse(r == -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -649,7 +528,7 @@ public class TextMemoryBufferTest {
 							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf);
-							Assert.assertEquals(r, 1);
+							Assertions.assertEquals(r, 1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -662,7 +541,7 @@ public class TextMemoryBufferTest {
 							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf, 0, 128);
-							Assert.assertEquals(r, 1);
+							Assertions.assertEquals(r, 1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -697,7 +576,7 @@ public class TextMemoryBufferTest {
 				if (ex != null) {
 					Thread.currentThread().interrupt();
 				}
-				Assert.assertTrue(started.get());
+				Assertions.assertTrue(started.get());
 
 				b.write(0);
 				try {
@@ -705,7 +584,7 @@ public class TextMemoryBufferTest {
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
-				Assert.assertTrue(finished.get());
+				Assertions.assertTrue(finished.get());
 				b.close();
 			}
 		}
@@ -714,10 +593,10 @@ public class TextMemoryBufferTest {
 	@Test
 	public void testBlockingInputInterruption() {
 		TextMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+		final AtomicReference<Throwable> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		final AtomicReference<Reader> in = new AtomicReference<Reader>();
+		final AtomicReference<Reader> in = new AtomicReference<>();
 
 		{
 			Runnable[] readers = {
@@ -727,7 +606,7 @@ public class TextMemoryBufferTest {
 						try {
 							started.set(true);
 							int r = in.get().read();
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -740,7 +619,7 @@ public class TextMemoryBufferTest {
 							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -753,7 +632,7 @@ public class TextMemoryBufferTest {
 							char[] buf = new char[128];
 							started.set(true);
 							int r = in.get().read(buf, 10, 20);
-							Assert.assertEquals(r, -1);
+							Assertions.assertEquals(r, -1);
 							finished.set(true);
 						} catch (Throwable t) {
 							thrown.set(t);
@@ -788,7 +667,7 @@ public class TextMemoryBufferTest {
 				if (ex != null) {
 					Thread.currentThread().interrupt();
 				}
-				Assert.assertTrue(started.get());
+				Assertions.assertTrue(started.get());
 				try {
 					// Wait for the thread to be in the read() call
 					Thread.sleep(200);
@@ -802,9 +681,9 @@ public class TextMemoryBufferTest {
 				} catch (InterruptedException e) {
 					// Do nothing
 				}
-				Assert.assertFalse(finished.get());
-				Assert.assertNotNull(thrown.get());
-				Assert.assertEquals(IOException.class, thrown.get().getClass());
+				Assertions.assertFalse(finished.get());
+				Assertions.assertNotNull(thrown.get());
+				Assertions.assertEquals(IOException.class, thrown.get().getClass());
 			}
 		}
 	}
@@ -818,7 +697,7 @@ public class TextMemoryBufferTest {
 		b.write(random);
 
 		TextMemoryBufferReader in = b.getReader();
-		Assert.assertTrue(in.markSupported());
+		Assertions.assertTrue(in.markSupported());
 		int start = r.nextInt(512);
 		int length = r.nextInt(random.length - start);
 		if (length < 512) {
@@ -826,23 +705,23 @@ public class TextMemoryBufferTest {
 		}
 
 		long available = in.available();
-		Assert.assertEquals(random.length, in.available());
+		Assertions.assertEquals(random.length, in.available());
 		in.skip(start);
-		Assert.assertEquals(available - start, in.available());
+		Assertions.assertEquals(available - start, in.available());
 		in.mark(-1);
 		char[] segment = new char[length];
 		System.arraycopy(random, start, segment, 0, length);
 		for (int i = 0; i < length; i++) {
 			final int v = in.read();
-			Assert.assertFalse(v == -1);
-			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], v);
+			Assertions.assertFalse(v == -1);
+			Assertions.assertEquals(segment[i], v, String.format("Failed to read byte %d", i));
 		}
 		in.reset();
-		Assert.assertEquals(available - start, in.available());
+		Assertions.assertEquals(available - start, in.available());
 		for (int i = 0; i < length; i++) {
 			final int v = in.read();
-			Assert.assertFalse(v == -1);
-			Assert.assertEquals(String.format("Failed to read byte %d", i), segment[i], v);
+			Assertions.assertFalse(v == -1);
+			Assertions.assertEquals(segment[i], v, String.format("Failed to read byte %d", i));
 		}
 
 		b.close();
@@ -862,25 +741,26 @@ public class TextMemoryBufferTest {
 		final CharSequence a = randomString;
 		final CharSequence b = buf.getCharSequence();
 
-		Assert.assertEquals(a.length(), b.length());
+		Assertions.assertEquals(a.length(), b.length());
 
 		for (int i = 0; i < a.length(); i++) {
-			Assert.assertEquals(String.format("Difference in position %d", i), a.charAt(i), b.charAt(i));
+			Assertions.assertEquals(a.charAt(i), b.charAt(i), String.format("Difference in position %d", i));
 		}
 
 		for (int o = 0; o < a.length(); o++) {
 			for (int l = 0; l < (a.length() - o); l++) {
 				CharSequence subA = a.subSequence(o, o + l);
 				CharSequence subB = b.subSequence(o, o + l);
-				Assert.assertEquals(String.format("Length failed at parameters (%d,%d)", o, l), subA.length(),
-					subB.length());
+				Assertions.assertEquals(subA.length(), subB.length(),
+					String.format("Length failed at parameters (%d,%d)", o, l));
 				for (int i = 0; i < subA.length(); i++) {
 					try {
 						final char ca = subA.charAt(i);
 						final char cb = subB.charAt(i);
-						Assert.assertEquals(String.format("Length failed at parameters (%d,%d,%d)", o, l, i), ca, cb);
+						Assertions.assertEquals(ca, cb,
+							String.format("Length failed at parameters (%d,%d,%d)", o, l, i));
 					} catch (ArrayIndexOutOfBoundsException e) {
-						Assert.fail(String.format("Array Index failed at parameters (%d,%d,%d)", o, l, i));
+						Assertions.fail(String.format("Array Index failed at parameters (%d,%d,%d)", o, l, i));
 					}
 				}
 			}

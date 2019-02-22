@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author drivera@armedia.com
@@ -49,25 +49,25 @@ public class CollectionToolsTest implements GoodServiceTest {
 		List<String> a = null;
 		List<String> b = null;
 
-		a = new ArrayList<String>(Arrays.asList(listA));
-		b = new ArrayList<String>(Arrays.asList(listA));
-		Assert.assertEquals(0, CollectionTools.addUnique(a, b));
-		Assert.assertArrayEquals(a.toArray(), b.toArray());
+		a = new ArrayList<>(Arrays.asList(listA));
+		b = new ArrayList<>(Arrays.asList(listA));
+		Assertions.assertEquals(0, CollectionTools.addUnique(a, b));
+		Assertions.assertArrayEquals(a.toArray(), b.toArray());
 
-		a = new ArrayList<String>(Arrays.asList(listB));
-		b = new ArrayList<String>(Arrays.asList(listA));
-		Assert.assertEquals(3, CollectionTools.addUnique(a, b));
-		Assert.assertArrayEquals(listB, b.toArray());
+		a = new ArrayList<>(Arrays.asList(listB));
+		b = new ArrayList<>(Arrays.asList(listA));
+		Assertions.assertEquals(3, CollectionTools.addUnique(a, b));
+		Assertions.assertArrayEquals(listB, b.toArray());
 
-		a = new ArrayList<String>(Arrays.asList(listC));
-		b = new ArrayList<String>(Arrays.asList(listA));
-		Assert.assertEquals(listC.length, CollectionTools.addUnique(a, b));
+		a = new ArrayList<>(Arrays.asList(listC));
+		b = new ArrayList<>(Arrays.asList(listA));
+		Assertions.assertEquals(listC.length, CollectionTools.addUnique(a, b));
 
-		a = new ArrayList<String>(Arrays.asList(listD));
-		b = new ArrayList<String>(Arrays.asList(listA));
-		Assert.assertEquals(1, CollectionTools.addUnique(a, b));
+		a = new ArrayList<>(Arrays.asList(listD));
+		b = new ArrayList<>(Arrays.asList(listA));
+		Assertions.assertEquals(1, CollectionTools.addUnique(a, b));
 
-		Set<String> s = new TreeSet<String>();
+		Set<String> s = new TreeSet<>();
 		for (String str : listA) {
 			s.add(str);
 		}
@@ -80,35 +80,21 @@ public class CollectionToolsTest implements GoodServiceTest {
 		for (String str : listD) {
 			s.add(str);
 		}
-		b = new ArrayList<String>();
+		b = new ArrayList<>();
 		CollectionTools.addUnique(s, b);
-		Assert.assertEquals(s.size(), b.size());
+		Assertions.assertEquals(s.size(), b.size());
 		Object[] sorted = b.toArray();
 		Arrays.sort(sorted);
-		Assert.assertArrayEquals(s.toArray(), sorted);
+		Assertions.assertArrayEquals(s.toArray(), sorted);
 
-		try {
-			CollectionTools.addUnique(null, b);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// all is well
-		}
-
-		try {
-			CollectionTools.addUnique(b, null);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// all is well
-		}
-
-		try {
-			CollectionTools.addUnique(null, null);
-			Assert.fail("Failed to raise an IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// all is well
+		{
+			List<String> B = b;
+			Assertions.assertThrows(IllegalArgumentException.class, () -> CollectionTools.addUnique(null, B));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> CollectionTools.addUnique(B, null));
+			Assertions.assertThrows(IllegalArgumentException.class, () -> CollectionTools.addUnique(null, null));
 		}
 
 		a = Collections.emptyList();
-		Assert.assertEquals(0, CollectionTools.addUnique(a, b));
+		Assertions.assertEquals(0, CollectionTools.addUnique(a, b));
 	}
 }

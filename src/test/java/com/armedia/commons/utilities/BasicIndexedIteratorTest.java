@@ -16,8 +16,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author drivera@armedia.com
@@ -28,30 +28,25 @@ public class BasicIndexedIteratorTest implements GoodServiceTest {
 	@Test
 	public void testBasicIndexedIterator() {
 		Collection<String> c = null;
-		try {
-			new BasicIndexedIterator<Object>(null);
-			Assert.fail("Failed to raise a IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		c = new ArrayList<String>();
+		Assertions.assertThrows(IllegalArgumentException.class, () -> new BasicIndexedIterator<>(null));
+		c = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
 			c.add(String.valueOf(i));
 		}
-		IndexedIterator<String> it = new BasicIndexedIterator<String>(c);
-		Assert.assertEquals(it.getMax(), c.size());
-		Assert.assertFalse(it.wasRemoved());
-		Assert.assertEquals(-1, it.currentIndex());
-		Assert.assertTrue(it.hasNext());
+		IndexedIterator<String> it = new BasicIndexedIterator<>(c);
+		Assertions.assertEquals(it.getMax(), c.size());
+		Assertions.assertFalse(it.wasRemoved());
+		Assertions.assertEquals(-1, it.currentIndex());
+		Assertions.assertTrue(it.hasNext());
 	}
 
 	@Test
 	public void testGetMax() {
-		Collection<Integer> c = new ArrayList<Integer>();
+		Collection<Integer> c = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
 			c.add(Integer.valueOf(i));
 		}
-		IndexedIterator<Integer> it = new BasicIndexedIterator<Integer>(c);
+		IndexedIterator<Integer> it = new BasicIndexedIterator<>(c);
 		for (int i = 1;; i++) {
 			if (!it.hasNext()) {
 				break;
@@ -59,72 +54,67 @@ public class BasicIndexedIteratorTest implements GoodServiceTest {
 			Integer str = it.next();
 			String msg = String.format("Failed on iteration %d (v = %d)", i, str);
 			int prevSize = c.size();
-			Assert.assertEquals(msg, prevSize, it.getMax());
+			Assertions.assertEquals(prevSize, it.getMax(), msg);
 			boolean removed = ((i % 5) == 0);
 			if (!removed) {
 				continue;
 			}
 			it.remove();
-			Assert.assertEquals(msg, c.size(), it.getMax());
-			Assert.assertEquals(msg, prevSize - 1, c.size());
-			Assert.assertTrue(msg, it.wasRemoved());
-			Assert.assertEquals(msg, -1, it.currentIndex());
+			Assertions.assertEquals(c.size(), it.getMax(), msg);
+			Assertions.assertEquals(prevSize - 1, c.size(), msg);
+			Assertions.assertTrue(it.wasRemoved(), msg);
+			Assertions.assertEquals(-1, it.currentIndex(), msg);
 		}
 	}
 
 	@Test
 	public void testNext() {
-		Collection<String> c = new ArrayList<String>();
+		Collection<String> c = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
 			c.add(UUID.randomUUID().toString());
 		}
 		Iterator<String> a = c.iterator();
-		IndexedIterator<String> b = new BasicIndexedIterator<String>(c);
+		IndexedIterator<String> b = new BasicIndexedIterator<>(c);
 		while (a.hasNext() && b.hasNext()) {
-			Assert.assertEquals(a.next(), b.next());
+			Assertions.assertEquals(a.next(), b.next());
 		}
-		Assert.assertEquals(a.hasNext(), b.hasNext());
+		Assertions.assertEquals(a.hasNext(), b.hasNext());
 	}
 
 	@Test
 	public void testCurrent() {
-		Collection<String> A = new ArrayList<String>();
-		Collection<String> B = new ArrayList<String>();
+		Collection<String> A = new ArrayList<>();
+		Collection<String> B = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
 			String str = UUID.randomUUID().toString();
 			A.add(str);
 			B.add(str);
 		}
 		Iterator<String> a = A.iterator();
-		IndexedIterator<String> b = new BasicIndexedIterator<String>(B);
-		try {
-			b.current();
-			Assert.fail("Failed to raise an IllegalStateException");
-		} catch (IllegalStateException e) {
-			// all is well
-		}
+		IndexedIterator<String> b = new BasicIndexedIterator<>(B);
+		Assertions.assertThrows(IllegalStateException.class, () -> b.current());
 		for (int i = 0; a.hasNext() && b.hasNext(); i++) {
 			String n = a.next();
-			Assert.assertEquals(n, b.next());
-			Assert.assertEquals(n, b.current());
+			Assertions.assertEquals(n, b.next());
+			Assertions.assertEquals(n, b.current());
 			boolean removed = ((i % 5) == 0);
 			if (!removed) {
 				continue;
 			}
 			a.remove();
 			b.remove();
-			Assert.assertNull(b.current());
+			Assertions.assertNull(b.current());
 		}
-		Assert.assertEquals(a.hasNext(), b.hasNext());
+		Assertions.assertEquals(a.hasNext(), b.hasNext());
 	}
 
 	@Test
 	public void testCurrentIndex() {
-		Collection<Integer> c = new ArrayList<Integer>();
+		Collection<Integer> c = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
 			c.add(Integer.valueOf(i));
 		}
-		IndexedIterator<Integer> it = new BasicIndexedIterator<Integer>(c);
+		IndexedIterator<Integer> it = new BasicIndexedIterator<>(c);
 		int removedCount = 0;
 		for (int i = 0;; i++) {
 			if (!it.hasNext()) {
@@ -132,35 +122,30 @@ public class BasicIndexedIteratorTest implements GoodServiceTest {
 			}
 			Integer current = it.next();
 			String msg = String.format("Failed on iteration %d (v = %d)", i, current);
-			Assert.assertEquals(msg, i - removedCount, it.currentIndex());
-			Assert.assertEquals(msg, Integer.valueOf(i), current);
+			Assertions.assertEquals(i - removedCount, it.currentIndex(), msg);
+			Assertions.assertEquals(Integer.valueOf(i), current, msg);
 			boolean removed = ((i % 5) == 0);
 			if (!removed) {
 				continue;
 			}
 			it.remove();
 			removedCount++;
-			Assert.assertTrue(msg, it.wasRemoved());
-			Assert.assertEquals(msg, -1, it.currentIndex());
+			Assertions.assertTrue(it.wasRemoved(), msg);
+			Assertions.assertEquals(-1, it.currentIndex(), msg);
 		}
 	}
 
 	@Test
 	public void testRemove() {
-		Collection<Integer> c = new ArrayList<Integer>();
+		Collection<Integer> c = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
 			c.add(Integer.valueOf(i));
 		}
 
-		IndexedIterator<Integer> it = new BasicIndexedIterator<Integer>(c);
-		try {
-			it.remove();
-			Assert.fail("Failed to explode when removing without fetching");
-		} catch (IllegalStateException t) {
-			// This is intended to explode...so this is ok
-		}
-		Assert.assertTrue(it.hasNext());
-		Assert.assertNotNull(it.next());
+		IndexedIterator<Integer> it = new BasicIndexedIterator<>(c);
+		Assertions.assertThrows(IllegalStateException.class, () -> it.remove());
+		Assertions.assertTrue(it.hasNext());
+		Assertions.assertNotNull(it.next());
 		it.remove();
 	}
 }

@@ -29,8 +29,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author drivera@armedia.com
@@ -54,19 +54,19 @@ public class ToolsTest {
 	 */
 	@Test
 	public void testCoalesce() {
-		Assert.assertNull(Tools.coalesce(null));
-		Assert.assertNull(Tools.coalesce(null, null, null));
+		Assertions.assertNull(Tools.coalesce(null));
+		Assertions.assertNull(Tools.coalesce(null, null, null));
 		Object[] a = {
 			1, 2
 		};
-		Assert.assertNotNull(Tools.coalesce(a[0]));
-		Assert.assertEquals(a[0], Tools.coalesce(null, a[0]));
-		Assert.assertEquals(a[0], Tools.coalesce(null, a[0], a[1]));
-		Assert.assertEquals(a[0], Tools.coalesce(null, null, a[0]));
-		Assert.assertNotNull(Tools.coalesce(a[1]));
-		Assert.assertEquals(a[1], Tools.coalesce(null, a[1]));
-		Assert.assertEquals(a[1], Tools.coalesce(null, a[1], a[0]));
-		Assert.assertEquals(a[1], Tools.coalesce(null, null, a[1]));
+		Assertions.assertNotNull(Tools.coalesce(a[0]));
+		Assertions.assertEquals(a[0], Tools.coalesce(null, a[0]));
+		Assertions.assertEquals(a[0], Tools.coalesce(null, a[0], a[1]));
+		Assertions.assertEquals(a[0], Tools.coalesce(null, null, a[0]));
+		Assertions.assertNotNull(Tools.coalesce(a[1]));
+		Assertions.assertEquals(a[1], Tools.coalesce(null, a[1]));
+		Assertions.assertEquals(a[1], Tools.coalesce(null, a[1], a[0]));
+		Assertions.assertEquals(a[1], Tools.coalesce(null, null, a[1]));
 	}
 
 	/**
@@ -74,17 +74,17 @@ public class ToolsTest {
 	 */
 	@Test
 	public void testFirstNonNull() {
-		Assert.assertEquals(-1, Tools.firstNonNull(null));
-		Assert.assertEquals(-1, Tools.firstNonNull(null, null, null));
+		Assertions.assertEquals(-1, Tools.firstNonNull(null));
+		Assertions.assertEquals(-1, Tools.firstNonNull(null, null, null));
 		Object[] a = {
 			1, 2
 		};
-		Assert.assertEquals(0, Tools.firstNonNull(a[0]));
-		Assert.assertEquals(1, Tools.firstNonNull(null, a[0]));
-		Assert.assertEquals(2, Tools.firstNonNull(null, null, a[1]));
-		Assert.assertEquals(0, Tools.firstNonNull(a[1]));
-		Assert.assertEquals(1, Tools.firstNonNull(null, a[1]));
-		Assert.assertEquals(2, Tools.firstNonNull(null, null, a[0]));
+		Assertions.assertEquals(0, Tools.firstNonNull(a[0]));
+		Assertions.assertEquals(1, Tools.firstNonNull(null, a[0]));
+		Assertions.assertEquals(2, Tools.firstNonNull(null, null, a[1]));
+		Assertions.assertEquals(0, Tools.firstNonNull(a[1]));
+		Assertions.assertEquals(1, Tools.firstNonNull(null, a[1]));
+		Assertions.assertEquals(2, Tools.firstNonNull(null, null, a[0]));
 	}
 
 	/**
@@ -95,11 +95,11 @@ public class ToolsTest {
 		Object[] a = {
 			1, 2
 		};
-		Assert.assertEquals(0, Tools.firstNull(null));
-		Assert.assertEquals(-1, Tools.firstNull(a[0]));
-		Assert.assertEquals(1, Tools.firstNull(a[0], (Object) null));
-		Assert.assertEquals(2, Tools.firstNull(a[0], a[1], null));
-		Assert.assertEquals(0, Tools.firstNull(null, null, null));
+		Assertions.assertEquals(0, Tools.firstNull(null));
+		Assertions.assertEquals(-1, Tools.firstNull(a[0]));
+		Assertions.assertEquals(1, Tools.firstNull(a[0], (Object) null));
+		Assertions.assertEquals(2, Tools.firstNull(a[0], a[1], null));
+		Assertions.assertEquals(0, Tools.firstNull(null, null, null));
 	}
 
 	/**
@@ -146,9 +146,9 @@ public class ToolsTest {
 			}
 		};
 		for (Object[] a : o) {
-			Assert.assertEquals(a[2], Tools.toTrimmedString(a[0], true));
-			Assert.assertEquals(a[1], Tools.toTrimmedString(a[0], false));
-			Assert.assertEquals(a[1], Tools.toTrimmedString(a[0]));
+			Assertions.assertEquals(a[2], Tools.toTrimmedString(a[0], true));
+			Assertions.assertEquals(a[1], Tools.toTrimmedString(a[0], false));
+			Assertions.assertEquals(a[1], Tools.toTrimmedString(a[0]));
 		}
 	}
 
@@ -198,9 +198,9 @@ public class ToolsTest {
 			}
 		};
 		for (Object[] a : o) {
-			Assert.assertEquals(a[2], Tools.toString(a[0], true));
-			Assert.assertEquals(a[1], Tools.toString(a[0], false));
-			Assert.assertEquals(a[1], Tools.toString(a[0]));
+			Assertions.assertEquals(a[2], Tools.toString(a[0], true));
+			Assertions.assertEquals(a[1], Tools.toString(a[0], false));
+			Assertions.assertEquals(a[1], Tools.toString(a[0]));
 		}
 	}
 
@@ -246,7 +246,7 @@ public class ToolsTest {
 		};
 		for (String[] a : o) {
 			final char c = a[0].charAt(0);
-			Assert.assertEquals(a[2], Tools.consolidateRepeatedCharacters(a[1], c));
+			Assertions.assertEquals(a[2], Tools.consolidateRepeatedCharacters(a[1], c));
 		}
 	}
 
@@ -307,13 +307,7 @@ public class ToolsTest {
 		for (Object[] a : o) {
 			if (a[1] != null) {
 				if (a[1] instanceof Exception) {
-					try {
-						Number result = Tools.toNumber(a[0]);
-						Assert.fail(String.format("Expected a failure with input = [%s] but got %s (%s)", a[0], result,
-							result.getClass()));
-					} catch (NumberFormatException e) {
-						// All is well
-					}
+					Assertions.assertThrows(NumberFormatException.class, () -> Tools.toNumber(a[0]));
 				} else {
 					Number result = ToolsTest.toBigNumber(Tools.toNumber(a[0]));
 					Number expected = ToolsTest.toBigNumber(Number.class.cast(a[1]));
@@ -321,15 +315,15 @@ public class ToolsTest {
 					if (result instanceof BigInteger) {
 						BigInteger bigExpected = BigInteger.class.cast(expected);
 						BigInteger bigResult = BigInteger.class.cast(result);
-						Assert.assertEquals(0, bigExpected.compareTo(bigResult));
+						Assertions.assertEquals(0, bigExpected.compareTo(bigResult));
 					} else {
 						BigDecimal bigExpected = BigDecimal.class.cast(expected);
 						BigDecimal bigResult = BigDecimal.class.cast(result);
-						Assert.assertEquals(0, bigExpected.compareTo(bigResult));
+						Assertions.assertEquals(0, bigExpected.compareTo(bigResult));
 					}
 				}
 			} else {
-				Assert.assertEquals(null, Tools.toNumber(a[0]));
+				Assertions.assertEquals(null, Tools.toNumber(a[0]));
 			}
 		}
 	}
@@ -376,8 +370,8 @@ public class ToolsTest {
 		};
 		for (String[] a : testData) {
 			Integer result = Integer.valueOf(a[2]);
-			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.strcmp(a[0], a[1]));
-			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.STRCMP.compare(a[0], a[1]));
+			Assertions.assertEquals(result.intValue(), Tools.strcmp(a[0], a[1]), Arrays.toString(a));
+			Assertions.assertEquals(result.intValue(), Tools.STRCMP.compare(a[0], a[1]), Arrays.toString(a));
 		}
 	}
 
@@ -420,8 +414,8 @@ public class ToolsTest {
 		};
 		for (String[] a : testData) {
 			Integer result = Integer.valueOf(a[2]);
-			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.stricmp(a[0], a[1]));
-			Assert.assertEquals(Arrays.toString(a), result.intValue(), Tools.STRICMP.compare(a[0], a[1]));
+			Assertions.assertEquals(result.intValue(), Tools.stricmp(a[0], a[1]), Arrays.toString(a));
+			Assertions.assertEquals(result.intValue(), Tools.STRICMP.compare(a[0], a[1]), Arrays.toString(a));
 		}
 	}
 
@@ -553,183 +547,183 @@ public class ToolsTest {
 
 			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_boolean[0]);
-			Assert.assertEquals(String.format("Failed boolean with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed boolean with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_boolean[0]);
-			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed boolean with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_boolean[1]);
-			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed boolean with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_boolean[0]);
-			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed boolean with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_boolean[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_boolean[1]);
-			Assert.assertTrue(String.format("Failed boolean with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed boolean with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_byte[0]);
-			Assert.assertEquals(String.format("Failed byte with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed byte with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_byte[0]);
-			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed byte with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_byte[1]);
-			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed byte with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_byte[0]);
-			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed byte with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_byte[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_byte[1]);
-			Assert.assertTrue(String.format("Failed byte with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed byte with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_short[0]);
-			Assert.assertEquals(String.format("Failed short with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed short with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_short[0]);
-			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed short with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_short[1]);
-			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed short with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_short[0]);
-			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed short with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_short[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_short[1]);
-			Assert.assertTrue(String.format("Failed short with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed short with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_int[0]);
-			Assert.assertEquals(String.format("Failed int with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed int with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_int[0]);
-			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed int with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_int[1]);
-			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed int with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_int[0]);
-			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed int with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_int[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_int[1]);
-			Assert.assertTrue(String.format("Failed int with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed int with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_long[0]);
-			Assert.assertEquals(String.format("Failed long with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed long with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_long[0]);
-			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed long with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_long[1]);
-			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed long with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_long[0]);
-			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed long with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_long[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_long[1]);
-			Assert.assertTrue(String.format("Failed long with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed long with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_float[0]);
-			Assert.assertEquals(String.format("Failed float with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed float with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_float[0]);
-			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed float with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_float[1]);
-			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed float with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_float[0]);
-			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed float with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_float[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_float[1]);
-			Assert.assertTrue(String.format("Failed float with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed float with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_double[0]);
-			Assert.assertEquals(String.format("Failed double with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed double with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_double[0]);
-			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed double with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_double[1]);
-			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed double with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_double[0]);
-			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed double with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_double[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_double[1]);
-			Assert.assertTrue(String.format("Failed double with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed double with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_char[0]);
-			Assert.assertEquals(String.format("Failed char with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed char with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_char[0]);
-			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed char with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_char[1]);
-			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed char with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_char[0]);
-			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed char with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_char[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_char[1]);
-			Assert.assertTrue(String.format("Failed char with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed char with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
 			hashB = Tools.hashTool(b, null, p, p, arr_obj[0]);
-			Assert.assertEquals(String.format("Failed obj with prime = %d", p), hashA, hashB);
+			Assertions.assertEquals(hashA, hashB, String.format("Failed obj with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
 			hashB = Tools.hashTool(a, null, q, p, arr_obj[0]);
-			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed obj with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
 			hashB = Tools.hashTool(a, null, p, p, arr_obj[1]);
-			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed obj with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_obj[0]);
-			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed obj with prime = %d", p));
 
 			hashA = Tools.hashTool(a, null, p, p, arr_obj[0]);
 			hashB = Tools.hashTool(a, null, p, q, arr_obj[1]);
-			Assert.assertTrue(String.format("Failed obj with prime = %d", p), hashA != hashB);
+			Assertions.assertNotEquals(hashA, hashB, String.format("Failed obj with prime = %d", p));
 		}
 	}
 
@@ -814,11 +808,11 @@ public class ToolsTest {
 				"    N", false
 			},
 		};
-		Assert.assertNull(Tools.toBoolean(null));
+		Assertions.assertNull(Tools.toBoolean(null));
 		for (Object[] s : arr) {
 			final String str = Tools.toString(s[0]);
 			final Boolean expected = Boolean.class.cast(s[1]);
-			Assert.assertEquals(String.format("Failed when checking [%s]", str), expected, Tools.toBoolean(str));
+			Assertions.assertEquals(expected, Tools.toBoolean(str), String.format("Failed when checking [%s]", str));
 		}
 	}
 
@@ -876,15 +870,10 @@ public class ToolsTest {
 		for (Integer[] a : arr) {
 			if (a.length < 4) {
 				// Expect an exception
-				try {
-					Tools.ensureBetween(a[0], a[1], a[2]);
-					Assert.fail(String.format("Failed to raise an exception with array %s", Arrays.toString(a)));
-				} catch (IllegalArgumentException e) {
-					// Expected, move on
-				}
+				Assertions.assertThrows(IllegalArgumentException.class, () -> Tools.ensureBetween(a[0], a[1], a[2]));
 			} else {
-				Assert.assertEquals(String.format("Failed when comparing the array %s", Arrays.toString(a)), a[3],
-					Tools.ensureBetween(a[0], a[1], a[2]));
+				Assertions.assertEquals(a[3], Tools.ensureBetween(a[0], a[1], a[2]),
+					String.format("Failed when comparing the array %s", Arrays.toString(a)));
 			}
 		}
 	}
@@ -892,94 +881,38 @@ public class ToolsTest {
 	private <C extends Collection<Object>> void validateFrozen(C source, C frozen) {
 		final Collection<Object> singleton = Collections.singleton(new Object());
 		final String message = String.format("%s is not frozen", source.getClass().getSimpleName());
-		Assert.assertEquals(source, frozen);
-		try {
-			frozen.add(UUID.randomUUID());
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-		try {
-			frozen.addAll(singleton);
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-		try {
-			frozen.remove(0);
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-		try {
-			frozen.removeAll(singleton);
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-		try {
-			frozen.retainAll(singleton);
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
+		Assertions.assertEquals(source, frozen);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.add(UUID.randomUUID()), message);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.addAll(singleton), message);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.remove(0), message);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.removeAll(singleton), message);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.retainAll(singleton), message);
 
 		Iterator<Object> it = frozen.iterator();
-		Assert.assertTrue(it.hasNext());
-		try {
-			it.remove();
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
+		Assertions.assertTrue(it.hasNext());
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> it.remove(), message);
 	}
 
 	private void validateFrozen(Map<Object, Object> source, Map<Object, Object> frozen) {
 		final UUID uuid = UUID.randomUUID();
 		final Map<?, ?> singletonMap = Collections.singletonMap(uuid, uuid.toString());
 		final String message = String.format("%s is not frozen", source.getClass().getSimpleName());
-		Assert.assertEquals(source, frozen);
-		try {
-			frozen.put(uuid, uuid.toString());
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-		try {
-			frozen.putAll(singletonMap);
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-		try {
-			frozen.remove(0);
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-		try {
-			frozen.remove(uuid);
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
+		Assertions.assertEquals(source, frozen);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.put(uuid, uuid.toString()), message);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.putAll(singletonMap), message);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.remove(0), message);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> frozen.remove(uuid), message);
+
+		{
+			Iterator<Object> it = frozen.keySet().iterator();
+			Assertions.assertTrue(it.hasNext());
+			Assertions.assertThrows(UnsupportedOperationException.class, () -> it.remove(), message);
 		}
 
-		Iterator<Object> it = frozen.keySet().iterator();
-		Assert.assertTrue(it.hasNext());
-		try {
-			it.remove();
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
-		}
-
-		it = frozen.values().iterator();
-		Assert.assertTrue(it.hasNext());
-		try {
-			it.remove();
-			Assert.fail(message);
-		} catch (UnsupportedOperationException e) {
-			// All is well
+		{
+			Iterator<Object> it = frozen.values().iterator();
+			Assertions.assertTrue(it.hasNext());
+			Assertions.assertThrows(UnsupportedOperationException.class, () -> it.remove(), message);
 		}
 	}
 
@@ -1010,57 +943,57 @@ public class ToolsTest {
 			sortedMap.put(uuid, uuid.toString());
 		}
 
-		Assert.assertNull(Tools.freezeCopy(nullList));
-		Assert.assertNull(Tools.freezeCopy(nullList, false));
+		Assertions.assertNull(Tools.freezeCopy(nullList));
+		Assertions.assertNull(Tools.freezeCopy(nullList, false));
 
 		frozenList = Tools.freezeCopy(nullList, true);
-		Assert.assertNotNull(frozenList);
-		Assert.assertTrue(frozenList.isEmpty());
-		Assert.assertSame(Collections.emptyList(), frozenList);
+		Assertions.assertNotNull(frozenList);
+		Assertions.assertTrue(frozenList.isEmpty());
+		Assertions.assertSame(Collections.emptyList(), frozenList);
 
 		frozenList = Tools.freezeCopy(list);
-		Assert.assertNotSame(list, frozenList);
+		Assertions.assertNotSame(list, frozenList);
 		validateFrozen(list, frozenList);
 		list.add(newUuid);
-		Assert.assertNotEquals(list, frozenList);
+		Assertions.assertNotEquals(list, frozenList);
 
-		Assert.assertNull(Tools.freezeCopy(nullSet));
-		Assert.assertNull(Tools.freezeCopy(nullSet, false));
+		Assertions.assertNull(Tools.freezeCopy(nullSet));
+		Assertions.assertNull(Tools.freezeCopy(nullSet, false));
 
 		frozenSet = Tools.freezeCopy(nullSet, true);
-		Assert.assertNotNull(frozenSet);
-		Assert.assertTrue(frozenSet.isEmpty());
-		Assert.assertSame(Collections.emptySet(), frozenSet);
+		Assertions.assertNotNull(frozenSet);
+		Assertions.assertTrue(frozenSet.isEmpty());
+		Assertions.assertSame(Collections.emptySet(), frozenSet);
 
 		frozenSet = Tools.freezeCopy(set);
-		Assert.assertNotSame(set, frozenSet);
+		Assertions.assertNotSame(set, frozenSet);
 		validateFrozen(set, frozenSet);
 		set.add(newUuid);
-		Assert.assertNotEquals(set, frozenSet);
+		Assertions.assertNotEquals(set, frozenSet);
 
 		frozenSet = Tools.freezeCopy(sortedSet);
-		Assert.assertNotSame(sortedSet, frozenSet);
+		Assertions.assertNotSame(sortedSet, frozenSet);
 		validateFrozen(sortedSet, frozenSet);
 		sortedSet.add(newUuid);
-		Assert.assertNotEquals(sortedSet, frozenSet);
+		Assertions.assertNotEquals(sortedSet, frozenSet);
 
-		Assert.assertNull(Tools.freezeCopy(nullMap));
-		Assert.assertNull(Tools.freezeCopy(nullMap, false));
+		Assertions.assertNull(Tools.freezeCopy(nullMap));
+		Assertions.assertNull(Tools.freezeCopy(nullMap, false));
 
 		frozenMap = Tools.freezeCopy(nullMap, true);
-		Assert.assertNotNull(frozenMap);
-		Assert.assertTrue(frozenMap.isEmpty());
-		Assert.assertSame(Collections.emptyMap(), frozenMap);
+		Assertions.assertNotNull(frozenMap);
+		Assertions.assertTrue(frozenMap.isEmpty());
+		Assertions.assertSame(Collections.emptyMap(), frozenMap);
 
 		frozenMap = Tools.freezeCopy(map);
 		validateFrozen(map, frozenMap);
 		map.put(newUuid, newUuid.toString());
-		Assert.assertNotEquals(map, frozenMap);
+		Assertions.assertNotEquals(map, frozenMap);
 
 		frozenMap = Tools.freezeCopy(sortedMap);
 		validateFrozen(sortedMap, frozenMap);
 		sortedMap.put(newUuid, newUuid.toString());
-		Assert.assertNotEquals(sortedMap, frozenMap);
+		Assertions.assertNotEquals(sortedMap, frozenMap);
 
 		// freeze{List,Map,Set}
 		list.remove(newUuid);
@@ -1069,54 +1002,54 @@ public class ToolsTest {
 		map.remove(newUuid);
 		sortedMap.remove(newUuid);
 
-		Assert.assertNull(Tools.freezeList(nullList));
-		Assert.assertNull(Tools.freezeList(nullList, false));
+		Assertions.assertNull(Tools.freezeList(nullList));
+		Assertions.assertNull(Tools.freezeList(nullList, false));
 
 		frozenList = Tools.freezeList(nullList, true);
-		Assert.assertNotNull(frozenList);
-		Assert.assertTrue(frozenList.isEmpty());
-		Assert.assertSame(Collections.emptyList(), frozenList);
+		Assertions.assertNotNull(frozenList);
+		Assertions.assertTrue(frozenList.isEmpty());
+		Assertions.assertSame(Collections.emptyList(), frozenList);
 
 		frozenList = Tools.freezeList(list);
 		validateFrozen(list, frozenList);
 		list.add(newUuid);
-		Assert.assertEquals(list, frozenList);
+		Assertions.assertEquals(list, frozenList);
 
-		Assert.assertNull(Tools.freezeSet(nullSet));
-		Assert.assertNull(Tools.freezeSet(nullSet, false));
+		Assertions.assertNull(Tools.freezeSet(nullSet));
+		Assertions.assertNull(Tools.freezeSet(nullSet, false));
 
 		frozenSet = Tools.freezeSet(nullSet, true);
-		Assert.assertNotNull(frozenSet);
-		Assert.assertTrue(frozenSet.isEmpty());
-		Assert.assertSame(Collections.emptySet(), frozenSet);
+		Assertions.assertNotNull(frozenSet);
+		Assertions.assertTrue(frozenSet.isEmpty());
+		Assertions.assertSame(Collections.emptySet(), frozenSet);
 
 		frozenSet = Tools.freezeSet(set);
 		validateFrozen(set, frozenSet);
 		set.add(newUuid);
-		Assert.assertEquals(set, frozenSet);
+		Assertions.assertEquals(set, frozenSet);
 
 		frozenSet = Tools.freezeSet(sortedSet);
 		validateFrozen(sortedSet, frozenSet);
 		sortedSet.add(newUuid);
-		Assert.assertEquals(sortedSet, frozenSet);
+		Assertions.assertEquals(sortedSet, frozenSet);
 
-		Assert.assertNull(Tools.freezeMap(nullMap));
-		Assert.assertNull(Tools.freezeMap(nullMap, false));
+		Assertions.assertNull(Tools.freezeMap(nullMap));
+		Assertions.assertNull(Tools.freezeMap(nullMap, false));
 
 		frozenMap = Tools.freezeMap(nullMap, true);
-		Assert.assertNotNull(frozenMap);
-		Assert.assertTrue(frozenMap.isEmpty());
-		Assert.assertSame(Collections.emptyMap(), frozenMap);
+		Assertions.assertNotNull(frozenMap);
+		Assertions.assertTrue(frozenMap.isEmpty());
+		Assertions.assertSame(Collections.emptyMap(), frozenMap);
 
 		frozenMap = Tools.freezeMap(map);
 		validateFrozen(map, frozenMap);
 		map.put(newUuid, newUuid.toString());
-		Assert.assertEquals(map, frozenMap);
+		Assertions.assertEquals(map, frozenMap);
 
 		frozenMap = Tools.freezeMap(sortedMap);
 		validateFrozen(sortedMap, frozenMap);
 		sortedMap.put(newUuid, newUuid.toString());
-		Assert.assertEquals(sortedMap, frozenMap);
+		Assertions.assertEquals(sortedMap, frozenMap);
 	}
 
 	private static enum TestEnumA {
@@ -1144,93 +1077,82 @@ public class ToolsTest {
 		Set<TestEnumC> setC = null;
 		Set<TestEnumC> expC = null;
 
-		try {
-			Tools.parseEnumCSV(null, "", false);
-			Assert.fail("Did not fail with a null enum class");
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
+		Assertions.assertThrows(IllegalArgumentException.class, () -> Tools.parseEnumCSV(null, "", false),
+			"Did not fail with a null enum class");
 
 		str = null;
 		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
 		expA = EnumSet.noneOf(TestEnumA.class);
-		Assert.assertEquals(expA, setA);
+		Assertions.assertEquals(expA, setA);
 		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
 		expB = EnumSet.noneOf(TestEnumB.class);
-		Assert.assertEquals(expB, setB);
+		Assertions.assertEquals(expB, setB);
 		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
 		expC = EnumSet.noneOf(TestEnumC.class);
-		Assert.assertEquals(expC, setC);
+		Assertions.assertEquals(expC, setC);
 
 		str = "";
 		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
 		expA = EnumSet.noneOf(TestEnumA.class);
-		Assert.assertEquals(expA, setA);
+		Assertions.assertEquals(expA, setA);
 		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
 		expB = EnumSet.noneOf(TestEnumB.class);
-		Assert.assertEquals(expB, setB);
+		Assertions.assertEquals(expB, setB);
 		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
 		expC = EnumSet.noneOf(TestEnumC.class);
-		Assert.assertEquals(expC, setC);
+		Assertions.assertEquals(expC, setC);
 
 		str = "ALL";
 		setA = Tools.parseEnumCSV(TestEnumA.class, str, null, false);
 		expA = EnumSet.noneOf(TestEnumA.class);
-		Assert.assertEquals(expA, setA);
+		Assertions.assertEquals(expA, setA);
 		setB = Tools.parseEnumCSV(TestEnumB.class, str, null, false);
 		expB = EnumSet.noneOf(TestEnumB.class);
-		Assert.assertEquals(expB, setB);
+		Assertions.assertEquals(expB, setB);
 		setC = Tools.parseEnumCSV(TestEnumC.class, str, null, false);
 		expC = EnumSet.noneOf(TestEnumC.class);
-		Assert.assertEquals(expC, setC);
+		Assertions.assertEquals(expC, setC);
 
 		str = "ALL";
 		setA = Tools.parseEnumCSV(TestEnumA.class, str, "ALL", false);
 		expA = EnumSet.allOf(TestEnumA.class);
-		Assert.assertEquals(expA, setA);
+		Assertions.assertEquals(expA, setA);
 		setB = Tools.parseEnumCSV(TestEnumB.class, str, "ALL", false);
 		expB = EnumSet.allOf(TestEnumB.class);
-		Assert.assertEquals(expB, setB);
+		Assertions.assertEquals(expB, setB);
 		setC = Tools.parseEnumCSV(TestEnumC.class, str, "ALL", false);
 		expC = EnumSet.allOf(TestEnumC.class);
-		Assert.assertEquals(expC, setC);
+		Assertions.assertEquals(expC, setC);
 
-		str = "A,a,C,c,Z,z,X,x";
-		try {
-			setA = Tools.parseEnumCSV(TestEnumA.class, str, true);
-			Assert.fail(String.format("TestEnumA did not fail with values [%s]", str));
-		} catch (IllegalArgumentException e) {
-			// All is well
+		{
+			String str2 = "A,a,C,c,Z,z,X,x";
+			Assertions.assertThrows(IllegalArgumentException.class,
+				() -> Tools.parseEnumCSV(TestEnumA.class, str2, true),
+				String.format("TestEnumA did not fail with values [%s]", str2));
+			setA = Tools.parseEnumCSV(TestEnumA.class, str2, false);
+			expA = EnumSet.noneOf(TestEnumA.class);
+			expA.add(TestEnumA.A);
+			expA.add(TestEnumA.C);
+			Assertions.assertEquals(expA, setA);
+			Assertions.assertThrows(IllegalArgumentException.class,
+				() -> Tools.parseEnumCSV(TestEnumB.class, str2, true),
+				String.format("TestEnumB did not fail with values [%s]", str2));
+			setB = Tools.parseEnumCSV(TestEnumB.class, str2, false);
+			expB = EnumSet.noneOf(TestEnumB.class);
+			expB.add(TestEnumB.Z);
+			expB.add(TestEnumB.X);
+			Assertions.assertEquals(expB, setB);
+			Assertions.assertThrows(IllegalArgumentException.class,
+				() -> Tools.parseEnumCSV(TestEnumC.class, str2, true),
+				String.format("TestEnumC did not fail with values [%s]", str2));
+			setC = Tools.parseEnumCSV(TestEnumC.class, str2, false);
+			expC = EnumSet.noneOf(TestEnumC.class);
+			expC.add(TestEnumC.a);
+			expC.add(TestEnumC.c);
+			expC.add(TestEnumC.z);
+			expC.add(TestEnumC.x);
+			Assertions.assertEquals(expC, setC);
 		}
-		setA = Tools.parseEnumCSV(TestEnumA.class, str, false);
-		expA = EnumSet.noneOf(TestEnumA.class);
-		expA.add(TestEnumA.A);
-		expA.add(TestEnumA.C);
-		Assert.assertEquals(expA, setA);
-		try {
-			setB = Tools.parseEnumCSV(TestEnumB.class, str, true);
-			Assert.fail(String.format("TestEnumB did not fail with values [%s]", str));
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		setB = Tools.parseEnumCSV(TestEnumB.class, str, false);
-		expB = EnumSet.noneOf(TestEnumB.class);
-		expB.add(TestEnumB.Z);
-		expB.add(TestEnumB.X);
-		Assert.assertEquals(expB, setB);
-		try {
-			setC = Tools.parseEnumCSV(TestEnumC.class, str, true);
-			Assert.fail(String.format("TestEnumC did not fail with values [%s]", str));
-		} catch (IllegalArgumentException e) {
-			// All is well
-		}
-		setC = Tools.parseEnumCSV(TestEnumC.class, str, false);
-		expC = EnumSet.noneOf(TestEnumC.class);
-		expC.add(TestEnumC.a);
-		expC.add(TestEnumC.c);
-		expC.add(TestEnumC.z);
-		expC.add(TestEnumC.x);
-		Assert.assertEquals(expC, setC);
 
 	}
 
@@ -1242,76 +1164,76 @@ public class ToolsTest {
 
 		expected = null;
 		result = Tools.splitEscaped(null);
-		Assert.assertNull(result);
-		Assert.assertNull(Tools.joinEscaped(result));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result)));
+		Assertions.assertNull(result);
+		Assertions.assertNull(Tools.joinEscaped(result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result)));
 
 		expected = Arrays.asList("");
 		result = Tools.splitEscaped("");
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals("", Tools.joinEscaped(result));
-		Assert.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals("", Tools.joinEscaped(result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result)));
 
 		expected = null;
 		result = Tools.splitEscaped(',', null);
-		Assert.assertNull(result);
-		Assert.assertNull(Tools.joinEscaped(',', result));
-		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		Assertions.assertNull(result);
+		Assertions.assertNull(Tools.joinEscaped(',', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 		str = "a&b&c&d&&e&f\\&g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f&g");
 		result = Tools.splitEscaped('&', str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped('&', result));
-		Assert.assertEquals(expected, Tools.splitEscaped('&', Tools.joinEscaped('&', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped('&', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped('&', Tools.joinEscaped('&', result)));
 
 		str = "a!b!c!d!!e!f\\!g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f!g");
 		result = Tools.splitEscaped('!', str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped('!', result));
-		Assert.assertEquals(expected, Tools.splitEscaped('!', Tools.joinEscaped('!', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped('!', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped('!', Tools.joinEscaped('!', result)));
 
 		str = "a.b.c.d..e.f\\.g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f.g");
 		result = Tools.splitEscaped('.', str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped('.', result));
-		Assert.assertEquals(expected, Tools.splitEscaped('.', Tools.joinEscaped('.', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped('.', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped('.', Tools.joinEscaped('.', result)));
 
 		str = ",a,b,c,d,,e,f\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
 		result = Tools.splitEscaped(',', str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(',', result));
-		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 		str = ",a,b,c,d,,e,f\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
 		result = Tools.splitEscaped(str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(',', result));
-		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 		str = ",a,b,c,d,,e,f\\\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\,g", "");
 		result = Tools.splitEscaped(str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(',', result));
-		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 		str = ",a,b,c,d,,e,f\\\\\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\,g", "");
 		result = Tools.splitEscaped(str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(',', result));
-		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 
 		str = ",a,b,c,d,,e,f\\\\\\\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\\\,g", "");
 		result = Tools.splitEscaped(str);
-		Assert.assertEquals(expected, result);
-		Assert.assertEquals(str, Tools.joinEscaped(',', result));
-		Assert.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		Assertions.assertEquals(expected, result);
+		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
+		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
 	}
 }
