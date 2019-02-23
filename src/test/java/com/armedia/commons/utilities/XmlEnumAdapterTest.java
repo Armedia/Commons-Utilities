@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -156,4 +157,65 @@ public class XmlEnumAdapterTest {
 		testMarshalString(Empty.class);
 	}
 
+	private <E extends Enum<E>> void testSpecialMarshal(final Class<E> enumClass, final E special) throws Exception {
+		final String uuid = UUID.randomUUID().toString();
+		XmlEnumAdapter<E> adapter = new XmlEnumAdapter<E>(enumClass) {
+			@Override
+			protected String nullString() {
+				return uuid;
+			}
+
+			@Override
+			protected String specialMarshal(E e) throws Exception {
+				if (e == special) { return uuid; }
+				return super.specialMarshal(e);
+			}
+		};
+
+		Assertions.assertSame(uuid, adapter.marshal(null));
+		Assertions.assertSame(uuid, adapter.marshal(special));
+
+		for (E v : enumClass.getEnumConstants()) {
+			if (v != special) {
+				Assertions.assertNotEquals(uuid, adapter.marshal(v));
+			}
+		}
+	}
+
+	@Test
+	public void testSpecialMarshal() throws Exception {
+		testSpecialMarshal(CaseInsensitive.class, CaseInsensitive.First);
+		testSpecialMarshal(CaseSensitive.class, CaseSensitive.firstvalue);
+	}
+
+	private <E extends Enum<E>> void testSpecialUnmarshal(final Class<E> enumClass, final E special) throws Exception {
+		final String uuid = UUID.randomUUID().toString();
+		XmlEnumAdapter<E> adapter = new XmlEnumAdapter<E>(enumClass) {
+			@Override
+			protected E nullEnum() {
+				return special;
+			}
+
+			@Override
+			protected E specialUnmarshal(String s) throws Exception {
+				if (StringUtils.equalsIgnoreCase(uuid, s)) { return special; }
+				return super.specialUnmarshal(s);
+			}
+		};
+
+		Assertions.assertSame(special, adapter.unmarshal(null));
+		Assertions.assertSame(special, adapter.unmarshal(uuid));
+
+		for (E v : enumClass.getEnumConstants()) {
+			if (v != special) {
+				Assertions.assertNotEquals(uuid, adapter.unmarshal(v.name()));
+			}
+		}
+	}
+
+	@Test
+	public void testSpecialUnmarshal() throws Exception {
+		testSpecialUnmarshal(CaseInsensitive.class, CaseInsensitive.First);
+		testSpecialUnmarshal(CaseSensitive.class, CaseSensitive.firstvalue);
+	}
 }
