@@ -8,6 +8,8 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 	private final Class<E> enumClass;
@@ -53,6 +55,10 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 	@Override
 	public final E unmarshal(String v) throws Exception {
 		if (v == null) { return null; }
+
+		// Make sure we stip out the spaces
+		v = StringUtils.strip(v);
+
 		// If there's no CI map, then valueOf() *must* return a valid value
 		if (this.caseInsensitiveMap == null) { return Enum.valueOf(this.enumClass, v); }
 
