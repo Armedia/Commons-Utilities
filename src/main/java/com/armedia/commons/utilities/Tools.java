@@ -44,6 +44,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -662,11 +663,38 @@ public class Tools {
 	 *         if all references are {@code null}
 	 */
 	@SafeVarargs
-	public static <T extends Object> T coalesce(T o, T... others) {
+	public static <T> T coalesce(T o, T... others) {
 		int pos = Tools.firstNonNull(o, others);
 		if (pos == 0) { return o; }
 		if (pos > 0) { return others[pos - 1]; }
 		return null;
+	}
+
+	/**
+	 * Returns the first non-null value returned by the provided list of {@link Supplier} instances,
+	 * or {@code null} if all suppliers return {@code null}. Any supplier instance is itself
+	 * {@code null}, it's ignored.
+	 *
+	 * @param <T>
+	 * @param o
+	 * @param others
+	 * @return the first non-null value returned by the provided list of {@link Supplier} instances,
+	 *         or {@code null} if all suppliers return {@code null}
+	 */
+	@SafeVarargs
+	public static <T> T coalesceFrom(Supplier<T> o, Supplier<T>... others) {
+		T ret = null;
+		if (o != null) {
+			ret = o.get();
+		}
+		int i = 0;
+		while (ret == null) {
+			Supplier<T> s = others[i++];
+			if (s != null) {
+				ret = s.get();
+			}
+		}
+		return ret;
 	}
 
 	/**
@@ -681,7 +709,7 @@ public class Tools {
 	 *         references, or {@code -1} if all references are {@code null}
 	 */
 	@SafeVarargs
-	public static <T extends Object> int firstNonNull(T o, T... others) {
+	public static <T> int firstNonNull(T o, T... others) {
 		if (o != null) { return 0; }
 		int i = 0;
 		for (T x : others) {
@@ -703,7 +731,7 @@ public class Tools {
 	 *         or {@code -1} if all references are non-{@code null}
 	 */
 	@SafeVarargs
-	public static <T extends Object> int firstNull(T o, T... others) {
+	public static <T> int firstNull(T o, T... others) {
 		if (o == null) { return 0; }
 		int i = 0;
 		for (T x : others) {
