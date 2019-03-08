@@ -8,12 +8,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
-public class LineScanner {
+public class LineScanner extends BaseReadWriteLockable {
 
 	public static final Map<Integer, LineSourceFactory> DEFAULT_FACTORIES;
 	static {
@@ -27,22 +26,18 @@ public class LineScanner {
 		DEFAULT_FACTORIES = Tools.freezeMap(defaultFactories);
 	}
 
-	private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
 	private final Map<Integer, LineSourceFactory> factories = new LinkedHashMap<>();
 
 	public LineScanner() {
 	}
 
 	public final Collection<LineSourceFactory> getSourceFactories() {
-		this.lock.readLock().lock();
-		try {
+		return readLocked(() -> {
 			Collection<LineSourceFactory> ret = new ArrayList<>(this.factories.values());
 			ret.addAll(LineScanner.DEFAULT_FACTORIES.values()); // Append the defaults
 			return ret;
-		} finally {
-			this.lock.readLock().unlock();
-		}
+		});
+
 	}
 
 	public final LineScanner addSourceFactory(LineSourceFactory factory) {
@@ -59,13 +54,10 @@ public class LineScanner {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		this.lock.writeLock().lock();
-		try {
+		return writeLocked(() -> {
 			factories.stream().filter(Objects::nonNull).forEach(f -> this.factories.put(System.identityHashCode(f), f));
 			return this;
-		} finally {
-			this.lock.writeLock().unlock();
-		}
+		});
 	}
 
 	public final LineScanner removeSourceFactory(LineSourceFactory factory) {
@@ -82,24 +74,16 @@ public class LineScanner {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		this.lock.writeLock().lock();
-		try {
+		return writeLocked(() -> {
 			factories.stream().filter(Objects::nonNull)
 				.forEach(f -> this.factories.remove(System.identityHashCode(f), f));
 			return this;
-		} finally {
-			this.lock.writeLock().unlock();
-		}
+		});
 	}
 
 	public final boolean hasSourceFactory(LineSourceFactory factory) {
 		if (factory == null) { return false; }
-		this.lock.readLock().lock();
-		try {
-			return this.factories.containsKey(System.identityHashCode(factory));
-		} finally {
-			this.lock.readLock().unlock();
-		}
+		return readLocked(() -> this.factories.containsKey(System.identityHashCode(factory)));
 	}
 
 	public LineIterator iterator(String... sourceSpecs) {

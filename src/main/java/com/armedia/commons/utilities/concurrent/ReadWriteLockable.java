@@ -12,10 +12,12 @@ import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
 
 @FunctionalInterface
-public interface ReadWriteLockable extends Supplier<ReadWriteLock> {
+public interface ReadWriteLockable {
+
+	public ReadWriteLock getMainLock();
 
 	public default Lock getReadLock() {
-		return get().readLock();
+		return getMainLock().readLock();
 	}
 
 	public default Lock acquireReadLock() {
@@ -24,11 +26,11 @@ public interface ReadWriteLockable extends Supplier<ReadWriteLock> {
 		return ret;
 	}
 
-	public default <E> E readLocked(Supplier<E> operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null supplier to invoke");
+	public default <E> E readLocked(Supplier<E> supplier) {
+		Objects.requireNonNull(supplier, "Must provide a non-null supplier to invoke");
 		final Lock l = acquireReadLock();
 		try {
-			return operation.get();
+			return supplier.get();
 		} finally {
 			l.unlock();
 		}
@@ -65,7 +67,7 @@ public interface ReadWriteLockable extends Supplier<ReadWriteLock> {
 	}
 
 	public default Lock getWriteLock() {
-		return get().writeLock();
+		return getMainLock().writeLock();
 	}
 
 	public default Lock acquireWriteLock() {
@@ -74,11 +76,11 @@ public interface ReadWriteLockable extends Supplier<ReadWriteLock> {
 		return ret;
 	}
 
-	public default <E> E writeLocked(Supplier<E> operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null supplier to invoke");
+	public default <E> E writeLocked(Supplier<E> supplier) {
+		Objects.requireNonNull(supplier, "Must provide a non-null supplier to invoke");
 		final Lock l = acquireWriteLock();
 		try {
-			return operation.get();
+			return supplier.get();
 		} finally {
 			l.unlock();
 		}

@@ -2,9 +2,9 @@ package com.armedia.commons.utilities;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
 /**
  * <p>
@@ -17,9 +17,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Diego Rivera &lt;diego.rivera@armedia.com&gt;
  *
  */
-public final class SynchronizedCounter {
-	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
-	private final Condition changed = this.rwLock.writeLock().newCondition();
+public final class SynchronizedCounter extends BaseReadWriteLockable {
+	private final Condition changed;
 	private final long created;
 	private long lastChange = 0;
 	private long value = 0;
@@ -46,6 +45,7 @@ public final class SynchronizedCounter {
 		this.value = start;
 		this.created = System.nanoTime();
 		this.lastChange = this.created;
+		this.changed = getWriteLock().newCondition();
 	}
 
 	/**
@@ -68,13 +68,7 @@ public final class SynchronizedCounter {
 	 * @return the time at which the object was last changed, in nanoseconds
 	 */
 	public long getLastChanged() {
-		Lock l = this.rwLock.readLock();
-		l.lock();
-		try {
-			return this.lastChange;
-		} finally {
-			l.unlock();
-		}
+		return readLocked(() -> this.lastChange);
 	}
 
 	/**
@@ -89,13 +83,7 @@ public final class SynchronizedCounter {
 	 *         otherwise
 	 */
 	public boolean isChangedSinceCreation() {
-		Lock l = this.rwLock.readLock();
-		l.lock();
-		try {
-			return (this.lastChange != this.created);
-		} finally {
-			l.unlock();
-		}
+		return readLocked(() -> (this.lastChange != this.created));
 	}
 
 	/**
@@ -106,13 +94,7 @@ public final class SynchronizedCounter {
 	 * @return the value's current value
 	 */
 	public long get() {
-		Lock l = this.rwLock.readLock();
-		l.lock();
-		try {
-			return this.value;
-		} finally {
-			l.unlock();
-		}
+		return readLocked(() -> this.value);
 	}
 
 	/**
@@ -123,9 +105,7 @@ public final class SynchronizedCounter {
 	 * @return the value's current value
 	 */
 	public long set(long value) {
-		Lock l = this.rwLock.writeLock();
-		l.lock();
-		try {
+		return writeLocked(() -> {
 			final long ret = this.value;
 			this.value = value;
 			if (value != ret) {
@@ -134,9 +114,7 @@ public final class SynchronizedCounter {
 				this.changed.signal();
 			}
 			return ret;
-		} finally {
-			l.unlock();
-		}
+		});
 	}
 
 	/**
@@ -150,9 +128,7 @@ public final class SynchronizedCounter {
 	 * @return the new value after applying the delta
 	 */
 	public long add(long delta) {
-		Lock l = this.rwLock.writeLock();
-		l.lock();
-		try {
+		return writeLocked(() -> {
 			long ret = (this.value += delta);
 			if (delta != 0) {
 				// Only trigger the change if there actually was a change
@@ -160,9 +136,7 @@ public final class SynchronizedCounter {
 				this.changed.signal();
 			}
 			return ret;
-		} finally {
-			l.unlock();
-		}
+		});
 	}
 
 	/**
@@ -230,9 +204,7 @@ public final class SynchronizedCounter {
 	 * @throws InterruptedException
 	 */
 	public void waitUntil(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
-		Lock l = this.rwLock.writeLock();
-		l.lock();
-		try {
+		writeLockedChecked(() -> {
 			while (value != this.value) {
 				if (timeout > 0) {
 					this.changed.await(timeout, timeUnit);
@@ -242,9 +214,7 @@ public final class SynchronizedCounter {
 			}
 			// Cascade the signal for anyone else waiting...
 			this.changed.signal();
-		} finally {
-			l.unlock();
-		}
+		});
 	}
 
 	/**
@@ -275,9 +245,7 @@ public final class SynchronizedCounter {
 	 * @throws InterruptedException
 	 */
 	public long waitForChange(long timeout, TimeUnit timeUnit) throws InterruptedException {
-		Lock l = this.rwLock.writeLock();
-		l.lock();
-		try {
+		return writeLockedChecked(() -> {
 			if (timeout > 0) {
 				this.changed.await(timeout, timeUnit);
 			} else {
@@ -287,9 +255,7 @@ public final class SynchronizedCounter {
 			// Cascade the signal for anyone else waiting...
 			this.changed.signal();
 			return ret;
-		} finally {
-			l.unlock();
-		}
+		});
 	}
 
 	/**

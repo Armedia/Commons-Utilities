@@ -16,7 +16,7 @@ public class BaseReadWriteLockable implements ReadWriteLockable {
 	}
 
 	@Override
-	public final ReadWriteLock get() {
+	public final ReadWriteLock getMainLock() {
 		return this.rwLock;
 	}
 }

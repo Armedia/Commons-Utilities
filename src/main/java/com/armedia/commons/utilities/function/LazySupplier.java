@@ -2,8 +2,9 @@ package com.armedia.commons.utilities.function;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
@@ -12,11 +13,11 @@ import org.apache.commons.lang3.concurrent.ConcurrentRuntimeException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
-public class LazySupplier<T> implements Supplier<T> {
+public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T> {
 
-	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-	private final Condition condition = this.rwLock.writeLock().newCondition();
+	private final Condition condition;
 	private final Supplier<T> defaultInitializer;
 	private final ConcurrentInitializer<T> concurrentInitializer;
 	private final T defaultValue;
@@ -40,73 +41,55 @@ public class LazySupplier<T> implements Supplier<T> {
 		this.defaultInitializer = defaultInitializer;
 		this.defaultValue = defaultValue;
 		this.concurrentInitializer = this::get;
+		this.condition = getWriteLock().newCondition();
 	}
 
 	public boolean isDefaulted() {
-		this.rwLock.readLock().lock();
-		try {
-			return isInitialized() && (this.defaultValue == this.item);
-		} finally {
-			this.rwLock.readLock().unlock();
-		}
+		return readLocked(() -> isInitialized() && (this.defaultValue == this.item));
 	}
 
 	public boolean isInitialized() {
-		this.rwLock.readLock().lock();
-		try {
-			return this.initialized;
-		} finally {
-			this.rwLock.readLock().unlock();
-		}
+		return readLocked(() -> this.initialized);
 	}
 
 	public T await() throws InterruptedException {
 		if (!this.initialized) {
-			this.rwLock.writeLock().lock();
-			try {
+			writeLockedChecked(() -> {
 				if (!this.initialized) {
 					this.condition.await();
 					this.condition.signal();
 				}
-			} finally {
-				this.rwLock.writeLock().unlock();
-			}
+			});
 		}
 		return this.item;
 	}
 
 	public T awaitUninterruptibly() {
 		if (!this.initialized) {
-			this.rwLock.writeLock().lock();
-			try {
+			writeLocked(() -> {
 				if (!this.initialized) {
 					this.condition.awaitUninterruptibly();
 					this.condition.signal();
 				}
-			} finally {
-				this.rwLock.writeLock().unlock();
-			}
+			});
 		}
 		return this.item;
 	}
 
 	public Pair<T, Long> awaitNanos(long nanosTimeout) throws InterruptedException {
-		Long ret = null;
+		final AtomicReference<Long> ret = new AtomicReference<>(null);
 		if (!this.initialized) {
-			this.rwLock.writeLock().lock();
-			try {
+			writeLockedChecked(() -> {
 				if (!this.initialized) {
-					ret = this.condition.awaitNanos(nanosTimeout);
+					ret.set(this.condition.awaitNanos(nanosTimeout));
 					if (this.initialized) {
 						this.condition.signal();
-						ret = null;
+						ret.set(null);
 					}
 				}
-			} finally {
-				this.rwLock.writeLock().unlock();
-			}
+			});
 		}
-		return Pair.of(this.item, ret);
+		return Pair.of(this.item, ret.get());
 	}
 
 	public Pair<T, Boolean> await(long time, TimeUnit unit) throws InterruptedException {
@@ -120,21 +103,18 @@ public class LazySupplier<T> implements Supplier<T> {
 	}
 
 	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
-		boolean ret = true;
+		final AtomicBoolean ret = new AtomicBoolean(true);
 		if (!this.initialized) {
-			this.rwLock.writeLock().lock();
-			try {
+			writeLockedChecked(() -> {
 				if (!this.initialized) {
-					ret = this.condition.awaitUntil(deadline);
-					if (ret) {
+					ret.set(this.condition.awaitUntil(deadline));
+					if (ret.get()) {
 						this.condition.signal();
 					}
 				}
-			} finally {
-				this.rwLock.writeLock().unlock();
-			}
+			});
 		}
-		return Pair.of(this.item, !ret);
+		return Pair.of(this.item, !ret.get());
 	}
 
 	@Override
@@ -150,14 +130,11 @@ public class LazySupplier<T> implements Supplier<T> {
 		return this.concurrentInitializer;
 	}
 
-	public T get(Supplier<T> initializer) {
-		boolean localInitialized = this.initialized;
-		if (!localInitialized) {
-			this.rwLock.writeLock().lock();
-			try {
-				localInitialized = this.initialized;
-				if (!localInitialized) {
-					initializer = Tools.coalesce(initializer, this.defaultInitializer);
+	public T get(Supplier<T> init) {
+		if (!this.initialized) {
+			writeLocked(() -> {
+				if (!this.initialized) {
+					Supplier<T> initializer = Tools.coalesce(init, this.defaultInitializer);
 					if (initializer != null) {
 						this.item = initializer.get();
 					} else {
@@ -166,9 +143,7 @@ public class LazySupplier<T> implements Supplier<T> {
 					this.initialized = true;
 					this.condition.signal();
 				}
-			} finally {
-				this.rwLock.writeLock().unlock();
-			}
+			});
 		}
 		return this.item;
 	}

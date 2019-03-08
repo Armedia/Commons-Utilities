@@ -12,15 +12,16 @@
 package com.armedia.commons.utilities;
 
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import com.armedia.commons.utilities.concurrent.ReadWriteLockable;
 
 /**
  * @author drivera@armedia.com
  *
  */
-public class LockingValueStorage<T> extends SimpleValueStorage<T> {
+public class LockingValueStorage<T> extends SimpleValueStorage<T> implements ReadWriteLockable {
 
 	private final ReadWriteLock rwLock;
 
@@ -44,68 +45,37 @@ public class LockingValueStorage<T> extends SimpleValueStorage<T> {
 	}
 
 	@Override
+	public ReadWriteLock getMainLock() {
+		return this.rwLock;
+	}
+
+	@Override
 	public T setValue(String name, T value) {
-		final Lock l = this.rwLock.writeLock();
-		l.lock();
-		try {
-			return super.setValue(name, value);
-		} finally {
-			l.unlock();
-		}
+		return writeLocked(() -> super.setValue(name, value));
 	}
 
 	@Override
 	public T getValue(String name) {
-		final Lock l = this.rwLock.readLock();
-		l.lock();
-		try {
-			return super.getValue(name);
-		} finally {
-			l.unlock();
-		}
+		return readLocked(() -> super.getValue(name));
 	}
 
 	@Override
 	public boolean hasValue(String name) {
-		final Lock l = this.rwLock.readLock();
-		l.lock();
-		try {
-			return super.hasValue(name);
-		} finally {
-			l.unlock();
-		}
+		return readLocked(() -> super.hasValue(name));
 	}
 
 	@Override
 	public Set<String> getValueNames() {
-		final Lock l = this.rwLock.readLock();
-		l.lock();
-		try {
-			return super.getValueNames();
-		} finally {
-			l.unlock();
-		}
+		return readLocked(() -> super.getValueNames());
 	}
 
 	@Override
 	public T clearValue(String name) {
-		final Lock l = this.rwLock.writeLock();
-		l.lock();
-		try {
-			return super.clearValue(name);
-		} finally {
-			l.unlock();
-		}
+		return writeLocked(() -> super.clearValue(name));
 	}
 
 	@Override
 	public void clearAllValues() {
-		final Lock l = this.rwLock.writeLock();
-		l.lock();
-		try {
-			super.clearAllValues();
-		} finally {
-			l.unlock();
-		}
+		writeLocked(() -> super.clearAllValues());
 	}
 }

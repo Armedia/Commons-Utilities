@@ -20,13 +20,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
 /**
  * A simple multi-threaded worker pool that supports having an optionally size-constrained work
@@ -45,7 +44,7 @@ import org.slf4j.LoggerFactory;
  *            {@link PooledWorkersLogic#process(Object, Object)}
  *
  */
-public final class PooledWorkers<STATE, ITEM> {
+public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	protected static final long DEFAULT_MAX_WAIT = 5;
 	protected static final TimeUnit DEFAULT_MAX_WAIT_UNIT = TimeUnit.MINUTES;
 
@@ -55,7 +54,6 @@ public final class PooledWorkers<STATE, ITEM> {
 	private final List<Future<?>> futures;
 	private final AtomicInteger activeCounter;
 
-	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 	private final AtomicBoolean aborted = new AtomicBoolean(false);
 	private final AtomicBoolean terminated = new AtomicBoolean(false);
 	private int threadCount = 0;
@@ -194,13 +192,7 @@ public final class PooledWorkers<STATE, ITEM> {
 	 */
 	public final void addWorkItem(ITEM item) throws InterruptedException {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		final Lock l = this.lock.readLock();
-		l.lock();
-		try {
-			this.workQueue.put(item);
-		} finally {
-			l.unlock();
-		}
+		readLockedChecked(() -> this.workQueue.put(item));
 	}
 
 	/**
@@ -216,13 +208,7 @@ public final class PooledWorkers<STATE, ITEM> {
 	 */
 	public final boolean addWorkItem(ITEM item, long count, TimeUnit timeUnit) throws InterruptedException {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		final Lock l = this.lock.readLock();
-		l.lock();
-		try {
-			return this.workQueue.offer(item, count, timeUnit);
-		} finally {
-			l.unlock();
-		}
+		return readLockedChecked(() -> this.workQueue.offer(item, count, timeUnit));
 	}
 
 	/**
@@ -237,13 +223,7 @@ public final class PooledWorkers<STATE, ITEM> {
 	 */
 	public final boolean addWorkItemNonblock(ITEM item) {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		final Lock l = this.lock.readLock();
-		l.lock();
-		try {
-			return this.workQueue.offer(item);
-		} finally {
-			l.unlock();
-		}
+		return readLocked(() -> this.workQueue.offer(item));
 	}
 
 	/**
@@ -253,15 +233,11 @@ public final class PooledWorkers<STATE, ITEM> {
 	 * @return all remaining work items from the queue
 	 */
 	public final List<ITEM> clearWorkItems() {
-		final Lock l = this.lock.readLock();
-		l.lock();
-		try {
+		return readLockedChecked(() -> {
 			List<ITEM> ret = new ArrayList<>();
 			this.workQueue.drainTo(ret);
 			return ret;
-		} finally {
-			l.unlock();
-		}
+		});
 	}
 
 	/**
@@ -270,13 +246,7 @@ public final class PooledWorkers<STATE, ITEM> {
 	 * @return the current size of the work queue.
 	 */
 	public final int getQueueSize() {
-		final Lock l = this.lock.readLock();
-		l.lock();
-		try {
-			return this.workQueue.size();
-		} finally {
-			l.unlock();
-		}
+		return readLocked(this.workQueue::size);
 	}
 
 	/**
@@ -285,13 +255,7 @@ public final class PooledWorkers<STATE, ITEM> {
 	 * @return the current remaining capacity of the work queue.
 	 */
 	public final int getQueueCapacity() {
-		final Lock l = this.lock.readLock();
-		l.lock();
-		try {
-			return this.workQueue.remainingCapacity();
-		} finally {
-			l.unlock();
-		}
+		return readLocked(this.workQueue::remainingCapacity);
 	}
 
 	/**
@@ -336,9 +300,7 @@ public final class PooledWorkers<STATE, ITEM> {
 	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount, String name,
 		boolean waitForWork) {
 		Objects.requireNonNull(logic, "Must provide the logic that these workers will apply");
-		final Lock l = this.lock.writeLock();
-		l.lock();
-		try {
+		return writeLocked(() -> {
 			if (this.executor != null) { return false; }
 			this.threadCount = Math.max(1, threadCount);
 			this.activeCounter.set(0);
@@ -347,10 +309,11 @@ public final class PooledWorkers<STATE, ITEM> {
 			this.threads.clear();
 			Task task = new Task(logic, waitForWork);
 			ThreadFactory threadFactory = Executors.defaultThreadFactory();
-			name = StringUtils.strip(name);
-			final String threadNameFormat = String.format("%s-%%0%dd", name, String.valueOf(threadCount).length());
-			if (!StringUtils.isEmpty(name)) {
-				final ThreadGroup group = new ThreadGroup(String.format("Threads for PooledWorkers task [%s]", name));
+			String finalName = StringUtils.strip(name);
+			final String threadNameFormat = String.format("%s-%%0%dd", finalName, String.valueOf(threadCount).length());
+			if (!StringUtils.isEmpty(finalName)) {
+				final ThreadGroup group = new ThreadGroup(
+					String.format("Threads for PooledWorkers task [%s]", finalName));
 				threadFactory = new ThreadFactory() {
 					private final AtomicLong counter = new AtomicLong(0);
 
@@ -370,9 +333,7 @@ public final class PooledWorkers<STATE, ITEM> {
 			}
 			this.executor.shutdown();
 			return true;
-		} finally {
-			l.unlock();
-		}
+		});
 	}
 
 	/**
@@ -398,19 +359,19 @@ public final class PooledWorkers<STATE, ITEM> {
 	}
 
 	private List<ITEM> shutdown(boolean abort, long maxWait, TimeUnit timeUnit) {
-		final Lock l = this.lock.writeLock();
-		l.lock();
-		try {
+		return writeLocked(() -> {
 			if (this.executor == null) { return null; }
-			if ((maxWait <= 0) || (timeUnit == null)) {
-				maxWait = getDefaultMaxWait();
-				if (maxWait <= 0) {
-					maxWait = PooledWorkers.DEFAULT_MAX_WAIT;
+			long actualMaxWait = maxWait;
+			TimeUnit actualTimeUnit = timeUnit;
+			if ((actualMaxWait <= 0) || (actualTimeUnit == null)) {
+				actualMaxWait = getDefaultMaxWait();
+				if (actualMaxWait <= 0) {
+					actualMaxWait = PooledWorkers.DEFAULT_MAX_WAIT;
 				}
-				timeUnit = getDefaultMaxWaitUnit();
-				if (timeUnit == null) {
-					maxWait = PooledWorkers.DEFAULT_MAX_WAIT;
-					timeUnit = PooledWorkers.DEFAULT_MAX_WAIT_UNIT;
+				actualTimeUnit = getDefaultMaxWaitUnit();
+				if (actualTimeUnit == null) {
+					actualMaxWait = PooledWorkers.DEFAULT_MAX_WAIT;
+					actualTimeUnit = PooledWorkers.DEFAULT_MAX_WAIT_UNIT;
 				}
 			}
 			try {
@@ -462,9 +423,9 @@ public final class PooledWorkers<STATE, ITEM> {
 				int pending = this.activeCounter.get();
 				if (pending > 0) {
 					this.log.debug("Waiting for pending workers to terminate (maximum {} {}, {} pending workers)",
-						maxWait, timeUnit.name().toLowerCase(), pending);
+						actualMaxWait, actualTimeUnit.name().toLowerCase(), pending);
 					try {
-						this.executor.awaitTermination(maxWait, timeUnit);
+						this.executor.awaitTermination(actualMaxWait, actualTimeUnit);
 					} catch (InterruptedException e) {
 						this.log.warn("Interrupted while waiting for normal executor termination", e);
 						Thread.currentThread().interrupt();
@@ -491,9 +452,7 @@ public final class PooledWorkers<STATE, ITEM> {
 					this.threadCount = 0;
 				}
 			}
-		} finally {
-			l.unlock();
-		}
+		});
 	}
 
 	/**
@@ -522,13 +481,7 @@ public final class PooledWorkers<STATE, ITEM> {
 	 * @param timeUnit
 	 */
 	public final List<ITEM> abortExecution(long maxWait, TimeUnit timeUnit) {
-		final Lock l = this.lock.writeLock();
-		l.lock();
-		try {
-			return shutdown(true, maxWait, timeUnit);
-		} finally {
-			l.unlock();
-		}
+		return writeLocked(() -> shutdown(true, maxWait, timeUnit));
 	}
 
 	/**
@@ -559,12 +512,6 @@ public final class PooledWorkers<STATE, ITEM> {
 	 * @return a list of items pending processing. Will never be {@code null}, but may be empty
 	 */
 	public final List<ITEM> waitForCompletion(long maxWait, TimeUnit timeUnit) {
-		final Lock l = this.lock.writeLock();
-		l.lock();
-		try {
-			return shutdown(false, maxWait, timeUnit);
-		} finally {
-			l.unlock();
-		}
+		return writeLocked(() -> shutdown(false, maxWait, timeUnit));
 	}
 }
