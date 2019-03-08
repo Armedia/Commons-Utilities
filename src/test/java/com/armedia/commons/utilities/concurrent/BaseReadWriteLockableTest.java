@@ -1,8 +1,14 @@
 package com.armedia.commons.utilities.concurrent;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BooleanSupplier;
@@ -588,10 +594,11 @@ public class BaseReadWriteLockableTest {
 		invoked.set(false);
 		rwl.doubleCheckedLocked(() -> {
 			callCount.incrementAndGet();
-			return initialized.getAndSet(true);
+			return !initialized.getAndSet(true);
 		}, () -> {
 			invoked.set(true);
 		});
+		Assertions.assertTrue(initialized.get());
 		Assertions.assertFalse(invoked.get());
 		Assertions.assertEquals(2, cc);
 	}
@@ -706,5 +713,234 @@ public class BaseReadWriteLockableTest {
 		});
 		Assertions.assertFalse(invoked.get());
 		Assertions.assertEquals(2, cc);
+	}
+
+	@Test
+	public void testCheckedExceptions() {
+		final Map<String, AtomicInteger> mainInvocationCounter = new TreeMap<>();
+		final Map<String, AtomicInteger> readInvocationCounter = new TreeMap<>();
+		final Map<String, AtomicInteger> writeInvocationCounter = new TreeMap<>();
+		final ReadWriteLock baseLock = new ReentrantReadWriteLock();
+
+		final InvocationHandler readLockHandler = (Object proxy, Method method, Object[] args) -> {
+			AtomicInteger i = readInvocationCounter.computeIfAbsent(method.getName(), (s) -> new AtomicInteger(0));
+			Object ret = method.invoke(baseLock.readLock(), args);
+			i.incrementAndGet();
+			return ret;
+		};
+		final Lock readLock = Lock.class
+			.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[] {
+				Lock.class
+			}, readLockHandler));
+		final InvocationHandler writeLockHandler = (Object proxy, Method method, Object[] args) -> {
+			AtomicInteger i = writeInvocationCounter.computeIfAbsent(method.getName(), (s) -> new AtomicInteger(0));
+			Object ret = method.invoke(baseLock.writeLock(), args);
+			i.incrementAndGet();
+			return ret;
+		};
+		final Lock writeLock = Lock.class
+			.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[] {
+				Lock.class
+			}, writeLockHandler));
+		final InvocationHandler mainLockHandler = (Object proxy, Method method, Object[] args) -> {
+			AtomicInteger i = mainInvocationCounter.computeIfAbsent(method.getName(), (s) -> new AtomicInteger(0));
+			if (method.getName().equals("writeLock")) {
+				i.incrementAndGet();
+				return writeLock;
+			}
+			if (method.getName().equals("readLock")) {
+				i.incrementAndGet();
+				return readLock;
+			}
+			Object ret = method.invoke(baseLock, args);
+			i.incrementAndGet();
+			return ret;
+		};
+		final ReadWriteLock lock = ReadWriteLock.class
+			.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[] {
+				ReadWriteLock.class
+			}, mainLockHandler));
+
+		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final RuntimeException ex = new RuntimeException();
+		final AtomicInteger callCount = new AtomicInteger(0);
+		final Object a = "Object-A";
+
+		// Exception on the first checker invocation, no locks should be acquired at all
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		try {
+			rwl.doubleCheckedLockedChecked(() -> {
+				throw ex;
+			}, () -> {
+				Assertions.fail("This should not have been invoked");
+			});
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+
+		// Exception on the second checker invocation, write lock should be acquired and released
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		try {
+			rwl.doubleCheckedLockedChecked(() -> {
+				if (callCount.getAndIncrement() > 0) { throw ex; }
+				return true;
+			}, () -> {
+				Assertions.fail("This should not have been invoked");
+			});
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
+		AtomicInteger result = writeInvocationCounter.get("lock");
+		Assertions.assertEquals(1, result.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
+		result = writeInvocationCounter.get("unlock");
+		Assertions.assertEquals(1, result.get());
+
+		writeInvocationCounter.clear();
+
+		// Exception on the second checker invocation, write lock should be acquired and released
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		try {
+			rwl.doubleCheckedLockedChecked(() -> true, () -> {
+				throw ex;
+			});
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
+		result = writeInvocationCounter.get("lock");
+		Assertions.assertEquals(1, result.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
+		result = writeInvocationCounter.get("unlock");
+		Assertions.assertEquals(1, result.get());
+
+		writeInvocationCounter.clear();
+		callCount.set(0);
+
+		// Second checker returns false
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		rwl.doubleCheckedLockedChecked(() -> {
+			return (callCount.incrementAndGet() < 2);
+		}, () -> Assertions.fail("This supplier should not have been invoked"));
+		Assertions.assertEquals(2, callCount.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
+		result = writeInvocationCounter.get("lock");
+		Assertions.assertEquals(1, result.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
+		result = writeInvocationCounter.get("unlock");
+		Assertions.assertEquals(1, result.get());
+
+		writeInvocationCounter.clear();
+		callCount.set(0);
+
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		// Exception on the first checker invocation, no locks should be acquired at all
+		try {
+			rwl.doubleCheckedLockedChecked(() -> {
+				throw ex;
+			}, (e) -> Assertions.fail("This predicate should not have been invoked"),
+				() -> Assertions.fail("This supplier should not have been invoked"));
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+
+		// Exception on the predicate invocation, no locks should be acquired at all
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		try {
+			rwl.doubleCheckedLockedChecked(() -> true, (e) -> {
+				throw ex;
+			}, () -> Assertions.fail("This supplier should not have been invoked"));
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+
+		writeInvocationCounter.clear();
+		callCount.set(0);
+
+		// Exception on the second checker invocation, write lock should be acquired and released
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		try {
+			rwl.doubleCheckedLockedChecked(() -> {
+				if (callCount.getAndIncrement() > 0) { throw ex; }
+				return true;
+			}, (e) -> e, () -> Assertions.fail("This supplier should not have been invoked"));
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
+		result = writeInvocationCounter.get("lock");
+		Assertions.assertEquals(1, result.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
+		result = writeInvocationCounter.get("unlock");
+		Assertions.assertEquals(1, result.get());
+
+		writeInvocationCounter.clear();
+		callCount.set(0);
+
+		// Exception on the second predicate invocation, write lock should be acquired and released
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		try {
+			rwl.doubleCheckedLockedChecked(() -> null, (e) -> {
+				if (callCount.getAndIncrement() > 0) { throw ex; }
+				return true;
+			}, () -> Assertions.fail("This supplier should not have been invoked"));
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
+		result = writeInvocationCounter.get("lock");
+		Assertions.assertEquals(1, result.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
+		result = writeInvocationCounter.get("unlock");
+		Assertions.assertEquals(1, result.get());
+
+		writeInvocationCounter.clear();
+		callCount.set(0);
+
+		// Exception on the calculator invocation, write lock should be acquired and released
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		try {
+			rwl.doubleCheckedLockedChecked(() -> null, (e) -> {
+				return true;
+			}, () -> {
+				throw ex;
+			});
+			Assertions.fail("Did not cascade a raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
+		result = writeInvocationCounter.get("lock");
+		Assertions.assertEquals(1, result.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
+		result = writeInvocationCounter.get("unlock");
+		Assertions.assertEquals(1, result.get());
+
+		writeInvocationCounter.clear();
+		callCount.set(0);
+
+		// Second predicate call returns false
+		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
+		Object ret = rwl.doubleCheckedLockedChecked(() -> a, (e) -> {
+			return callCount.incrementAndGet() < 2;
+		}, () -> Assertions.fail("This supplier should not have been invoked"));
+		Assertions.assertSame(a, ret);
+		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
+		result = writeInvocationCounter.get("lock");
+		Assertions.assertEquals(1, result.get());
+		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
+		result = writeInvocationCounter.get("unlock");
+		Assertions.assertEquals(1, result.get());
 	}
 }
