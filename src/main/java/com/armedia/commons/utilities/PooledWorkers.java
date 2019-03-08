@@ -192,7 +192,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 */
 	public final void addWorkItem(ITEM item) throws InterruptedException {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		readLockedChecked(() -> this.workQueue.put(item));
+		readLocked(() -> this.workQueue.put(item));
 	}
 
 	/**
@@ -208,7 +208,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 */
 	public final boolean addWorkItem(ITEM item, long count, TimeUnit timeUnit) throws InterruptedException {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		return readLockedChecked(() -> this.workQueue.offer(item, count, timeUnit));
+		return readLocked(() -> this.workQueue.offer(item, count, timeUnit));
 	}
 
 	/**
@@ -233,7 +233,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 * @return all remaining work items from the queue
 	 */
 	public final List<ITEM> clearWorkItems() {
-		return readLockedChecked(() -> {
+		return readLocked(() -> {
 			List<ITEM> ret = new ArrayList<>();
 			this.workQueue.drainTo(ret);
 			return ret;

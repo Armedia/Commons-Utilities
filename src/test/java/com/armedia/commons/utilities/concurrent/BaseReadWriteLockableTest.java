@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -122,10 +121,10 @@ public class BaseReadWriteLockableTest {
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
 
-		Assertions.assertThrows(NullPointerException.class, () -> rwl.readLocked((Supplier<Object>) null),
-			"Did not fail with a null Supplier");
+		Assertions.assertThrows(NullPointerException.class,
+			() -> rwl.readLocked((CheckedSupplier<Object, Exception>) null), "Did not fail with a null Supplier");
 
-		Assertions.assertThrows(NullPointerException.class, () -> rwl.readLocked((Runnable) null),
+		Assertions.assertThrows(NullPointerException.class, () -> rwl.readLocked((CheckedRunnable<Exception>) null),
 			"Did not fail with a null Runnable");
 
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
@@ -137,8 +136,25 @@ public class BaseReadWriteLockableTest {
 			Assertions.assertFalse(writeLock.tryLock(), "Acquired the write lock while the read lock was held");
 			return lock;
 		});
-		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertSame(lock, ret);
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+		Assertions.assertTrue(writeLock.tryLock());
+		writeLock.unlock();
+
+		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		final RuntimeException ex = new RuntimeException();
+		try {
+			rwl.readLocked(() -> {
+				Assertions.assertEquals(1, lock.getReadHoldCount());
+				throw ex;
+			});
+			Assertions.fail("Did not cascade the raised exception");
+		} catch (Throwable t) {
+			Assertions.assertSame(ex, t);
+		}
+		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		Assertions.assertTrue(writeLock.tryLock());
 		writeLock.unlock();
@@ -158,73 +174,14 @@ public class BaseReadWriteLockableTest {
 	}
 
 	@Test
-	public void testReadLockedChecked() {
-		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
-
-		Assertions.assertThrows(NullPointerException.class,
-			() -> rwl.readLockedChecked((CheckedSupplier<Object, Exception>) null),
-			"Did not fail with a null Supplier");
-
-		Assertions.assertThrows(NullPointerException.class,
-			() -> rwl.readLockedChecked((CheckedRunnable<Exception>) null), "Did not fail with a null Runnable");
-
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		ReadWriteLock ret = rwl.readLockedChecked(() -> {
-			// Prove that we're holding the read lock
-			Assertions.assertEquals(1, lock.getReadHoldCount());
-			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-			Assertions.assertFalse(writeLock.tryLock(), "Acquired the write lock while the read lock was held");
-			return lock;
-		});
-		Assertions.assertSame(lock, ret);
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertTrue(writeLock.tryLock());
-		writeLock.unlock();
-
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		final RuntimeException ex = new RuntimeException();
-		try {
-			rwl.readLockedChecked(() -> {
-				Assertions.assertEquals(1, lock.getReadHoldCount());
-				throw ex;
-			});
-			Assertions.fail("Did not cascade the raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertTrue(writeLock.tryLock());
-		writeLock.unlock();
-
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		rwl.readLockedChecked(() -> {
-			// Prove that we're holding the read lock
-			Assertions.assertEquals(1, lock.getReadHoldCount());
-			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-			Assertions.assertFalse(writeLock.tryLock(), "Acquired the write lock while the read lock was held");
-		});
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertTrue(writeLock.tryLock());
-		writeLock.unlock();
-	}
-
-	@Test
 	public void testWriteLocked() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
 
-		Assertions.assertThrows(NullPointerException.class, () -> rwl.writeLocked((Supplier<Object>) null),
-			"Did not fail with a null Supplier");
-		Assertions.assertThrows(NullPointerException.class, () -> rwl.writeLocked((Runnable) null),
+		Assertions.assertThrows(NullPointerException.class,
+			() -> rwl.writeLocked((CheckedSupplier<Object, Exception>) null), "Did not fail with a null Supplier");
+		Assertions.assertThrows(NullPointerException.class, () -> rwl.writeLocked((CheckedRunnable<Exception>) null),
 			"Did not fail with a null Runnable");
 
 		Assertions.assertTrue(writeLock.tryLock());
@@ -241,39 +198,9 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertSame(lock, ret);
 
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		rwl.writeLocked(() -> Assertions.assertTrue(writeLock.isHeldByCurrentThread()));
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-	}
-
-	@Test
-	public void testWriteLockedChecked() {
-		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
-
-		Assertions.assertThrows(NullPointerException.class,
-			() -> rwl.writeLockedChecked((CheckedSupplier<Object, Exception>) null),
-			"Did not fail with a null Supplier");
-		Assertions.assertThrows(NullPointerException.class,
-			() -> rwl.writeLockedChecked((CheckedRunnable<Exception>) null), "Did not fail with a null Runnable");
-
-		Assertions.assertTrue(writeLock.tryLock());
-		Assertions.assertTrue(writeLock.isHeldByCurrentThread());
-		writeLock.unlock();
-
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		ReadWriteLock ret = rwl.writeLockedChecked(() -> {
-			// Prove that we're holding the read lock
-			Assertions.assertTrue(writeLock.isHeldByCurrentThread());
-			return lock;
-		});
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertSame(lock, ret);
-
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		final RuntimeException ex = new RuntimeException();
 		try {
-			rwl.writeLockedChecked(() -> {
+			rwl.writeLocked(() -> {
 				// Prove that we're holding the read lock
 				Assertions.assertTrue(writeLock.isHeldByCurrentThread());
 				throw ex;
@@ -286,7 +213,7 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertSame(lock, ret);
 
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		rwl.writeLockedChecked(() -> Assertions.assertTrue(writeLock.isHeldByCurrentThread()));
+		rwl.writeLocked(() -> Assertions.assertTrue(writeLock.isHeldByCurrentThread()));
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 	}
 
@@ -320,8 +247,8 @@ public class BaseReadWriteLockableTest {
 			final CheckedFunction<Object, Object, Exception> nullMap = null;
 			final CheckedFunction<Object, Object, Exception> map = (e) -> null;
 
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullSup, nullPred, nullMap), "Did not fail with all-null parameters");
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, nullMap),
+				"Did not fail with all-null parameters");
 
 			rwl.readUpgradable(nullSup, pred, map);
 
@@ -329,8 +256,7 @@ public class BaseReadWriteLockableTest {
 				"Did not fail with null Predicate");
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, Objects::nonNull, nullMap),
-				"Did not fail with null mapper Function");
+				() -> rwl.readUpgradable(sup, Objects::nonNull, nullMap), "Did not fail with null mapper Function");
 
 			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, nullMap),
 				"Did not fail with null Predicate and mapper Function");
@@ -353,7 +279,7 @@ public class BaseReadWriteLockableTest {
 			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 			callCount.incrementAndGet();
 			return a;
-		}, (e) -> true, (e) -> {
+		}, (e) -> false, (e) -> {
 			Assertions.fail("This should not have been called");
 			return b;
 		});
@@ -375,7 +301,7 @@ public class BaseReadWriteLockableTest {
 				Assertions.assertTrue(writeLock.isHeldByCurrentThread());
 			}
 			return a;
-		}, (e) -> callCount.get() > 1, (e) -> {
+		}, (e) -> callCount.get() <= 1, (e) -> {
 			Assertions.fail("This should not have been called");
 			return b;
 		});
@@ -391,7 +317,7 @@ public class BaseReadWriteLockableTest {
 			// This should happen with the read lock held
 			callCount.incrementAndGet();
 			return a;
-		}, (e) -> false, (e) -> {
+		}, (e) -> true, (e) -> {
 			Assertions.assertEquals(0, lock.getReadHoldCount());
 			Assertions.assertTrue(writeLock.isHeldByCurrentThread());
 			return b;
@@ -410,8 +336,8 @@ public class BaseReadWriteLockableTest {
 			final CheckedConsumer<Object, Exception> cons = (e) -> {
 			};
 
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullSup, nullPred, nullCons), "Did not fail with all-null parameters");
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, nullCons),
+				"Did not fail with all-null parameters");
 
 			rwl.readUpgradable(nullSup, pred, cons);
 
@@ -419,19 +345,15 @@ public class BaseReadWriteLockableTest {
 				"Did not fail with null Predicate");
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, Objects::nonNull, nullCons),
-				"Did not fail with null mapper Function");
+				() -> rwl.readUpgradable(sup, Objects::nonNull, nullCons), "Did not fail with null mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, nullPred, nullCons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, nullCons),
 				"Did not fail with null Predicate and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullSup, pred, nullCons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, pred, nullCons),
 				"Did not fail with null Supplier and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullSup, nullPred, cons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, cons),
 				"Did not fail with null Supplier and Predicate");
 
 			rwl.readUpgradable(sup, pred, cons);
@@ -446,9 +368,7 @@ public class BaseReadWriteLockableTest {
 			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 			callCount.incrementAndGet();
 			return a;
-		}, (e) -> {
-			return true;
-		}, (e) -> {
+		}, (e) -> false, (e) -> {
 			Assertions.fail("This should not have been called");
 		});
 		Assertions.assertEquals(0, lock.getReadHoldCount());
@@ -468,7 +388,7 @@ public class BaseReadWriteLockableTest {
 				Assertions.assertTrue(writeLock.isHeldByCurrentThread());
 			}
 			return a;
-		}, (e) -> callCount.get() > 1, (e) -> {
+		}, (e) -> callCount.get() <= 1, (e) -> {
 			Assertions.fail("This should not have been called");
 		});
 		Assertions.assertEquals(0, lock.getReadHoldCount());
@@ -482,7 +402,7 @@ public class BaseReadWriteLockableTest {
 			// This should happen with the read lock held
 			callCount.incrementAndGet();
 			return a;
-		}, (e) -> false, (e) -> {
+		}, (e) -> true, (e) -> {
 			Assertions.assertEquals(0, lock.getReadHoldCount());
 			Assertions.assertTrue(writeLock.isHeldByCurrentThread());
 		});

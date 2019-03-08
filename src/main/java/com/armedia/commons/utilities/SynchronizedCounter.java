@@ -203,7 +203,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @throws InterruptedException
 	 */
 	public void waitUntil(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
-		writeLockedChecked(() -> {
+		writeLocked(() -> {
 			while (value != this.value) {
 				if (timeout > 0) {
 					this.changed.await(timeout, timeUnit);
@@ -244,7 +244,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @throws InterruptedException
 	 */
 	public long waitForChange(long timeout, TimeUnit timeUnit) throws InterruptedException {
-		return writeLockedChecked(() -> {
+		return writeLocked(() -> {
 			if (timeout > 0) {
 				this.changed.await(timeout, timeUnit);
 			} else {
