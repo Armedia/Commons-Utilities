@@ -17,140 +17,140 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class LazySupplierTest {
+public class CheckedLazySupplierTest {
 
-	private static final Supplier<String> FAIL_SUPP = () -> {
+	private static final CheckedSupplier<String, Exception> FAIL_SUPP = () -> {
 		Assertions.fail("This supplier should not have been invoked");
 		return null;
 	};
 
 	@Test
-	public void testLazySupplier() {
-		LazySupplier<String> supplier = new LazySupplier<>();
+	public void testCheckedLazySupplier() {
+		CheckedLazySupplier<String, Exception> supplier = new CheckedLazySupplier<>();
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
-	public void testLazySupplierSupplierOfT() {
+	public void testCheckedLazySupplierCheckedSupplierOfT() {
 		final String uuid = UUID.randomUUID().toString();
-		final Supplier<String> uuidSupplier = () -> uuid;
-		LazySupplier<String> supplier = null;
+		final CheckedSupplier<String, Exception> uuidSupplier = () -> uuid;
+		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = new LazySupplier<>(uuidSupplier);
+		supplier = new CheckedLazySupplier<>(uuidSupplier);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>((Supplier<String>) null);
+		supplier = new CheckedLazySupplier<>((CheckedSupplier<String, Exception>) null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
-	public void testLazySupplierT() {
+	public void testCheckedLazySupplierT() {
 		final String uuid = UUID.randomUUID().toString();
-		LazySupplier<String> supplier = null;
+		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = new LazySupplier<>(uuid);
+		supplier = new CheckedLazySupplier<>(uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>((String) null);
+		supplier = new CheckedLazySupplier<>((String) null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
-	public void testLazySupplierSupplierOfTT() {
+	public void testCheckedLazySupplierCheckedSupplierOfTT() {
 		String uuid = UUID.randomUUID().toString();
 		String uuid2 = UUID.randomUUID().toString();
-		Supplier<String> uuidSupplier = () -> uuid2;
-		LazySupplier<String> supplier = null;
+		CheckedSupplier<String, Exception> uuidSupplier = () -> uuid2;
+		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = new LazySupplier<>(null, null);
+		supplier = new CheckedLazySupplier<>(null, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(uuidSupplier, null);
+		supplier = new CheckedLazySupplier<>(uuidSupplier, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid2, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(null, uuid);
+		supplier = new CheckedLazySupplier<>(null, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(uuidSupplier, uuid);
+		supplier = new CheckedLazySupplier<>(uuidSupplier, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid2, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
 	public void testGet() {
 		String uuid = UUID.randomUUID().toString();
-		LazySupplier<String> supplier = null;
+		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = new LazySupplier<>();
+		supplier = new CheckedLazySupplier<>();
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(uuid);
+		supplier = new CheckedLazySupplier<>(uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(() -> uuid);
+		supplier = new CheckedLazySupplier<>(() -> uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(() -> {
-			throw new RuntimeException(uuid);
+		supplier = new CheckedLazySupplier<>(() -> {
+			throw new Exception(uuid);
 		});
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
@@ -174,38 +174,139 @@ public class LazySupplierTest {
 	public void testGetSupplierOfT() {
 		String uuid = UUID.randomUUID().toString();
 		String uuid2 = UUID.randomUUID().toString();
-		LazySupplier<String> supplier = null;
+		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = new LazySupplier<>();
+		supplier = new CheckedLazySupplier<>();
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get(() -> uuid));
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(uuid);
+		supplier = new CheckedLazySupplier<>(uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get(() -> uuid2));
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid2, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>(uuid);
+		supplier = new CheckedLazySupplier<>(uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get(null));
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = new LazySupplier<>();
+		supplier = new CheckedLazySupplier<>();
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		try {
 			supplier.get(() -> {
 				throw new RuntimeException(uuid);
+			});
+			Assertions.fail("Did not raise an explicit exception");
+		} catch (Exception e) {
+			Assertions.assertSame(uuid, e.getCause().getMessage());
+		}
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		AtomicBoolean called = new AtomicBoolean(false);
+		Assertions.assertSame(uuid, supplier.get(() -> {
+			called.set(true);
+			return uuid;
+		}));
+		Assertions.assertTrue(called.get());
+	}
+
+	@Test
+	public void testGetChecked() throws Exception {
+		String uuid = UUID.randomUUID().toString();
+		CheckedLazySupplier<String, Exception> supplier = null;
+
+		supplier = new CheckedLazySupplier<>();
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertNull(supplier.getChecked());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
+
+		supplier = new CheckedLazySupplier<>(uuid);
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.getChecked());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
+
+		supplier = new CheckedLazySupplier<>(() -> uuid);
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.getChecked());
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
+
+		supplier = new CheckedLazySupplier<>(() -> {
+			throw new Exception(uuid);
+		});
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		try {
+			supplier.getChecked();
+			Assertions.fail("Did not raise an explicit exception");
+		} catch (Exception e) {
+			Assertions.assertSame(uuid, e.getMessage());
+		}
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		AtomicBoolean called = new AtomicBoolean(false);
+		Assertions.assertSame(uuid, supplier.get(() -> {
+			called.set(true);
+			return uuid;
+		}));
+		Assertions.assertTrue(called.get());
+	}
+
+	@Test
+	public void testGetCheckedSupplierOfT() throws Exception {
+		String uuid = UUID.randomUUID().toString();
+		String uuid2 = UUID.randomUUID().toString();
+		CheckedLazySupplier<String, Exception> supplier = null;
+
+		supplier = new CheckedLazySupplier<>();
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(() -> uuid));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
+
+		supplier = new CheckedLazySupplier<>(uuid);
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(() -> uuid2));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid2, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
+
+		supplier = new CheckedLazySupplier<>(uuid);
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(null));
+		Assertions.assertTrue(supplier.isInitialized());
+		Assertions.assertTrue(supplier.isDefaulted());
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
+
+		supplier = new CheckedLazySupplier<>();
+		Assertions.assertFalse(supplier.isInitialized());
+		Assertions.assertFalse(supplier.isDefaulted());
+		try {
+			supplier.getChecked(() -> {
+				throw new Exception(uuid);
 			});
 			Assertions.fail("Did not raise an explicit exception");
 		} catch (Exception e) {
@@ -225,23 +326,23 @@ public class LazySupplierTest {
 	public void testFromSupplierSupplierOfT() {
 		final String uuid = UUID.randomUUID().toString();
 		final Supplier<String> uuidSupplier = () -> uuid;
-		LazySupplier<String> supplier = null;
+		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = LazySupplier.fromSupplier(uuidSupplier);
+		supplier = CheckedLazySupplier.fromSupplier(uuidSupplier);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(null);
+		supplier = CheckedLazySupplier.fromSupplier(null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
@@ -249,45 +350,45 @@ public class LazySupplierTest {
 		String uuid = UUID.randomUUID().toString();
 		String uuid2 = UUID.randomUUID().toString();
 		Supplier<String> uuidSupplier = () -> uuid2;
-		LazySupplier<String> supplier = null;
+		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = LazySupplier.fromSupplier(null, null);
+		supplier = CheckedLazySupplier.fromSupplier(null, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(uuidSupplier, null);
+		supplier = CheckedLazySupplier.fromSupplier(uuidSupplier, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid2, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(null, uuid);
+		supplier = CheckedLazySupplier.fromSupplier(null, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertTrue(supplier.isDefaulted());
-		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(uuidSupplier, uuid);
+		supplier = CheckedLazySupplier.fromSupplier(uuidSupplier, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());
 		Assertions.assertTrue(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
-		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
+		Assertions.assertSame(uuid2, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 	}
 
 	@Test
 	public void testAwait() throws Exception {
 		final CyclicBarrier barrier = new CyclicBarrier(2);
-		final AtomicReference<LazySupplier<String>> supplier = new AtomicReference<>();
+		final AtomicReference<CheckedLazySupplier<String, Exception>> supplier = new AtomicReference<>();
 		final AtomicReference<String> uuid = new AtomicReference<>();
 		final AtomicBoolean called = new AtomicBoolean(false);
 		final AtomicReference<Thread> worker = new AtomicReference<>();
@@ -298,7 +399,7 @@ public class LazySupplierTest {
 				// First things first... await
 				worker.set(Thread.currentThread());
 				barrier.await();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertFalse(S.isInitialized());
 					String ret = S.await();
@@ -310,7 +411,7 @@ public class LazySupplierTest {
 			};
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(waiter);
@@ -343,7 +444,7 @@ public class LazySupplierTest {
 				// First things first... await
 				worker.set(Thread.currentThread());
 				barrier.await();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertTrue(S.isInitialized());
 					return S.await();
@@ -357,8 +458,8 @@ public class LazySupplierTest {
 			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(() -> {
-				throw new RuntimeException(uuid.get());
+			supplier.set(new CheckedLazySupplier<>(() -> {
+				throw new Exception(uuid.get());
 			}));
 			called.set(false);
 
@@ -384,7 +485,7 @@ public class LazySupplierTest {
 			}
 			Assertions.assertFalse(called.get());
 			try {
-				supplier.get().get();
+				supplier.get().getChecked();
 				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
@@ -400,7 +501,7 @@ public class LazySupplierTest {
 			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(waiter);
@@ -444,7 +545,7 @@ public class LazySupplierTest {
 	@Test
 	public void testAwaitUninterruptibly() throws Exception {
 		final CyclicBarrier barrier = new CyclicBarrier(2);
-		final AtomicReference<LazySupplier<String>> supplier = new AtomicReference<>();
+		final AtomicReference<CheckedLazySupplier<String, Exception>> supplier = new AtomicReference<>();
 		final AtomicReference<String> uuid = new AtomicReference<>();
 		final AtomicBoolean called = new AtomicBoolean(false);
 		final AtomicReference<Thread> worker = new AtomicReference<>();
@@ -455,7 +556,7 @@ public class LazySupplierTest {
 				// First things first... await
 				worker.set(Thread.currentThread());
 				barrier.await();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertFalse(S.isInitialized());
 					String ret = S.awaitUninterruptibly();
@@ -467,7 +568,7 @@ public class LazySupplierTest {
 			};
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(waiter);
@@ -500,7 +601,7 @@ public class LazySupplierTest {
 				// First things first... await
 				worker.set(Thread.currentThread());
 				barrier.await();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertTrue(S.isInitialized());
 					return S.awaitUninterruptibly();
@@ -514,8 +615,8 @@ public class LazySupplierTest {
 			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(() -> {
-				throw new RuntimeException(uuid.get());
+			supplier.set(new CheckedLazySupplier<>(() -> {
+				throw new Exception(uuid.get());
 			}));
 			called.set(false);
 
@@ -541,7 +642,7 @@ public class LazySupplierTest {
 			}
 			Assertions.assertFalse(called.get());
 			try {
-				supplier.get().get();
+				supplier.get().getChecked();
 				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
@@ -557,7 +658,7 @@ public class LazySupplierTest {
 			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(waiter);
@@ -614,7 +715,7 @@ public class LazySupplierTest {
 	@Test
 	public void testAwaitLongTimeUnit() throws Exception {
 		final CyclicBarrier barrier = new CyclicBarrier(2);
-		final AtomicReference<LazySupplier<String>> supplier = new AtomicReference<>();
+		final AtomicReference<CheckedLazySupplier<String, Exception>> supplier = new AtomicReference<>();
 		final AtomicReference<String> uuid = new AtomicReference<>();
 		final AtomicBoolean called = new AtomicBoolean(false);
 		final AtomicReference<Thread> worker = new AtomicReference<>();
@@ -628,7 +729,7 @@ public class LazySupplierTest {
 				worker.set(Thread.currentThread());
 				barrier.await();
 				final Pair<Long, TimeUnit> to = timeout.get();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.await(to.getLeft(), to.getRight());
@@ -640,7 +741,7 @@ public class LazySupplierTest {
 			};
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 			timeout.set(Pair.of(10L, TimeUnit.SECONDS));
 
@@ -677,7 +778,7 @@ public class LazySupplierTest {
 				worker.set(Thread.currentThread());
 				barrier.await();
 				final Pair<Long, TimeUnit> to = timeout.get();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertTrue(S.isInitialized());
 					return S.await(to.getLeft(), to.getRight());
@@ -693,8 +794,8 @@ public class LazySupplierTest {
 			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(() -> {
-				throw new RuntimeException(uuid.get());
+			supplier.set(new CheckedLazySupplier<>(() -> {
+				throw new Exception(uuid.get());
 			}));
 			called.set(false);
 
@@ -719,7 +820,7 @@ public class LazySupplierTest {
 			}
 			Assertions.assertFalse(called.get());
 			try {
-				supplier.get().get();
+				supplier.get().getChecked();
 				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
@@ -739,7 +840,7 @@ public class LazySupplierTest {
 			Assertions.assertTrue(called.get());
 
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(waiter);
@@ -776,7 +877,7 @@ public class LazySupplierTest {
 
 			timeout.set(Pair.of(1L, TimeUnit.SECONDS));
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(() -> {
@@ -784,7 +885,7 @@ public class LazySupplierTest {
 				worker.set(Thread.currentThread());
 				barrier.await();
 				final Pair<Long, TimeUnit> to = timeout.get();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.await(to.getLeft(), to.getRight());
@@ -830,7 +931,7 @@ public class LazySupplierTest {
 	@Test
 	public void testAwaitUntil() throws Exception {
 		final CyclicBarrier barrier = new CyclicBarrier(2);
-		final AtomicReference<LazySupplier<String>> supplier = new AtomicReference<>();
+		final AtomicReference<CheckedLazySupplier<String, Exception>> supplier = new AtomicReference<>();
 		final AtomicReference<String> uuid = new AtomicReference<>();
 		final AtomicBoolean called = new AtomicBoolean(false);
 		final AtomicReference<Thread> worker = new AtomicReference<>();
@@ -844,7 +945,7 @@ public class LazySupplierTest {
 				worker.set(Thread.currentThread());
 				barrier.await();
 				final Date to = timeout.get();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.awaitUntil(to);
@@ -857,7 +958,7 @@ public class LazySupplierTest {
 
 			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(waiter);
@@ -893,7 +994,7 @@ public class LazySupplierTest {
 				worker.set(Thread.currentThread());
 				barrier.await();
 				final Date to = timeout.get();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertTrue(S.isInitialized());
 					return S.awaitUntil(to);
@@ -910,8 +1011,8 @@ public class LazySupplierTest {
 
 			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(() -> {
-				throw new RuntimeException(uuid.get());
+			supplier.set(new CheckedLazySupplier<>(() -> {
+				throw new Exception(uuid.get());
 			}));
 			called.set(false);
 
@@ -936,7 +1037,7 @@ public class LazySupplierTest {
 			}
 			Assertions.assertFalse(called.get());
 			try {
-				supplier.get().get();
+				supplier.get().getChecked();
 				Assertions.fail("Did not raise an exception");
 			} catch (Throwable t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
@@ -957,7 +1058,7 @@ public class LazySupplierTest {
 
 			timeout.set(new Date(System.currentTimeMillis() + 5000));
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(waiter);
@@ -994,7 +1095,7 @@ public class LazySupplierTest {
 
 			timeout.set(new Date(System.currentTimeMillis() + 1000));
 			uuid.set(UUID.randomUUID().toString());
-			supplier.set(new LazySupplier<>(uuid.get()));
+			supplier.set(new CheckedLazySupplier<>(uuid.get()));
 			called.set(false);
 
 			future = executor.submit(() -> {
@@ -1002,7 +1103,7 @@ public class LazySupplierTest {
 				worker.set(Thread.currentThread());
 				barrier.await();
 				final Date to = timeout.get();
-				final LazySupplier<String> S = supplier.get();
+				final CheckedLazySupplier<String, Exception> S = supplier.get();
 				try {
 					Assertions.assertFalse(S.isInitialized());
 					Pair<String, Boolean> ret = S.awaitUntil(to);

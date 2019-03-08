@@ -8,38 +8,43 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
-import org.apache.commons.lang3.concurrent.ConcurrentRuntimeException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.Tools;
 
-public class LazySupplier<T> implements Supplier<T> {
+public class CheckedLazySupplier<T, EX extends Throwable> implements Supplier<T>, CheckedSupplier<T, EX> {
 
 	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 	private final Condition condition = this.rwLock.writeLock().newCondition();
-	private final Supplier<T> defaultInitializer;
+	private final CheckedSupplier<T, EX> defaultInitializer;
 	private final ConcurrentInitializer<T> concurrentInitializer;
 	private final T defaultValue;
 
 	private volatile boolean initialized = false;
 	private volatile T item = null;
 
-	public LazySupplier() {
+	public CheckedLazySupplier() {
 		this(null, null);
 	}
 
-	public LazySupplier(Supplier<T> defaultInitializer) {
+	public CheckedLazySupplier(CheckedSupplier<T, EX> defaultInitializer) {
 		this(defaultInitializer, null);
 	}
 
-	public LazySupplier(T defaultValue) {
+	public CheckedLazySupplier(T defaultValue) {
 		this(null, defaultValue);
 	}
 
-	public LazySupplier(Supplier<T> defaultInitializer, T defaultValue) {
+	public CheckedLazySupplier(CheckedSupplier<T, EX> defaultInitializer, T defaultValue) {
 		this.defaultInitializer = defaultInitializer;
 		this.defaultValue = defaultValue;
-		this.concurrentInitializer = this::get;
+		this.concurrentInitializer = () -> {
+			try {
+				return getChecked();
+			} catch (Throwable t) {
+				throw new ConcurrentException(t.getMessage(), t);
+			}
+		};
 	}
 
 	public boolean isDefaulted() {
@@ -140,17 +145,30 @@ public class LazySupplier<T> implements Supplier<T> {
 	@Override
 	public T get() {
 		try {
-			return get(this.defaultInitializer);
+			return getChecked(this.defaultInitializer);
 		} catch (Throwable t) {
-			throw new RuntimeException(t.getMessage(), t);
+			throw new RuntimeException("Lazy initialization failed", t);
 		}
+	}
+
+	public T get(Supplier<T> initializer) {
+		try {
+			return getChecked((initializer != null ? initializer::get : null));
+		} catch (Throwable t) {
+			throw new RuntimeException("Lazy initialization failed", t);
+		}
+	}
+
+	@Override
+	public T getChecked() throws EX {
+		return getChecked(this.defaultInitializer);
 	}
 
 	public ConcurrentInitializer<T> asInitializer() {
 		return this.concurrentInitializer;
 	}
 
-	public T get(Supplier<T> initializer) {
+	public T getChecked(CheckedSupplier<T, EX> initializer) throws EX {
 		boolean localInitialized = this.initialized;
 		if (!localInitialized) {
 			this.rwLock.writeLock().lock();
@@ -159,7 +177,7 @@ public class LazySupplier<T> implements Supplier<T> {
 				if (!localInitialized) {
 					initializer = Tools.coalesce(initializer, this.defaultInitializer);
 					if (initializer != null) {
-						this.item = initializer.get();
+						this.item = initializer.getChecked();
 					} else {
 						this.item = this.defaultValue;
 					}
@@ -173,25 +191,22 @@ public class LazySupplier<T> implements Supplier<T> {
 		return this.item;
 	}
 
-	public static <T> LazySupplier<T> fromSupplier(Supplier<T> defaultInitializer) {
-		return LazySupplier.fromSupplier(defaultInitializer, null);
+	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> fromSupplier(Supplier<T> defaultInitializer) {
+		return CheckedLazySupplier.fromSupplier(defaultInitializer, null);
 	}
 
-	public static <T> LazySupplier<T> fromSupplier(Supplier<T> defaultInitializer, T defaultValue) {
-		return new LazySupplier<>((defaultInitializer != null ? () -> defaultInitializer.get() : null), defaultValue);
+	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> fromSupplier(Supplier<T> defaultInitializer,
+		T defaultValue) {
+		return new CheckedLazySupplier<>((defaultInitializer != null ? () -> defaultInitializer.get() : null), defaultValue);
 	}
 
-	public static <T> LazySupplier<T> fromInitializer(ConcurrentInitializer<T> defaultInitializer) {
-		return LazySupplier.fromInitializer(defaultInitializer, null);
+	public static <T> CheckedLazySupplier<T, ConcurrentException> fromInitializer(
+		ConcurrentInitializer<T> defaultInitializer) {
+		return CheckedLazySupplier.fromInitializer(defaultInitializer, null);
 	}
 
-	public static <T> LazySupplier<T> fromInitializer(ConcurrentInitializer<T> defaultInitializer, T defaultValue) {
-		return new LazySupplier<>(defaultInitializer != null ? () -> {
-			try {
-				return defaultInitializer.get();
-			} catch (ConcurrentException e) {
-				throw new ConcurrentRuntimeException(e.getMessage(), e);
-			}
-		} : null, defaultValue);
+	public static <T> CheckedLazySupplier<T, ConcurrentException> fromInitializer(ConcurrentInitializer<T> defaultInitializer,
+		T defaultValue) {
+		return new CheckedLazySupplier<>(defaultInitializer != null ? () -> defaultInitializer.get() : null, defaultValue);
 	}
 }

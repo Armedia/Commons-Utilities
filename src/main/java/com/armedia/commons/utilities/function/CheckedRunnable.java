@@ -1,15 +1,11 @@
 package com.armedia.commons.utilities.function;
 
-import java.util.function.Supplier;
-
 @FunctionalInterface
-public interface CheckedSupplier<T, EX extends Throwable> extends Supplier<T> {
-	public T getChecked() throws EX;
-
+public interface CheckedRunnable<EX extends Throwable> extends Runnable {
 	@Override
-	public default T get() {
+	public default void run() {
 		try {
-			return getChecked();
+			runChecked();
 		} catch (Throwable t) {
 			RuntimeException re = new RuntimeException(t.getMessage(), t);
 			for (Throwable s : t.getSuppressed()) {
@@ -18,4 +14,6 @@ public interface CheckedSupplier<T, EX extends Throwable> extends Supplier<T> {
 			throw re;
 		}
 	}
+
+	public void runChecked() throws EX;
 }
