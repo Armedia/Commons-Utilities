@@ -1,25 +1,16 @@
 package com.armedia.commons.utilities.concurrent;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.armedia.commons.utilities.function.CheckedConsumer;
+import com.armedia.commons.utilities.function.CheckedFunction;
 import com.armedia.commons.utilities.function.CheckedPredicate;
 import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
@@ -300,7 +291,7 @@ public class BaseReadWriteLockableTest {
 	}
 
 	@Test
-	public void testReadUpgradable() {
+	public void testReadUpgradable() throws Exception {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
@@ -322,34 +313,35 @@ public class BaseReadWriteLockableTest {
 		final Object b = "Object-B";
 
 		{
-			final Supplier<Object> sup = null;
-			final Predicate<Object> pred = null;
-			final Function<Object, Object> map = null;
-
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, pred, map),
-				"Did not fail with all-null parameters");
-
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, Objects::nonNull, Function.identity()),
-				"Did not fail with null Supplier");
+			final CheckedSupplier<Object, Exception> nullSup = null;
+			final CheckedSupplier<Object, Exception> sup = Object::new;
+			final CheckedPredicate<Object, Exception> nullPred = null;
+			final CheckedPredicate<Object, Exception> pred = (e) -> false;
+			final CheckedFunction<Object, Object, Exception> nullMap = null;
+			final CheckedFunction<Object, Object, Exception> map = (e) -> null;
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(Object::new, pred, Function.identity()), "Did not fail with null Predicate");
+				() -> rwl.readUpgradable(nullSup, nullPred, nullMap), "Did not fail with all-null parameters");
+
+			rwl.readUpgradable(nullSup, pred, map);
+
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, map),
+				"Did not fail with null Predicate");
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(Object::new, Objects::nonNull, map), "Did not fail with null mapper Function");
+				() -> rwl.readUpgradable(sup, Objects::nonNull, nullMap),
+				"Did not fail with null mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(Object::new, pred, map),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, nullMap),
 				"Did not fail with null Predicate and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, Objects::nonNull, map),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, pred, nullMap),
 				"Did not fail with null Supplier and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, pred, Function.identity()),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, map),
 				"Did not fail with null Supplier and Predicate");
 
-			o = rwl.readUpgradable(Object::new, Objects::nonNull, Function.identity());
+			o = rwl.readUpgradable(sup, pred, map);
 		}
 
 		Assertions.assertEquals(0, lock.getReadHoldCount());
@@ -410,32 +402,39 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertSame(o, b);
 
 		{
-			final Supplier<Object> sup = null;
-			final Predicate<Object> pred = null;
-			final Consumer<Object> map = null;
-
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, pred, map),
-				"Did not fail with all-null parameters");
-
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, Objects::nonNull, Objects::nonNull), "Did not fail with null Supplier");
+			final CheckedSupplier<Object, Exception> nullSup = null;
+			final CheckedSupplier<Object, Exception> sup = Object::new;
+			final CheckedPredicate<Object, Exception> nullPred = null;
+			final CheckedPredicate<Object, Exception> pred = (e) -> false;
+			final CheckedConsumer<Object, Exception> nullCons = null;
+			final CheckedConsumer<Object, Exception> cons = (e) -> {
+			};
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(Object::new, pred, Objects::nonNull), "Did not fail with null Predicate");
+				() -> rwl.readUpgradable(nullSup, nullPred, nullCons), "Did not fail with all-null parameters");
+
+			rwl.readUpgradable(nullSup, pred, cons);
+
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, cons),
+				"Did not fail with null Predicate");
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(Object::new, Objects::nonNull, map), "Did not fail with null mapper Function");
+				() -> rwl.readUpgradable(sup, Objects::nonNull, nullCons),
+				"Did not fail with null mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(Object::new, pred, map),
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(sup, nullPred, nullCons),
 				"Did not fail with null Predicate and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, Objects::nonNull, map),
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullSup, pred, nullCons),
 				"Did not fail with null Supplier and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, pred, Objects::nonNull),
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullSup, nullPred, cons),
 				"Did not fail with null Supplier and Predicate");
 
-			rwl.readUpgradable(Object::new, Objects::nonNull, Objects::nonNull);
+			rwl.readUpgradable(sup, pred, cons);
 		}
 
 		Assertions.assertEquals(0, lock.getReadHoldCount());
@@ -490,457 +489,5 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		Assertions.assertEquals(2, callCount.get());
-	}
-
-	@Test
-	public void testDoubleCheckedLocked() {
-		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
-
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertTrue(writeLock.tryLock());
-		Assertions.assertTrue(writeLock.isHeldByCurrentThread());
-		writeLock.unlock();
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-
-		{
-			final BooleanSupplier sup = null;
-			final Runnable calc = null;
-
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.doubleCheckedLocked(sup, calc));
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.doubleCheckedLocked(() -> true, calc));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLocked(sup, () -> Function.identity()));
-			rwl.doubleCheckedLocked(() -> true, () -> Function.identity());
-		}
-
-		{
-			final Supplier<Object> check = null;
-			final Predicate<Object> test = null;
-			final Supplier<Object> calc = null;
-
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.doubleCheckedLocked(check, test, calc));
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.doubleCheckedLocked(check, test, () -> null));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLocked(check, Objects::nonNull, calc));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLocked(check, Objects::nonNull, () -> null));
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.doubleCheckedLocked(Object::new, test, calc));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLocked(Object::new, test, () -> null));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLocked(Object::new, Objects::nonNull, calc));
-			rwl.doubleCheckedLocked(Object::new, Objects::nonNull, () -> null);
-		}
-
-		final Object a = "Object-A";
-		final Object b = "Object-B";
-
-		final AtomicBoolean initialized = new AtomicBoolean(false);
-		final AtomicBoolean invoked = new AtomicBoolean(false);
-
-		initialized.set(false);
-		invoked.set(false);
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertFalse(invoked.get());
-
-		rwl.doubleCheckedLocked(() -> !initialized.get(), () -> invoked.set(true));
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertTrue(invoked.get());
-
-		initialized.set(true);
-		invoked.set(false);
-		rwl.doubleCheckedLocked(() -> !initialized.get(), () -> invoked.set(true));
-		Assertions.assertFalse(invoked.get());
-
-		initialized.set(false);
-		invoked.set(false);
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertFalse(invoked.get());
-
-		Object ret = rwl.doubleCheckedLocked(() -> b, (e) -> !initialized.get(), () -> {
-			invoked.set(true);
-			return a;
-		});
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertTrue(invoked.get());
-		Assertions.assertSame(a, ret);
-
-		initialized.set(true);
-		invoked.set(false);
-		ret = rwl.doubleCheckedLocked(() -> b, (e) -> !initialized.get(), () -> {
-			invoked.set(true);
-			return a;
-		});
-		Assertions.assertFalse(invoked.get());
-		Assertions.assertSame(b, ret);
-
-		final AtomicInteger callCount = new AtomicInteger(0);
-
-		callCount.set(0);
-		initialized.set(false);
-		invoked.set(false);
-		Integer cc = rwl.doubleCheckedLocked(() -> callCount.incrementAndGet(), (e) -> !initialized.getAndSet(true),
-			() -> {
-				invoked.set(true);
-				return -1;
-			});
-		Assertions.assertFalse(invoked.get());
-		Assertions.assertEquals(2, cc);
-
-		callCount.set(0);
-		initialized.set(false);
-		invoked.set(false);
-		rwl.doubleCheckedLocked(() -> {
-			callCount.incrementAndGet();
-			return !initialized.getAndSet(true);
-		}, () -> {
-			invoked.set(true);
-		});
-		Assertions.assertTrue(initialized.get());
-		Assertions.assertFalse(invoked.get());
-		Assertions.assertEquals(2, cc);
-	}
-
-	@Test
-	public void testDoubleCheckedLockedChecked() {
-		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
-
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertTrue(writeLock.tryLock());
-		Assertions.assertTrue(writeLock.isHeldByCurrentThread());
-		writeLock.unlock();
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		{
-			final CheckedSupplier<Boolean, Exception> sup = null;
-			final CheckedRunnable<Exception> calc = null;
-
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.doubleCheckedLockedChecked(sup, calc));
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.doubleCheckedLockedChecked(() -> true, calc));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(sup, () -> Function.identity()));
-			rwl.doubleCheckedLocked(() -> true, () -> Function.identity());
-		}
-
-		{
-			final CheckedSupplier<Object, Exception> check = null;
-			final CheckedPredicate<Object, Exception> test = null;
-			final CheckedSupplier<Object, Exception> calc = null;
-
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(check, test, calc));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(check, test, () -> null));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(check, Objects::nonNull, calc));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(check, Objects::nonNull, () -> null));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(Object::new, test, calc));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(Object::new, test, () -> null));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.doubleCheckedLockedChecked(Object::new, Objects::nonNull, calc));
-			rwl.doubleCheckedLockedChecked(Object::new, Objects::nonNull, () -> null);
-		}
-
-		final Object a = "Object-A";
-		final Object b = "Object-B";
-
-		final AtomicBoolean initialized = new AtomicBoolean(false);
-		final AtomicBoolean invoked = new AtomicBoolean(false);
-
-		initialized.set(false);
-		invoked.set(false);
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertFalse(invoked.get());
-
-		rwl.doubleCheckedLockedChecked(() -> !initialized.get(), () -> invoked.set(true));
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertTrue(invoked.get());
-
-		initialized.set(true);
-		invoked.set(false);
-		rwl.doubleCheckedLockedChecked(() -> !initialized.get(), () -> invoked.set(true));
-		Assertions.assertFalse(invoked.get());
-
-		initialized.set(false);
-		invoked.set(false);
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertFalse(invoked.get());
-
-		Object ret = rwl.doubleCheckedLockedChecked(() -> b, (e) -> !initialized.get(), () -> {
-			invoked.set(true);
-			return a;
-		});
-		Assertions.assertFalse(initialized.get());
-		Assertions.assertTrue(invoked.get());
-		Assertions.assertSame(a, ret);
-
-		initialized.set(true);
-		invoked.set(false);
-		ret = rwl.doubleCheckedLockedChecked(() -> b, (e) -> !initialized.get(), () -> {
-			invoked.set(true);
-			return a;
-		});
-		Assertions.assertFalse(invoked.get());
-		Assertions.assertSame(b, ret);
-
-		final AtomicInteger callCount = new AtomicInteger(0);
-
-		callCount.set(0);
-		initialized.set(false);
-		invoked.set(false);
-		Integer cc = rwl.doubleCheckedLockedChecked(() -> callCount.incrementAndGet(),
-			(e) -> !initialized.getAndSet(true), () -> {
-				invoked.set(true);
-				return -1;
-			});
-		Assertions.assertFalse(invoked.get());
-		Assertions.assertEquals(2, cc);
-
-		callCount.set(0);
-		initialized.set(false);
-		invoked.set(false);
-		rwl.doubleCheckedLockedChecked(() -> {
-			callCount.incrementAndGet();
-			return initialized.getAndSet(true);
-		}, () -> {
-			invoked.set(true);
-		});
-		Assertions.assertFalse(invoked.get());
-		Assertions.assertEquals(2, cc);
-	}
-
-	@Test
-	public void testCheckedExceptions() {
-		final Map<String, AtomicInteger> mainInvocationCounter = new TreeMap<>();
-		final Map<String, AtomicInteger> readInvocationCounter = new TreeMap<>();
-		final Map<String, AtomicInteger> writeInvocationCounter = new TreeMap<>();
-		final ReadWriteLock baseLock = new ReentrantReadWriteLock();
-
-		final InvocationHandler readLockHandler = (Object proxy, Method method, Object[] args) -> {
-			AtomicInteger i = readInvocationCounter.computeIfAbsent(method.getName(), (s) -> new AtomicInteger(0));
-			Object ret = method.invoke(baseLock.readLock(), args);
-			i.incrementAndGet();
-			return ret;
-		};
-		final Lock readLock = Lock.class
-			.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[] {
-				Lock.class
-			}, readLockHandler));
-		final InvocationHandler writeLockHandler = (Object proxy, Method method, Object[] args) -> {
-			AtomicInteger i = writeInvocationCounter.computeIfAbsent(method.getName(), (s) -> new AtomicInteger(0));
-			Object ret = method.invoke(baseLock.writeLock(), args);
-			i.incrementAndGet();
-			return ret;
-		};
-		final Lock writeLock = Lock.class
-			.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[] {
-				Lock.class
-			}, writeLockHandler));
-		final InvocationHandler mainLockHandler = (Object proxy, Method method, Object[] args) -> {
-			AtomicInteger i = mainInvocationCounter.computeIfAbsent(method.getName(), (s) -> new AtomicInteger(0));
-			if (method.getName().equals("writeLock")) {
-				i.incrementAndGet();
-				return writeLock;
-			}
-			if (method.getName().equals("readLock")) {
-				i.incrementAndGet();
-				return readLock;
-			}
-			Object ret = method.invoke(baseLock, args);
-			i.incrementAndGet();
-			return ret;
-		};
-		final ReadWriteLock lock = ReadWriteLock.class
-			.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[] {
-				ReadWriteLock.class
-			}, mainLockHandler));
-
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
-		final RuntimeException ex = new RuntimeException();
-		final AtomicInteger callCount = new AtomicInteger(0);
-		final Object a = "Object-A";
-
-		// Exception on the first checker invocation, no locks should be acquired at all
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		try {
-			rwl.doubleCheckedLockedChecked(() -> {
-				throw ex;
-			}, () -> {
-				Assertions.fail("This should not have been invoked");
-			});
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-
-		// Exception on the second checker invocation, write lock should be acquired and released
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		try {
-			rwl.doubleCheckedLockedChecked(() -> {
-				if (callCount.getAndIncrement() > 0) { throw ex; }
-				return true;
-			}, () -> {
-				Assertions.fail("This should not have been invoked");
-			});
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
-		AtomicInteger result = writeInvocationCounter.get("lock");
-		Assertions.assertEquals(1, result.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
-		result = writeInvocationCounter.get("unlock");
-		Assertions.assertEquals(1, result.get());
-
-		writeInvocationCounter.clear();
-
-		// Exception on the second checker invocation, write lock should be acquired and released
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		try {
-			rwl.doubleCheckedLockedChecked(() -> true, () -> {
-				throw ex;
-			});
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
-		result = writeInvocationCounter.get("lock");
-		Assertions.assertEquals(1, result.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
-		result = writeInvocationCounter.get("unlock");
-		Assertions.assertEquals(1, result.get());
-
-		writeInvocationCounter.clear();
-		callCount.set(0);
-
-		// Second checker returns false
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		rwl.doubleCheckedLockedChecked(() -> {
-			return (callCount.incrementAndGet() < 2);
-		}, () -> Assertions.fail("This supplier should not have been invoked"));
-		Assertions.assertEquals(2, callCount.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
-		result = writeInvocationCounter.get("lock");
-		Assertions.assertEquals(1, result.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
-		result = writeInvocationCounter.get("unlock");
-		Assertions.assertEquals(1, result.get());
-
-		writeInvocationCounter.clear();
-		callCount.set(0);
-
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		// Exception on the first checker invocation, no locks should be acquired at all
-		try {
-			rwl.doubleCheckedLockedChecked(() -> {
-				throw ex;
-			}, (e) -> Assertions.fail("This predicate should not have been invoked"),
-				() -> Assertions.fail("This supplier should not have been invoked"));
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-
-		// Exception on the predicate invocation, no locks should be acquired at all
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		try {
-			rwl.doubleCheckedLockedChecked(() -> true, (e) -> {
-				throw ex;
-			}, () -> Assertions.fail("This supplier should not have been invoked"));
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-
-		writeInvocationCounter.clear();
-		callCount.set(0);
-
-		// Exception on the second checker invocation, write lock should be acquired and released
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		try {
-			rwl.doubleCheckedLockedChecked(() -> {
-				if (callCount.getAndIncrement() > 0) { throw ex; }
-				return true;
-			}, (e) -> e, () -> Assertions.fail("This supplier should not have been invoked"));
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
-		result = writeInvocationCounter.get("lock");
-		Assertions.assertEquals(1, result.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
-		result = writeInvocationCounter.get("unlock");
-		Assertions.assertEquals(1, result.get());
-
-		writeInvocationCounter.clear();
-		callCount.set(0);
-
-		// Exception on the second predicate invocation, write lock should be acquired and released
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		try {
-			rwl.doubleCheckedLockedChecked(() -> null, (e) -> {
-				if (callCount.getAndIncrement() > 0) { throw ex; }
-				return true;
-			}, () -> Assertions.fail("This supplier should not have been invoked"));
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
-		result = writeInvocationCounter.get("lock");
-		Assertions.assertEquals(1, result.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
-		result = writeInvocationCounter.get("unlock");
-		Assertions.assertEquals(1, result.get());
-
-		writeInvocationCounter.clear();
-		callCount.set(0);
-
-		// Exception on the calculator invocation, write lock should be acquired and released
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		try {
-			rwl.doubleCheckedLockedChecked(() -> null, (e) -> {
-				return true;
-			}, () -> {
-				throw ex;
-			});
-			Assertions.fail("Did not cascade a raised exception");
-		} catch (Throwable t) {
-			Assertions.assertSame(ex, t);
-		}
-		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
-		result = writeInvocationCounter.get("lock");
-		Assertions.assertEquals(1, result.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
-		result = writeInvocationCounter.get("unlock");
-		Assertions.assertEquals(1, result.get());
-
-		writeInvocationCounter.clear();
-		callCount.set(0);
-
-		// Second predicate call returns false
-		Assertions.assertFalse(writeInvocationCounter.containsKey("lock"));
-		Object ret = rwl.doubleCheckedLockedChecked(() -> a, (e) -> {
-			return callCount.incrementAndGet() < 2;
-		}, () -> Assertions.fail("This supplier should not have been invoked"));
-		Assertions.assertSame(a, ret);
-		Assertions.assertTrue(writeInvocationCounter.containsKey("lock"));
-		result = writeInvocationCounter.get("lock");
-		Assertions.assertEquals(1, result.get());
-		Assertions.assertTrue(writeInvocationCounter.containsKey("unlock"));
-		result = writeInvocationCounter.get("unlock");
-		Assertions.assertEquals(1, result.get());
 	}
 }

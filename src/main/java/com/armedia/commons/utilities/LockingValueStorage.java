@@ -26,22 +26,20 @@ public class LockingValueStorage<T> extends SimpleValueStorage<T> implements Rea
 	private final ReadWriteLock rwLock;
 
 	public LockingValueStorage() {
-		this(false, false);
+		this(false, null);
 	}
 
 	public LockingValueStorage(boolean ordered) {
-		this(ordered, false);
+		this(ordered, null);
 	}
 
-	public LockingValueStorage(boolean ordered, boolean fairLock) {
-		super(ordered);
-		this.rwLock = new ReentrantReadWriteLock(fairLock);
+	public LockingValueStorage(ReadWriteLock rwLock) {
+		this(false, rwLock);
 	}
 
 	public LockingValueStorage(boolean ordered, ReadWriteLock rwLock) {
 		super(ordered);
-		if (rwLock == null) { throw new IllegalArgumentException("Must provide a ReadWriteLock instance"); }
-		this.rwLock = rwLock;
+		this.rwLock = (rwLock != null ? rwLock : new ReentrantReadWriteLock());
 	}
 
 	@Override

@@ -2,16 +2,15 @@ package com.armedia.commons.utilities;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
 /**
  * <p>
  * This is a simple, thread-safe synchronized value that allows semi-atomic modification operations,
- * and wait operations. The internal locking is carried out using a {@link ReadWriteLock} for
- * maximum performance and concurrency. It also tracks the value for the last time the value was
- * changed, in nanoseconds.
+ * and wait operations. The internal locking is carried out using methods from
+ * {@link BaseReadWriteLockable} for maximum performance and concurrency. It also tracks the value
+ * for the last time the value was changed, in nanoseconds.
  * </p>
  *
  * @author Diego Rivera &lt;diego.rivera@armedia.com&gt;
