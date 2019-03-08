@@ -212,10 +212,10 @@ public interface ReadWriteLockable {
 		Objects.requireNonNull(test, "Must provide a non-null test");
 		Objects.requireNonNull(calculator, "Must provide a non-null calculator");
 
-		if (test.get()) {
+		if (test.getChecked()) {
 			final Lock writeLock = acquireWriteLock();
 			try {
-				if (test.get()) {
+				if (test.getChecked()) {
 					calculator.runChecked();
 				}
 			} finally {
