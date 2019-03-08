@@ -59,42 +59,32 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 	}
 
 	public T await() throws InterruptedException {
-		if (!this.initialized) {
-			writeLockedChecked(() -> {
-				if (!this.initialized) {
-					this.condition.await();
-					this.condition.signal();
-				}
-			});
-		}
+		doubleCheckedLockedChecked(() -> !this.initialized, () -> {
+			if (!this.initialized) {
+				this.condition.await();
+				this.condition.signal();
+			}
+		});
 		return this.item;
 	}
 
 	public T awaitUninterruptibly() {
-		if (!this.initialized) {
-			writeLocked(() -> {
-				if (!this.initialized) {
-					this.condition.awaitUninterruptibly();
-					this.condition.signal();
-				}
-			});
-		}
+		doubleCheckedLocked(() -> !this.initialized, () -> {
+			this.condition.awaitUninterruptibly();
+			this.condition.signal();
+		});
 		return this.item;
 	}
 
 	public Pair<T, Long> awaitNanos(long nanosTimeout) throws InterruptedException {
 		final AtomicReference<Long> ret = new AtomicReference<>(null);
-		if (!this.initialized) {
-			writeLockedChecked(() -> {
-				if (!this.initialized) {
-					ret.set(this.condition.awaitNanos(nanosTimeout));
-					if (this.initialized) {
-						this.condition.signal();
-						ret.set(null);
-					}
-				}
-			});
-		}
+		doubleCheckedLockedChecked(() -> !this.initialized, () -> {
+			ret.set(this.condition.awaitNanos(nanosTimeout));
+			if (this.initialized) {
+				this.condition.signal();
+				ret.set(null);
+			}
+		});
 		return Pair.of(this.item, ret.get());
 	}
 
@@ -110,16 +100,12 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 
 	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
 		final AtomicBoolean ret = new AtomicBoolean(true);
-		if (!this.initialized) {
-			writeLockedChecked(() -> {
-				if (!this.initialized) {
-					ret.set(this.condition.awaitUntil(deadline));
-					if (ret.get()) {
-						this.condition.signal();
-					}
-				}
-			});
-		}
+		doubleCheckedLockedChecked(() -> !this.initialized, () -> {
+			ret.set(this.condition.awaitUntil(deadline));
+			if (ret.get()) {
+				this.condition.signal();
+			}
+		});
 		return Pair.of(this.item, !ret.get());
 	}
 
@@ -150,20 +136,16 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 	}
 
 	public T getChecked(CheckedSupplier<T, EX> initializer) throws EX {
-		if (!this.initialized) {
-			writeLockedChecked(() -> {
-				if (!this.initialized) {
-					CheckedSupplier<T, EX> init = Tools.coalesce(initializer, this.defaultInitializer);
-					if (init != null) {
-						this.item = init.getChecked();
-					} else {
-						this.item = this.defaultValue;
-					}
-					this.initialized = true;
-					this.condition.signal();
-				}
-			});
-		}
+		doubleCheckedLockedChecked(() -> !this.initialized, () -> {
+			CheckedSupplier<T, EX> init = Tools.coalesce(initializer, this.defaultInitializer);
+			if (init != null) {
+				this.item = init.getChecked();
+			} else {
+				this.item = this.defaultValue;
+			}
+			this.initialized = true;
+			this.condition.signal();
+		});
 		return this.item;
 	}
 
