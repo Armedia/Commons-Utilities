@@ -570,6 +570,30 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertFalse(invoked.get());
 		Assertions.assertSame(b, ret);
 
+		final AtomicInteger callCount = new AtomicInteger(0);
+
+		callCount.set(0);
+		initialized.set(false);
+		invoked.set(false);
+		Integer cc = rwl.doubleCheckedLocked(() -> callCount.incrementAndGet(), (e) -> !initialized.getAndSet(true),
+			() -> {
+				invoked.set(true);
+				return -1;
+			});
+		Assertions.assertFalse(invoked.get());
+		Assertions.assertEquals(2, cc);
+
+		callCount.set(0);
+		initialized.set(false);
+		invoked.set(false);
+		rwl.doubleCheckedLocked(() -> {
+			callCount.incrementAndGet();
+			return initialized.getAndSet(true);
+		}, () -> {
+			invoked.set(true);
+		});
+		Assertions.assertFalse(invoked.get());
+		Assertions.assertEquals(2, cc);
 	}
 
 	@Test
@@ -658,5 +682,29 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertFalse(invoked.get());
 		Assertions.assertSame(b, ret);
 
+		final AtomicInteger callCount = new AtomicInteger(0);
+
+		callCount.set(0);
+		initialized.set(false);
+		invoked.set(false);
+		Integer cc = rwl.doubleCheckedLockedChecked(() -> callCount.incrementAndGet(),
+			(e) -> !initialized.getAndSet(true), () -> {
+				invoked.set(true);
+				return -1;
+			});
+		Assertions.assertFalse(invoked.get());
+		Assertions.assertEquals(2, cc);
+
+		callCount.set(0);
+		initialized.set(false);
+		invoked.set(false);
+		rwl.doubleCheckedLockedChecked(() -> {
+			callCount.incrementAndGet();
+			return initialized.getAndSet(true);
+		}, () -> {
+			invoked.set(true);
+		});
+		Assertions.assertFalse(invoked.get());
+		Assertions.assertEquals(2, cc);
 	}
 }
