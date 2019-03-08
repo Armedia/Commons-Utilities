@@ -3,11 +3,13 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.armedia.commons.utilities.function.CheckedPredicate;
 import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
 
@@ -168,4 +170,79 @@ public interface ReadWriteLockable {
 			readLock.unlock();
 		}
 	}
+
+	public default void doubleCheckedLocked(BooleanSupplier test, Runnable calculator) {
+		Objects.requireNonNull(test, "Must provide a non-null test");
+		Objects.requireNonNull(calculator, "Must provide a non-null calculator");
+
+		if (test.getAsBoolean()) {
+			final Lock writeLock = acquireWriteLock();
+			try {
+				if (test.getAsBoolean()) {
+					calculator.run();
+				}
+			} finally {
+				writeLock.unlock();
+			}
+		}
+	}
+
+	public default <E> E doubleCheckedLocked(Supplier<E> checker, Predicate<E> test, Supplier<E> calculator) {
+		Objects.requireNonNull(checker, "Must provide a non-null checker");
+		Objects.requireNonNull(test, "Must provide a non-null test");
+		Objects.requireNonNull(calculator, "Must provide a non-null calculator");
+
+		E localRef = checker.get();
+		if (test.test(localRef)) {
+			final Lock writeLock = acquireWriteLock();
+			try {
+				localRef = checker.get();
+				if (test.test(localRef)) {
+					localRef = calculator.get();
+				}
+			} finally {
+				writeLock.unlock();
+			}
+		}
+		return localRef;
+	}
+
+	public default <EX extends Throwable> void doubleCheckedLockedChecked(CheckedSupplier<Boolean, EX> test,
+		CheckedRunnable<EX> calculator) throws EX {
+		Objects.requireNonNull(test, "Must provide a non-null test");
+		Objects.requireNonNull(calculator, "Must provide a non-null calculator");
+
+		if (test.get()) {
+			final Lock writeLock = acquireWriteLock();
+			try {
+				if (test.get()) {
+					calculator.runChecked();
+				}
+			} finally {
+				writeLock.unlock();
+			}
+		}
+	}
+
+	public default <E, EX extends Throwable> E doubleCheckedLockedChecked(CheckedSupplier<E, EX> checker,
+		CheckedPredicate<E, EX> test, CheckedSupplier<E, EX> calculator) throws EX {
+		Objects.requireNonNull(checker, "Must provide a non-null checker");
+		Objects.requireNonNull(test, "Must provide a non-null test");
+		Objects.requireNonNull(calculator, "Must provide a non-null calculator");
+
+		E localRef = checker.getChecked();
+		if (test.testChecked(localRef)) {
+			final Lock writeLock = acquireWriteLock();
+			try {
+				localRef = checker.getChecked();
+				if (test.testChecked(localRef)) {
+					localRef = calculator.getChecked();
+				}
+			} finally {
+				writeLock.unlock();
+			}
+		}
+		return localRef;
+	}
+
 }
