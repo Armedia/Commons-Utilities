@@ -1,9 +1,14 @@
 package com.armedia.commons.utilities.concurrent;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -171,6 +176,39 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		Assertions.assertTrue(writeLock.tryLock());
 		writeLock.unlock();
+
+		{
+			Object a = new Object();
+			Supplier<Object> operation = () -> {
+				// Prove that we're holding the read lock
+				Assertions.assertEquals(1, lock.getReadHoldCount());
+				Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+				Assertions.assertFalse(writeLock.tryLock(), "Acquired the write lock while the read lock was held");
+				return a;
+			};
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Assertions.assertSame(a, rwl.readLocked(operation));
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+			Assertions.assertTrue(writeLock.tryLock());
+			writeLock.unlock();
+		}
+		{
+			Runnable operation = () -> {
+				// Prove that we're holding the read lock
+				Assertions.assertEquals(1, lock.getReadHoldCount());
+				Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+				Assertions.assertFalse(writeLock.tryLock(), "Acquired the write lock while the read lock was held");
+			};
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			rwl.readLocked(operation);
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+			Assertions.assertTrue(writeLock.tryLock());
+			writeLock.unlock();
+		}
 	}
 
 	@Test
@@ -215,6 +253,33 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		rwl.writeLocked(() -> Assertions.assertTrue(writeLock.isHeldByCurrentThread()));
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+
+		{
+			Object a = new Object();
+			Supplier<Object> operation = () -> {
+				// Prove that we're holding the read lock
+				Assertions.assertEquals(0, lock.getReadHoldCount());
+				Assertions.assertTrue(writeLock.isHeldByCurrentThread());
+				return a;
+			};
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Assertions.assertSame(a, rwl.writeLocked(operation));
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+		}
+		{
+			Runnable operation = () -> {
+				// Prove that we're holding the read lock
+				Assertions.assertEquals(0, lock.getReadHoldCount());
+				Assertions.assertTrue(writeLock.isHeldByCurrentThread());
+			};
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			rwl.writeLocked(operation);
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+		}
 	}
 
 	@Test
@@ -409,5 +474,276 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		Assertions.assertEquals(2, callCount.get());
+
+		{
+			callCount.set(0);
+			final AtomicBoolean writeBlockInvoked = new AtomicBoolean(false);
+			final Supplier<Boolean> nullDecision = null;
+			final Supplier<Boolean> decision = () -> {
+				callCount.incrementAndGet();
+				return Boolean.TRUE;
+			};
+			final Supplier<Object> nullWriteBlock = null;
+			final Supplier<Object> writeBlock = () -> {
+				writeBlockInvoked.set(true);
+				return a;
+			};
+
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertSame(a, rwl.readUpgradable(decision, writeBlock));
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return Boolean.FALSE;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return null;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+		}
+
+		{
+			callCount.set(0);
+			final AtomicBoolean writeBlockInvoked = new AtomicBoolean(false);
+			final CheckedSupplier<Boolean, Exception> nullDecision = null;
+			final CheckedSupplier<Boolean, Exception> decision = () -> {
+				callCount.incrementAndGet();
+				return Boolean.TRUE;
+			};
+			final CheckedSupplier<Object, Exception> nullWriteBlock = null;
+			final CheckedSupplier<Object, Exception> writeBlock = () -> {
+				writeBlockInvoked.set(true);
+				return a;
+			};
+
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertSame(a, rwl.readUpgradable(decision, writeBlock));
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return Boolean.FALSE;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return null;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+		}
+
+		{
+			callCount.set(0);
+			final AtomicBoolean writeBlockInvoked = new AtomicBoolean(false);
+			final Supplier<Object> nullChecker = null;
+			final Supplier<Object> checker = () -> b;
+			final Predicate<Object> nullDecision = null;
+			final Predicate<Object> decision = (e) -> {
+				callCount.incrementAndGet();
+				return Boolean.TRUE;
+			};
+			final Function<Object, Object> nullWriteBlock = null;
+			final Function<Object, Object> writeBlock = (e) -> {
+				writeBlockInvoked.set(true);
+				return a;
+			};
+
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullChecker, nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullChecker, nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullChecker, decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertSame(a, rwl.readUpgradable(nullChecker, decision, writeBlock));
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(checker, nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(checker, nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(checker, decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertSame(a, rwl.readUpgradable(checker, decision, writeBlock));
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+		}
+
+		{
+			callCount.set(0);
+			final AtomicBoolean writeBlockInvoked = new AtomicBoolean(false);
+			final Supplier<Boolean> nullDecision = null;
+			final Supplier<Boolean> decision = () -> {
+				callCount.incrementAndGet();
+				return Boolean.TRUE;
+			};
+			final Supplier<Object> nullWriteBlock = null;
+			final Runnable writeBlock = () -> writeBlockInvoked.set(true);
+
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			rwl.readUpgradable(decision, writeBlock);
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return Boolean.FALSE;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return null;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+		}
+
+		{
+			callCount.set(0);
+			final AtomicBoolean writeBlockInvoked = new AtomicBoolean(false);
+			final CheckedSupplier<Boolean, Exception> nullDecision = null;
+			final CheckedSupplier<Boolean, Exception> decision = () -> {
+				callCount.incrementAndGet();
+				return Boolean.TRUE;
+			};
+			final CheckedRunnable<Exception> nullWriteBlock = null;
+			final CheckedRunnable<Exception> writeBlock = () -> writeBlockInvoked.set(true);
+
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			rwl.readUpgradable(decision, writeBlock);
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return Boolean.FALSE;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			rwl.readUpgradable(() -> {
+				callCount.incrementAndGet();
+				return null;
+			}, writeBlock);
+			Assertions.assertEquals(1, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+		}
+
+		{
+			callCount.set(0);
+			final AtomicBoolean writeBlockInvoked = new AtomicBoolean(false);
+			final Supplier<Object> nullChecker = null;
+			final Supplier<Object> checker = () -> b;
+			final Predicate<Object> nullDecision = null;
+			final Predicate<Object> decision = (e) -> {
+				callCount.incrementAndGet();
+				return Boolean.TRUE;
+			};
+			final Consumer<Object> nullWriteBlock = null;
+			final Consumer<Object> writeBlock = (e) -> writeBlockInvoked.set(true);
+
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullChecker, nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullChecker, nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(nullChecker, decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			rwl.readUpgradable(nullChecker, decision, writeBlock);
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+			callCount.set(0);
+			writeBlockInvoked.set(false);
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(checker, nullDecision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(checker, nullDecision, writeBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			Assertions.assertThrows(NullPointerException.class,
+				() -> rwl.readUpgradable(checker, decision, nullWriteBlock));
+			Assertions.assertEquals(0, callCount.get());
+			Assertions.assertFalse(writeBlockInvoked.get());
+			rwl.readUpgradable(checker, decision, writeBlock);
+			Assertions.assertEquals(2, callCount.get());
+			Assertions.assertTrue(writeBlockInvoked.get());
+		}
 	}
 }
