@@ -14,33 +14,87 @@ import com.armedia.commons.utilities.function.CheckedPredicate;
 import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
 
+/**
+ * <p>
+ * This interface exists as a behavior template to facilitate the implementation of recurring
+ * boilerplate read-write-lockable code. The objective is to simplify the development of
+ * high-throughput, high-concurrency applications that leverage read-write locking, while
+ * simultaneously reducing the risk of programming errors in lock management.
+ * </p>
+ * <p>
+ * This class provides behaviors that support lock upgrading (from read lock to write lock), as well
+ * as double-check locking semantics (for initializers, for instance).
+ * </p>
+ *
+ * @author diego
+ *
+ */
 @FunctionalInterface
 public interface ReadWriteLockable {
 
+	/**
+	 * <p>
+	 * Returns the {@link ReadWriteLock} instance that backs all the functionality.
+	 * </p>
+	 *
+	 * @return the {@link ReadWriteLock} instance that backs all the functionality.
+	 */
 	public ReadWriteLock getMainLock();
 
+	/**
+	 * <p>
+	 * Return a reference to the read (shared) lock. Contrary to {@link #acquireReadLock()}, no
+	 * attempt is made to acquire the lock before returning it.
+	 * </p>
+	 *
+	 * @return the write lock
+	 */
 	public default Lock getReadLock() {
 		return getMainLock().readLock();
 	}
 
+	/**
+	 * <p>
+	 * Return a reference to the read (shared) lock. The lock is already held when it's returned so
+	 * this method may block while other threads hold the write lock.
+	 * </p>
+	 *
+	 * @return the (held) write lock
+	 */
 	public default Lock acquireReadLock() {
 		Lock ret = getReadLock();
 		ret.lock();
 		return ret;
 	}
 
-	public default <E> E readLocked(Supplier<E> supplier) {
-		Objects.requireNonNull(supplier, "Must provide a non-null supplier to invoke");
-		return readLocked(() -> supplier.get());
+	/**
+	 * <p>
+	 * Execute the given operation within the context of a shared (read) lock, returning the result
+	 * of {@link Supplier#get()}. The lock is acquired and released automatically.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
+	public default <E> E readLocked(Supplier<E> operation) {
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
+		return readLocked(() -> operation.get());
 	}
 
-	public default void readLocked(Runnable operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null runnable to invoke");
-		readLocked(() -> operation.run());
-	}
-
+	/**
+	 * <p>
+	 * Execute the given operation within the context of a shared (read) lock, returning the result
+	 * of {@link CheckedSupplier#getChecked()}. The lock is acquired and released automatically. Any
+	 * raised exceptions are cascaded upward.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
 	public default <E, EX extends Throwable> E readLocked(CheckedSupplier<E, EX> operation) throws EX {
-		Objects.requireNonNull(operation, "Must provide a non-null supplier to invoke");
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
 		final Lock l = acquireReadLock();
 		try {
 			return operation.getChecked();
@@ -49,8 +103,33 @@ public interface ReadWriteLockable {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Execute the given operation within the context of a shared (read) lock. The lock is acquired
+	 * and released automatically.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
+	public default void readLocked(Runnable operation) {
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
+		readLocked(() -> operation.run());
+	}
+
+	/**
+	 * <p>
+	 * Execute the given operation within the context of a shared (read) lock. The lock is acquired
+	 * and released automatically. Any raised exceptions are cascaded upward.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
 	public default <EX extends Throwable> void readLocked(CheckedRunnable<EX> operation) throws EX {
-		Objects.requireNonNull(operation, "Must provide a non-null supplier to invoke");
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
 		final Lock l = acquireReadLock();
 		try {
 			operation.runChecked();
@@ -59,28 +138,60 @@ public interface ReadWriteLockable {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Return a reference to the write (exclusive) lock. Contrary to {@link #acquireWriteLock()}, no
+	 * attempt is made to acquire the lock before returning it.
+	 * </p>
+	 *
+	 * @return the write lock
+	 */
 	public default Lock getWriteLock() {
 		return getMainLock().writeLock();
 	}
 
+	/**
+	 * <p>
+	 * Return a reference to the write (exclusive) lock. The lock is already held when it's returned
+	 * so this method may block while other threads hold either the read or write locks.
+	 * </p>
+	 *
+	 * @return the (held) write lock
+	 */
 	public default Lock acquireWriteLock() {
 		Lock ret = getWriteLock();
 		ret.lock();
 		return ret;
 	}
 
-	public default <E> E writeLocked(Supplier<E> supplier) {
-		Objects.requireNonNull(supplier, "Must provide a non-null supplier to invoke");
-		return writeLocked(() -> supplier.get());
+	/**
+	 * <p>
+	 * Execute the given operation within the context of an exclusive (write) lock, returning the
+	 * result of {@link Supplier#get()}. The lock is acquired and released automatically.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
+	public default <E> E writeLocked(Supplier<E> operation) {
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
+		return writeLocked(() -> operation.get());
 	}
 
-	public default void writeLocked(Runnable operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null runnable to invoke");
-		writeLocked(() -> operation.run());
-	}
-
+	/**
+	 * <p>
+	 * Execute the given operation within the context of an exclusive (write) lock, and return the
+	 * result of {@link CheckedSupplier#getChecked()}. The lock is acquired and released
+	 * automatically. Any raised exceptions are cascaded upward.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
 	public default <E, EX extends Throwable> E writeLocked(CheckedSupplier<E, EX> operation) throws EX {
-		Objects.requireNonNull(operation, "Must provide a non-null supplier to invoke");
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
 		final Lock l = acquireWriteLock();
 		try {
 			return operation.getChecked();
@@ -89,8 +200,33 @@ public interface ReadWriteLockable {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Execute the given operation within the context of an exclusive (write) lock. The lock is
+	 * acquired and released automatically.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
+	public default void writeLocked(Runnable operation) {
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
+		writeLocked(() -> operation.run());
+	}
+
+	/**
+	 * <p>
+	 * Execute the given operation within the context of an exclusive (write) lock. The lock is
+	 * acquired and released automatically. Any raised exceptions are cascaded upward.
+	 * </p>
+	 *
+	 * @param operation
+	 * @throws NullPointerException
+	 *             if {@code operation} is {@code null}
+	 */
 	public default <EX extends Throwable> void writeLocked(CheckedRunnable<EX> operation) throws EX {
-		Objects.requireNonNull(operation, "Must provide a non-null runnable to invoke");
+		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
 		final Lock l = acquireWriteLock();
 		try {
 			operation.runChecked();
