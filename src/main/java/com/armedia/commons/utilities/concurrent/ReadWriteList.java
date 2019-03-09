@@ -62,16 +62,16 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 
 	@Override
 	public ListIterator<ELEMENT> listIterator() {
-		return readLocked(() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator()));
+		return readLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator()));
 	}
 
 	@Override
 	public ListIterator<ELEMENT> listIterator(int index) {
-		return readLocked(() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator(index)));
+		return readLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator(index)));
 	}
 
 	@Override
 	public List<ELEMENT> subList(int fromIndex, int toIndex) {
-		return readLocked(() -> new ReadWriteList<>(getMainLock(), this.list.subList(fromIndex, toIndex)));
+		return readLocked(() -> new ReadWriteList<>(this, this.list.subList(fromIndex, toIndex)));
 	}
 }

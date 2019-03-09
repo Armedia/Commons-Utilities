@@ -52,7 +52,7 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public Iterator<ELEMENT> iterator() {
-		return new ReadWriteIterator<>(getMainLock(), this.c.iterator());
+		return new ReadWriteIterator<>(this, this.c.iterator());
 	}
 
 	@Override
@@ -158,6 +158,6 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public Spliterator<ELEMENT> spliterator() {
-		return readLocked(() -> new ReadWriteSpliterator<>(getMainLock(), this.c.spliterator()));
+		return readLocked(() -> new ReadWriteSpliterator<>(this, this.c.spliterator()));
 	}
 }

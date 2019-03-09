@@ -36,7 +36,7 @@ public class ReadWriteSpliterator<E> extends BaseReadWriteLockable implements Sp
 
 	@Override
 	public Spliterator<E> trySplit() {
-		return readLocked(() -> new ReadWriteSpliterator<>(getMainLock(), this.spliterator.trySplit()));
+		return readLocked(() -> new ReadWriteSpliterator<>(this, this.spliterator.trySplit()));
 	}
 
 	@Override
