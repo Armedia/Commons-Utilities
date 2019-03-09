@@ -22,6 +22,24 @@ import com.armedia.commons.utilities.function.CheckedSupplier;
 public class BaseReadWriteLockableTest {
 
 	@Test
+	public void testConstructor() {
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		BaseReadWriteLockable rwl = null;
+
+		rwl = new BaseReadWriteLockable();
+		Assertions.assertNotNull(rwl.getMainLock());
+		Assertions.assertNotSame(lock, rwl.getMainLock());
+
+		rwl = new BaseReadWriteLockable(null);
+		Assertions.assertNotNull(rwl.getMainLock());
+		Assertions.assertNotSame(lock, rwl.getMainLock());
+
+		rwl = new BaseReadWriteLockable(lock);
+		Assertions.assertNotNull(rwl.getMainLock());
+		Assertions.assertSame(lock, rwl.getMainLock());
+	}
+
+	@Test
 	public void testGetReadLock() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
