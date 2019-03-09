@@ -5,34 +5,21 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.function.Function;
 
 public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> implements List<ELEMENT> {
 
 	private final List<ELEMENT> list;
 
 	public ReadWriteList(List<ELEMENT> list) {
-		this(ReadWriteLockable.NULL_LOCK, list, null);
+		this(ReadWriteLockable.NULL_LOCK, list);
 	}
 
 	public ReadWriteList(ReadWriteLockable lockable, List<ELEMENT> list) {
-		this(BaseReadWriteLockable.extractLock(lockable), list, null);
+		this(BaseReadWriteLockable.extractLock(lockable), list);
 	}
 
 	public ReadWriteList(ReadWriteLock rwLock, List<ELEMENT> list) {
-		this(rwLock, list, null);
-	}
-
-	public ReadWriteList(List<ELEMENT> list, Function<ELEMENT, ELEMENT> canonicalizer) {
-		this(ReadWriteLockable.NULL_LOCK, list, canonicalizer);
-	}
-
-	public ReadWriteList(ReadWriteLockable lockable, List<ELEMENT> list, Function<ELEMENT, ELEMENT> canonicalizer) {
-		this(BaseReadWriteLockable.extractLock(lockable), list, canonicalizer);
-	}
-
-	public ReadWriteList(ReadWriteLock rwLock, List<ELEMENT> list, Function<ELEMENT, ELEMENT> canonicalizer) {
-		super(rwLock, list, canonicalizer);
+		super(rwLock, list);
 		this.list = list;
 	}
 
@@ -50,14 +37,12 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 
 	@Override
 	public ELEMENT set(int index, ELEMENT element) {
-		ELEMENT E = canonicalize(element);
-		return writeLocked(() -> this.list.set(index, E));
+		return writeLocked(() -> this.list.set(index, element));
 	}
 
 	@Override
 	public void add(int index, ELEMENT element) {
-		ELEMENT E = canonicalize(element);
-		writeLocked(() -> this.list.add(index, E));
+		writeLocked(() -> this.list.add(index, element));
 	}
 
 	@Override
@@ -67,26 +52,22 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 
 	@Override
 	public int indexOf(Object o) {
-		ELEMENT E = canonicalizeObject(o);
-		return readLocked(() -> this.list.indexOf(E));
+		return readLocked(() -> this.list.indexOf(o));
 	}
 
 	@Override
 	public int lastIndexOf(Object o) {
-		ELEMENT E = canonicalizeObject(o);
-		return readLocked(() -> this.list.lastIndexOf(E));
+		return readLocked(() -> this.list.lastIndexOf(o));
 	}
 
 	@Override
 	public ListIterator<ELEMENT> listIterator() {
-		return readLocked(
-			() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator(), this.canonicalizer));
+		return readLocked(() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator()));
 	}
 
 	@Override
 	public ListIterator<ELEMENT> listIterator(int index) {
-		return readLocked(
-			() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator(index), this.canonicalizer));
+		return readLocked(() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator(index)));
 	}
 
 	@Override

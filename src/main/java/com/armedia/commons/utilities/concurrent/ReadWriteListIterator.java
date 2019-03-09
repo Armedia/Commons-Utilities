@@ -2,29 +2,22 @@ package com.armedia.commons.utilities.concurrent;
 
 import java.util.ListIterator;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.function.Function;
-
-import com.armedia.commons.utilities.Tools;
 
 public class ReadWriteListIterator<ELEMENT> extends ReadWriteIterator<ELEMENT> implements ListIterator<ELEMENT> {
 
-	private final Function<ELEMENT, ELEMENT> validator;
 	private final ListIterator<ELEMENT> iterator;
 
-	public ReadWriteListIterator(ListIterator<ELEMENT> iterator, Function<ELEMENT, ELEMENT> validator) {
-		this(ReadWriteLockable.NULL_LOCK, iterator, validator);
+	public ReadWriteListIterator(ListIterator<ELEMENT> iterator) {
+		this(ReadWriteLockable.NULL_LOCK, iterator);
 	}
 
-	public ReadWriteListIterator(ReadWriteLockable lockable, ListIterator<ELEMENT> iterator,
-		Function<ELEMENT, ELEMENT> validator) {
-		this(BaseReadWriteLockable.extractLock(lockable), iterator, validator);
+	public ReadWriteListIterator(ReadWriteLockable lockable, ListIterator<ELEMENT> iterator) {
+		this(BaseReadWriteLockable.extractLock(lockable), iterator);
 	}
 
-	public ReadWriteListIterator(ReadWriteLock rwLock, ListIterator<ELEMENT> iterator,
-		Function<ELEMENT, ELEMENT> validator) {
+	public ReadWriteListIterator(ReadWriteLock rwLock, ListIterator<ELEMENT> iterator) {
 		super(rwLock, iterator);
 		this.iterator = iterator;
-		this.validator = Tools.coalesce(validator, Function.identity());
 	}
 
 	@Override
@@ -49,13 +42,11 @@ public class ReadWriteListIterator<ELEMENT> extends ReadWriteIterator<ELEMENT> i
 
 	@Override
 	public void set(ELEMENT e) {
-		ELEMENT E = this.validator.apply(e);
-		writeLocked(() -> this.iterator.set(E));
+		writeLocked(() -> this.iterator.set(e));
 	}
 
 	@Override
 	public void add(ELEMENT e) {
-		ELEMENT E = this.validator.apply(e);
-		writeLocked(() -> this.iterator.add(E));
+		writeLocked(() -> this.iterator.add(e));
 	}
 }

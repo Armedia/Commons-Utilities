@@ -8,7 +8,6 @@ import java.util.Spliterator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.armedia.commons.utilities.Tools;
@@ -16,43 +15,18 @@ import com.armedia.commons.utilities.Tools;
 public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implements Collection<ELEMENT> {
 
 	private final Collection<ELEMENT> c;
-	protected final Function<ELEMENT, ELEMENT> canonicalizer;
 
 	public ReadWriteCollection(Collection<ELEMENT> c) {
-		this(ReadWriteLockable.NULL_LOCK, c, null);
-	}
-
-	public ReadWriteCollection(Collection<ELEMENT> c, Function<ELEMENT, ELEMENT> canonicalizer) {
-		this(ReadWriteLockable.NULL_LOCK, c, canonicalizer);
+		this(ReadWriteLockable.NULL_LOCK, c);
 	}
 
 	public ReadWriteCollection(ReadWriteLockable lockable, Collection<ELEMENT> c) {
-		this(lockable, c, null);
-	}
-
-	public ReadWriteCollection(ReadWriteLockable lockable, Collection<ELEMENT> c,
-		Function<ELEMENT, ELEMENT> canonicalizer) {
-		this(BaseReadWriteLockable.extractLock(lockable), c, canonicalizer);
+		this(BaseReadWriteLockable.extractLock(lockable), c);
 	}
 
 	public ReadWriteCollection(ReadWriteLock rwLock, Collection<ELEMENT> c) {
-		this(rwLock, c, null);
-	}
-
-	public ReadWriteCollection(ReadWriteLock rwLock, Collection<ELEMENT> c, Function<ELEMENT, ELEMENT> canonicalizer) {
 		super(rwLock);
 		this.c = Objects.requireNonNull(c, "Must provide a non-null backing Collection");
-		this.canonicalizer = (canonicalizer != null ? canonicalizer : Objects::requireNonNull);
-	}
-
-	protected final ELEMENT canonicalizeObject(Object o) {
-		@SuppressWarnings("unchecked")
-		ELEMENT e = (ELEMENT) o;
-		return canonicalize(e);
-	}
-
-	protected final ELEMENT canonicalize(ELEMENT e) {
-		return this.canonicalizer.apply(e);
 	}
 
 	@Override
@@ -73,8 +47,7 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public boolean contains(Object o) {
-		Object O = canonicalizeObject(o);
-		return readLocked(() -> this.c.contains(O));
+		return readLocked(() -> this.c.contains(o));
 	}
 
 	@Override
@@ -95,14 +68,12 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public boolean add(ELEMENT e) {
-		ELEMENT E = canonicalize(e);
-		return writeLocked(() -> this.c.add(E));
+		return writeLocked(() -> this.c.add(e));
 	}
 
 	@Override
 	public boolean remove(Object o) {
-		Object O = canonicalizeObject(o);
-		return writeLocked(() -> this.c.remove(O));
+		return writeLocked(() -> this.c.remove(o));
 	}
 
 	@Override

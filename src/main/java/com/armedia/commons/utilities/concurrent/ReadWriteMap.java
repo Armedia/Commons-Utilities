@@ -34,14 +34,6 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 		this.values = new ReadWriteCollection<>(this, map.values());
 	}
 
-	protected <K> K validateKey(K key) {
-		return Objects.requireNonNull(key, "Must provide a non-null key");
-	}
-
-	protected <V> V validateValue(V value) {
-		return Objects.requireNonNull(value, "Must provide a non-null value");
-	}
-
 	@Override
 	public int size() {
 		return readLocked(this.map::size);
@@ -54,33 +46,27 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 
 	@Override
 	public boolean containsKey(Object key) {
-		Object K = validateKey(key);
-		return readLocked(() -> this.map.containsKey(K));
+		return readLocked(() -> this.map.containsKey(key));
 	}
 
 	@Override
 	public boolean containsValue(Object value) {
-		Object V = validateValue(value);
-		return readLocked(() -> this.map.containsValue(V));
+		return readLocked(() -> this.map.containsValue(value));
 	}
 
 	@Override
 	public VALUE get(Object key) {
-		Object K = validateKey(key);
-		return readLocked(() -> this.map.get(K));
+		return readLocked(() -> this.map.get(key));
 	}
 
 	@Override
 	public VALUE put(KEY key, VALUE value) {
-		KEY K = validateKey(key);
-		VALUE V = validateValue(value);
-		return writeLocked(() -> this.map.put(K, V));
+		return writeLocked(() -> this.map.put(key, value));
 	}
 
 	@Override
 	public VALUE remove(Object key) {
-		Object K = validateKey(key);
-		return writeLocked(() -> this.map.remove(K));
+		return writeLocked(() -> this.map.remove(key));
 	}
 
 	@Override
@@ -143,45 +129,34 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 
 	@Override
 	public VALUE putIfAbsent(KEY key, VALUE value) {
-		KEY K = validateKey(key);
-		VALUE V = validateValue(value);
-
-		return readUpgradable(() -> this.map.get(K), Objects::isNull, (e) -> {
-			this.map.put(K, V);
+		return readUpgradable(() -> this.map.get(key), Objects::isNull, (e) -> {
+			this.map.put(key, value);
 			return null;
 		});
 	}
 
 	@Override
 	public boolean remove(Object key, Object value) {
-		Object K = validateKey(key);
-		Object V = validateValue(value);
-		return writeLocked(() -> this.map.remove(K, V));
+		return writeLocked(() -> this.map.remove(key, value));
 	}
 
 	@Override
 	public boolean replace(KEY key, VALUE oldValue, VALUE newValue) {
-		KEY K = validateKey(key);
-		VALUE O = validateValue(oldValue);
-		VALUE N = validateValue(newValue);
-		return writeLocked(() -> this.map.replace(K, O, N));
+		return writeLocked(() -> this.map.replace(key, oldValue, newValue));
 	}
 
 	@Override
 	public VALUE replace(KEY key, VALUE value) {
-		KEY K = validateKey(key);
-		VALUE V = validateValue(value);
-		return writeLocked(() -> this.map.replace(K, V));
+		return writeLocked(() -> this.map.replace(key, value));
 	}
 
 	@Override
 	public VALUE computeIfAbsent(KEY key, Function<? super KEY, ? extends VALUE> mappingFunction) {
 		Objects.requireNonNull(mappingFunction, "Must provide a non-null mapping function");
-		final KEY K = validateKey(key);
-		return readUpgradable(() -> this.map.get(K), Objects::isNull, (V) -> {
-			V = mappingFunction.apply(K);
+		return readUpgradable(() -> this.map.get(key), Objects::isNull, (V) -> {
+			V = mappingFunction.apply(key);
 			if (V != null) {
-				this.map.put(K, V);
+				this.map.put(key, V);
 			}
 			return V;
 		});
@@ -190,13 +165,12 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 	@Override
 	public VALUE computeIfPresent(KEY key, BiFunction<? super KEY, ? super VALUE, ? extends VALUE> remappingFunction) {
 		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
-		final KEY K = validateKey(key);
-		return readUpgradable(() -> this.map.get(K), Objects::nonNull, (V) -> {
-			V = remappingFunction.apply(K, V);
+		return readUpgradable(() -> this.map.get(key), Objects::nonNull, (V) -> {
+			V = remappingFunction.apply(key, V);
 			if (V != null) {
-				this.map.put(K, V);
+				this.map.put(key, V);
 			} else {
-				this.map.remove(K);
+				this.map.remove(key);
 			}
 			return V;
 		});
@@ -205,16 +179,13 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 	@Override
 	public VALUE compute(KEY key, BiFunction<? super KEY, ? super VALUE, ? extends VALUE> remappingFunction) {
 		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
-		KEY K = validateKey(key);
-		return writeLocked(() -> this.map.compute(K, remappingFunction));
+		return writeLocked(() -> this.map.compute(key, remappingFunction));
 	}
 
 	@Override
 	public VALUE merge(KEY key, VALUE value,
 		BiFunction<? super VALUE, ? super VALUE, ? extends VALUE> remappingFunction) {
 		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
-		KEY K = validateKey(key);
-		VALUE V = validateValue(value);
-		return writeLocked(() -> this.map.merge(K, V, remappingFunction));
+		return writeLocked(() -> this.map.merge(key, value, remappingFunction));
 	}
 }
