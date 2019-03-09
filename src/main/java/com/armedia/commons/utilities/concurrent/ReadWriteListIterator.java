@@ -6,12 +6,22 @@ import java.util.function.Function;
 
 import com.armedia.commons.utilities.Tools;
 
-class ReadWriteListIterator<ELEMENT> extends ReadWriteIterator<ELEMENT> implements ListIterator<ELEMENT> {
+public class ReadWriteListIterator<ELEMENT> extends ReadWriteIterator<ELEMENT> implements ListIterator<ELEMENT> {
 
 	private final Function<ELEMENT, ELEMENT> validator;
 	private final ListIterator<ELEMENT> iterator;
 
-	ReadWriteListIterator(ReadWriteLock rwLock, ListIterator<ELEMENT> iterator, Function<ELEMENT, ELEMENT> validator) {
+	public ReadWriteListIterator(ListIterator<ELEMENT> iterator, Function<ELEMENT, ELEMENT> validator) {
+		this(ReadWriteLockable.NULL_LOCK, iterator, validator);
+	}
+
+	public ReadWriteListIterator(ReadWriteLockable lockable, ListIterator<ELEMENT> iterator,
+		Function<ELEMENT, ELEMENT> validator) {
+		this(BaseReadWriteLockable.extractLock(lockable), iterator, validator);
+	}
+
+	public ReadWriteListIterator(ReadWriteLock rwLock, ListIterator<ELEMENT> iterator,
+		Function<ELEMENT, ELEMENT> validator) {
 		super(rwLock, iterator);
 		this.iterator = iterator;
 		this.validator = Tools.coalesce(validator, Function.identity());

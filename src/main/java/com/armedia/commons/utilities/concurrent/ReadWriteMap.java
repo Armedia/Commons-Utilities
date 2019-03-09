@@ -19,15 +19,19 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 	protected final Collection<VALUE> values;
 
 	public ReadWriteMap(Map<KEY, VALUE> map) {
-		this(null, map);
+		this(ReadWriteLockable.NULL_LOCK, map);
+	}
+
+	public ReadWriteMap(ReadWriteLockable lockable, Map<KEY, VALUE> map) {
+		this(BaseReadWriteLockable.extractLock(lockable), map);
 	}
 
 	public ReadWriteMap(ReadWriteLock rwLock, Map<KEY, VALUE> map) {
 		super(rwLock);
 		this.map = Objects.requireNonNull(map, "Must provide a non-null backing map");
-		this.keys = new ReadWriteSet<>(rwLock, map.keySet());
-		this.entries = new ReadWriteSet<>(rwLock, map.entrySet());
-		this.values = new ReadWriteCollection<>(rwLock, map.values());
+		this.keys = new ReadWriteSet<>(this, map.keySet());
+		this.entries = new ReadWriteSet<>(this, map.entrySet());
+		this.values = new ReadWriteCollection<>(this, map.values());
 	}
 
 	protected <K> K validateKey(K key) {

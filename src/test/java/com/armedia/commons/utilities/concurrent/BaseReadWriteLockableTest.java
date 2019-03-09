@@ -30,9 +30,17 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertNotNull(rwl.getMainLock());
 		Assertions.assertNotSame(lock, rwl.getMainLock());
 
-		rwl = new BaseReadWriteLockable(null);
+		rwl = new BaseReadWriteLockable(ReadWriteLockable.NULL_LOCK);
 		Assertions.assertNotNull(rwl.getMainLock());
 		Assertions.assertNotSame(lock, rwl.getMainLock());
+
+		Assertions.assertThrows(NullPointerException.class, () -> new BaseReadWriteLockable((ReadWriteLockable) null));
+
+		Assertions.assertNotNull(rwl);
+		ReadWriteLock other = rwl.getMainLock();
+		rwl = new BaseReadWriteLockable(rwl);
+		Assertions.assertNotNull(rwl.getMainLock());
+		Assertions.assertSame(other, rwl.getMainLock());
 
 		rwl = new BaseReadWriteLockable(lock);
 		Assertions.assertNotNull(rwl.getMainLock());

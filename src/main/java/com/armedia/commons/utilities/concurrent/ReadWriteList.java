@@ -12,7 +12,11 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 	private final List<ELEMENT> list;
 
 	public ReadWriteList(List<ELEMENT> list) {
-		this(null, list, null);
+		this(ReadWriteLockable.NULL_LOCK, list, null);
+	}
+
+	public ReadWriteList(ReadWriteLockable lockable, List<ELEMENT> list) {
+		this(BaseReadWriteLockable.extractLock(lockable), list, null);
 	}
 
 	public ReadWriteList(ReadWriteLock rwLock, List<ELEMENT> list) {
@@ -20,7 +24,11 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 	}
 
 	public ReadWriteList(List<ELEMENT> list, Function<ELEMENT, ELEMENT> canonicalizer) {
-		this(null, list, canonicalizer);
+		this(ReadWriteLockable.NULL_LOCK, list, canonicalizer);
+	}
+
+	public ReadWriteList(ReadWriteLockable lockable, List<ELEMENT> list, Function<ELEMENT, ELEMENT> canonicalizer) {
+		this(BaseReadWriteLockable.extractLock(lockable), list, canonicalizer);
 	}
 
 	public ReadWriteList(ReadWriteLock rwLock, List<ELEMENT> list, Function<ELEMENT, ELEMENT> canonicalizer) {
@@ -71,17 +79,18 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 
 	@Override
 	public ListIterator<ELEMENT> listIterator() {
-		return readLocked(() -> new ReadWriteListIterator<>(this.rwLock, this.list.listIterator(), this.canonicalizer));
+		return readLocked(
+			() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator(), this.canonicalizer));
 	}
 
 	@Override
 	public ListIterator<ELEMENT> listIterator(int index) {
 		return readLocked(
-			() -> new ReadWriteListIterator<>(this.rwLock, this.list.listIterator(index), this.canonicalizer));
+			() -> new ReadWriteListIterator<>(getMainLock(), this.list.listIterator(index), this.canonicalizer));
 	}
 
 	@Override
 	public List<ELEMENT> subList(int fromIndex, int toIndex) {
-		return readLocked(() -> new ReadWriteList<>(this.rwLock, this.list.subList(fromIndex, toIndex)));
+		return readLocked(() -> new ReadWriteList<>(getMainLock(), this.list.subList(fromIndex, toIndex)));
 	}
 }

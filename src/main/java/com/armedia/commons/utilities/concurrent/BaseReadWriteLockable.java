@@ -1,5 +1,6 @@
 package com.armedia.commons.utilities.concurrent;
 
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -14,7 +15,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class BaseReadWriteLockable implements ReadWriteLockable {
 
-	protected final ReadWriteLock rwLock;
+	private final ReadWriteLock rwLock;
 
 	/**
 	 * <p>
@@ -22,7 +23,11 @@ public class BaseReadWriteLockable implements ReadWriteLockable {
 	 * </p>
 	 */
 	public BaseReadWriteLockable() {
-		this(null);
+		this(ReadWriteLockable.NULL_LOCK);
+	}
+
+	public BaseReadWriteLockable(ReadWriteLockable lockable) {
+		this(BaseReadWriteLockable.extractLock(lockable));
 	}
 
 	/**
@@ -38,5 +43,9 @@ public class BaseReadWriteLockable implements ReadWriteLockable {
 	@Override
 	public final ReadWriteLock getMainLock() {
 		return this.rwLock;
+	}
+
+	protected static ReadWriteLock extractLock(ReadWriteLockable lockable) {
+		return Objects.requireNonNull(lockable, "Must provide a non-null ReadWriteLockable instance").getMainLock();
 	}
 }

@@ -11,11 +11,16 @@ public class ReadWriteSpliterator<E> extends BaseReadWriteLockable implements Sp
 	private final Spliterator<E> spliterator;
 
 	public ReadWriteSpliterator(Spliterator<E> spliterator) {
-		this(null, spliterator);
+		this(ReadWriteLockable.NULL_LOCK, spliterator);
 	}
 
 	public ReadWriteSpliterator(ReadWriteLock rwLock, Spliterator<E> spliterator) {
 		super(rwLock);
+		this.spliterator = Objects.requireNonNull(spliterator, "Must provide a non-null backing spliterator");
+	}
+
+	public ReadWriteSpliterator(ReadWriteLockable lockable, Spliterator<E> spliterator) {
+		super(lockable);
 		this.spliterator = Objects.requireNonNull(spliterator, "Must provide a non-null backing spliterator");
 	}
 
@@ -31,7 +36,7 @@ public class ReadWriteSpliterator<E> extends BaseReadWriteLockable implements Sp
 
 	@Override
 	public Spliterator<E> trySplit() {
-		return readLocked(() -> new ReadWriteSpliterator<>(this.rwLock, this.spliterator.trySplit()));
+		return readLocked(() -> new ReadWriteSpliterator<>(getMainLock(), this.spliterator.trySplit()));
 	}
 
 	@Override

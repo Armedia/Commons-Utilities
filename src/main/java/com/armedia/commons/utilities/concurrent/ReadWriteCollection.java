@@ -19,11 +19,20 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 	protected final Function<ELEMENT, ELEMENT> canonicalizer;
 
 	public ReadWriteCollection(Collection<ELEMENT> c) {
-		this(null, c, null);
+		this(ReadWriteLockable.NULL_LOCK, c, null);
 	}
 
 	public ReadWriteCollection(Collection<ELEMENT> c, Function<ELEMENT, ELEMENT> canonicalizer) {
-		this(null, c, canonicalizer);
+		this(ReadWriteLockable.NULL_LOCK, c, canonicalizer);
+	}
+
+	public ReadWriteCollection(ReadWriteLockable lockable, Collection<ELEMENT> c) {
+		this(lockable, c, null);
+	}
+
+	public ReadWriteCollection(ReadWriteLockable lockable, Collection<ELEMENT> c,
+		Function<ELEMENT, ELEMENT> canonicalizer) {
+		this(BaseReadWriteLockable.extractLock(lockable), c, canonicalizer);
 	}
 
 	public ReadWriteCollection(ReadWriteLock rwLock, Collection<ELEMENT> c) {

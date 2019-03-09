@@ -32,6 +32,8 @@ import com.armedia.commons.utilities.function.CheckedSupplier;
 @FunctionalInterface
 public interface ReadWriteLockable {
 
+	public static final ReadWriteLock NULL_LOCK = null;
+
 	/**
 	 * <p>
 	 * Returns the {@link ReadWriteLock} instance that backs all the functionality.
