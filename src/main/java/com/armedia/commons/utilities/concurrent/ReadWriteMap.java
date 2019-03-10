@@ -129,7 +129,7 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 
 	@Override
 	public VALUE putIfAbsent(KEY key, VALUE value) {
-		return readUpgradable(() -> this.map.get(key), Objects::isNull, (e) -> {
+		return readLockedUpgradable(() -> this.map.get(key), Objects::isNull, (e) -> {
 			this.map.put(key, value);
 			return null;
 		});
@@ -153,7 +153,7 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 	@Override
 	public VALUE computeIfAbsent(KEY key, Function<? super KEY, ? extends VALUE> mappingFunction) {
 		Objects.requireNonNull(mappingFunction, "Must provide a non-null mapping function");
-		return readUpgradable(() -> this.map.get(key), Objects::isNull, (V) -> {
+		return readLockedUpgradable(() -> this.map.get(key), Objects::isNull, (V) -> {
 			V = mappingFunction.apply(key);
 			if (V != null) {
 				this.map.put(key, V);
@@ -165,7 +165,7 @@ public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements M
 	@Override
 	public VALUE computeIfPresent(KEY key, BiFunction<? super KEY, ? super VALUE, ? extends VALUE> remappingFunction) {
 		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
-		return readUpgradable(() -> this.map.get(key), Objects::nonNull, (V) -> {
+		return readLockedUpgradable(() -> this.map.get(key), Objects::nonNull, (V) -> {
 			V = remappingFunction.apply(key, V);
 			if (V != null) {
 				this.map.put(key, V);

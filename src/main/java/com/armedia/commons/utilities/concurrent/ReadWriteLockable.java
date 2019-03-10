@@ -262,12 +262,12 @@ public interface ReadWriteLockable {
 	 * @returns the value returned by the {@code writeBlock} if it was executed, or {@code null} if
 	 *          it wasn't.
 	 */
-	public default <E> E readUpgradable(Supplier<Boolean> decision, Supplier<E> writeBlock) {
+	public default <E> E readLockedUpgradable(Supplier<Boolean> decision, Supplier<E> writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
 		final CheckedFunction<E, E, RuntimeException> newWriteBlock = (e) -> writeBlock.get();
-		return readUpgradable(null, newDecision, newWriteBlock);
+		return readLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -296,13 +296,13 @@ public interface ReadWriteLockable {
 	 *          it wasn't.
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> E readUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Throwable> E readLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedSupplier<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
 		final CheckedFunction<E, E, EX> newWriteBlock = (e) -> writeBlock.getChecked();
-		return readUpgradable(null, newDecision, newWriteBlock);
+		return readLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -332,13 +332,13 @@ public interface ReadWriteLockable {
 	 * @returns either the value returned by the {@code writeBlock} (if it was executed), or the
 	 *          last value returned by the {@code checker} parameter.
 	 */
-	public default <E> E readUpgradable(Supplier<E> checker, Predicate<E> decision, Function<E, E> writeBlock) {
+	public default <E> E readLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Function<E, E> writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? () -> checker.get() : null);
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.test(e);
 		final CheckedFunction<E, E, RuntimeException> newWriteBlock = (e) -> writeBlock.apply(e);
-		return readUpgradable(newChecker, newDecision, newWriteBlock);
+		return readLockedUpgradable(newChecker, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -369,7 +369,7 @@ public interface ReadWriteLockable {
 	 *          last value returned by the {@code checker} parameter.
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> E readUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Throwable> E readLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedFunction<E, E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -425,12 +425,12 @@ public interface ReadWriteLockable {
 	 * @param decision
 	 * @param writeBlock
 	 */
-	public default <E> void readUpgradable(Supplier<Boolean> decision, Runnable writeBlock) {
+	public default <E> void readLockedUpgradable(Supplier<Boolean> decision, Runnable writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
 		final CheckedConsumer<E, RuntimeException> newWriteBlock = (e) -> writeBlock.run();
-		readUpgradable(null, newDecision, newWriteBlock);
+		readLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -457,13 +457,13 @@ public interface ReadWriteLockable {
 	 * @param writeBlock
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> void readUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Throwable> void readLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedRunnable<EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
 		final CheckedConsumer<E, EX> newWriteBlock = (e) -> writeBlock.runChecked();
-		readUpgradable(null, newDecision, newWriteBlock);
+		readLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -491,13 +491,13 @@ public interface ReadWriteLockable {
 	 * @param decision
 	 * @param writeBlock
 	 */
-	public default <E> void readUpgradable(Supplier<E> checker, Predicate<E> decision, Consumer<E> writeBlock) {
+	public default <E> void readLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Consumer<E> writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? () -> checker.get() : null);
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.test(e);
 		final CheckedConsumer<E, RuntimeException> newWriteBlock = (e) -> writeBlock.accept(e);
-		readUpgradable(newChecker, newDecision, newWriteBlock);
+		readLockedUpgradable(newChecker, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -526,7 +526,7 @@ public interface ReadWriteLockable {
 	 * @param writeBlock
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> void readUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Throwable> void readLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedConsumer<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");

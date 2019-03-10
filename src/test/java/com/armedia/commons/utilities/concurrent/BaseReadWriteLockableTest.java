@@ -338,33 +338,33 @@ public class BaseReadWriteLockableTest {
 			final CheckedFunction<Object, Object, Exception> nullMap = null;
 			final CheckedFunction<Object, Object, Exception> map = (e) -> null;
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, nullMap),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullSup, nullPred, nullMap),
 				"Did not fail with all-null parameters");
 
-			rwl.readUpgradable(nullSup, pred, map);
+			rwl.readLockedUpgradable(nullSup, pred, map);
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, map),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(sup, nullPred, map),
 				"Did not fail with null Predicate");
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, Objects::nonNull, nullMap), "Did not fail with null mapper Function");
+				() -> rwl.readLockedUpgradable(sup, Objects::nonNull, nullMap), "Did not fail with null mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, nullMap),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(sup, nullPred, nullMap),
 				"Did not fail with null Predicate and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, pred, nullMap),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullSup, pred, nullMap),
 				"Did not fail with null Supplier and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, map),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullSup, nullPred, map),
 				"Did not fail with null Supplier and Predicate");
 
-			o = rwl.readUpgradable(sup, pred, map);
+			o = rwl.readLockedUpgradable(sup, pred, map);
 		}
 
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		callCount.set(0);
-		o = rwl.readUpgradable(() -> {
+		o = rwl.readLockedUpgradable(() -> {
 			// This should happen with the read lock held
 			Assertions.assertEquals(1, lock.getReadHoldCount());
 			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
@@ -382,7 +382,7 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		callCount.set(0);
-		o = rwl.readUpgradable(() -> {
+		o = rwl.readLockedUpgradable(() -> {
 			// This should happen with the read lock held
 			if (callCount.getAndIncrement() == 0) {
 				Assertions.assertEquals(1, lock.getReadHoldCount());
@@ -404,7 +404,7 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		callCount.set(0);
-		o = rwl.readUpgradable(() -> {
+		o = rwl.readLockedUpgradable(() -> {
 			// This should happen with the read lock held
 			callCount.incrementAndGet();
 			return a;
@@ -427,33 +427,33 @@ public class BaseReadWriteLockableTest {
 			final CheckedConsumer<Object, Exception> cons = (e) -> {
 			};
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, nullCons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullSup, nullPred, nullCons),
 				"Did not fail with all-null parameters");
 
-			rwl.readUpgradable(nullSup, pred, cons);
+			rwl.readLockedUpgradable(nullSup, pred, cons);
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, cons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(sup, nullPred, cons),
 				"Did not fail with null Predicate");
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(sup, Objects::nonNull, nullCons), "Did not fail with null mapper Function");
+				() -> rwl.readLockedUpgradable(sup, Objects::nonNull, nullCons), "Did not fail with null mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(sup, nullPred, nullCons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(sup, nullPred, nullCons),
 				"Did not fail with null Predicate and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, pred, nullCons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullSup, pred, nullCons),
 				"Did not fail with null Supplier and mapper Function");
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullSup, nullPred, cons),
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullSup, nullPred, cons),
 				"Did not fail with null Supplier and Predicate");
 
-			rwl.readUpgradable(sup, pred, cons);
+			rwl.readLockedUpgradable(sup, pred, cons);
 		}
 
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		callCount.set(0);
-		rwl.readUpgradable(() -> {
+		rwl.readLockedUpgradable(() -> {
 			// This should happen with the read lock held
 			Assertions.assertEquals(1, lock.getReadHoldCount());
 			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
@@ -469,7 +469,7 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		callCount.set(0);
-		rwl.readUpgradable(() -> {
+		rwl.readLockedUpgradable(() -> {
 			// This should happen with the read lock held
 			if (callCount.getAndIncrement() == 0) {
 				Assertions.assertEquals(1, lock.getReadHoldCount());
@@ -489,7 +489,7 @@ public class BaseReadWriteLockableTest {
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 		callCount.set(0);
-		rwl.readUpgradable(() -> {
+		rwl.readLockedUpgradable(() -> {
 			// This should happen with the read lock held
 			callCount.incrementAndGet();
 			return a;
@@ -515,22 +515,22 @@ public class BaseReadWriteLockableTest {
 				return a;
 			};
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertSame(a, rwl.readUpgradable(decision, writeBlock));
+			Assertions.assertSame(a, rwl.readLockedUpgradable(decision, writeBlock));
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return Boolean.FALSE;
 			}, writeBlock);
@@ -538,7 +538,7 @@ public class BaseReadWriteLockableTest {
 			Assertions.assertFalse(writeBlockInvoked.get());
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return null;
 			}, writeBlock);
@@ -560,22 +560,22 @@ public class BaseReadWriteLockableTest {
 				return a;
 			};
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertSame(a, rwl.readUpgradable(decision, writeBlock));
+			Assertions.assertSame(a, rwl.readLockedUpgradable(decision, writeBlock));
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return Boolean.FALSE;
 			}, writeBlock);
@@ -583,7 +583,7 @@ public class BaseReadWriteLockableTest {
 			Assertions.assertFalse(writeBlockInvoked.get());
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return null;
 			}, writeBlock);
@@ -608,35 +608,35 @@ public class BaseReadWriteLockableTest {
 			};
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullChecker, nullDecision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(nullChecker, nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullChecker, nullDecision, writeBlock));
+				() -> rwl.readLockedUpgradable(nullChecker, nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullChecker, decision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(nullChecker, decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertSame(a, rwl.readUpgradable(nullChecker, decision, writeBlock));
+			Assertions.assertSame(a, rwl.readLockedUpgradable(nullChecker, decision, writeBlock));
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 			callCount.set(0);
 			writeBlockInvoked.set(false);
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(checker, nullDecision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(checker, nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(checker, nullDecision, writeBlock));
+				() -> rwl.readLockedUpgradable(checker, nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(checker, decision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(checker, decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertSame(a, rwl.readUpgradable(checker, decision, writeBlock));
+			Assertions.assertSame(a, rwl.readLockedUpgradable(checker, decision, writeBlock));
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 		}
@@ -652,22 +652,22 @@ public class BaseReadWriteLockableTest {
 			final Supplier<Object> nullWriteBlock = null;
 			final Runnable writeBlock = () -> writeBlockInvoked.set(true);
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			rwl.readUpgradable(decision, writeBlock);
+			rwl.readLockedUpgradable(decision, writeBlock);
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return Boolean.FALSE;
 			}, writeBlock);
@@ -675,7 +675,7 @@ public class BaseReadWriteLockableTest {
 			Assertions.assertFalse(writeBlockInvoked.get());
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return null;
 			}, writeBlock);
@@ -694,22 +694,22 @@ public class BaseReadWriteLockableTest {
 			final CheckedRunnable<Exception> nullWriteBlock = null;
 			final CheckedRunnable<Exception> writeBlock = () -> writeBlockInvoked.set(true);
 
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(nullDecision, writeBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			Assertions.assertThrows(NullPointerException.class, () -> rwl.readUpgradable(decision, nullWriteBlock));
+			Assertions.assertThrows(NullPointerException.class, () -> rwl.readLockedUpgradable(decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			rwl.readUpgradable(decision, writeBlock);
+			rwl.readLockedUpgradable(decision, writeBlock);
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return Boolean.FALSE;
 			}, writeBlock);
@@ -717,7 +717,7 @@ public class BaseReadWriteLockableTest {
 			Assertions.assertFalse(writeBlockInvoked.get());
 			callCount.set(0);
 			writeBlockInvoked.set(false);
-			rwl.readUpgradable(() -> {
+			rwl.readLockedUpgradable(() -> {
 				callCount.incrementAndGet();
 				return null;
 			}, writeBlock);
@@ -739,35 +739,35 @@ public class BaseReadWriteLockableTest {
 			final Consumer<Object> writeBlock = (e) -> writeBlockInvoked.set(true);
 
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullChecker, nullDecision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(nullChecker, nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullChecker, nullDecision, writeBlock));
+				() -> rwl.readLockedUpgradable(nullChecker, nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(nullChecker, decision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(nullChecker, decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			rwl.readUpgradable(nullChecker, decision, writeBlock);
+			rwl.readLockedUpgradable(nullChecker, decision, writeBlock);
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 			callCount.set(0);
 			writeBlockInvoked.set(false);
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(checker, nullDecision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(checker, nullDecision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(checker, nullDecision, writeBlock));
+				() -> rwl.readLockedUpgradable(checker, nullDecision, writeBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
 			Assertions.assertThrows(NullPointerException.class,
-				() -> rwl.readUpgradable(checker, decision, nullWriteBlock));
+				() -> rwl.readLockedUpgradable(checker, decision, nullWriteBlock));
 			Assertions.assertEquals(0, callCount.get());
 			Assertions.assertFalse(writeBlockInvoked.get());
-			rwl.readUpgradable(checker, decision, writeBlock);
+			rwl.readLockedUpgradable(checker, decision, writeBlock);
 			Assertions.assertEquals(2, callCount.get());
 			Assertions.assertTrue(writeBlockInvoked.get());
 		}

@@ -53,7 +53,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 	}
 
 	public T await() throws InterruptedException {
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			this.condition.await();
 			this.condition.signal();
 		});
@@ -61,7 +61,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 	}
 
 	public T awaitUninterruptibly() {
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			this.condition.awaitUninterruptibly();
 			this.condition.signal();
 		});
@@ -70,7 +70,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 
 	public Pair<T, Long> awaitNanos(long nanosTimeout) throws InterruptedException {
 		final AtomicReference<Long> ret = new AtomicReference<>(null);
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitNanos(nanosTimeout));
 			if (this.initialized) {
 				this.condition.signal();
@@ -92,7 +92,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 
 	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
 		final AtomicBoolean ret = new AtomicBoolean(true);
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitUntil(deadline));
 			if (ret.get()) {
 				this.condition.signal();
@@ -115,7 +115,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 	}
 
 	public T get(Supplier<T> init) {
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			Supplier<T> initializer = Tools.coalesce(init, this.defaultInitializer);
 			if (initializer != null) {
 				this.item = initializer.get();

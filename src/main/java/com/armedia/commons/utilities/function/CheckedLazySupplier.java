@@ -59,7 +59,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 	}
 
 	public T await() throws InterruptedException {
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			if (!this.initialized) {
 				this.condition.await();
 				this.condition.signal();
@@ -69,7 +69,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 	}
 
 	public T awaitUninterruptibly() {
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			this.condition.awaitUninterruptibly();
 			this.condition.signal();
 		});
@@ -78,7 +78,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 
 	public Pair<T, Long> awaitNanos(long nanosTimeout) throws InterruptedException {
 		final AtomicReference<Long> ret = new AtomicReference<>(null);
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitNanos(nanosTimeout));
 			if (this.initialized) {
 				this.condition.signal();
@@ -100,7 +100,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 
 	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
 		final AtomicBoolean ret = new AtomicBoolean(true);
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitUntil(deadline));
 			if (ret.get()) {
 				this.condition.signal();
@@ -136,7 +136,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 	}
 
 	public T getChecked(CheckedSupplier<T, EX> initializer) throws EX {
-		readUpgradable(() -> !this.initialized, () -> {
+		readLockedUpgradable(() -> !this.initialized, () -> {
 			CheckedSupplier<T, EX> init = Tools.coalesce(initializer, this.defaultInitializer);
 			if (init != null) {
 				this.item = init.getChecked();
