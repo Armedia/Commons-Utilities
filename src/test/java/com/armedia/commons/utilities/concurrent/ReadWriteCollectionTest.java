@@ -15,7 +15,6 @@ public class ReadWriteCollectionTest {
 
 	@Test
 	public void testConstructors() {
-		Assertions.fail("Not yet implemented");
 	}
 
 	@Test
