@@ -21,6 +21,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.validation.Schema;
@@ -351,5 +353,21 @@ public class XmlTools {
 			return;
 		}
 		m.marshal(target, OutputStream.class.cast(out));
+	}
+
+	public static void skipBranch(XMLStreamReader xml) throws XMLStreamException {
+		long depth = 1;
+		while ((depth > 0) && xml.hasNext()) {
+			switch (xml.nextTag()) {
+				case XMLStreamConstants.START_DOCUMENT:
+				case XMLStreamConstants.START_ELEMENT:
+					depth++;
+					break;
+				case XMLStreamConstants.END_DOCUMENT:
+				case XMLStreamConstants.END_ELEMENT:
+					depth--;
+					break;
+			}
+		}
 	}
 }
