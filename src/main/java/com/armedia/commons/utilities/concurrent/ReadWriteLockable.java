@@ -13,6 +13,7 @@ import com.armedia.commons.utilities.function.CheckedFunction;
 import com.armedia.commons.utilities.function.CheckedPredicate;
 import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
+import com.armedia.commons.utilities.function.CheckedTools;
 
 /**
  * <p>
@@ -80,8 +81,7 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default <E> E readLocked(Supplier<E> operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		return readLocked(() -> operation.get());
+		return readLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -116,8 +116,7 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default void readLocked(Runnable operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		readLocked(() -> operation.run());
+		readLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -177,8 +176,7 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default <E> E writeLocked(Supplier<E> operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		return writeLocked(() -> operation.get());
+		return writeLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -213,8 +211,7 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default void writeLocked(Runnable operation) {
-		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		writeLocked(() -> operation.run());
+		writeLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -333,12 +330,8 @@ public interface ReadWriteLockable {
 	 *          last value returned by the {@code checker} parameter.
 	 */
 	public default <E> E readLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Function<E, E> writeBlock) {
-		Objects.requireNonNull(decision, "Must provide a non-null decision");
-		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
-		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? () -> checker.get() : null);
-		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.test(e);
-		final CheckedFunction<E, E, RuntimeException> newWriteBlock = (e) -> writeBlock.apply(e);
-		return readLockedUpgradable(newChecker, newDecision, newWriteBlock);
+		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
+		return readLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
 	}
 
 	/**
@@ -492,12 +485,8 @@ public interface ReadWriteLockable {
 	 * @param writeBlock
 	 */
 	public default <E> void readLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Consumer<E> writeBlock) {
-		Objects.requireNonNull(decision, "Must provide a non-null decision");
-		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
-		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? () -> checker.get() : null);
-		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.test(e);
-		final CheckedConsumer<E, RuntimeException> newWriteBlock = (e) -> writeBlock.accept(e);
-		readLockedUpgradable(newChecker, newDecision, newWriteBlock);
+		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
+		readLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
 	}
 
 	/**
