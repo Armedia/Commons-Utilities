@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 @FunctionalInterface
 public interface CheckedSupplier<T, EX extends Throwable> extends Supplier<T> {
+
 	public T getChecked() throws EX;
 
 	@Override
@@ -11,11 +12,8 @@ public interface CheckedSupplier<T, EX extends Throwable> extends Supplier<T> {
 		try {
 			return getChecked();
 		} catch (Throwable t) {
-			RuntimeException re = new RuntimeException(t.getMessage(), t);
-			for (Throwable s : t.getSuppressed()) {
-				re.addSuppressed(s);
-			}
-			throw re;
+			throw new RuntimeException(t.getMessage(), t);
 		}
 	}
+
 }

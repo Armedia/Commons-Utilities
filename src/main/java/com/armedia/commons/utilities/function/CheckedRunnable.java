@@ -2,18 +2,16 @@ package com.armedia.commons.utilities.function;
 
 @FunctionalInterface
 public interface CheckedRunnable<EX extends Throwable> extends Runnable {
+
+	public void runChecked() throws EX;
+
 	@Override
 	public default void run() {
 		try {
 			runChecked();
 		} catch (Throwable t) {
-			RuntimeException re = new RuntimeException(t.getMessage(), t);
-			for (Throwable s : t.getSuppressed()) {
-				re.addSuppressed(s);
-			}
-			throw re;
+			throw new RuntimeException(t.getMessage(), t);
 		}
 	}
 
-	public void runChecked() throws EX;
 }

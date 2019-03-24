@@ -1,9 +1,11 @@
 package com.armedia.commons.utilities.function;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface CheckedConsumer<T, EX extends Throwable> extends Consumer<T> {
+
 	public void acceptChecked(T t) throws EX;
 
 	@Override
@@ -11,11 +13,16 @@ public interface CheckedConsumer<T, EX extends Throwable> extends Consumer<T> {
 		try {
 			acceptChecked(t);
 		} catch (Throwable thrown) {
-			RuntimeException re = new RuntimeException(thrown.getMessage(), thrown);
-			for (Throwable s : thrown.getSuppressed()) {
-				re.addSuppressed(s);
-			}
-			throw re;
+			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}
+
+	default CheckedConsumer<T, EX> andThen(CheckedConsumer<? super T, ? extends EX> after) {
+		Objects.requireNonNull(after);
+		return (T t) -> {
+			acceptChecked(t);
+			after.acceptChecked(t);
+		};
+	}
+
 }
