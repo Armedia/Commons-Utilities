@@ -308,6 +308,10 @@ public class XmlTools {
 		XmlTools.doMarshal(target, schemaName, out, format);
 	}
 
+	public static Marshaller getMarshaller(Class<?>... targetClasses) throws JAXBException {
+		return XmlTools.getMarshaller(null, targetClasses);
+	}
+
 	/**
 	 * Returns a valid JAXB {@link Marshaller} instance supporting the given classes, as per the
 	 * named schema (may be {@code null}).
