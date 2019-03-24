@@ -11,7 +11,7 @@ public class PooledWorkersTest {
 	public void testBlocking() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
 		PooledWorkers<Object, String> pw = new PooledWorkers<>();
-		PooledWorkersLogic<Object, String> logic = (o, s) -> {
+		PooledWorkersLogic<Object, String, Exception> logic = (o, s) -> {
 			data.incrementAndGet();
 			try {
 				Thread.sleep(10);
@@ -34,7 +34,7 @@ public class PooledWorkersTest {
 	public void testInterrupt() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
 		PooledWorkers<Object, String> pw = new PooledWorkers<>();
-		PooledWorkersLogic<Object, String> logic = (o, s) -> {
+		PooledWorkersLogic<Object, String, Exception> logic = (o, s) -> {
 			data.incrementAndGet();
 			try {
 				Thread.sleep(10);
@@ -60,7 +60,7 @@ public class PooledWorkersTest {
 	public void testNonBlocking() throws Exception {
 		final AtomicLong data = new AtomicLong(0);
 		PooledWorkers<Object, String> pw = new PooledWorkers<>();
-		PooledWorkersLogic<Object, String> logic = (o, s) -> {
+		PooledWorkersLogic<Object, String, Exception> logic = (o, s) -> {
 			data.incrementAndGet();
 			try {
 				Thread.sleep(10);

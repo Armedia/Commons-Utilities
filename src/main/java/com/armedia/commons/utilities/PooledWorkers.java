@@ -61,15 +61,20 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	private final Collection<Thread> threads = new ArrayList<>();
 	private final Set<Long> blocked = new HashSet<>();
 
-	private final class Task implements Runnable {
+	private final class Task<EX extends Throwable> implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
 
 		private final boolean waitForWork;
-		private final PooledWorkersLogic<STATE, ITEM> logic;
+		private final PooledWorkersLogic<STATE, ITEM, EX> logic;
 
-		private Task(PooledWorkersLogic<STATE, ITEM> logic, boolean waitForWork) {
+		private Task(PooledWorkersLogic<STATE, ITEM, EX> logic, boolean waitForWork) {
 			this.waitForWork = waitForWork;
 			this.logic = logic;
+		}
+
+		@SuppressWarnings("unchecked")
+		private EX castException(Throwable raised) {
+			return (EX) raised;
 		}
 
 		@Override
@@ -77,8 +82,8 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 			final STATE state;
 			try {
 				state = this.logic.initialize();
-			} catch (Exception e) {
-				workerThreadExited("Failed to initialize the worker state", null, e);
+			} catch (Throwable t) {
+				workerThreadExited("Failed to initialize the worker state", null, castException(t));
 				return;
 			}
 			PooledWorkers.this.activeCounter.incrementAndGet();
@@ -118,8 +123,8 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 						// processing method
 						Thread.interrupted();
 						this.logic.process(state, item);
-					} catch (Exception e) {
-						this.logic.handleFailure(state, item, e);
+					} catch (Throwable t) {
+						this.logic.handleFailure(state, item, castException(t));
 					}
 				}
 			} catch (Exception e) {
@@ -261,21 +266,23 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	/**
 	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
 	 */
-	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount) {
+	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount) {
 		return start(logic, threadCount, null, true);
 	}
 
 	/**
 	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
 	 */
-	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount, String name) {
+	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
+		String name) {
 		return start(logic, threadCount, null, true);
 	}
 
 	/**
 	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
 	 */
-	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount, boolean waitForWork) {
+	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
+		boolean waitForWork) {
 		return start(logic, threadCount, null, waitForWork);
 	}
 
@@ -297,8 +304,8 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 * @return {@code true} if the work was started, or {@code false} if the work had already been
 	 *         started.
 	 */
-	public final boolean start(PooledWorkersLogic<STATE, ITEM> logic, int threadCount, String name,
-		boolean waitForWork) {
+	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
+		String name, boolean waitForWork) {
 		Objects.requireNonNull(logic, "Must provide the logic that these workers will apply");
 		return writeLocked(() -> {
 			if (this.executor != null) { return false; }
@@ -307,7 +314,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 			this.futures.clear();
 			this.terminated.set(false);
 			this.threads.clear();
-			Task task = new Task(logic, waitForWork);
+			Task<EX> task = new Task<>(logic, waitForWork);
 			ThreadFactory threadFactory = Executors.defaultThreadFactory();
 			String finalName = StringUtils.strip(name);
 			final String threadNameFormat = String.format("%s-%%0%dd", finalName, String.valueOf(threadCount).length());
