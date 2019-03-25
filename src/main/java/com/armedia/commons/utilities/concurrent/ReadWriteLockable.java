@@ -81,7 +81,8 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default <E> E readLocked(Supplier<E> operation) {
-		return readLocked(CheckedTools.check(operation));
+		Objects.requireNonNull(operation, "Must provide an operation to run");
+		return readLocked(() -> operation.get());
 	}
 
 	/**
@@ -116,7 +117,8 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default void readLocked(Runnable operation) {
-		readLocked(CheckedTools.check(operation));
+		Objects.requireNonNull(operation, "Must provide an operation to run");
+		readLocked(() -> operation.run());
 	}
 
 	/**
@@ -176,7 +178,8 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default <E> E writeLocked(Supplier<E> operation) {
-		return writeLocked(CheckedTools.check(operation));
+		Objects.requireNonNull(operation, "Must provide an operation to run");
+		return writeLocked(() -> operation.get());
 	}
 
 	/**
@@ -211,7 +214,8 @@ public interface ReadWriteLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default void writeLocked(Runnable operation) {
-		writeLocked(CheckedTools.check(operation));
+		Objects.requireNonNull(operation, "Must provide an operation to run");
+		writeLocked(() -> operation.run());
 	}
 
 	/**
