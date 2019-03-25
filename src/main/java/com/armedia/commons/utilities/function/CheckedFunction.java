@@ -8,6 +8,10 @@ public interface CheckedFunction<T, R, EX extends Throwable> extends Function<T,
 
 	public R applyChecked(T t) throws EX;
 
+	static <T, EX extends Throwable> CheckedFunction<T, T, EX> checkedIdentity() {
+		return (t) -> t;
+	}
+
 	@Override
 	public default R apply(T t) {
 		try {
