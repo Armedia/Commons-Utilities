@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -63,12 +64,7 @@ public class PluggableServiceLocatorTest {
 
 	@Test
 	public void testConstructors() {
-		PluggableServiceSelector<GoodServiceTest> goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				return false;
-			}
-		};
+		Predicate<GoodServiceTest> goodSelector = (s) -> false;
 		PluggableServiceLocator<?> goodLocator = null;
 
 		ClassLoader testCl = Thread.currentThread().getContextClassLoader();
@@ -128,12 +124,7 @@ public class PluggableServiceLocatorTest {
 
 	@Test
 	public void testDefaultSelector() {
-		PluggableServiceSelector<GoodServiceTest> selector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				return false;
-			}
-		};
+		Predicate<GoodServiceTest> selector = (s) -> false;
 		PluggableServiceLocator<GoodServiceTest> goodLocator = null;
 
 		goodLocator = new PluggableServiceLocator<>(GoodServiceTest.class);
@@ -154,27 +145,19 @@ public class PluggableServiceLocatorTest {
 	@Test
 	public void testGetFirst() {
 		PluggableServiceLocator<GoodServiceTest> goodLocator = new PluggableServiceLocator<>(GoodServiceTest.class);
-		PluggableServiceSelector<GoodServiceTest> goodSelector = null;
+		Predicate<GoodServiceTest> goodSelector = null;
 
 		Assertions.assertNull(goodLocator.getDefaultSelector());
 		Assertions.assertNotNull(goodLocator.getFirst());
 
-		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				return false;
-			}
-		};
+		goodSelector = (s) -> false;
 		goodLocator.setDefaultSelector(goodSelector);
 		Assertions.assertThrows(NoSuchElementException.class, () -> goodLocator.getFirst());
 
-		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				String className = service.getClass().getCanonicalName();
-				return PluggableServiceLocatorTest.SUBSET_1.contains(className)
-					&& !PluggableServiceLocatorTest.SUBSET_2.contains(className);
-			}
+		goodSelector = (s) -> {
+			String className = s.getClass().getCanonicalName();
+			return PluggableServiceLocatorTest.SUBSET_1.contains(className)
+				&& !PluggableServiceLocatorTest.SUBSET_2.contains(className);
 		};
 		goodLocator.setDefaultSelector(null);
 		Assertions.assertNotNull(goodLocator.getFirst(goodSelector));
@@ -245,26 +228,17 @@ public class PluggableServiceLocatorTest {
 		Assertions.assertEquals(PluggableServiceLocatorTest.SERVICE_CLASSES.size(), count);
 
 		{
-			PluggableServiceSelector<GoodServiceTest> goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-				@Override
-				public boolean matches(GoodServiceTest service) {
-					return false;
-				}
-			};
+			Predicate<GoodServiceTest> goodSelector = (s) -> false;
 			Assertions.assertFalse(goodLocator.getAll(goodSelector).hasNext());
 			Assertions.assertThrows(NoSuchElementException.class, () -> goodLocator.getAll(goodSelector).next());
 		}
 
 		{
-			PluggableServiceSelector<GoodServiceTest> goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-				@Override
-				public boolean matches(GoodServiceTest service) {
-					return PluggableServiceLocatorTest.SERVICE_CLASSES.contains(service.getClass().getCanonicalName());
-				}
-			};
+			Predicate<GoodServiceTest> goodSelector = (s) -> PluggableServiceLocatorTest.SERVICE_CLASSES
+				.contains(s.getClass().getCanonicalName());
 			for (Iterator<GoodServiceTest> it = goodLocator.getAll(); it.hasNext();) {
 				GoodServiceTest s = it.next();
-				if (!goodSelector.matches(s)) {
+				if (!goodSelector.test(s)) {
 					Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
 						s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SERVICE_CLASSES));
 				}
@@ -272,15 +246,11 @@ public class PluggableServiceLocatorTest {
 		}
 
 		{
-			PluggableServiceSelector<GoodServiceTest> goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-				@Override
-				public boolean matches(GoodServiceTest service) {
-					return PluggableServiceLocatorTest.SUBSET_1.contains(service.getClass().getCanonicalName());
-				}
-			};
+			Predicate<GoodServiceTest> goodSelector = (s) -> PluggableServiceLocatorTest.SUBSET_1
+				.contains(s.getClass().getCanonicalName());
 			for (Iterator<GoodServiceTest> it = goodLocator.getAll(goodSelector); it.hasNext();) {
 				GoodServiceTest s = it.next();
-				if (!goodSelector.matches(s)) {
+				if (!goodSelector.test(s)) {
 					Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
 						s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SUBSET_1));
 				}
@@ -288,15 +258,11 @@ public class PluggableServiceLocatorTest {
 		}
 
 		{
-			PluggableServiceSelector<GoodServiceTest> goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-				@Override
-				public boolean matches(GoodServiceTest service) {
-					return PluggableServiceLocatorTest.SUBSET_2.contains(service.getClass().getCanonicalName());
-				}
-			};
+			Predicate<GoodServiceTest> goodSelector = (s) -> PluggableServiceLocatorTest.SUBSET_2
+				.contains(s.getClass().getCanonicalName());
 			for (Iterator<GoodServiceTest> it = goodLocator.getAll(goodSelector); it.hasNext();) {
 				GoodServiceTest s = it.next();
-				if (!goodSelector.matches(s)) {
+				if (!goodSelector.test(s)) {
 					Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
 						s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SUBSET_2));
 				}
@@ -375,7 +341,7 @@ public class PluggableServiceLocatorTest {
 	@Test
 	public void testIterator() {
 		PluggableServiceLocator<GoodServiceTest> goodLocator = new PluggableServiceLocator<>(GoodServiceTest.class);
-		PluggableServiceSelector<GoodServiceTest> goodSelector = null;
+		Predicate<GoodServiceTest> goodSelector = null;
 
 		Assertions.assertNull(goodLocator.getDefaultSelector());
 
@@ -385,55 +351,35 @@ public class PluggableServiceLocatorTest {
 		}
 		Assertions.assertEquals(PluggableServiceLocatorTest.SERVICE_CLASSES.size(), count);
 
-		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				return false;
-			}
-		};
+		goodSelector = (s) -> false;
 		goodLocator.setDefaultSelector(goodSelector);
 		Assertions.assertFalse(goodLocator.iterator().hasNext());
 		Assertions.assertThrows(NoSuchElementException.class, () -> goodLocator.iterator().next());
 
-		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				return PluggableServiceLocatorTest.SERVICE_CLASSES.contains(service.getClass().getCanonicalName());
-			}
-		};
+		goodSelector = (s) -> PluggableServiceLocatorTest.SERVICE_CLASSES.contains(s.getClass().getCanonicalName());
 		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!goodSelector.matches(s)) {
+			if (!goodSelector.test(s)) {
 				Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
 					s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SERVICE_CLASSES));
 			}
 		}
 
-		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				return PluggableServiceLocatorTest.SUBSET_1.contains(service.getClass().getCanonicalName());
-			}
-		};
+		goodSelector = (s) -> PluggableServiceLocatorTest.SUBSET_1.contains(s.getClass().getCanonicalName());
 		goodLocator.setDefaultSelector(goodSelector);
 		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!goodSelector.matches(s)) {
+			if (!goodSelector.test(s)) {
 				Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
 					s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SUBSET_1));
 			}
 		}
 
-		goodSelector = new PluggableServiceSelector<GoodServiceTest>() {
-			@Override
-			public boolean matches(GoodServiceTest service) {
-				return PluggableServiceLocatorTest.SUBSET_2.contains(service.getClass().getCanonicalName());
-			}
-		};
+		goodSelector = (s) -> PluggableServiceLocatorTest.SUBSET_2.contains(s.getClass().getCanonicalName());
 		goodLocator.setDefaultSelector(goodSelector);
 		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext();) {
 			GoodServiceTest s = it.next();
-			if (!goodSelector.matches(s)) {
+			if (!goodSelector.test(s)) {
 				Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
 					s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SUBSET_2));
 			}

@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * <p>
@@ -21,7 +22,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	private final Class<S> serviceClass;
 	private final ServiceLoader<S> loader;
 
-	private PluggableServiceSelector<S> defaultSelector = null;
+	private Predicate<S> defaultSelector = null;
 	private BiConsumer<Class<?>, Throwable> listener = null;
 	private boolean hideErrors = false;
 
@@ -29,7 +30,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		this(serviceClass, Thread.currentThread().getContextClassLoader(), null);
 	}
 
-	public PluggableServiceLocator(Class<S> serviceClass, PluggableServiceSelector<S> defaultSelector) {
+	public PluggableServiceLocator(Class<S> serviceClass, Predicate<S> defaultSelector) {
 		this(serviceClass, Thread.currentThread().getContextClassLoader(), defaultSelector);
 	}
 
@@ -37,8 +38,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		this(serviceClass, classLoader, null);
 	}
 
-	public PluggableServiceLocator(Class<S> serviceClass, ClassLoader classLoader,
-		PluggableServiceSelector<S> defaultSelector) {
+	public PluggableServiceLocator(Class<S> serviceClass, ClassLoader classLoader, Predicate<S> defaultSelector) {
 		if (serviceClass == null) {
 			throw new IllegalArgumentException("Must provide a service class for which to locate instances");
 		}
@@ -64,7 +64,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 *
 	 * @return the currently set default selector
 	 */
-	public final PluggableServiceSelector<S> getDefaultSelector() {
+	public final Predicate<S> getDefaultSelector() {
 		return this.defaultSelector;
 	}
 
@@ -73,7 +73,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 *
 	 * @param defaultSelector
 	 */
-	public final void setDefaultSelector(PluggableServiceSelector<S> defaultSelector) {
+	public final void setDefaultSelector(Predicate<S> defaultSelector) {
 		this.defaultSelector = defaultSelector;
 	}
 
@@ -122,14 +122,13 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 * @throws NoSuchElementException
 	 *             when there is no matching service available
 	 */
-	public final S getFirst(PluggableServiceSelector<S> selector) throws NoSuchElementException {
+	public final S getFirst(Predicate<S> selector) throws NoSuchElementException {
 		return getAll(selector).next();
 	}
 
 	/**
 	 * Returns an {@link Iterator} to scan over all the available service instances. This is
-	 * identical to invoking {@link #getAll(PluggableServiceSelector)} with a {@code null}
-	 * parameter.
+	 * identical to invoking {@link #getAll(Predicate)} with a {@code null} parameter.
 	 *
 	 * @return an {@link Iterator} to scan over all the available service instances.
 	 */
@@ -148,10 +147,9 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	 * @return an {@link Iterator} that scans over all the available service instances that match
 	 *         the given selector
 	 */
-	public final Iterator<S> getAll(final PluggableServiceSelector<S> selector) {
+	public final Iterator<S> getAll(final Predicate<S> selector) {
 		return new Iterator<S>() {
-			private final PluggableServiceSelector<S> finalSelector = (selector == null
-				? PluggableServiceLocator.this.defaultSelector
+			private final Predicate<S> finalSelector = (selector == null ? PluggableServiceLocator.this.defaultSelector
 				: selector);
 			private final Class<S> serviceClass = PluggableServiceLocator.this.serviceClass;
 			private final Iterator<S> it = PluggableServiceLocator.this.loader.iterator();
@@ -187,7 +185,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 							}
 							continue;
 						}
-						if ((this.finalSelector == null) || this.finalSelector.matches(next)) {
+						if ((this.finalSelector == null) || this.finalSelector.test(next)) {
 							this.current = next;
 							break;
 						}
