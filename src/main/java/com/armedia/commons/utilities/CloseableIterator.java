@@ -89,11 +89,8 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 	public final void remove() {
 		assertOpen();
 		if (this.state != State.FETCHED) { throw new IllegalStateException("No element to remove"); }
-		try {
 		remove(this.current);
-		} finally {
 		this.state = State.WAITING;
-	}
 	}
 
 	protected void remove(E current) {
