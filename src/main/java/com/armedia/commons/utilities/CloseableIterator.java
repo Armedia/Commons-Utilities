@@ -19,16 +19,14 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 
 	protected class Result {
 		private final E value;
-		private final boolean found;
 
-		private Result(E value, boolean found) {
+		private Result(E value) {
 			this.value = value;
-			this.found = found;
 		}
 	}
 
 	protected final Result found(E value) {
-		return new Result(value, true);
+		return new Result(value);
 	}
 
 	private void assertOpen() {
@@ -49,7 +47,7 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 			throw new RuntimeException("Failed to check for the next item in the iterator, closed automatically", e);
 		}
 
-		if ((result != null) && result.found) {
+		if (result != null) {
 			this.current = result.value;
 			this.state = State.READY;
 			return true;
@@ -92,10 +90,10 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 		assertOpen();
 		if (this.state != State.FETCHED) { throw new IllegalStateException("No element to remove"); }
 		try {
-			remove(this.current);
+		remove(this.current);
 		} finally {
-			this.state = State.WAITING;
-		}
+		this.state = State.WAITING;
+	}
 	}
 
 	protected void remove(E current) {
