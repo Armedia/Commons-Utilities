@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.easymock.EasyMock;
@@ -43,36 +44,31 @@ class DigestReadableByteChannelTest {
 		Assertions.assertThrows(NullPointerException.class, () -> new DigestReadableByteChannel(null, ""));
 		Assertions.assertThrows(NullPointerException.class, () -> new DigestReadableByteChannel(null, ""));
 
-		try (BinaryMemoryBuffer baos = new BinaryMemoryBuffer()) {
-			ReadableByteChannel wbc = Channels.newChannel(baos.getInputStream());
+		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
 
-			Assertions.assertThrows(NullPointerException.class,
-				() -> new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.NULL_STRING));
-			Assertions.assertThrows(NullPointerException.class,
-				() -> new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.NULL_STRING));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.NULL_DIGEST));
 
-			Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestReadableByteChannel(wbc, ""));
-			try (ReadableByteChannel c = new DigestReadableByteChannel(wbc,
-				DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
+		Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestReadableByteChannel(wbc, ""));
+		try (ReadableByteChannel c = new DigestReadableByteChannel(wbc,
+			DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
 
-			}
-			try (ReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256)) {
-			}
+		}
+		try (ReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256)) {
 		}
 	}
 
 	@Test
 	void testGetDigest() throws Exception {
-		try (BinaryMemoryBuffer baos = new BinaryMemoryBuffer()) {
-			ReadableByteChannel wbc = Channels.newChannel(baos.getInputStream());
-			try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc,
-				DigestReadableByteChannelTest.SHA256)) {
-				Assertions.assertSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
-			}
-			try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc,
-				DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
-				Assertions.assertNotSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
-			}
+		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
+		try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256)) {
+			Assertions.assertSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
+		}
+		try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc,
+			DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
+			Assertions.assertNotSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
 		}
 	}
 
@@ -96,9 +92,8 @@ class DigestReadableByteChannelTest {
 
 					int pos = 0;
 					for (Pair<byte[], byte[]> d : data) {
-						ByteArrayInputStream bain = new ByteArrayInputStream(d.getLeft());
-						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(Channels.newChannel(bain),
-							algorithm)) {
+						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(
+							Channels.newChannel(new ByteArrayInputStream(d.getLeft())), algorithm)) {
 							ByteBuffer buf = ByteBuffer.allocate(d.getLeft().length);
 							rbc.read(buf);
 							byte[] expected = d.getRight();
@@ -135,9 +130,8 @@ class DigestReadableByteChannelTest {
 
 					int pos = 0;
 					for (Pair<byte[], byte[]> d : data) {
-						ByteArrayInputStream bain = new ByteArrayInputStream(d.getLeft());
-						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(Channels.newChannel(bain),
-							algorithm)) {
+						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(
+							Channels.newChannel(new ByteArrayInputStream(d.getLeft())), algorithm)) {
 							ByteBuffer buf = ByteBuffer.allocate(d.getRight().length);
 							rbc.read(buf);
 							byte[] expected = d.getRight();
@@ -157,27 +151,21 @@ class DigestReadableByteChannelTest {
 
 	@Test
 	void testRead() throws Exception {
-		try (BinaryMemoryBuffer baos = new BinaryMemoryBuffer()) {
-			final ReadableByteChannel channel = Channels.newChannel(baos.getInputStream());
-			byte[] c = RandomStringUtils.random(1000).getBytes();
-			baos.write(c);
-			ByteBuffer buf = ByteBuffer.allocate(c.length);
-			channel.read(buf);
-			buf.flip();
-			Assertions.assertArrayEquals(c, buf.array());
-		}
+		byte[] c = RandomStringUtils.random(1000).getBytes();
+		final ReadableByteChannel channel = Channels.newChannel(new ByteArrayInputStream(c));
+		ByteBuffer buf = ByteBuffer.allocate(c.length);
+		channel.read(buf);
+		Assertions.assertArrayEquals(c, buf.array());
 	}
 
 	@Test
 	void testIsOpen() throws Exception {
-		try (BinaryMemoryBuffer baos = new BinaryMemoryBuffer()) {
-			ReadableByteChannel wbc = Channels.newChannel(baos.getInputStream());
-			DigestReadableByteChannel C = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256);
-			try (DigestReadableByteChannel c = C) {
-				Assertions.assertTrue(c.isOpen());
-			}
-			Assertions.assertFalse(C.isOpen());
+		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
+		DigestReadableByteChannel C = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256);
+		try (DigestReadableByteChannel c = C) {
+			Assertions.assertTrue(c.isOpen());
 		}
+		Assertions.assertFalse(C.isOpen());
 	}
 
 	@Test
