@@ -2,12 +2,11 @@ package com.armedia.commons.utilities;
 
 import java.io.FilterWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
@@ -16,42 +15,55 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class DigestWriter extends FilterWriter implements DigestHashCollector {
 
-	private static final Charset CHARSET = Charset.defaultCharset();
+	private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
 
 	private final MessageDigest digest;
+	private final Charset charset;
 	private final char[] charBuf = new char[1];
 	private long length = 0;
 
-	public DigestWriter(OutputStream out, String digest) throws NoSuchAlgorithmException {
-		this( //
-			Objects.requireNonNull(out, "Must provide a non-null OutputStream to wrap around"),
-			MessageDigest.getInstance( //
-				Objects.requireNonNull(digest, "Must provide a non-null digest name") //
-			) //
-		);
-	}
-
-	public DigestWriter(OutputStream out, MessageDigest digest) {
-		this( //
-			new OutputStreamWriter( //
-				Objects.requireNonNull(out, "Must provide a non-null OutputStream to wrap around") //
-			), //
-			digest //
-		);
-	}
-
 	public DigestWriter(Writer out, String digest) throws NoSuchAlgorithmException {
-		this( //
-			Objects.requireNonNull(out, "Must provide a non-null Writer to wrap around"), //
-			MessageDigest.getInstance( //
-				Objects.requireNonNull(digest, "Must provide a non-null digest name") //
-			) //
-		);
+		this(out, DigestWriter.DEFAULT_CHARSET, digest);
 	}
 
 	public DigestWriter(Writer out, MessageDigest digest) {
+		this(out, DigestWriter.DEFAULT_CHARSET, digest);
+	}
+
+	public DigestWriter(Writer out, String charset, String digest) throws NoSuchAlgorithmException {
+		this(out, Charset.forName(Objects.requireNonNull(charset, "Must provide a non-null charset name")), digest);
+	}
+
+	public DigestWriter(Writer out, String charset, MessageDigest digest) {
+		this(out, Charset.forName(Objects.requireNonNull(charset, "Must provide a non-null charset name")), digest);
+	}
+
+	public DigestWriter(Writer out, CharsetEncoder charset, String digest) throws NoSuchAlgorithmException {
+		this(out, Objects.requireNonNull(charset, "Must provide a non-null CharsetEncoder").charset(), digest);
+	}
+
+	public DigestWriter(Writer out, CharsetEncoder charset, MessageDigest digest) {
+		this(out, Objects.requireNonNull(charset, "Must provide a non-null CharsetEncoder").charset(), digest);
+	}
+
+	public DigestWriter(Writer out, Charset charset, String digest) throws NoSuchAlgorithmException {
+		this( //
+			Objects.requireNonNull(out, "Must provide a non-null Writer to wrap around"), //
+			Objects.requireNonNull(charset, "Must provide a non-null charset"), //
+			MessageDigest.getInstance( //
+				Objects.requireNonNull(digest, "Must provide a non-null digest name") //
+			) //
+		);
+	}
+
+	public DigestWriter(Writer out, Charset charset, MessageDigest digest) {
 		super(Objects.requireNonNull(out, "Must provide a non-null Writer to wrap around"));
 		this.digest = Objects.requireNonNull(digest, "Must provide a non-null digest instance");
+		this.charset = Objects.requireNonNull(charset, "Must provide a non-null charset");
+	}
+
+	public Charset getCharset() {
+		return this.charset;
 	}
 
 	@Override
@@ -105,7 +117,7 @@ public class DigestWriter extends FilterWriter implements DigestHashCollector {
 		synchronized (this.lock) {
 			super.write(c);
 			this.charBuf[0] = (char) c;
-			ByteBuffer buf = DigestWriter.CHARSET.encode(CharBuffer.wrap(this.charBuf));
+			ByteBuffer buf = this.charset.encode(CharBuffer.wrap(this.charBuf));
 			this.digest.update(buf);
 			this.length += buf.limit();
 		}
@@ -115,7 +127,7 @@ public class DigestWriter extends FilterWriter implements DigestHashCollector {
 	public void write(char[] cbuf, int off, int len) throws IOException {
 		synchronized (this.lock) {
 			super.write(cbuf, off, len);
-			ByteBuffer buf = DigestWriter.CHARSET.encode(CharBuffer.wrap(cbuf, off, len));
+			ByteBuffer buf = this.charset.encode(CharBuffer.wrap(cbuf, off, len));
 			this.digest.update(buf);
 			this.length += buf.limit();
 		}
@@ -125,7 +137,7 @@ public class DigestWriter extends FilterWriter implements DigestHashCollector {
 	public void write(String str, int off, int len) throws IOException {
 		synchronized (this.lock) {
 			super.write(str, off, len);
-			ByteBuffer buf = DigestWriter.CHARSET.encode(str.substring(off, off + len));
+			ByteBuffer buf = this.charset.encode(str.substring(off, off + len));
 			this.digest.update(buf);
 			this.length += buf.limit();
 		}

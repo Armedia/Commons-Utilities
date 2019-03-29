@@ -2,13 +2,14 @@ package com.armedia.commons.utilities;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.IllegalCharsetNameException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -17,22 +18,23 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.SortedMap;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.binary.StringUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class DigestWriterTest {
 
 	private static final Writer NULL_WRITER = null;
-	private static final OutputStream NULL_STREAM = null;
 	private static final String NULL_STRING = null;
+	private static final Charset NULL_CHARSET = null;
+	private static final CharsetEncoder NULL_ENCODER = null;
 	private static final MessageDigest NULL_DIGEST = null;
 
 	private static final MessageDigest SHA256;
@@ -67,69 +69,140 @@ class DigestWriterTest {
 			// Do nothing
 		}
 
-		OutputStream o = NullOutputStream.NULL_OUTPUT_STREAM;
-		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestWriter(DigestWriterTest.NULL_STREAM, DigestWriterTest.NULL_STRING));
-		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestWriter(DigestWriterTest.NULL_STREAM, DigestWriterTest.NULL_DIGEST));
-		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_STREAM, ""));
-		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestWriter(DigestWriterTest.NULL_STREAM, DigestWriterTest.SHA256));
+		Writer o = NullWriter.NULL_WRITER;
+		Charset cs = Charset.defaultCharset();
+		CharsetEncoder ce = cs.newEncoder();
 
-		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(o, DigestWriterTest.NULL_STRING));
-		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(o, DigestWriterTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_STRING, DigestWriterTest.NULL_STRING));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_STRING, DigestWriterTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(DigestWriterTest.NULL_WRITER, DigestWriterTest.NULL_STRING, ""));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_STRING, DigestWriterTest.SHA256));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_CHARSET, DigestWriterTest.NULL_STRING));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_CHARSET, DigestWriterTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(DigestWriterTest.NULL_WRITER, DigestWriterTest.NULL_CHARSET, ""));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_CHARSET, DigestWriterTest.SHA256));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_ENCODER, DigestWriterTest.NULL_STRING));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_ENCODER, DigestWriterTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(DigestWriterTest.NULL_WRITER, DigestWriterTest.NULL_ENCODER, ""));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestWriter(DigestWriterTest.NULL_WRITER,
+			DigestWriterTest.NULL_ENCODER, DigestWriterTest.SHA256));
+
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(o, DigestWriterTest.NULL_STRING, DigestWriterTest.NULL_STRING));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(o, DigestWriterTest.NULL_STRING, DigestWriterTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(o, DigestWriterTest.NULL_CHARSET, DigestWriterTest.NULL_STRING));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(o, DigestWriterTest.NULL_CHARSET, DigestWriterTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(o, DigestWriterTest.NULL_ENCODER, DigestWriterTest.NULL_STRING));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new DigestWriter(o, DigestWriterTest.NULL_ENCODER, DigestWriterTest.NULL_DIGEST));
+		Assertions.assertThrows(IllegalCharsetNameException.class, () -> new DigestWriter(o, "", ""));
+		Assertions.assertThrows(IllegalCharsetNameException.class,
+			() -> new DigestWriter(o, "", DigestWriterTest.SHA256.getAlgorithm()));
+		Assertions.assertThrows(IllegalCharsetNameException.class,
+			() -> new DigestWriter(o, "", DigestWriterTest.SHA256));
+		Assertions.assertThrows(IllegalCharsetNameException.class, () -> new DigestWriter(o, "", ""));
+		Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestWriter(o, cs.name(), ""));
 		Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestWriter(o, ""));
 
 		try (Writer dw = new DigestWriter(o, DigestWriterTest.SHA256)) {
 			// Do nothing
 		}
+		try (Writer dw = new DigestWriter(o, cs.name(), DigestWriterTest.SHA256)) {
+			// Do nothing
+		}
+		try (Writer dw = new DigestWriter(o, ce, DigestWriterTest.SHA256)) {
+			// Do nothing
+		}
+		try (Writer dw = new DigestWriter(o, cs, DigestWriterTest.SHA256)) {
+			// Do nothing
+		}
 		try (Writer dw = new DigestWriter(o, DigestWriterTest.SHA256.getAlgorithm())) {
+			// Do nothing
+		}
+		try (Writer dw = new DigestWriter(o, cs.name(), DigestWriterTest.SHA256.getAlgorithm())) {
+			// Do nothing
+		}
+		try (Writer dw = new DigestWriter(o, ce, DigestWriterTest.SHA256.getAlgorithm())) {
+			// Do nothing
+		}
+		try (Writer dw = new DigestWriter(o, cs, DigestWriterTest.SHA256.getAlgorithm())) {
 			// Do nothing
 		}
 	}
 
 	@Test
+	void testGetCharset() throws Exception {
+		SortedMap<String, Charset> charsets = Charset.availableCharsets();
+		Writer o = NullWriter.NULL_WRITER;
+		for (String csn : charsets.keySet()) {
+			Charset cs = charsets.get(csn);
+			CharsetEncoder cse = null;
+			try {
+				cse = cs.newEncoder();
+			} catch (UnsupportedOperationException e) {
+				// That's ok...this guy doesn't work
+				continue;
+			}
+			try (DigestWriter dw = new DigestWriter(o, csn, DigestWriterTest.SHA256)) {
+				Assertions.assertSame(cs, dw.getCharset());
+			}
+			try (DigestWriter dw = new DigestWriter(o, csn, DigestWriterTest.SHA256.getAlgorithm())) {
+				Assertions.assertSame(cs, dw.getCharset());
+			}
+			try (DigestWriter dw = new DigestWriter(o, cse, DigestWriterTest.SHA256)) {
+				Assertions.assertSame(cs, dw.getCharset());
+			}
+			try (DigestWriter dw = new DigestWriter(o, cse, DigestWriterTest.SHA256.getAlgorithm())) {
+				Assertions.assertSame(cs, dw.getCharset());
+			}
+			try (DigestWriter dw = new DigestWriter(o, cs, DigestWriterTest.SHA256)) {
+				Assertions.assertSame(cs, dw.getCharset());
+			}
+			try (DigestWriter dw = new DigestWriter(o, cs, DigestWriterTest.SHA256.getAlgorithm())) {
+				Assertions.assertSame(cs, dw.getCharset());
+			}
+		}
+	}
+
+	@Test
 	void testFlush() throws IOException {
-		final AtomicInteger flushCalled = new AtomicInteger(0);
-		OutputStream out = new OutputStream() {
-			@Override
-			public void write(int b) throws IOException {
-			}
-
-			@Override
-			public void flush() throws IOException {
-				flushCalled.incrementAndGet();
-				super.flush();
-			}
-		};
-
-		Assertions.assertEquals(0, flushCalled.get());
+		Writer out = EasyMock.strictMock(Writer.class);
+		out.flush();
+		EasyMock.expectLastCall().once();
+		out.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(out);
 		try (Writer w = new DigestWriter(out, DigestWriterTest.SHA256)) {
 			w.flush();
-			Assertions.assertEquals(1, flushCalled.get());
 		}
-		Assertions.assertEquals(1, flushCalled.get());
+		EasyMock.verify(out);
 	}
 
 	@Test
 	void testClose() throws IOException {
-		final AtomicInteger closeCalled = new AtomicInteger(0);
-		OutputStream out = new OutputStream() {
-			@Override
-			public void write(int b) throws IOException {
-			}
-
-			@Override
-			public void close() throws IOException {
-				closeCalled.incrementAndGet();
-			}
-		};
-
-		Assertions.assertEquals(0, closeCalled.get());
+		Writer out = EasyMock.createMock(Writer.class);
+		out.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(out);
 		try (Writer w = new DigestWriter(out, DigestWriterTest.SHA256)) {
 			// Do nothing...
 		}
-		Assertions.assertEquals(1, closeCalled.get());
+		EasyMock.verify(out);
 	}
 
 	@Test
@@ -155,7 +228,7 @@ class DigestWriterTest {
 			data.add(Pair.of(c, baos.toByteArray()));
 		}
 
-		try (Writer w = new DigestWriter(baos, DigestWriterTest.SHA256)) {
+		try (Writer w = new DigestWriter(new OutputStreamWriter(baos), DigestWriterTest.SHA256)) {
 			for (Pair<char[], byte[]> d : data) {
 				// write(int)
 				baos.reset();
@@ -206,7 +279,7 @@ class DigestWriterTest {
 
 					int pos = 0;
 					for (Pair<char[], byte[]> d : data) {
-						try (DigestWriter w = new DigestWriter(NullOutputStream.NULL_OUTPUT_STREAM, algorithm)) {
+						try (DigestWriter w = new DigestWriter(NullWriter.NULL_WRITER, algorithm)) {
 							w.write(d.getLeft());
 							w.flush();
 							byte[] expected = d.getRight();
@@ -295,15 +368,15 @@ class DigestWriterTest {
 
 	@Test
 	void testGetDigest() throws Exception {
-		final OutputStream nos = NullOutputStream.NULL_OUTPUT_STREAM;
+		final Writer nw = NullWriter.NULL_WRITER;
 		for (Provider p : Security.getProviders()) {
 			for (Service s : p.getServices()) {
 				if (StringUtils.equals(MessageDigest.class.getSimpleName(), s.getType())) {
 					MessageDigest md = MessageDigest.getInstance(s.getAlgorithm());
-					try (DigestWriter w = new DigestWriter(nos, md)) {
+					try (DigestWriter w = new DigestWriter(nw, md)) {
 						Assertions.assertSame(md, w.getDigest());
 					}
-					try (DigestWriter w = new DigestWriter(nos, md.getAlgorithm())) {
+					try (DigestWriter w = new DigestWriter(nw, md.getAlgorithm())) {
 						Assertions.assertNotSame(md, w.getDigest());
 					}
 				}
