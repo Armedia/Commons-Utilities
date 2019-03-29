@@ -152,10 +152,12 @@ class DigestReadableByteChannelTest {
 	@Test
 	void testRead() throws Exception {
 		byte[] c = RandomStringUtils.random(1000).getBytes();
-		final ReadableByteChannel channel = Channels.newChannel(new ByteArrayInputStream(c));
-		ByteBuffer buf = ByteBuffer.allocate(c.length);
-		channel.read(buf);
-		Assertions.assertArrayEquals(c, buf.array());
+		try (final ReadableByteChannel channel = new DigestReadableByteChannel(
+			Channels.newChannel(new ByteArrayInputStream(c)), DigestReadableByteChannelTest.SHA256)) {
+			ByteBuffer buf = ByteBuffer.allocate(c.length);
+			channel.read(buf);
+			Assertions.assertArrayEquals(c, buf.array());
+		}
 	}
 
 	@Test

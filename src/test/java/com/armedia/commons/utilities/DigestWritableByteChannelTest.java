@@ -44,8 +44,7 @@ class DigestWritableByteChannelTest {
 		Assertions.assertThrows(NullPointerException.class, () -> new DigestWritableByteChannel(null, ""));
 		Assertions.assertThrows(NullPointerException.class, () -> new DigestWritableByteChannel(null, ""));
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		WritableByteChannel wbc = Channels.newChannel(baos);
+		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
 
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.NULL_STRING));
@@ -63,8 +62,7 @@ class DigestWritableByteChannelTest {
 
 	@Test
 	void testGetDigest() throws Exception {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		WritableByteChannel wbc = Channels.newChannel(baos);
+		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
 		try (DigestWritableByteChannel c = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256)) {
 			Assertions.assertSame(DigestWritableByteChannelTest.SHA256, c.getDigest());
 		}
@@ -77,8 +75,6 @@ class DigestWritableByteChannelTest {
 	@Test
 	void testCollectHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final WritableByteChannel channel = Channels.newChannel(baos);
 
 		for (Provider p : Security.getProviders()) {
 			for (Service s : p.getServices()) {
@@ -88,13 +84,9 @@ class DigestWritableByteChannelTest {
 					System.out.printf("Checking algorithm [%s]...%n", algorithm);
 
 					for (int i = 1; i <= 10; i++) {
-						baos.flush();
-						baos.reset();
-
 						// Encode the characters to bytes
 						byte[] c = RandomStringUtils.random(i * 1000).getBytes();
-						channel.write(ByteBuffer.wrap(c));
-						byte[] hash = MessageDigest.getInstance(algorithm).digest(baos.toByteArray());
+						byte[] hash = MessageDigest.getInstance(algorithm).digest(c);
 						data.add(Pair.of(c, hash));
 					}
 
@@ -158,16 +150,17 @@ class DigestWritableByteChannelTest {
 	@Test
 	void testWrite() throws Exception {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final WritableByteChannel channel = Channels.newChannel(baos);
-		byte[] c = RandomStringUtils.random(1000).getBytes();
-		channel.write(ByteBuffer.wrap(c));
-		Assertions.assertArrayEquals(c, baos.toByteArray());
+		try (final WritableByteChannel channel = new DigestWritableByteChannel(Channels.newChannel(baos),
+			DigestWritableByteChannelTest.SHA256)) {
+			byte[] c = RandomStringUtils.random(1000).getBytes();
+			channel.write(ByteBuffer.wrap(c));
+			Assertions.assertArrayEquals(c, baos.toByteArray());
+		}
 	}
 
 	@Test
 	void testIsOpen() throws Exception {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		WritableByteChannel wbc = Channels.newChannel(baos);
+		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
 		DigestWritableByteChannel C = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256);
 		try (DigestWritableByteChannel c = C) {
 			Assertions.assertTrue(c.isOpen());
