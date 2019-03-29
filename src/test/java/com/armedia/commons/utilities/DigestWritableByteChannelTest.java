@@ -75,7 +75,6 @@ class DigestWritableByteChannelTest {
 	@Test
 	void testCollectHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
-
 		for (Provider p : Security.getProviders()) {
 			for (Service s : p.getServices()) {
 				if (StringUtils.equals(MessageDigest.class.getSimpleName(), s.getType())) {
@@ -96,11 +95,12 @@ class DigestWritableByteChannelTest {
 							wbc.write(ByteBuffer.wrap(d.getLeft()));
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
-							byte[] actual = wbc.collectHash();
-							String actualHex = Hex.encodeHexString(actual);
+							Pair<Long, byte[]> actual = wbc.collectHash();
+							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
-							Assertions.assertArrayEquals(expected, actual);
+							Assertions.assertArrayEquals(expected, actual.getRight());
+							Assertions.assertEquals(d.getLeft().length, actual.getLeft().longValue());
 						}
 					}
 				}
@@ -133,11 +133,12 @@ class DigestWritableByteChannelTest {
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
 							wbc.resetHash();
-							byte[] actual = wbc.collectHash();
-							String actualHex = Hex.encodeHexString(actual);
+							Pair<Long, byte[]> actual = wbc.collectHash();
+							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
-							Assertions.assertArrayEquals(expected, actual);
+							Assertions.assertArrayEquals(expected, actual.getRight());
+							Assertions.assertEquals(0, actual.getLeft().longValue());
 						}
 					}
 				}

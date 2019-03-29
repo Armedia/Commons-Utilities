@@ -7,12 +7,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
 public class DigestWritableByteChannel extends BaseReadWriteLockable implements WritableByteChannel, HashCollector {
 
 	private final WritableByteChannel channel;
 	private final MessageDigest digest;
+	private long length = 0;
 
 	public DigestWritableByteChannel(WritableByteChannel channel, String digest) throws NoSuchAlgorithmException {
 		this( //
@@ -34,20 +37,29 @@ public class DigestWritableByteChannel extends BaseReadWriteLockable implements 
 	}
 
 	@Override
-	public byte[] collectHash() {
-		return writeLocked(() -> this.digest.digest());
+	public Pair<Long, byte[]> collectHash() {
+		return writeLocked(() -> {
+			Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
+			this.length = 0;
+			return ret;
+		});
 	}
 
 	@Override
 	public void resetHash() {
-		writeLocked(this.digest::reset);
+		writeLocked(() -> {
+			this.digest.reset();
+			this.length = 0;
+		});
 	}
 
 	@Override
 	public int write(ByteBuffer src) throws IOException {
 		return writeLocked(() -> {
-			int ret = this.channel.write(src.asReadOnlyBuffer());
+			ByteBuffer slice = src.slice();
+			int ret = this.channel.write(slice);
 			this.digest.update(src);
+			this.length += slice.capacity();
 			return ret;
 		});
 	}

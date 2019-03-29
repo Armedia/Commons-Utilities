@@ -5,19 +5,22 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public class DigestWriter extends FilterWriter implements HashCollector {
 
 	private static final Charset CHARSET = Charset.defaultCharset();
 
 	private final MessageDigest digest;
-
 	private final char[] charBuf = new char[1];
+	private long length = 0;
 
 	public DigestWriter(OutputStream out, String digest) throws NoSuchAlgorithmException {
 		this( //
@@ -57,9 +60,11 @@ public class DigestWriter extends FilterWriter implements HashCollector {
 	}
 
 	@Override
-	public byte[] collectHash() {
+	public Pair<Long, byte[]> collectHash() {
 		synchronized (this.lock) {
-			return this.digest.digest();
+			Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
+			this.length = 0;
+			return ret;
 		}
 	}
 
@@ -67,6 +72,7 @@ public class DigestWriter extends FilterWriter implements HashCollector {
 	public void resetHash() {
 		synchronized (this.lock) {
 			this.digest.reset();
+			this.length = 0;
 		}
 	}
 
@@ -99,7 +105,9 @@ public class DigestWriter extends FilterWriter implements HashCollector {
 		synchronized (this.lock) {
 			super.write(c);
 			this.charBuf[0] = (char) c;
-			this.digest.update(DigestWriter.CHARSET.encode(CharBuffer.wrap(this.charBuf)));
+			ByteBuffer buf = DigestWriter.CHARSET.encode(CharBuffer.wrap(this.charBuf));
+			this.digest.update(buf);
+			this.length += buf.limit();
 		}
 	}
 
@@ -107,7 +115,9 @@ public class DigestWriter extends FilterWriter implements HashCollector {
 	public void write(char[] cbuf, int off, int len) throws IOException {
 		synchronized (this.lock) {
 			super.write(cbuf, off, len);
-			this.digest.update(DigestWriter.CHARSET.encode(CharBuffer.wrap(cbuf, off, len)));
+			ByteBuffer buf = DigestWriter.CHARSET.encode(CharBuffer.wrap(cbuf, off, len));
+			this.digest.update(buf);
+			this.length += buf.limit();
 		}
 	}
 
@@ -115,7 +125,9 @@ public class DigestWriter extends FilterWriter implements HashCollector {
 	public void write(String str, int off, int len) throws IOException {
 		synchronized (this.lock) {
 			super.write(str, off, len);
-			this.digest.update(DigestWriter.CHARSET.encode(str.substring(off, off + len)));
+			ByteBuffer buf = DigestWriter.CHARSET.encode(str.substring(off, off + len));
+			this.digest.update(buf);
+			this.length += buf.limit();
 		}
 	}
 }

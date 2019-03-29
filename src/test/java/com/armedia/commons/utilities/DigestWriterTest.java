@@ -6,6 +6,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -180,13 +183,12 @@ class DigestWriterTest {
 		final List<Pair<char[], byte[]>> data = new ArrayList<>();
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		final Writer baosWriter = new OutputStreamWriter(baos);
-
+		final Charset charset = Charset.defaultCharset();
 		for (Provider p : Security.getProviders()) {
 			for (Service s : p.getServices()) {
 				if (StringUtils.equals(MessageDigest.class.getSimpleName(), s.getType())) {
 					data.clear();
 					final String algorithm = s.getAlgorithm();
-					System.out.printf("Checking algorithm [%s]...%n", algorithm);
 
 					for (int i = 1; i <= 10; i++) {
 						baosWriter.flush();
@@ -209,11 +211,13 @@ class DigestWriterTest {
 							w.flush();
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
-							byte[] actual = w.collectHash();
-							String actualHex = Hex.encodeHexString(actual);
+							Pair<Long, byte[]> actual = w.collectHash();
+							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
-							Assertions.assertArrayEquals(expected, actual);
+							Assertions.assertArrayEquals(expected, actual.getRight());
+							ByteBuffer buf = charset.encode(CharBuffer.wrap(d.getLeft()));
+							Assertions.assertEquals(buf.limit(), actual.getLeft().longValue());
 						}
 					}
 				}
@@ -230,7 +234,6 @@ class DigestWriterTest {
 				if (StringUtils.equals(MessageDigest.class.getSimpleName(), s.getType())) {
 					data.clear();
 					final String algorithm = s.getAlgorithm();
-					System.out.printf("Checking algorithm [%s]...%n", algorithm);
 
 					for (int i = 1; i <= 10; i++) {
 						// Encode the characters to bytes
@@ -247,11 +250,12 @@ class DigestWriterTest {
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
 							w.resetHash();
-							byte[] actual = w.collectHash();
-							String actualHex = Hex.encodeHexString(actual);
+							Pair<Long, byte[]> actual = w.collectHash();
+							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
-							Assertions.assertArrayEquals(expected, actual);
+							Assertions.assertArrayEquals(expected, actual.getRight());
+							Assertions.assertEquals(0, actual.getLeft().longValue());
 						}
 					}
 				}

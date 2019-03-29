@@ -100,11 +100,12 @@ class DigestReadableByteChannelTest {
 							rbc.read(buf);
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
-							byte[] actual = rbc.collectHash();
-							String actualHex = Hex.encodeHexString(actual);
+							Pair<Long, byte[]> actual = rbc.collectHash();
+							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
-							Assertions.assertArrayEquals(expected, actual);
+							Assertions.assertArrayEquals(expected, actual.getRight());
+							Assertions.assertEquals(d.getLeft().length, actual.getLeft().longValue());
 						}
 					}
 				}
@@ -138,11 +139,12 @@ class DigestReadableByteChannelTest {
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
 							rbc.resetHash();
-							byte[] actual = rbc.collectHash();
-							String actualHex = Hex.encodeHexString(actual);
+							Pair<Long, byte[]> actual = rbc.collectHash();
+							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
-							Assertions.assertArrayEquals(expected, actual);
+							Assertions.assertArrayEquals(expected, actual.getRight());
+							Assertions.assertEquals(0, actual.getLeft().longValue());
 						}
 					}
 				}

@@ -7,12 +7,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
 public class DigestReadableByteChannel extends BaseReadWriteLockable implements ReadableByteChannel, HashCollector {
 
 	private final ReadableByteChannel channel;
 	private final MessageDigest digest;
+	private long length = 0;
 
 	public DigestReadableByteChannel(ReadableByteChannel channel, String digest) throws NoSuchAlgorithmException {
 		this( //
@@ -35,13 +38,20 @@ public class DigestReadableByteChannel extends BaseReadWriteLockable implements 
 	}
 
 	@Override
-	public byte[] collectHash() {
-		return writeLocked(() -> this.digest.digest());
+	public Pair<Long, byte[]> collectHash() {
+		return writeLocked(() -> {
+			Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
+			this.length = 0;
+			return ret;
+		});
 	}
 
 	@Override
 	public void resetHash() {
-		writeLocked(this.digest::reset);
+		writeLocked(() -> {
+			this.digest.reset();
+			this.length = 0;
+		});
 	}
 
 	@Override
@@ -52,6 +62,7 @@ public class DigestReadableByteChannel extends BaseReadWriteLockable implements 
 			if (read > 0) {
 				dupe.limit(dupe.position() + read);
 				this.digest.update(dupe);
+				this.length += read;
 			}
 			return read;
 		});
