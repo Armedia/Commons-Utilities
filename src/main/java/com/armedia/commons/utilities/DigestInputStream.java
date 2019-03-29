@@ -49,7 +49,8 @@ public class DigestInputStream extends FilterInputStream implements DigestHashCo
 
 	@Override
 	public int read() throws IOException {
-		return read(this.byteBuf);
+		if (read(this.byteBuf) >= 0) { return this.byteBuf[0]; }
+		return -1;
 	}
 
 	@Override
