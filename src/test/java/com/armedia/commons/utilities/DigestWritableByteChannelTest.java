@@ -81,7 +81,6 @@ class DigestWritableByteChannelTest {
 				if (StringUtils.equals(MessageDigest.class.getSimpleName(), s.getType())) {
 					data.clear();
 					final String algorithm = s.getAlgorithm();
-					System.out.printf("Checking algorithm [%s]...%n", algorithm);
 
 					for (int i = 1; i <= 10; i++) {
 						// Encode the characters to bytes
@@ -118,7 +117,6 @@ class DigestWritableByteChannelTest {
 				if (StringUtils.equals(MessageDigest.class.getSimpleName(), s.getType())) {
 					data.clear();
 					final String algorithm = s.getAlgorithm();
-					System.out.printf("Checking reset of algorithm [%s]...%n", algorithm);
 
 					for (int i = 1; i <= 10; i++) {
 						// Encode the characters to bytes
