@@ -9,7 +9,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class DigestInputStream extends FilterInputStream implements HashCollector {
+public class DigestInputStream extends FilterInputStream implements DigestHashCollector {
 
 	private final MessageDigest digest;
 	private final byte[] byteBuf = new byte[1];

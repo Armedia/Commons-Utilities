@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public interface HashCollector {
+public interface DigestHashCollector {
 
 	public MessageDigest getDigest();
 

@@ -11,7 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
-public class DigestReadableByteChannel extends BaseReadWriteLockable implements ReadableByteChannel, HashCollector {
+public class DigestReadableByteChannel extends BaseReadWriteLockable implements ReadableByteChannel, DigestHashCollector {
 
 	private final ReadableByteChannel channel;
 	private final MessageDigest digest;

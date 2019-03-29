@@ -13,7 +13,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class DigestFileChannel extends FileChannel implements HashCollector {
+public class DigestFileChannel extends FileChannel implements DigestHashCollector {
 
 	private final MessageDigest digest;
 	private final FileChannel channel;

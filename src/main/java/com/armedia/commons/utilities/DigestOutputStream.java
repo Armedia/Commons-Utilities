@@ -9,7 +9,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class DigestOutputStream extends FilterOutputStream implements HashCollector {
+public class DigestOutputStream extends FilterOutputStream implements DigestHashCollector {
 
 	private final MessageDigest digest;
 	private long length = 0;

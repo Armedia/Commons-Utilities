@@ -14,7 +14,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class DigestReader extends FilterReader implements HashCollector {
+public class DigestReader extends FilterReader implements DigestHashCollector {
 
 	private static final Charset CHARSET = Charset.defaultCharset();
 
