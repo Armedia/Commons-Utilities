@@ -161,6 +161,14 @@ class DigestReadableByteChannelTest {
 			channel.read(buf);
 			Assertions.assertArrayEquals(c, buf.array());
 		}
+		byte[] none = new byte[0];
+		try (final ReadableByteChannel channel = new DigestReadableByteChannel(
+			Channels.newChannel(new ByteArrayInputStream(none)), DigestReadableByteChannelTest.SHA256)) {
+			ByteBuffer buf = ByteBuffer.allocate(c.length);
+			Assertions.assertEquals(0, buf.position());
+			channel.read(buf);
+			Assertions.assertEquals(0, buf.position());
+		}
 	}
 
 	@Test
