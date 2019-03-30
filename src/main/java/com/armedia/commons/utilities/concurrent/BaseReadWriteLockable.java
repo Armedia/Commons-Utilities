@@ -41,11 +41,11 @@ public class BaseReadWriteLockable implements ReadWriteLockable {
 	}
 
 	@Override
-	public final ReadWriteLock getMainLock() {
+	public final ReadWriteLock getLock() {
 		return this.rwLock;
 	}
 
 	protected static ReadWriteLock extractLock(ReadWriteLockable lockable) {
-		return Objects.requireNonNull(lockable, "Must provide a non-null ReadWriteLockable instance").getMainLock();
+		return Objects.requireNonNull(lockable, "Must provide a non-null ReadWriteLockable instance").getLock();
 	}
 }

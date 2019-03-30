@@ -30,8 +30,8 @@ public class ReadWriteIteratorTest {
 		new ReadWriteIterator<>(rwl, emptyIterator);
 
 		ReadWriteLock lock = new ReentrantReadWriteLock();
-		Assertions.assertSame(lock, new ReadWriteIterator<>(lock, emptyIterator).getMainLock());
-		Assertions.assertSame(rwl.getMainLock(), new ReadWriteIterator<>(rwl, emptyIterator).getMainLock());
+		Assertions.assertSame(lock, new ReadWriteIterator<>(lock, emptyIterator).getLock());
+		Assertions.assertSame(rwl.getLock(), new ReadWriteIterator<>(rwl, emptyIterator).getLock());
 	}
 
 	@Test

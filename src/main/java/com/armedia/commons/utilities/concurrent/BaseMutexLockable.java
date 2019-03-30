@@ -1,0 +1,52 @@
+package com.armedia.commons.utilities.concurrent;
+
+import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * <p>
+ * This class exists as a simple concrete implementation of {@link ReadWriteLockable}, for
+ * convenience.
+ * </p>
+ *
+ * @author diego
+ *
+ */
+public class BaseMutexLockable implements MutexLockable {
+
+	private final Lock lock;
+
+	/**
+	 * <p>
+	 * Create a new instance using a {@link ReentrantReadWriteLock} at its core.
+	 * </p>
+	 */
+	public BaseMutexLockable() {
+		this(MutexLockable.NULL_LOCK);
+	}
+
+	public BaseMutexLockable(MutexLockable lockable) {
+		this(BaseMutexLockable.extractLock(lockable));
+	}
+
+	/**
+	 * <p>
+	 * Create a new instance. If the given lock is {@code null}, a new
+	 * {@link ReentrantReadWriteLock} instance is created and used.
+	 * </p>
+	 */
+	public BaseMutexLockable(Lock lock) {
+		this.lock = (lock != null ? lock : new ReentrantLock());
+	}
+
+	@Override
+	public final Lock getLock() {
+		return this.lock;
+	}
+
+	protected static Lock extractLock(MutexLockable lockable) {
+		return Objects.requireNonNull(lockable, "Must provide a non-null MutexLockable instance").getLock();
+	}
+}

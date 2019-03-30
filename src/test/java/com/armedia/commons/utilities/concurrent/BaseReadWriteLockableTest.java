@@ -27,24 +27,24 @@ public class BaseReadWriteLockableTest {
 		BaseReadWriteLockable rwl = null;
 
 		rwl = new BaseReadWriteLockable();
-		Assertions.assertNotNull(rwl.getMainLock());
-		Assertions.assertNotSame(lock, rwl.getMainLock());
+		Assertions.assertNotNull(rwl.getLock());
+		Assertions.assertNotSame(lock, rwl.getLock());
 
 		rwl = new BaseReadWriteLockable(ReadWriteLockable.NULL_LOCK);
-		Assertions.assertNotNull(rwl.getMainLock());
-		Assertions.assertNotSame(lock, rwl.getMainLock());
+		Assertions.assertNotNull(rwl.getLock());
+		Assertions.assertNotSame(lock, rwl.getLock());
 
 		Assertions.assertThrows(NullPointerException.class, () -> new BaseReadWriteLockable((ReadWriteLockable) null));
 
 		Assertions.assertNotNull(rwl);
-		ReadWriteLock other = rwl.getMainLock();
+		ReadWriteLock other = rwl.getLock();
 		rwl = new BaseReadWriteLockable(rwl);
-		Assertions.assertNotNull(rwl.getMainLock());
-		Assertions.assertSame(other, rwl.getMainLock());
+		Assertions.assertNotNull(rwl.getLock());
+		Assertions.assertSame(other, rwl.getLock());
 
 		rwl = new BaseReadWriteLockable(lock);
-		Assertions.assertNotNull(rwl.getMainLock());
-		Assertions.assertSame(lock, rwl.getMainLock());
+		Assertions.assertNotNull(rwl.getLock());
+		Assertions.assertSame(lock, rwl.getLock());
 	}
 
 	@Test

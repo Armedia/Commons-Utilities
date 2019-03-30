@@ -31,18 +31,9 @@ import com.armedia.commons.utilities.function.CheckedTools;
  *
  */
 @FunctionalInterface
-public interface ReadWriteLockable {
+public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 
 	public static final ReadWriteLock NULL_LOCK = null;
-
-	/**
-	 * <p>
-	 * Returns the {@link ReadWriteLock} instance that backs all the functionality.
-	 * </p>
-	 *
-	 * @return the {@link ReadWriteLock} instance that backs all the functionality.
-	 */
-	public ReadWriteLock getMainLock();
 
 	/**
 	 * <p>
@@ -53,7 +44,7 @@ public interface ReadWriteLockable {
 	 * @return the write lock
 	 */
 	public default Lock getReadLock() {
-		return getMainLock().readLock();
+		return getLock().readLock();
 	}
 
 	/**
@@ -150,7 +141,7 @@ public interface ReadWriteLockable {
 	 * @return the write lock
 	 */
 	public default Lock getWriteLock() {
-		return getMainLock().writeLock();
+		return getLock().writeLock();
 	}
 
 	/**

@@ -43,7 +43,7 @@ public class LockingValueStorage<T> extends SimpleValueStorage<T> implements Rea
 	}
 
 	@Override
-	public ReadWriteLock getMainLock() {
+	public ReadWriteLock getLock() {
 		return this.rwLock;
 	}
 
