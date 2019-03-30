@@ -17,6 +17,7 @@ import java.security.Provider.Service;
 import java.security.Security;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.binary.StringUtils;
@@ -733,10 +734,12 @@ class DigestFileChannelTest {
 				for (boolean shared : allShared) {
 					for (final boolean valid : allShared) {
 						EasyMock.reset(fc);
+						final AtomicLong releaseCalled = new AtomicLong(0);
 						final FileLock fl = new FileLock(fc, pos, size, shared) {
 
 							@Override
 							public void release() throws IOException {
+								releaseCalled.incrementAndGet();
 							}
 
 							@Override
@@ -758,6 +761,9 @@ class DigestFileChannelTest {
 						Assertions.assertEquals(size, dfl.size());
 						Assertions.assertEquals(shared, dfl.isShared());
 						Assertions.assertEquals(valid, dfl.isValid());
+						Assertions.assertEquals(0, releaseCalled.get());
+						dfl.release();
+						Assertions.assertEquals(1, releaseCalled.get());
 					}
 				}
 			}
@@ -789,10 +795,12 @@ class DigestFileChannelTest {
 				for (boolean shared : allShared) {
 					for (final boolean valid : allShared) {
 						EasyMock.reset(fc);
+						final AtomicLong releaseCalled = new AtomicLong(0);
 						final FileLock fl = new FileLock(fc, pos, size, shared) {
 
 							@Override
 							public void release() throws IOException {
+								releaseCalled.incrementAndGet();
 							}
 
 							@Override
@@ -814,6 +822,9 @@ class DigestFileChannelTest {
 						Assertions.assertEquals(size, dfl.size());
 						Assertions.assertEquals(shared, dfl.isShared());
 						Assertions.assertEquals(valid, dfl.isValid());
+						Assertions.assertEquals(0, releaseCalled.get());
+						dfl.release();
+						Assertions.assertEquals(1, releaseCalled.get());
 					}
 				}
 			}
