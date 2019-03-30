@@ -41,19 +41,19 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 		this.defaultInitializer = defaultInitializer;
 		this.defaultValue = defaultValue;
 		this.concurrentInitializer = this::get;
-		this.condition = getWriteLock().newCondition();
+		this.condition = getMutexLock().newCondition();
 	}
 
 	public boolean isDefaulted() {
-		return readLocked(() -> isInitialized() && (this.defaultValue == this.item));
+		return shareLocked(() -> isInitialized() && (this.defaultValue == this.item));
 	}
 
 	public boolean isInitialized() {
-		return readLocked(() -> this.initialized);
+		return shareLocked(() -> this.initialized);
 	}
 
 	public T await() throws InterruptedException {
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			this.condition.await();
 			this.condition.signal();
 		});
@@ -61,7 +61,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 	}
 
 	public T awaitUninterruptibly() {
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			this.condition.awaitUninterruptibly();
 			this.condition.signal();
 		});
@@ -70,7 +70,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 
 	public Pair<T, Long> awaitNanos(long nanosTimeout) throws InterruptedException {
 		final AtomicReference<Long> ret = new AtomicReference<>(null);
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitNanos(nanosTimeout));
 			if (this.initialized) {
 				this.condition.signal();
@@ -92,7 +92,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 
 	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
 		final AtomicBoolean ret = new AtomicBoolean(true);
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitUntil(deadline));
 			if (ret.get()) {
 				this.condition.signal();
@@ -115,7 +115,7 @@ public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T
 	}
 
 	public T get(Supplier<T> init) {
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			Supplier<T> initializer = Tools.coalesce(init, this.defaultInitializer);
 			if (initializer != null) {
 				this.item = initializer.get();

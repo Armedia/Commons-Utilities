@@ -22,31 +22,31 @@ public class ReadWriteListIterator<ELEMENT> extends ReadWriteIterator<ELEMENT> i
 
 	@Override
 	public boolean hasPrevious() {
-		return readLocked(this.iterator::hasPrevious);
+		return shareLocked(this.iterator::hasPrevious);
 	}
 
 	@Override
 	public ELEMENT previous() {
-		return readLocked(this.iterator::previous);
+		return shareLocked(this.iterator::previous);
 	}
 
 	@Override
 	public int nextIndex() {
-		return readLocked(this.iterator::nextIndex);
+		return shareLocked(this.iterator::nextIndex);
 	}
 
 	@Override
 	public int previousIndex() {
-		return readLocked(this.iterator::previousIndex);
+		return shareLocked(this.iterator::previousIndex);
 	}
 
 	@Override
 	public void set(ELEMENT e) {
-		writeLocked(() -> this.iterator.set(e));
+		mutexLocked(() -> this.iterator.set(e));
 	}
 
 	@Override
 	public void add(ELEMENT e) {
-		writeLocked(() -> this.iterator.add(e));
+		mutexLocked(() -> this.iterator.add(e));
 	}
 }

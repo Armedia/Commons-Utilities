@@ -27,51 +27,51 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 	public boolean addAll(int index, Collection<? extends ELEMENT> c) {
 		Objects.requireNonNull(c, "Must provide a non-null Collection to add from");
 		if (c.isEmpty()) { return false; }
-		return writeLocked(() -> this.list.addAll(index, c));
+		return mutexLocked(() -> this.list.addAll(index, c));
 	}
 
 	@Override
 	public ELEMENT get(int index) {
-		return readLocked(() -> this.list.get(index));
+		return shareLocked(() -> this.list.get(index));
 	}
 
 	@Override
 	public ELEMENT set(int index, ELEMENT element) {
-		return writeLocked(() -> this.list.set(index, element));
+		return mutexLocked(() -> this.list.set(index, element));
 	}
 
 	@Override
 	public void add(int index, ELEMENT element) {
-		writeLocked(() -> this.list.add(index, element));
+		mutexLocked(() -> this.list.add(index, element));
 	}
 
 	@Override
 	public ELEMENT remove(int index) {
-		return writeLocked(() -> this.list.remove(index));
+		return mutexLocked(() -> this.list.remove(index));
 	}
 
 	@Override
 	public int indexOf(Object o) {
-		return readLocked(() -> this.list.indexOf(o));
+		return shareLocked(() -> this.list.indexOf(o));
 	}
 
 	@Override
 	public int lastIndexOf(Object o) {
-		return readLocked(() -> this.list.lastIndexOf(o));
+		return shareLocked(() -> this.list.lastIndexOf(o));
 	}
 
 	@Override
 	public ListIterator<ELEMENT> listIterator() {
-		return readLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator()));
+		return shareLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator()));
 	}
 
 	@Override
 	public ListIterator<ELEMENT> listIterator(int index) {
-		return readLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator(index)));
+		return shareLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator(index)));
 	}
 
 	@Override
 	public List<ELEMENT> subList(int fromIndex, int toIndex) {
-		return readLocked(() -> new ReadWriteList<>(this, this.list.subList(fromIndex, toIndex)));
+		return shareLocked(() -> new ReadWriteList<>(this, this.list.subList(fromIndex, toIndex)));
 	}
 }

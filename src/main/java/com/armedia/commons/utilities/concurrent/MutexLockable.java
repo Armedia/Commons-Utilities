@@ -23,9 +23,18 @@ import com.armedia.commons.utilities.function.CheckedSupplier;
  *
  */
 @FunctionalInterface
-public interface MutexLockable extends Lockable<Lock> {
+public interface MutexLockable {
 
 	public static final Lock NULL_LOCK = null;
+
+	/**
+	 * <p>
+	 * Returns the mutex lock
+	 * </p>
+	 *
+	 * @return the mutex lock
+	 */
+	public Lock getMutexLock();
 
 	/**
 	 * <p>
@@ -36,7 +45,7 @@ public interface MutexLockable extends Lockable<Lock> {
 	 * @return the (held) mutex lock
 	 */
 	public default Lock acquireMutexLock() {
-		Lock ret = getLock();
+		Lock ret = getMutexLock();
 		ret.lock();
 		return ret;
 	}

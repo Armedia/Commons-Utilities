@@ -42,11 +42,11 @@ public class BaseMutexLockable implements MutexLockable {
 	}
 
 	@Override
-	public final Lock getLock() {
+	public final Lock getMutexLock() {
 		return this.lock;
 	}
 
 	protected static Lock extractLock(MutexLockable lockable) {
-		return Objects.requireNonNull(lockable, "Must provide a non-null MutexLockable instance").getLock();
+		return Objects.requireNonNull(lockable, "Must provide a non-null MutexLockable instance").getMutexLock();
 	}
 }

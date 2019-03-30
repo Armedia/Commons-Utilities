@@ -11,7 +11,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
-public class DigestReadableByteChannel extends BaseReadWriteLockable implements ReadableByteChannel, DigestHashCollector {
+public class DigestReadableByteChannel extends BaseReadWriteLockable
+	implements ReadableByteChannel, DigestHashCollector {
 
 	private final ReadableByteChannel channel;
 	private final MessageDigest digest;
@@ -39,7 +40,7 @@ public class DigestReadableByteChannel extends BaseReadWriteLockable implements 
 
 	@Override
 	public Pair<Long, byte[]> collectHash() {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
 			this.length = 0;
 			return ret;
@@ -48,7 +49,7 @@ public class DigestReadableByteChannel extends BaseReadWriteLockable implements 
 
 	@Override
 	public void resetHash() {
-		writeLocked(() -> {
+		mutexLocked(() -> {
 			this.digest.reset();
 			this.length = 0;
 		});
@@ -56,7 +57,7 @@ public class DigestReadableByteChannel extends BaseReadWriteLockable implements 
 
 	@Override
 	public int read(final ByteBuffer dst) throws IOException {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			final ByteBuffer dupe = dst.duplicate();
 			final int read = this.channel.read(dst);
 			if (read > 0) {
@@ -70,11 +71,11 @@ public class DigestReadableByteChannel extends BaseReadWriteLockable implements 
 
 	@Override
 	public boolean isOpen() {
-		return readLocked(this.channel::isOpen);
+		return shareLocked(this.channel::isOpen);
 	}
 
 	@Override
 	public void close() throws IOException {
-		writeLocked(this.channel::close);
+		mutexLocked(this.channel::close);
 	}
 }

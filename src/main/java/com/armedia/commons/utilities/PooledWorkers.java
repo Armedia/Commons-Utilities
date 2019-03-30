@@ -197,7 +197,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 */
 	public final void addWorkItem(ITEM item) throws InterruptedException {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		readLocked(() -> this.workQueue.put(item));
+		shareLocked(() -> this.workQueue.put(item));
 	}
 
 	/**
@@ -213,7 +213,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 */
 	public final boolean addWorkItem(ITEM item, long count, TimeUnit timeUnit) throws InterruptedException {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		return readLocked(() -> this.workQueue.offer(item, count, timeUnit));
+		return shareLocked(() -> this.workQueue.offer(item, count, timeUnit));
 	}
 
 	/**
@@ -228,7 +228,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 */
 	public final boolean addWorkItemNonblock(ITEM item) {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		return readLocked(() -> this.workQueue.offer(item));
+		return shareLocked(() -> this.workQueue.offer(item));
 	}
 
 	/**
@@ -238,7 +238,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 * @return all remaining work items from the queue
 	 */
 	public final List<ITEM> clearWorkItems() {
-		return readLocked(() -> {
+		return shareLocked(() -> {
 			List<ITEM> ret = new ArrayList<>();
 			this.workQueue.drainTo(ret);
 			return ret;
@@ -251,7 +251,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 * @return the current size of the work queue.
 	 */
 	public final int getQueueSize() {
-		return readLocked(this.workQueue::size);
+		return shareLocked(this.workQueue::size);
 	}
 
 	/**
@@ -260,7 +260,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 * @return the current remaining capacity of the work queue.
 	 */
 	public final int getQueueCapacity() {
-		return readLocked(this.workQueue::remainingCapacity);
+		return shareLocked(this.workQueue::remainingCapacity);
 	}
 
 	/**
@@ -307,7 +307,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
 		String name, boolean waitForWork) {
 		Objects.requireNonNull(logic, "Must provide the logic that these workers will apply");
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			if (this.executor != null) { return false; }
 			this.threadCount = Math.max(1, threadCount);
 			this.activeCounter.set(0);
@@ -366,7 +366,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	}
 
 	private List<ITEM> shutdown(boolean abort, long maxWait, TimeUnit timeUnit) {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			if (this.executor == null) { return null; }
 			long actualMaxWait = maxWait;
 			TimeUnit actualTimeUnit = timeUnit;
@@ -488,7 +488,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 * @param timeUnit
 	 */
 	public final List<ITEM> abortExecution(long maxWait, TimeUnit timeUnit) {
-		return writeLocked(() -> shutdown(true, maxWait, timeUnit));
+		return mutexLocked(() -> shutdown(true, maxWait, timeUnit));
 	}
 
 	/**
@@ -519,6 +519,6 @@ public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
 	 * @return a list of items pending processing. Will never be {@code null}, but may be empty
 	 */
 	public final List<ITEM> waitForCompletion(long maxWait, TimeUnit timeUnit) {
-		return writeLocked(() -> shutdown(false, maxWait, timeUnit));
+		return mutexLocked(() -> shutdown(false, maxWait, timeUnit));
 	}
 }

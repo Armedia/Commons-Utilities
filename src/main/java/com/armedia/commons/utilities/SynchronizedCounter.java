@@ -44,7 +44,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 		this.value = start;
 		this.created = System.nanoTime();
 		this.lastChange = this.created;
-		this.changed = getWriteLock().newCondition();
+		this.changed = getMutexLock().newCondition();
 	}
 
 	/**
@@ -67,7 +67,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @return the time at which the object was last changed, in nanoseconds
 	 */
 	public long getLastChanged() {
-		return readLocked(() -> this.lastChange);
+		return shareLocked(() -> this.lastChange);
 	}
 
 	/**
@@ -82,7 +82,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 *         otherwise
 	 */
 	public boolean isChangedSinceCreation() {
-		return readLocked(() -> (this.lastChange != this.created));
+		return shareLocked(() -> (this.lastChange != this.created));
 	}
 
 	/**
@@ -93,7 +93,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @return the value's current value
 	 */
 	public long get() {
-		return readLocked(() -> this.value);
+		return shareLocked(() -> this.value);
 	}
 
 	/**
@@ -104,7 +104,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @return the value's current value
 	 */
 	public long set(long value) {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			final long ret = this.value;
 			this.value = value;
 			if (value != ret) {
@@ -127,7 +127,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @return the new value after applying the delta
 	 */
 	public long add(long delta) {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			long ret = (this.value += delta);
 			if (delta != 0) {
 				// Only trigger the change if there actually was a change
@@ -203,7 +203,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @throws InterruptedException
 	 */
 	public void waitUntil(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
-		writeLocked(() -> {
+		mutexLocked(() -> {
 			while (value != this.value) {
 				if (timeout > 0) {
 					this.changed.await(timeout, timeUnit);
@@ -244,7 +244,7 @@ public final class SynchronizedCounter extends BaseReadWriteLockable {
 	 * @throws InterruptedException
 	 */
 	public long waitForChange(long timeout, TimeUnit timeUnit) throws InterruptedException {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			if (timeout > 0) {
 				this.changed.await(timeout, timeUnit);
 			} else {

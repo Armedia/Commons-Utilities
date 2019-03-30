@@ -32,22 +32,22 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 	@Override
 	public void forEach(Consumer<? super ELEMENT> action) {
 		Objects.requireNonNull(action, "Must provide a non-null action to apply");
-		readLocked(() -> this.c.forEach(action));
+		shareLocked(() -> this.c.forEach(action));
 	}
 
 	@Override
 	public int size() {
-		return readLocked(this.c::size);
+		return shareLocked(this.c::size);
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return readLocked(this.c::isEmpty);
+		return shareLocked(this.c::isEmpty);
 	}
 
 	@Override
 	public boolean contains(Object o) {
-		return readLocked(() -> this.c.contains(o));
+		return shareLocked(() -> this.c.contains(o));
 	}
 
 	@Override
@@ -57,61 +57,61 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public Object[] toArray() {
-		return readLocked(() -> this.c.toArray());
+		return shareLocked(() -> this.c.toArray());
 	}
 
 	@Override
 	public <T> T[] toArray(T[] a) {
 		Objects.requireNonNull(a, "Must provide a non-null Array instance");
-		return readLocked(() -> this.c.toArray(a));
+		return shareLocked(() -> this.c.toArray(a));
 	}
 
 	@Override
 	public boolean add(ELEMENT e) {
-		return writeLocked(() -> this.c.add(e));
+		return mutexLocked(() -> this.c.add(e));
 	}
 
 	@Override
 	public boolean remove(Object o) {
-		return writeLocked(() -> this.c.remove(o));
+		return mutexLocked(() -> this.c.remove(o));
 	}
 
 	@Override
 	public boolean containsAll(Collection<?> c) {
 		Objects.requireNonNull(c, "Must provide a non-null collection to check against");
 		if (c.isEmpty()) { return true; }
-		return writeLocked(() -> this.c.containsAll(c));
+		return mutexLocked(() -> this.c.containsAll(c));
 	}
 
 	@Override
 	public boolean addAll(Collection<? extends ELEMENT> c) {
 		Objects.requireNonNull(c, "Must provide a non-null collection to add from");
 		if (c.isEmpty()) { return false; }
-		return writeLocked(() -> this.c.addAll(c));
+		return mutexLocked(() -> this.c.addAll(c));
 	}
 
 	@Override
 	public boolean retainAll(Collection<?> c) {
 		Objects.requireNonNull(c, "Must provide a non-null collection to retain from");
 		if (c.isEmpty()) { return false; }
-		return writeLocked(() -> this.c.retainAll(c));
+		return mutexLocked(() -> this.c.retainAll(c));
 	}
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
 		Objects.requireNonNull(c, "Must provide a non-null collection to remove from");
 		if (c.isEmpty()) { return false; }
-		return writeLocked(() -> this.c.removeAll(c));
+		return mutexLocked(() -> this.c.removeAll(c));
 	}
 
 	@Override
 	public void clear() {
-		writeLocked(this.c::clear);
+		mutexLocked(this.c::clear);
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		return readLocked(() -> {
+		return shareLocked(() -> {
 			if (o == null) { return false; }
 			if (o == this) { return true; }
 			if (!Set.class.isInstance(o)) { return false; }
@@ -123,13 +123,13 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public int hashCode() {
-		return readLocked(() -> Tools.hashTool(this, null, this.c));
+		return shareLocked(() -> Tools.hashTool(this, null, this.c));
 	}
 
 	@Override
 	public boolean removeIf(Predicate<? super ELEMENT> filter) {
 		Objects.requireNonNull(filter, "Must provide a non-null filter to search with");
-		final Lock readLock = acquireReadLock();
+		final Lock readLock = acquireSharedLock();
 		Lock writeLock = null;
 		try {
 			try {
@@ -138,7 +138,7 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 						// Ok so we need to upgrade to a write lock
 						if (writeLock == null) {
 							readLock.unlock();
-							writeLock = acquireWriteLock();
+							writeLock = acquireMutexLock();
 						}
 						this.c.remove(e);
 					}
@@ -158,6 +158,6 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public Spliterator<ELEMENT> spliterator() {
-		return readLocked(() -> new ReadWriteSpliterator<>(this, this.c.spliterator()));
+		return shareLocked(() -> new ReadWriteSpliterator<>(this, this.c.spliterator()));
 	}
 }

@@ -26,27 +26,27 @@ public class ReadWriteSpliterator<E> extends BaseReadWriteLockable implements Sp
 
 	@Override
 	public boolean tryAdvance(Consumer<? super E> action) {
-		return readLocked(() -> this.spliterator.tryAdvance(action));
+		return shareLocked(() -> this.spliterator.tryAdvance(action));
 	}
 
 	@Override
 	public void forEachRemaining(Consumer<? super E> action) {
-		readLocked(() -> this.spliterator.forEachRemaining(action));
+		shareLocked(() -> this.spliterator.forEachRemaining(action));
 	}
 
 	@Override
 	public Spliterator<E> trySplit() {
-		return readLocked(() -> new ReadWriteSpliterator<>(this, this.spliterator.trySplit()));
+		return shareLocked(() -> new ReadWriteSpliterator<>(this, this.spliterator.trySplit()));
 	}
 
 	@Override
 	public long estimateSize() {
-		return readLocked(this.spliterator::estimateSize);
+		return shareLocked(this.spliterator::estimateSize);
 	}
 
 	@Override
 	public long getExactSizeIfKnown() {
-		return readLocked(this.spliterator::getExactSizeIfKnown);
+		return shareLocked(this.spliterator::getExactSizeIfKnown);
 	}
 
 	@Override

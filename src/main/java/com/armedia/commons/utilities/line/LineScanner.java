@@ -32,7 +32,7 @@ public class LineScanner extends BaseReadWriteLockable {
 	}
 
 	public final Collection<LineSourceFactory> getSourceFactories() {
-		return readLocked(() -> {
+		return shareLocked(() -> {
 			Collection<LineSourceFactory> ret = new ArrayList<>(this.factories.values());
 			ret.addAll(LineScanner.DEFAULT_FACTORIES.values()); // Append the defaults
 			return ret;
@@ -54,7 +54,7 @@ public class LineScanner extends BaseReadWriteLockable {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			factories.stream().filter(Objects::nonNull).forEach(f -> this.factories.put(System.identityHashCode(f), f));
 			return this;
 		});
@@ -74,7 +74,7 @@ public class LineScanner extends BaseReadWriteLockable {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			factories.stream().filter(Objects::nonNull)
 				.forEach(f -> this.factories.remove(System.identityHashCode(f), f));
 			return this;
@@ -83,7 +83,7 @@ public class LineScanner extends BaseReadWriteLockable {
 
 	public final boolean hasSourceFactory(LineSourceFactory factory) {
 		if (factory == null) { return false; }
-		return readLocked(() -> this.factories.containsKey(System.identityHashCode(factory)));
+		return shareLocked(() -> this.factories.containsKey(System.identityHashCode(factory)));
 	}
 
 	public LineIterator iterator(String... sourceSpecs) {

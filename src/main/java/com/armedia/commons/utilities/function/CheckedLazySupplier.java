@@ -47,19 +47,19 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 				throw new ConcurrentException(t.getMessage(), t);
 			}
 		};
-		this.condition = getWriteLock().newCondition();
+		this.condition = getMutexLock().newCondition();
 	}
 
 	public boolean isDefaulted() {
-		return readLocked(() -> isInitialized() && (this.defaultValue == this.item));
+		return shareLocked(() -> isInitialized() && (this.defaultValue == this.item));
 	}
 
 	public boolean isInitialized() {
-		return readLocked(() -> this.initialized);
+		return shareLocked(() -> this.initialized);
 	}
 
 	public T await() throws InterruptedException {
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			if (!this.initialized) {
 				this.condition.await();
 				this.condition.signal();
@@ -69,7 +69,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 	}
 
 	public T awaitUninterruptibly() {
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			this.condition.awaitUninterruptibly();
 			this.condition.signal();
 		});
@@ -78,7 +78,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 
 	public Pair<T, Long> awaitNanos(long nanosTimeout) throws InterruptedException {
 		final AtomicReference<Long> ret = new AtomicReference<>(null);
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitNanos(nanosTimeout));
 			if (this.initialized) {
 				this.condition.signal();
@@ -100,7 +100,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 
 	public Pair<T, Boolean> awaitUntil(Date deadline) throws InterruptedException {
 		final AtomicBoolean ret = new AtomicBoolean(true);
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			ret.set(this.condition.awaitUntil(deadline));
 			if (ret.get()) {
 				this.condition.signal();
@@ -136,7 +136,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteL
 	}
 
 	public T getChecked(CheckedSupplier<T, EX> initializer) throws EX {
-		readLockedUpgradable(() -> !this.initialized, () -> {
+		shareLockedUpgradable(() -> !this.initialized, () -> {
 			CheckedSupplier<T, EX> init = Tools.coalesce(initializer, this.defaultInitializer);
 			if (init != null) {
 				this.item = init.getChecked();

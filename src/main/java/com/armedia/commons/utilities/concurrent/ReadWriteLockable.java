@@ -31,32 +31,34 @@ import com.armedia.commons.utilities.function.CheckedTools;
  *
  */
 @FunctionalInterface
-public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
+public interface ReadWriteLockable extends MutexLockable {
 
 	public static final ReadWriteLock NULL_LOCK = null;
 
+	public ReadWriteLock getShareableLock();
+
 	/**
 	 * <p>
-	 * Return a reference to the read (shared) lock. Contrary to {@link #acquireReadLock()}, no
+	 * Return a reference to the read (shared) lock. Contrary to {@link #acquireSharedLock()}, no
 	 * attempt is made to acquire the lock before returning it.
 	 * </p>
 	 *
 	 * @return the write lock
 	 */
-	public default Lock getReadLock() {
-		return getLock().readLock();
+	public default Lock getSharedLock() {
+		return getShareableLock().readLock();
 	}
 
 	/**
 	 * <p>
 	 * Return a reference to the read (shared) lock. The lock is already held when it's returned so
-	 * this method may block while other threads hold the write lock.
+	 * this method may block while other threads hold the mutex lock.
 	 * </p>
 	 *
 	 * @return the (held) write lock
 	 */
-	public default Lock acquireReadLock() {
-		Lock ret = getReadLock();
+	public default Lock acquireSharedLock() {
+		Lock ret = getSharedLock();
 		ret.lock();
 		return ret;
 	}
@@ -71,9 +73,9 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @throws NullPointerException
 	 *             if {@code operation} is {@code null}
 	 */
-	public default <E> E readLocked(Supplier<E> operation) {
+	public default <E> E shareLocked(Supplier<E> operation) {
 		Objects.requireNonNull(operation, "Must provide an operation to run");
-		return readLocked(() -> operation.get());
+		return shareLocked(() -> operation.get());
 	}
 
 	/**
@@ -87,9 +89,9 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @throws NullPointerException
 	 *             if {@code operation} is {@code null}
 	 */
-	public default <E, EX extends Throwable> E readLocked(CheckedSupplier<E, EX> operation) throws EX {
+	public default <E, EX extends Throwable> E shareLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireReadLock();
+		final Lock l = acquireSharedLock();
 		try {
 			return operation.getChecked();
 		} finally {
@@ -107,9 +109,9 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @throws NullPointerException
 	 *             if {@code operation} is {@code null}
 	 */
-	public default void readLocked(Runnable operation) {
+	public default void shareLocked(Runnable operation) {
 		Objects.requireNonNull(operation, "Must provide an operation to run");
-		readLocked(() -> operation.run());
+		shareLocked(() -> operation.run());
 	}
 
 	/**
@@ -122,9 +124,9 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @throws NullPointerException
 	 *             if {@code operation} is {@code null}
 	 */
-	public default <EX extends Throwable> void readLocked(CheckedRunnable<EX> operation) throws EX {
+	public default <EX extends Throwable> void shareLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireReadLock();
+		final Lock l = acquireSharedLock();
 		try {
 			operation.runChecked();
 		} finally {
@@ -134,99 +136,15 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 
 	/**
 	 * <p>
-	 * Return a reference to the write (exclusive) lock. Contrary to {@link #acquireWriteLock()}, no
+	 * Return a reference to the write (exclusive) lock. Contrary to {@link #acquireMutexLock()}, no
 	 * attempt is made to acquire the lock before returning it.
 	 * </p>
 	 *
 	 * @return the write lock
 	 */
-	public default Lock getWriteLock() {
-		return getLock().writeLock();
-	}
-
-	/**
-	 * <p>
-	 * Return a reference to the write (exclusive) lock. The lock is already held when it's returned
-	 * so this method may block while other threads hold either the read or write locks.
-	 * </p>
-	 *
-	 * @return the (held) write lock
-	 */
-	public default Lock acquireWriteLock() {
-		Lock ret = getWriteLock();
-		ret.lock();
-		return ret;
-	}
-
-	/**
-	 * <p>
-	 * Execute the given operation within the context of an exclusive (write) lock, returning the
-	 * result of {@link Supplier#get()}. The lock is acquired and released automatically.
-	 * </p>
-	 *
-	 * @param operation
-	 * @throws NullPointerException
-	 *             if {@code operation} is {@code null}
-	 */
-	public default <E> E writeLocked(Supplier<E> operation) {
-		Objects.requireNonNull(operation, "Must provide an operation to run");
-		return writeLocked(() -> operation.get());
-	}
-
-	/**
-	 * <p>
-	 * Execute the given operation within the context of an exclusive (write) lock, and return the
-	 * result of {@link CheckedSupplier#getChecked()}. The lock is acquired and released
-	 * automatically. Any raised exceptions are cascaded upward.
-	 * </p>
-	 *
-	 * @param operation
-	 * @throws NullPointerException
-	 *             if {@code operation} is {@code null}
-	 */
-	public default <E, EX extends Throwable> E writeLocked(CheckedSupplier<E, EX> operation) throws EX {
-		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireWriteLock();
-		try {
-			return operation.getChecked();
-		} finally {
-			l.unlock();
-		}
-	}
-
-	/**
-	 * <p>
-	 * Execute the given operation within the context of an exclusive (write) lock. The lock is
-	 * acquired and released automatically.
-	 * </p>
-	 *
-	 * @param operation
-	 * @throws NullPointerException
-	 *             if {@code operation} is {@code null}
-	 */
-	public default void writeLocked(Runnable operation) {
-		Objects.requireNonNull(operation, "Must provide an operation to run");
-		writeLocked(() -> operation.run());
-	}
-
-	/**
-	 * <p>
-	 * Execute the given operation within the context of an exclusive (write) lock. The lock is
-	 * acquired and released automatically. Any raised exceptions are cascaded upward.
-	 * </p>
-	 *
-	 * @param operation
-	 * @throws NullPointerException
-	 *             if {@code operation} is {@code null}
-	 */
-	public default <EX extends Throwable> void writeLocked(CheckedRunnable<EX> operation) throws EX {
-		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireWriteLock();
-		try {
-			operation.runChecked();
-		} finally {
-			l.unlock();
-		}
+	@Override
+	public default Lock getMutexLock() {
+		return getShareableLock().writeLock();
 	}
 
 	/**
@@ -254,12 +172,12 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @returns the value returned by the {@code writeBlock} if it was executed, or {@code null} if
 	 *          it wasn't.
 	 */
-	public default <E> E readLockedUpgradable(Supplier<Boolean> decision, Supplier<E> writeBlock) {
+	public default <E> E shareLockedUpgradable(Supplier<Boolean> decision, Supplier<E> writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
 		final CheckedFunction<E, E, RuntimeException> newWriteBlock = (e) -> writeBlock.get();
-		return readLockedUpgradable(null, newDecision, newWriteBlock);
+		return shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -288,13 +206,13 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 *          it wasn't.
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> E readLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedSupplier<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
 		final CheckedFunction<E, E, EX> newWriteBlock = (e) -> writeBlock.getChecked();
-		return readLockedUpgradable(null, newDecision, newWriteBlock);
+		return shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -324,9 +242,9 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @returns either the value returned by the {@code writeBlock} (if it was executed), or the
 	 *          last value returned by the {@code checker} parameter.
 	 */
-	public default <E> E readLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Function<E, E> writeBlock) {
+	public default <E> E shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Function<E, E> writeBlock) {
 		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
-		return readLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
+		return shareLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
 	}
 
 	/**
@@ -357,7 +275,7 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 *          last value returned by the {@code checker} parameter.
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> E readLockedUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedFunction<E, E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -365,12 +283,12 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 			checker = () -> null;
 		}
 
-		final Lock readLock = acquireReadLock();
+		final Lock readLock = acquireSharedLock();
 		try {
 			E e = checker.getChecked();
 			if (decision.testChecked(e)) {
 				readLock.unlock();
-				final Lock writeLock = acquireWriteLock();
+				final Lock writeLock = acquireMutexLock();
 				try {
 					try {
 						e = checker.getChecked();
@@ -413,12 +331,12 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @param decision
 	 * @param writeBlock
 	 */
-	public default <E> void readLockedUpgradable(Supplier<Boolean> decision, Runnable writeBlock) {
+	public default <E> void shareLockedUpgradable(Supplier<Boolean> decision, Runnable writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
 		final CheckedConsumer<E, RuntimeException> newWriteBlock = (e) -> writeBlock.run();
-		readLockedUpgradable(null, newDecision, newWriteBlock);
+		shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -445,13 +363,13 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @param writeBlock
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> void readLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedRunnable<EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
 		final CheckedConsumer<E, EX> newWriteBlock = (e) -> writeBlock.runChecked();
-		readLockedUpgradable(null, newDecision, newWriteBlock);
+		shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
 	/**
@@ -479,9 +397,9 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @param decision
 	 * @param writeBlock
 	 */
-	public default <E> void readLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Consumer<E> writeBlock) {
+	public default <E> void shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Consumer<E> writeBlock) {
 		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
-		readLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
+		shareLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
 	}
 
 	/**
@@ -510,7 +428,7 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 	 * @param writeBlock
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> void readLockedUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedConsumer<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -518,12 +436,12 @@ public interface ReadWriteLockable extends Lockable<ReadWriteLock> {
 			checker = () -> null;
 		}
 
-		final Lock readLock = acquireReadLock();
+		final Lock readLock = acquireSharedLock();
 		try {
 			E e = checker.getChecked();
 			if (decision.testChecked(e)) {
 				readLock.unlock();
-				final Lock writeLock = acquireWriteLock();
+				final Lock writeLock = acquireMutexLock();
 				try {
 					try {
 						e = checker.getChecked();

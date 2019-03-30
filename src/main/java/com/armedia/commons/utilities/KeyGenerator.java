@@ -86,7 +86,7 @@ public class KeyGenerator extends BaseReadWriteLockable implements Supplier<Stri
 	}
 
 	protected String generateCached() {
-		return readLockedUpgradable(this.cache::poll, Objects::isNull, (e) -> {
+		return shareLockedUpgradable(this.cache::poll, Objects::isNull, (e) -> {
 			this.log.debug("Rendering {} new keys for the empty cache", this.cacheCount);
 			for (int i = 0; i <= this.cacheCount; i++) {
 				String newKey = this.keyFactory.get();
@@ -104,11 +104,11 @@ public class KeyGenerator extends BaseReadWriteLockable implements Supplier<Stri
 	}
 
 	public int getCacheCount() {
-		return readLocked(() -> this.cacheCount);
+		return shareLocked(() -> this.cacheCount);
 	}
 
 	public KeyGenerator setCacheCount(final int cacheCount) {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			this.cacheCount = Tools.ensureBetween(KeyGenerator.CACHE_COUNT_MAX, cacheCount,
 				KeyGenerator.CACHE_COUNT_MIN);
 			return this;

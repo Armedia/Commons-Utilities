@@ -23,22 +23,22 @@ public class ReadWriteIterator<E> extends BaseReadWriteLockable implements Itera
 
 	@Override
 	public boolean hasNext() {
-		return readLocked(this.iterator::hasNext);
+		return shareLocked(this.iterator::hasNext);
 	}
 
 	@Override
 	public E next() {
-		return readLocked(this.iterator::next);
+		return shareLocked(this.iterator::next);
 	}
 
 	@Override
 	public void remove() {
-		writeLocked(this.iterator::remove);
+		mutexLocked(this.iterator::remove);
 	}
 
 	@Override
 	public void forEachRemaining(Consumer<? super E> action) {
 		Objects.requireNonNull(action, "Must provide a non-null action to apply");
-		readLocked(() -> this.iterator.forEachRemaining(action));
+		shareLocked(() -> this.iterator.forEachRemaining(action));
 	}
 }

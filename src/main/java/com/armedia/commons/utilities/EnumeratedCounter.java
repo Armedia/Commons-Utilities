@@ -51,7 +51,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final long increment(T type, R result) {
 		if (type == null) { throw new IllegalArgumentException("Unsupported null object type"); }
 		if (result == null) { throw new IllegalArgumentException("Must provide a valid result to count for"); }
-		return readLocked(() -> {
+		return shareLocked(() -> {
 			AtomicLong counter = getLiveCounters(type).get(result);
 			final long ret = counter.incrementAndGet();
 			this.cummulative.get(result).incrementAndGet();
@@ -66,7 +66,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final Map<R, Long> getCounters(T type) {
 		Map<R, Long> ret = new EnumMap<>(this.rClass);
 		Map<R, AtomicLong> m = getLiveCounters(type);
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				ret.put(e.getKey(), e.getValue().get());
 			}
@@ -76,7 +76,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 
 	public final Map<T, Map<R, Long>> getCounters() {
 		Map<T, Map<R, Long>> ret = new EnumMap<>(this.tClass);
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			for (T t : this.counters.keySet()) {
 				ret.put(t, getCounters(t));
 			}
@@ -91,7 +91,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final Map<R, Long> reset(T type) {
 		Map<R, Long> ret = new EnumMap<>(this.rClass);
 		Map<R, AtomicLong> m = getLiveCounters(type);
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				final R r = e.getKey();
 				final long val = e.getValue().getAndSet(0);
@@ -104,7 +104,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 
 	public final Map<T, Map<R, Long>> reset() {
 		Map<T, Map<R, Long>> ret = new EnumMap<>(this.tClass);
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			for (T t : this.tClass.getEnumConstants()) {
 				ret.put(t, reset(t));
 			}
@@ -125,7 +125,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	}
 
 	public final String generateFullReport(int indentlevel) {
-		return writeLocked(() -> {
+		return mutexLocked(() -> {
 			StringBuilder buf = new StringBuilder();
 			for (T type : this.tClass.getEnumConstants()) {
 				if (buf.length() > 0) {
@@ -143,7 +143,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	}
 
 	private final String generateReport(Map<R, AtomicLong> results, int indentLevel, String entryLabel) {
-		return writeLocked(() -> EnumeratedCounter.generateSummary(this.rClass, results, indentLevel, entryLabel,
+		return mutexLocked(() -> EnumeratedCounter.generateSummary(this.rClass, results, indentLevel, entryLabel,
 			EnumeratedCounter.TOTAL_LABEL, this.formatString));
 	}
 

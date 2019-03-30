@@ -43,37 +43,37 @@ public class LockingValueStorage<T> extends SimpleValueStorage<T> implements Rea
 	}
 
 	@Override
-	public ReadWriteLock getLock() {
+	public ReadWriteLock getShareableLock() {
 		return this.rwLock;
 	}
 
 	@Override
 	public T setValue(String name, T value) {
-		return writeLocked(() -> super.setValue(name, value));
+		return mutexLocked(() -> super.setValue(name, value));
 	}
 
 	@Override
 	public T getValue(String name) {
-		return readLocked(() -> super.getValue(name));
+		return shareLocked(() -> super.getValue(name));
 	}
 
 	@Override
 	public boolean hasValue(String name) {
-		return readLocked(() -> super.hasValue(name));
+		return shareLocked(() -> super.hasValue(name));
 	}
 
 	@Override
 	public Set<String> getValueNames() {
-		return readLocked(() -> super.getValueNames());
+		return shareLocked(() -> super.getValueNames());
 	}
 
 	@Override
 	public T clearValue(String name) {
-		return writeLocked(() -> super.clearValue(name));
+		return mutexLocked(() -> super.clearValue(name));
 	}
 
 	@Override
 	public void clearAllValues() {
-		writeLocked(() -> super.clearAllValues());
+		mutexLocked(() -> super.clearAllValues());
 	}
 }
