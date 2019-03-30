@@ -2,11 +2,13 @@ package com.armedia.commons.utilities;
 
 import java.security.MessageDigest;
 
-public interface HashCollector {
+import org.apache.commons.lang3.tuple.Pair;
+
+public interface DigestHashCollector {
 
 	public MessageDigest getDigest();
 
-	public byte[] collectHash();
+	public Pair<Long, byte[]> collectHash();
 
 	public void resetHash();
 

@@ -2,7 +2,7 @@ package com.armedia.commons.utilities;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
@@ -11,24 +11,25 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
 
-public class DigestWritableByteChannel extends BaseReadWriteLockable implements WritableByteChannel, DigestHashCollector {
+public class DigestReadableByteChannel extends BaseReadWriteLockable implements ReadableByteChannel, DigestHashCollector {
 
-	private final WritableByteChannel channel;
+	private final ReadableByteChannel channel;
 	private final MessageDigest digest;
 	private long length = 0;
 
-	public DigestWritableByteChannel(WritableByteChannel channel, String digest) throws NoSuchAlgorithmException {
+	public DigestReadableByteChannel(ReadableByteChannel channel, String digest) throws NoSuchAlgorithmException {
 		this( //
-			Objects.requireNonNull(channel, "Must provide a non-null WritableByteChannel instance"), //
+			Objects.requireNonNull(channel, "Must provide a non-null ReadableByteChannel instance"), //
 			MessageDigest.getInstance( //
 				Objects.requireNonNull(digest, "Must provide a non-null digest name") //
 			) //
 		);
 	}
 
-	public DigestWritableByteChannel(WritableByteChannel channel, MessageDigest digest) {
-		this.channel = Objects.requireNonNull(channel, "Must provide a non-null WritableByteChannel instance");
+	public DigestReadableByteChannel(ReadableByteChannel channel, MessageDigest digest) {
+		this.channel = Objects.requireNonNull(channel, "Must provide a non-null ReadableByteChannel instance");
 		this.digest = Objects.requireNonNull(digest, "Must provide a non-null MessageDigest instance");
+
 	}
 
 	@Override
@@ -54,13 +55,16 @@ public class DigestWritableByteChannel extends BaseReadWriteLockable implements 
 	}
 
 	@Override
-	public int write(ByteBuffer src) throws IOException {
+	public int read(final ByteBuffer dst) throws IOException {
 		return writeLocked(() -> {
-			ByteBuffer slice = src.slice();
-			int ret = this.channel.write(slice);
-			this.digest.update(src);
-			this.length += slice.capacity();
-			return ret;
+			final ByteBuffer dupe = dst.duplicate();
+			final int read = this.channel.read(dst);
+			if (read > 0) {
+				dupe.limit(dupe.position() + read);
+				this.digest.update(dupe);
+				this.length += read;
+			}
+			return read;
 		});
 	}
 
