@@ -1,8 +1,13 @@
 package com.armedia.commons.utilities;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -155,7 +160,105 @@ class DigestFileChannelTest {
 		}
 	}
 
+	@SuppressWarnings("resource")
 	@Test
 	void testDelegateMethods() throws Exception {
+		final Random r = new Random(System.nanoTime());
+		final FileChannel fc = EasyMock.createMockBuilder(FileChannel.class).createMock();
+		final byte[] data = new byte[1024];
+		final byte[] nullData = null;
+		final ByteBuffer buf = ByteBuffer.allocate(data.length);
+		final ByteBuffer nullBuf = null;
+		final ByteBuffer[] bufs = {
+			ByteBuffer.allocate(data.length / 4), ByteBuffer.allocate(data.length / 4),
+			ByteBuffer.allocate(data.length / 4), ByteBuffer.allocate(data.length / 4),
+		};
+		final ByteBuffer[] nullBufs = null;
+		final WritableByteChannel wbc = EasyMock.createStrictMock(WritableByteChannel.class);
+		final WritableByteChannel nullWbc = null;
+		final ReadableByteChannel rbc = EasyMock.createStrictMock(ReadableByteChannel.class);
+		;
+		final ReadableByteChannel nullRbc = null;
+		final MapMode[] mapModes = {
+			MapMode.PRIVATE, MapMode.READ_ONLY, MapMode.READ_WRITE
+		};
+		final MapMode nullMapMode = null;
+
+		// int read(ByteBuffer dst) throws IOException
+		{
+			buf.clear();
+			ByteBuffer dupe = buf.duplicate();
+			r.nextBytes(data);
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.read(EasyMock.same(dupe))).andReturn(data.length).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertEquals(data.length, dfc.read(dupe));
+			EasyMock.verify(fc);
+			Assertions.assertEquals(dupe.position(), buf.position());
+			Assertions.assertEquals(dupe.remaining(), buf.remaining());
+			Assertions.assertEquals(dupe.limit(), buf.limit());
+			Assertions.assertEquals(dupe.capacity(), buf.capacity());
+		}
+
+		{
+			buf.clear();
+			r.nextBytes(data);
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.read(EasyMock.same(buf))).andThrow(new IOException()).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(IOException.class, () -> dfc.read(buf));
+			EasyMock.verify(fc);
+		}
+
+		{
+			buf.clear();
+			r.nextBytes(data);
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.read(EasyMock.isNull(ByteBuffer.class))).andThrow(new NullPointerException()).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(NullPointerException.class, () -> dfc.read(nullBuf));
+			EasyMock.verify(fc);
+		}
+
+		// long read(ByteBuffer[] dsts, int offset, int length) throws IOException
+		{
+			long ret = r.nextLong();
+			buf.clear();
+			r.nextBytes(data);
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.read(EasyMock.same(bufs), EasyMock.eq(0), EasyMock.eq(bufs.length))).andReturn(ret)
+				.once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertEquals(ret, dfc.read(bufs, 0, bufs.length));
+			EasyMock.verify(fc);
+		}
+
+		{
+			buf.clear();
+			r.nextBytes(data);
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.read(EasyMock.same(bufs), EasyMock.eq(0), EasyMock.eq(bufs.length)))
+				.andThrow(new IOException()).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(IOException.class, () -> dfc.read(bufs, 0, bufs.length));
+			EasyMock.verify(fc);
+		}
+
+		{
+			buf.clear();
+			r.nextBytes(data);
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.read(EasyMock.isNull(bufs.getClass()), EasyMock.eq(0), EasyMock.eq(bufs.length)))
+				.andThrow(new NullPointerException()).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(NullPointerException.class, () -> dfc.read(null, 0, bufs.length));
+			EasyMock.verify(fc);
+		}
 	}
 }
