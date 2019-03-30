@@ -11,27 +11,27 @@ import java.util.function.Function;
 
 import com.armedia.commons.utilities.Tools;
 
-public class ReadWriteMap<KEY, VALUE> extends BaseReadWriteLockable implements Map<KEY, VALUE> {
+public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements Map<KEY, VALUE> {
 
 	protected final Map<KEY, VALUE> map;
 	protected final Set<KEY> keys;
 	protected final Set<Map.Entry<KEY, VALUE>> entries;
 	protected final Collection<VALUE> values;
 
-	public ReadWriteMap(Map<KEY, VALUE> map) {
-		this(ReadWriteLockable.NULL_LOCK, map);
+	public ShareableMap(Map<KEY, VALUE> map) {
+		this(ShareableLockable.NULL_LOCK, map);
 	}
 
-	public ReadWriteMap(ReadWriteLockable lockable, Map<KEY, VALUE> map) {
-		this(BaseReadWriteLockable.extractLock(lockable), map);
+	public ShareableMap(ShareableLockable lockable, Map<KEY, VALUE> map) {
+		this(BaseShareableLockable.extractLock(lockable), map);
 	}
 
-	public ReadWriteMap(ReadWriteLock rwLock, Map<KEY, VALUE> map) {
+	public ShareableMap(ReadWriteLock rwLock, Map<KEY, VALUE> map) {
 		super(rwLock);
 		this.map = Objects.requireNonNull(map, "Must provide a non-null backing map");
-		this.keys = new ReadWriteSet<>(this, map.keySet());
-		this.entries = new ReadWriteSet<>(this, map.entrySet());
-		this.values = new ReadWriteCollection<>(this, map.values());
+		this.keys = new ShareableSet<>(this, map.keySet());
+		this.entries = new ShareableSet<>(this, map.entrySet());
+		this.values = new ShareableCollection<>(this, map.values());
 	}
 
 	@Override

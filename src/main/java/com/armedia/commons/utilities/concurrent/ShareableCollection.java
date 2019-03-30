@@ -12,19 +12,19 @@ import java.util.function.Predicate;
 
 import com.armedia.commons.utilities.Tools;
 
-public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implements Collection<ELEMENT> {
+public class ShareableCollection<ELEMENT> extends BaseShareableLockable implements Collection<ELEMENT> {
 
 	private final Collection<ELEMENT> c;
 
-	public ReadWriteCollection(Collection<ELEMENT> c) {
-		this(ReadWriteLockable.NULL_LOCK, c);
+	public ShareableCollection(Collection<ELEMENT> c) {
+		this(ShareableLockable.NULL_LOCK, c);
 	}
 
-	public ReadWriteCollection(ReadWriteLockable lockable, Collection<ELEMENT> c) {
-		this(BaseReadWriteLockable.extractLock(lockable), c);
+	public ShareableCollection(ShareableLockable lockable, Collection<ELEMENT> c) {
+		this(BaseShareableLockable.extractLock(lockable), c);
 	}
 
-	public ReadWriteCollection(ReadWriteLock rwLock, Collection<ELEMENT> c) {
+	public ShareableCollection(ReadWriteLock rwLock, Collection<ELEMENT> c) {
 		super(rwLock);
 		this.c = Objects.requireNonNull(c, "Must provide a non-null backing Collection");
 	}
@@ -52,7 +52,7 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public Iterator<ELEMENT> iterator() {
-		return new ReadWriteIterator<>(this, this.c.iterator());
+		return new ShareableIterator<>(this, this.c.iterator());
 	}
 
 	@Override
@@ -158,6 +158,6 @@ public class ReadWriteCollection<ELEMENT> extends BaseReadWriteLockable implemen
 
 	@Override
 	public Spliterator<ELEMENT> spliterator() {
-		return shareLocked(() -> new ReadWriteSpliterator<>(this, this.c.spliterator()));
+		return shareLocked(() -> new ShareableSpliterator<>(this, this.c.spliterator()));
 	}
 }

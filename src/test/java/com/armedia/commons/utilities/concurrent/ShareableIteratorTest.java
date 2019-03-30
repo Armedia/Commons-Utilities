@@ -12,26 +12,26 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ReadWriteIteratorTest {
+public class ShareableIteratorTest {
 
 	@Test
 	public void testConstructors() {
-		Assertions.assertThrows(NullPointerException.class, () -> new ReadWriteIterator<>(null));
+		Assertions.assertThrows(NullPointerException.class, () -> new ShareableIterator<>(null));
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new ReadWriteIterator<>(ReadWriteLockable.NULL_LOCK, null));
+			() -> new ShareableIterator<>(ShareableLockable.NULL_LOCK, null));
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new ReadWriteIterator<>((ReadWriteLockable) null, null));
+			() -> new ShareableIterator<>((ShareableLockable) null, null));
 
 		final Iterator<Object> emptyIterator = Collections.emptyIterator();
-		final ReadWriteLockable rwl = new ReadWriteIterator<>(emptyIterator);
-		new ReadWriteIterator<>(ReadWriteLockable.NULL_LOCK, emptyIterator);
+		final ShareableLockable rwl = new ShareableIterator<>(emptyIterator);
+		new ShareableIterator<>(ShareableLockable.NULL_LOCK, emptyIterator);
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new ReadWriteIterator<>((ReadWriteLockable) null, emptyIterator));
-		new ReadWriteIterator<>(rwl, emptyIterator);
+			() -> new ShareableIterator<>((ShareableLockable) null, emptyIterator));
+		new ShareableIterator<>(rwl, emptyIterator);
 
 		ReadWriteLock lock = new ReentrantReadWriteLock();
-		Assertions.assertSame(lock, new ReadWriteIterator<>(lock, emptyIterator).getShareableLock());
-		Assertions.assertSame(rwl.getShareableLock(), new ReadWriteIterator<>(rwl, emptyIterator).getShareableLock());
+		Assertions.assertSame(lock, new ShareableIterator<>(lock, emptyIterator).getShareableLock());
+		Assertions.assertSame(rwl.getShareableLock(), new ShareableIterator<>(rwl, emptyIterator).getShareableLock());
 	}
 
 	@Test
@@ -42,13 +42,13 @@ public class ReadWriteIteratorTest {
 		}
 
 		{
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(Collections.emptyIterator());
+			ShareableIterator<String> it = new ShareableIterator<>(Collections.emptyIterator());
 			Assertions.assertFalse(it.hasNext());
 			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
 			Assertions.assertThrows(NullPointerException.class, () -> it.forEachRemaining(null));
 		}
 		{
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(elements.iterator());
+			ShareableIterator<String> it = new ShareableIterator<>(elements.iterator());
 			for (int i = 0; i < 10; i++) {
 				Assertions.assertTrue(it.hasNext());
 				String a = String.valueOf(i);
@@ -57,7 +57,7 @@ public class ReadWriteIteratorTest {
 		}
 		{
 			List<String> newElements = new ArrayList<>(elements);
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(newElements.iterator());
+			ShareableIterator<String> it = new ShareableIterator<>(newElements.iterator());
 			Assertions.assertFalse(newElements.isEmpty());
 			for (int i = 0; i < 10; i++) {
 				Assertions.assertTrue(it.hasNext());
@@ -71,7 +71,7 @@ public class ReadWriteIteratorTest {
 		// Now test the locking
 		{
 			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(rwl, elements.iterator());
+			ShareableIterator<String> it = new ShareableIterator<>(rwl, elements.iterator());
 			AtomicInteger current = new AtomicInteger(0);
 			Assertions.assertEquals(0, rwl.getReadHoldCount());
 			it.forEachRemaining((e) -> {
@@ -84,7 +84,7 @@ public class ReadWriteIteratorTest {
 		}
 		{
 			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(rwl, new Iterator<String>() {
+			ShareableIterator<String> it = new ShareableIterator<>(rwl, new Iterator<String>() {
 				@Override
 				public boolean hasNext() {
 					Assertions.assertEquals(1, rwl.getReadHoldCount());
@@ -104,9 +104,9 @@ public class ReadWriteIteratorTest {
 			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
 		}
 		{
-			ReadWriteIterator<String> base = new ReadWriteIterator<>(elements.iterator());
+			ShareableIterator<String> base = new ShareableIterator<>(elements.iterator());
 			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(rwl, new Iterator<String>() {
+			ShareableIterator<String> it = new ShareableIterator<>(rwl, new Iterator<String>() {
 				@Override
 				public boolean hasNext() {
 					Assertions.assertEquals(1, rwl.getReadHoldCount());
@@ -148,12 +148,12 @@ public class ReadWriteIteratorTest {
 		}
 
 		{
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(Collections.emptyIterator());
+			ShareableIterator<String> it = new ShareableIterator<>(Collections.emptyIterator());
 			Assertions.assertFalse(it.hasNext());
 			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
 		}
 		{
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(elements.iterator());
+			ShareableIterator<String> it = new ShareableIterator<>(elements.iterator());
 			for (int i = 0; i < 10; i++) {
 				Assertions.assertTrue(it.hasNext());
 				String a = String.valueOf(i);
@@ -162,7 +162,7 @@ public class ReadWriteIteratorTest {
 		}
 		{
 			List<String> newElements = new ArrayList<>(elements);
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(newElements.iterator());
+			ShareableIterator<String> it = new ShareableIterator<>(newElements.iterator());
 			Assertions.assertFalse(newElements.isEmpty());
 			for (int i = 0; i < 10; i++) {
 				Assertions.assertTrue(it.hasNext());
@@ -176,7 +176,7 @@ public class ReadWriteIteratorTest {
 		// Now test the locking
 		{
 			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(rwl, elements.iterator());
+			ShareableIterator<String> it = new ShareableIterator<>(rwl, elements.iterator());
 			AtomicInteger current = new AtomicInteger(0);
 			Assertions.assertEquals(0, rwl.getReadHoldCount());
 			it.forEachRemaining((e) -> {
@@ -189,7 +189,7 @@ public class ReadWriteIteratorTest {
 		}
 		{
 			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ReadWriteIterator<String> it = new ReadWriteIterator<>(rwl, new Iterator<String>() {
+			ShareableIterator<String> it = new ShareableIterator<>(rwl, new Iterator<String>() {
 				@Override
 				public boolean hasNext() {
 					Assertions.assertEquals(1, rwl.getReadHoldCount());

@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <p>
- * This class exists as a simple concrete implementation of {@link ReadWriteLockable}, for
+ * This class exists as a simple concrete implementation of {@link ShareableLockable}, for
  * convenience.
  * </p>
  *

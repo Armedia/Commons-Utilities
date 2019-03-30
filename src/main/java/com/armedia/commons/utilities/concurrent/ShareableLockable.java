@@ -31,7 +31,7 @@ import com.armedia.commons.utilities.function.CheckedTools;
  *
  */
 @FunctionalInterface
-public interface ReadWriteLockable extends MutexLockable {
+public interface ShareableLockable extends MutexLockable {
 
 	public static final ReadWriteLock NULL_LOCK = null;
 

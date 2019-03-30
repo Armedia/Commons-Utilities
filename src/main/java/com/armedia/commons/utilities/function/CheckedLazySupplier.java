@@ -12,9 +12,9 @@ import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.Tools;
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
-public class CheckedLazySupplier<T, EX extends Throwable> extends BaseReadWriteLockable
+public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableLockable
 	implements Supplier<T>, CheckedSupplier<T, EX> {
 
 	private final Condition condition;

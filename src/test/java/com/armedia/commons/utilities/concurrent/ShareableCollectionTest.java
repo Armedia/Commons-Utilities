@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.armedia.commons.utilities.concurrent.TrackableReadWriteLock.LockCall;
 
-public class ReadWriteCollectionTest {
+public class ShareableCollectionTest {
 
 	@Test
 	public void testConstructors() {
@@ -22,7 +22,7 @@ public class ReadWriteCollectionTest {
 		Collection<String> l = Arrays.asList("a", "b", "c");
 		TrackableReadWriteLock lock = new TrackableReadWriteLock();
 
-		l = new ReadWriteCollection<>(lock, l);
+		l = new ShareableCollection<>(lock, l);
 		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		l.forEach((e) -> {
@@ -55,7 +55,7 @@ public class ReadWriteCollectionTest {
 
 			TrackableReadWriteLock lock = new TrackableReadWriteLock();
 
-			l = new ReadWriteCollection<>(lock, l);
+			l = new ShareableCollection<>(lock, l);
 			Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
 			Assertions.assertEquals(0, lock.getReadHoldCount());
 			int size = l.size();
@@ -83,7 +83,7 @@ public class ReadWriteCollectionTest {
 
 		TrackableReadWriteLock lock = new TrackableReadWriteLock();
 
-		l = new ReadWriteCollection<>(lock, l);
+		l = new ShareableCollection<>(lock, l);
 		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertTrue(l.isEmpty());
@@ -105,7 +105,7 @@ public class ReadWriteCollectionTest {
 		calls.clear();
 
 		l = Arrays.asList("a");
-		l = new ReadWriteCollection<>(lock, l);
+		l = new ShareableCollection<>(lock, l);
 		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(l.isEmpty());

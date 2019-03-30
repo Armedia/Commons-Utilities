@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
 /**
  * A simple multi-threaded worker pool that supports having an optionally size-constrained work
@@ -44,7 +44,7 @@ import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
  *            {@link PooledWorkersLogic#process(Object, Object)}
  *
  */
-public final class PooledWorkers<STATE, ITEM> extends BaseReadWriteLockable {
+public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	protected static final long DEFAULT_MAX_WAIT = 5;
 	protected static final TimeUnit DEFAULT_MAX_WAIT_UNIT = TimeUnit.MINUTES;
 

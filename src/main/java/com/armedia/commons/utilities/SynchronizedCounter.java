@@ -3,20 +3,20 @@ package com.armedia.commons.utilities;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
 /**
  * <p>
  * This is a simple, thread-safe synchronized value that allows semi-atomic modification operations,
  * and wait operations. The internal locking is carried out using methods from
- * {@link BaseReadWriteLockable} for maximum performance and concurrency. It also tracks the value
+ * {@link BaseShareableLockable} for maximum performance and concurrency. It also tracks the value
  * for the last time the value was changed, in nanoseconds.
  * </p>
  *
  * @author Diego Rivera &lt;diego.rivera@armedia.com&gt;
  *
  */
-public final class SynchronizedCounter extends BaseReadWriteLockable {
+public final class SynchronizedCounter extends BaseShareableLockable {
 	private final Condition changed;
 	private final long created;
 	private long lastChange = 0;

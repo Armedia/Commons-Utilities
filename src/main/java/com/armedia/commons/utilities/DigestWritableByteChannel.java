@@ -9,9 +9,9 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
-public class DigestWritableByteChannel extends BaseReadWriteLockable
+public class DigestWritableByteChannel extends BaseShareableLockable
 	implements WritableByteChannel, DigestHashCollector {
 
 	private final WritableByteChannel channel;

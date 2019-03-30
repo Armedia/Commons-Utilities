@@ -6,19 +6,19 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 
-public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> implements List<ELEMENT> {
+public class ShareableList<ELEMENT> extends ShareableCollection<ELEMENT> implements List<ELEMENT> {
 
 	private final List<ELEMENT> list;
 
-	public ReadWriteList(List<ELEMENT> list) {
-		this(ReadWriteLockable.NULL_LOCK, list);
+	public ShareableList(List<ELEMENT> list) {
+		this(ShareableLockable.NULL_LOCK, list);
 	}
 
-	public ReadWriteList(ReadWriteLockable lockable, List<ELEMENT> list) {
-		this(BaseReadWriteLockable.extractLock(lockable), list);
+	public ShareableList(ShareableLockable lockable, List<ELEMENT> list) {
+		this(BaseShareableLockable.extractLock(lockable), list);
 	}
 
-	public ReadWriteList(ReadWriteLock rwLock, List<ELEMENT> list) {
+	public ShareableList(ReadWriteLock rwLock, List<ELEMENT> list) {
 		super(rwLock, list);
 		this.list = list;
 	}
@@ -62,16 +62,16 @@ public class ReadWriteList<ELEMENT> extends ReadWriteCollection<ELEMENT> impleme
 
 	@Override
 	public ListIterator<ELEMENT> listIterator() {
-		return shareLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator()));
+		return shareLocked(() -> new ShareableListIterator<>(this, this.list.listIterator()));
 	}
 
 	@Override
 	public ListIterator<ELEMENT> listIterator(int index) {
-		return shareLocked(() -> new ReadWriteListIterator<>(this, this.list.listIterator(index)));
+		return shareLocked(() -> new ShareableListIterator<>(this, this.list.listIterator(index)));
 	}
 
 	@Override
 	public List<ELEMENT> subList(int fromIndex, int toIndex) {
-		return shareLocked(() -> new ReadWriteList<>(this, this.list.subList(fromIndex, toIndex)));
+		return shareLocked(() -> new ShareableList<>(this, this.list.subList(fromIndex, toIndex)));
 	}
 }

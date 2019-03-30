@@ -6,20 +6,20 @@ import java.util.Spliterator;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Consumer;
 
-public class ReadWriteSpliterator<E> extends BaseReadWriteLockable implements Spliterator<E> {
+public class ShareableSpliterator<E> extends BaseShareableLockable implements Spliterator<E> {
 
 	private final Spliterator<E> spliterator;
 
-	public ReadWriteSpliterator(Spliterator<E> spliterator) {
-		this(ReadWriteLockable.NULL_LOCK, spliterator);
+	public ShareableSpliterator(Spliterator<E> spliterator) {
+		this(ShareableLockable.NULL_LOCK, spliterator);
 	}
 
-	public ReadWriteSpliterator(ReadWriteLock rwLock, Spliterator<E> spliterator) {
+	public ShareableSpliterator(ReadWriteLock rwLock, Spliterator<E> spliterator) {
 		super(rwLock);
 		this.spliterator = Objects.requireNonNull(spliterator, "Must provide a non-null backing spliterator");
 	}
 
-	public ReadWriteSpliterator(ReadWriteLockable lockable, Spliterator<E> spliterator) {
+	public ShareableSpliterator(ShareableLockable lockable, Spliterator<E> spliterator) {
 		super(lockable);
 		this.spliterator = Objects.requireNonNull(spliterator, "Must provide a non-null backing spliterator");
 	}
@@ -36,7 +36,7 @@ public class ReadWriteSpliterator<E> extends BaseReadWriteLockable implements Sp
 
 	@Override
 	public Spliterator<E> trySplit() {
-		return shareLocked(() -> new ReadWriteSpliterator<>(this, this.spliterator.trySplit()));
+		return shareLocked(() -> new ShareableSpliterator<>(this, this.spliterator.trySplit()));
 	}
 
 	@Override

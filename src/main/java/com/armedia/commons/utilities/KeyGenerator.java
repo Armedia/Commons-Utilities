@@ -13,9 +13,9 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
-public class KeyGenerator extends BaseReadWriteLockable implements Supplier<String> {
+public class KeyGenerator extends BaseShareableLockable implements Supplier<String> {
 
 	public static interface KeyFactory extends Supplier<String> {
 

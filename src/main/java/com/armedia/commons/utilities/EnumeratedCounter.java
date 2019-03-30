@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
-public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends BaseReadWriteLockable {
+public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends BaseShareableLockable {
 
 	private static final String TOTAL_LABEL = "processed".intern();
 	private static final String NEW_LINE = String.format("%n");

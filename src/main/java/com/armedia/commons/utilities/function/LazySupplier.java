@@ -13,9 +13,9 @@ import org.apache.commons.lang3.concurrent.ConcurrentRuntimeException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.Tools;
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
-public class LazySupplier<T> extends BaseReadWriteLockable implements Supplier<T> {
+public class LazySupplier<T> extends BaseShareableLockable implements Supplier<T> {
 
 	private final Condition condition;
 	private final Supplier<T> defaultInitializer;

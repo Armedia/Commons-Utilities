@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.armedia.commons.utilities.Tools;
-import com.armedia.commons.utilities.concurrent.BaseReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
-public class LineScanner extends BaseReadWriteLockable {
+public class LineScanner extends BaseShareableLockable {
 
 	public static final Map<Integer, LineSourceFactory> DEFAULT_FACTORIES;
 	static {

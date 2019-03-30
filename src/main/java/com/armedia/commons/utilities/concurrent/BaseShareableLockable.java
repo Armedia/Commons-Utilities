@@ -6,14 +6,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <p>
- * This class exists as a simple concrete implementation of {@link ReadWriteLockable}, for
+ * This class exists as a simple concrete implementation of {@link ShareableLockable}, for
  * convenience.
  * </p>
  *
  * @author diego
  *
  */
-public class BaseReadWriteLockable implements ReadWriteLockable {
+public class BaseShareableLockable implements ShareableLockable {
 
 	private final ReadWriteLock rwLock;
 
@@ -22,12 +22,12 @@ public class BaseReadWriteLockable implements ReadWriteLockable {
 	 * Create a new instance using a {@link ReentrantReadWriteLock} at its core.
 	 * </p>
 	 */
-	public BaseReadWriteLockable() {
-		this(ReadWriteLockable.NULL_LOCK);
+	public BaseShareableLockable() {
+		this(ShareableLockable.NULL_LOCK);
 	}
 
-	public BaseReadWriteLockable(ReadWriteLockable lockable) {
-		this(BaseReadWriteLockable.extractLock(lockable));
+	public BaseShareableLockable(ShareableLockable lockable) {
+		this(BaseShareableLockable.extractLock(lockable));
 	}
 
 	/**
@@ -36,7 +36,7 @@ public class BaseReadWriteLockable implements ReadWriteLockable {
 	 * {@link ReentrantReadWriteLock} instance is created and used.
 	 * </p>
 	 */
-	public BaseReadWriteLockable(ReadWriteLock rwLock) {
+	public BaseShareableLockable(ReadWriteLock rwLock) {
 		this.rwLock = (rwLock != null ? rwLock : new ReentrantReadWriteLock());
 	}
 
@@ -45,7 +45,7 @@ public class BaseReadWriteLockable implements ReadWriteLockable {
 		return this.rwLock;
 	}
 
-	protected static ReadWriteLock extractLock(ReadWriteLockable lockable) {
+	protected static ReadWriteLock extractLock(ShareableLockable lockable) {
 		return Objects.requireNonNull(lockable, "Must provide a non-null ReadWriteLockable instance")
 			.getShareableLock();
 	}

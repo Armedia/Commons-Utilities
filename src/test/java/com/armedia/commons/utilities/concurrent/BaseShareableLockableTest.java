@@ -19,30 +19,30 @@ import com.armedia.commons.utilities.function.CheckedPredicate;
 import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
 
-public class BaseReadWriteLockableTest {
+public class BaseShareableLockableTest {
 
 	@Test
 	public void testConstructor() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		BaseReadWriteLockable rwl = null;
+		BaseShareableLockable rwl = null;
 
-		rwl = new BaseReadWriteLockable();
+		rwl = new BaseShareableLockable();
 		Assertions.assertNotNull(rwl.getShareableLock());
 		Assertions.assertNotSame(lock, rwl.getShareableLock());
 
-		rwl = new BaseReadWriteLockable(ReadWriteLockable.NULL_LOCK);
+		rwl = new BaseShareableLockable(ShareableLockable.NULL_LOCK);
 		Assertions.assertNotNull(rwl.getShareableLock());
 		Assertions.assertNotSame(lock, rwl.getShareableLock());
 
-		Assertions.assertThrows(NullPointerException.class, () -> new BaseReadWriteLockable((ReadWriteLockable) null));
+		Assertions.assertThrows(NullPointerException.class, () -> new BaseShareableLockable((ShareableLockable) null));
 
 		Assertions.assertNotNull(rwl);
 		ReadWriteLock other = rwl.getShareableLock();
-		rwl = new BaseReadWriteLockable(rwl);
+		rwl = new BaseShareableLockable(rwl);
 		Assertions.assertNotNull(rwl.getShareableLock());
 		Assertions.assertSame(other, rwl.getShareableLock());
 
-		rwl = new BaseReadWriteLockable(lock);
+		rwl = new BaseShareableLockable(lock);
 		Assertions.assertNotNull(rwl.getShareableLock());
 		Assertions.assertSame(lock, rwl.getShareableLock());
 	}
@@ -51,7 +51,7 @@ public class BaseReadWriteLockableTest {
 	public void testGetReadLock() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertSame(readLock, rwl.getSharedLock());
 	}
@@ -60,7 +60,7 @@ public class BaseReadWriteLockableTest {
 	public void testGetWriteLock() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertSame(writeLock, rwl.getMutexLock());
 	}
@@ -70,7 +70,7 @@ public class BaseReadWriteLockableTest {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
@@ -112,7 +112,7 @@ public class BaseReadWriteLockableTest {
 	public void testAcquireWriteLock() throws Exception {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertSame(lock.writeLock(), rwl.getMutexLock());
 
@@ -150,7 +150,7 @@ public class BaseReadWriteLockableTest {
 	public void testReadLocked() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertThrows(NullPointerException.class,
 			() -> rwl.shareLocked((CheckedSupplier<Object, Exception>) null), "Did not fail with a null Supplier");
@@ -241,7 +241,7 @@ public class BaseReadWriteLockableTest {
 	public void testWriteLocked() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertThrows(NullPointerException.class,
 			() -> rwl.mutexLocked((CheckedSupplier<Object, Exception>) null), "Did not fail with a null Supplier");
@@ -313,7 +313,7 @@ public class BaseReadWriteLockableTest {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseReadWriteLockable rwl = new BaseReadWriteLockable(lock);
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 		Object o = null;
 
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());

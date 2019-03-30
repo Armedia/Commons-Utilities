@@ -15,13 +15,13 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.armedia.commons.utilities.concurrent.ReadWriteLockable;
+import com.armedia.commons.utilities.concurrent.ShareableLockable;
 
 /**
  * @author drivera@armedia.com
  *
  */
-public class LockingValueStorage<T> extends SimpleValueStorage<T> implements ReadWriteLockable {
+public class LockingValueStorage<T> extends SimpleValueStorage<T> implements ShareableLockable {
 
 	private final ReadWriteLock rwLock;
 

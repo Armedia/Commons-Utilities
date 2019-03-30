@@ -5,18 +5,18 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Consumer;
 
-public class ReadWriteIterator<E> extends BaseReadWriteLockable implements Iterator<E> {
+public class ShareableIterator<E> extends BaseShareableLockable implements Iterator<E> {
 	private final Iterator<E> iterator;
 
-	public ReadWriteIterator(Iterator<E> iterator) {
-		this(ReadWriteLockable.NULL_LOCK, iterator);
+	public ShareableIterator(Iterator<E> iterator) {
+		this(ShareableLockable.NULL_LOCK, iterator);
 	}
 
-	public ReadWriteIterator(ReadWriteLockable lockable, Iterator<E> iterator) {
-		this(BaseReadWriteLockable.extractLock(lockable), iterator);
+	public ShareableIterator(ShareableLockable lockable, Iterator<E> iterator) {
+		this(BaseShareableLockable.extractLock(lockable), iterator);
 	}
 
-	public ReadWriteIterator(ReadWriteLock rwLock, Iterator<E> iterator) {
+	public ShareableIterator(ReadWriteLock rwLock, Iterator<E> iterator) {
 		super(rwLock);
 		this.iterator = Objects.requireNonNull(iterator, "Must provide a non-null Iterator to back this iterator");
 	}

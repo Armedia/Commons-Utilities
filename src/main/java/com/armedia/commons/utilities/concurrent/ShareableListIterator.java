@@ -3,19 +3,19 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.ListIterator;
 import java.util.concurrent.locks.ReadWriteLock;
 
-public class ReadWriteListIterator<ELEMENT> extends ReadWriteIterator<ELEMENT> implements ListIterator<ELEMENT> {
+public class ShareableListIterator<ELEMENT> extends ShareableIterator<ELEMENT> implements ListIterator<ELEMENT> {
 
 	private final ListIterator<ELEMENT> iterator;
 
-	public ReadWriteListIterator(ListIterator<ELEMENT> iterator) {
-		this(ReadWriteLockable.NULL_LOCK, iterator);
+	public ShareableListIterator(ListIterator<ELEMENT> iterator) {
+		this(ShareableLockable.NULL_LOCK, iterator);
 	}
 
-	public ReadWriteListIterator(ReadWriteLockable lockable, ListIterator<ELEMENT> iterator) {
-		this(BaseReadWriteLockable.extractLock(lockable), iterator);
+	public ShareableListIterator(ShareableLockable lockable, ListIterator<ELEMENT> iterator) {
+		this(BaseShareableLockable.extractLock(lockable), iterator);
 	}
 
-	public ReadWriteListIterator(ReadWriteLock rwLock, ListIterator<ELEMENT> iterator) {
+	public ShareableListIterator(ReadWriteLock rwLock, ListIterator<ELEMENT> iterator) {
 		super(rwLock, iterator);
 		this.iterator = iterator;
 	}
