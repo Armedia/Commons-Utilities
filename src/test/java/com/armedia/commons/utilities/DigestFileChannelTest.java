@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.channels.FileLock;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -21,6 +22,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.armedia.commons.utilities.DigestFileChannel.DigestFileLock;
 
 class DigestFileChannelTest {
 
@@ -711,6 +714,127 @@ class DigestFileChannelTest {
 			Assertions.assertThrows(RuntimeException.class, () -> dfc.map(mapModes[0], 0, 0));
 			EasyMock.verify(fc);
 			EasyMock.verify(buf);
+		}
+	}
+
+	@Test
+	@SuppressWarnings("resource")
+	void testDelegateLocks() throws Exception {
+		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
+		final boolean[] allShared = {
+			false, true
+		};
+
+		// public FileLock lock(long position, long size, boolean shared) throws IOException
+		for (long pos = 0; pos < 10; pos++) {
+			for (long size = 0; size < 10; size++) {
+				for (boolean shared : allShared) {
+					for (final boolean valid : allShared) {
+						EasyMock.reset(fc);
+						final FileLock fl = new FileLock(fc, pos, size, shared) {
+
+							@Override
+							public void release() throws IOException {
+							}
+
+							@Override
+							public boolean isValid() {
+								return valid;
+							}
+						};
+
+						EasyMock.expect(fc.lock(EasyMock.eq(pos), EasyMock.eq(size), EasyMock.eq(shared))).andReturn(fl)
+							.once();
+						EasyMock.replay(fc);
+						DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+						DigestFileLock dfl = dfc.lock(pos, size, shared);
+						EasyMock.verify(fc);
+						Assertions.assertNotNull(dfl);
+						Assertions.assertSame(dfc, dfl.acquiredBy());
+						Assertions.assertSame(dfc, dfl.channel());
+						Assertions.assertEquals(pos, dfl.position());
+						Assertions.assertEquals(size, dfl.size());
+						Assertions.assertEquals(shared, dfl.isShared());
+						Assertions.assertEquals(valid, dfl.isValid());
+					}
+				}
+			}
+		}
+
+		{
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.lock(EasyMock.eq(0L), EasyMock.eq(0L), EasyMock.eq(false))).andThrow(new IOException())
+				.once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(IOException.class, () -> dfc.lock(0, 0, false));
+			EasyMock.verify(fc);
+		}
+
+		{
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.lock(EasyMock.eq(0L), EasyMock.eq(0L), EasyMock.eq(false)))
+				.andThrow(new NullPointerException()).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(NullPointerException.class, () -> dfc.lock(0, 0, false));
+			EasyMock.verify(fc);
+		}
+
+		// public FileLock tryLock(long position, long size, boolean shared) throws IOException
+		for (long pos = 0; pos < 10; pos++) {
+			for (long size = 0; size < 10; size++) {
+				for (boolean shared : allShared) {
+					for (final boolean valid : allShared) {
+						EasyMock.reset(fc);
+						final FileLock fl = new FileLock(fc, pos, size, shared) {
+
+							@Override
+							public void release() throws IOException {
+							}
+
+							@Override
+							public boolean isValid() {
+								return valid;
+							}
+						};
+
+						EasyMock.expect(fc.tryLock(EasyMock.eq(pos), EasyMock.eq(size), EasyMock.eq(shared)))
+							.andReturn(fl).once();
+						EasyMock.replay(fc);
+						DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+						DigestFileLock dfl = dfc.tryLock(pos, size, shared);
+						EasyMock.verify(fc);
+						Assertions.assertNotNull(dfl);
+						Assertions.assertSame(dfc, dfl.acquiredBy());
+						Assertions.assertSame(dfc, dfl.channel());
+						Assertions.assertEquals(pos, dfl.position());
+						Assertions.assertEquals(size, dfl.size());
+						Assertions.assertEquals(shared, dfl.isShared());
+						Assertions.assertEquals(valid, dfl.isValid());
+					}
+				}
+			}
+		}
+
+		{
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.tryLock(EasyMock.eq(0L), EasyMock.eq(0L), EasyMock.eq(false)))
+				.andThrow(new IOException()).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(IOException.class, () -> dfc.tryLock(0, 0, false));
+			EasyMock.verify(fc);
+		}
+
+		{
+			EasyMock.reset(fc);
+			EasyMock.expect(fc.tryLock(EasyMock.eq(0L), EasyMock.eq(0L), EasyMock.eq(false)))
+				.andThrow(new NullPointerException()).once();
+			EasyMock.replay(fc);
+			DigestFileChannel dfc = new DigestFileChannel(fc, DigestFileChannelTest.SHA256);
+			Assertions.assertThrows(NullPointerException.class, () -> dfc.tryLock(0, 0, false));
+			EasyMock.verify(fc);
 		}
 	}
 }

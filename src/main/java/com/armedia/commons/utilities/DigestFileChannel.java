@@ -15,13 +15,18 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class DigestFileChannel extends FileChannel implements DigestHashCollector {
 
-	protected class DigestFileLock extends FileLock {
+	public class DigestFileLock extends FileLock {
 
 		private final FileLock lock;
 
 		protected DigestFileLock(FileLock wrapped) {
 			super(DigestFileChannel.this, wrapped.position(), wrapped.size(), wrapped.isShared());
 			this.lock = Objects.requireNonNull(wrapped);
+		}
+
+		@Override
+		public DigestFileChannel acquiredBy() {
+			return DigestFileChannel.this;
 		}
 
 		@Override
@@ -97,7 +102,7 @@ public class DigestFileChannel extends FileChannel implements DigestHashCollecto
 	}
 
 	@Override
-	public FileChannel position(long newPosition) throws IOException {
+	public DigestFileChannel position(long newPosition) throws IOException {
 		this.channel.position(newPosition);
 		return this;
 	}
@@ -108,7 +113,7 @@ public class DigestFileChannel extends FileChannel implements DigestHashCollecto
 	}
 
 	@Override
-	public FileChannel truncate(long size) throws IOException {
+	public DigestFileChannel truncate(long size) throws IOException {
 		this.channel.truncate(size);
 		return this;
 	}
@@ -144,12 +149,12 @@ public class DigestFileChannel extends FileChannel implements DigestHashCollecto
 	}
 
 	@Override
-	public FileLock lock(long position, long size, boolean shared) throws IOException {
+	public DigestFileLock lock(long position, long size, boolean shared) throws IOException {
 		return new DigestFileLock(this.channel.lock(position, size, shared));
 	}
 
 	@Override
-	public FileLock tryLock(long position, long size, boolean shared) throws IOException {
+	public DigestFileLock tryLock(long position, long size, boolean shared) throws IOException {
 		return new DigestFileLock(this.channel.tryLock(position, size, shared));
 	}
 
