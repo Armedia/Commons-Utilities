@@ -79,9 +79,10 @@ public class SpyWriter extends FilterWriter {
 		Objects.requireNonNull(b, "Must provide the data to write out");
 		this.lock.mutexLocked(() -> {
 			assertOpen();
+			final CharBuffer buf = CharBuffer.wrap(b).asReadOnlyBuffer();
 			super.write(b, off, len);
 			try {
-				this.spy.accept(CharBuffer.wrap(b.clone()).asReadOnlyBuffer());
+				this.spy.accept(buf);
 			} catch (Throwable t) {
 				// Do nothing... ignore the problem
 			}

@@ -61,9 +61,10 @@ public class SpyOutputStream extends FilterOutputStream {
 		Objects.requireNonNull(b, "Must provide the data to write out");
 		this.lock.mutexLocked(() -> {
 			assertOpen();
+			ByteBuffer buf = ByteBuffer.wrap(b.clone()).asReadOnlyBuffer();
 			super.write(b, off, len);
 			try {
-				this.spy.accept(ByteBuffer.wrap(b.clone()).asReadOnlyBuffer());
+				this.spy.accept(buf);
 			} catch (Throwable t) {
 				// Do nothing... ignore the problem
 			}
