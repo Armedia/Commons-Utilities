@@ -3,6 +3,7 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -111,6 +112,7 @@ public class BaseShareableLockableTest {
 	@Test
 	public void testAcquireWriteLock() throws Exception {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
@@ -144,6 +146,23 @@ public class BaseShareableLockableTest {
 			}
 		}
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+
+		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		Lock sl = rwl.acquireSharedLock();
+		Assertions.assertEquals(1, lock.getReadHoldCount());
+		Assertions.assertSame(readLock, sl);
+		Assertions.assertThrows(LockDisallowedException.class, () -> rwl.acquireMutexLock());
+		Assertions.assertEquals(0, lock.getWriteHoldCount());
+		sl.unlock();
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		Assertions.assertEquals(0, lock.getWriteHoldCount());
+		Lock ml = rwl.acquireMutexLock();
+		Assertions.assertSame(writeLock, ml);
+		Assertions.assertEquals(1, lock.getWriteHoldCount());
+		ml.unlock();
+		Assertions.assertEquals(0, lock.getWriteHoldCount());
+
 	}
 
 	@Test

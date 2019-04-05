@@ -3,6 +3,7 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -34,6 +35,51 @@ import com.armedia.commons.utilities.function.CheckedTools;
 public interface ShareableLockable extends MutexLockable {
 
 	public static final ReadWriteLock NULL_LOCK = null;
+
+	/**
+	 * <p>
+	 * Return a reference to the write (exclusive) lock. Contrary to {@link #acquireMutexLock()}, no
+	 * attempt is made to acquire the lock before returning it.
+	 * </p>
+	 *
+	 * @return the write lock
+	 */
+	@Override
+	public default Lock getMutexLock() {
+		return getShareableLock().writeLock();
+	}
+
+	/**
+	 * <p>
+	 * Return a reference to the lock. The lock is already held when it's returned so this method
+	 * may block while other threads hold the lock.
+	 * </p>
+	 * <p>
+	 * If {@link #getShareableLock()} returns an instance of {@link ReentrantReadWriteLock}, this
+	 * implementation performs a basic reentrant-deadlock check to make sure the caller does not
+	 * already hold the read lock before attempting to acquire the write lock, since this is not
+	 * allowed and will result in a deadlock. This checking only works {@link #getMutexLock()}
+	 * returns the same lock obtained via {@link ReentrantReadWriteLock#writeLock()} (this is the
+	 * default behavior if none of the other default method implementations are overridden).
+	 * </p>
+	 *
+	 * @return the (held) mutex lock
+	 */
+	@Override
+	default Lock acquireMutexLock() {
+		Lock mutexLock = getMutexLock();
+		ReadWriteLock rwl = getShareableLock();
+		if ((mutexLock == rwl.writeLock()) && ReentrantReadWriteLock.class.isInstance(rwl)) {
+			// Implement basic deadlock detection: we can only acquire the mutex
+			// if we either already hold the write lock, or we don't hold any read locks
+			ReentrantReadWriteLock rrwl = ReentrantReadWriteLock.class.cast(rwl);
+			final int readCount = rrwl.getReadHoldCount();
+			final int writeCount = rrwl.getWriteHoldCount();
+			if ((writeCount == 0) && (readCount > 0)) { throw new LockDisallowedException(this, readCount); }
+		}
+		mutexLock.lock();
+		return mutexLock;
+	}
 
 	public ReadWriteLock getShareableLock();
 
@@ -132,19 +178,6 @@ public interface ShareableLockable extends MutexLockable {
 		} finally {
 			l.unlock();
 		}
-	}
-
-	/**
-	 * <p>
-	 * Return a reference to the write (exclusive) lock. Contrary to {@link #acquireMutexLock()}, no
-	 * attempt is made to acquire the lock before returning it.
-	 * </p>
-	 *
-	 * @return the write lock
-	 */
-	@Override
-	public default Lock getMutexLock() {
-		return getShareableLock().writeLock();
 	}
 
 	/**
