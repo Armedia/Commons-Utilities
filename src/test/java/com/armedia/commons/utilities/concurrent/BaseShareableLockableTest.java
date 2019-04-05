@@ -1,6 +1,12 @@
 package com.armedia.commons.utilities.concurrent;
 
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -112,7 +118,6 @@ public class BaseShareableLockableTest {
 	@Test
 	public void testAcquireWriteLock() throws Exception {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
@@ -146,23 +151,45 @@ public class BaseShareableLockableTest {
 			}
 		}
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+	}
 
-		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		Lock sl = rwl.acquireSharedLock();
-		Assertions.assertEquals(1, lock.getReadHoldCount());
-		Assertions.assertSame(readLock, sl);
-		Assertions.assertThrows(LockDisallowedException.class, () -> rwl.acquireMutexLock());
-		Assertions.assertEquals(0, lock.getWriteHoldCount());
-		sl.unlock();
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		Assertions.assertEquals(0, lock.getWriteHoldCount());
-		Lock ml = rwl.acquireMutexLock();
-		Assertions.assertSame(writeLock, ml);
-		Assertions.assertEquals(1, lock.getWriteHoldCount());
-		ml.unlock();
-		Assertions.assertEquals(0, lock.getWriteHoldCount());
+	@Test
+	public void testDeadlockDetection() throws Exception {
+		final CyclicBarrier barrier = new CyclicBarrier(2);
+		ExecutorService thread = Executors.newSingleThreadExecutor();
+		Callable<Void> test = () -> {
+			barrier.await();
+			final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+			final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+			final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+			final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
+			Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Lock sl = rwl.acquireSharedLock();
+			Assertions.assertEquals(1, lock.getReadHoldCount());
+			Assertions.assertSame(readLock, sl);
+			Assertions.assertThrows(LockDisallowedException.class, () -> rwl.acquireMutexLock());
+			Assertions.assertEquals(0, lock.getWriteHoldCount());
+			sl.unlock();
+			Assertions.assertEquals(0, lock.getReadHoldCount());
+			Assertions.assertEquals(0, lock.getWriteHoldCount());
+			Lock ml = rwl.acquireMutexLock();
+			Assertions.assertSame(writeLock, ml);
+			Assertions.assertEquals(1, lock.getWriteHoldCount());
+			ml.unlock();
+			Assertions.assertEquals(0, lock.getWriteHoldCount());
+			return null;
+		};
+
+		// We do this in a background thread to avoid waiting forever...
+		try {
+			final Future<Void> future = thread.submit(test);
+			barrier.await();
+			future.get(100, TimeUnit.MILLISECONDS);
+		} finally {
+			thread.shutdownNow();
+		}
 	}
 
 	@Test
