@@ -7,6 +7,7 @@ import java.nio.CharBuffer;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseMutexLockable;
 import com.armedia.commons.utilities.concurrent.MutexLockable;
 
@@ -32,9 +33,9 @@ public class SpyWriter extends FilterWriter {
 	}
 
 	private void assertOpen() throws IOException {
-		this.lock.mutexLocked(() -> {
+		try (AutoLock lock = this.lock.autoMutexLock()) {
 			if (this.closed) { throw new IOException("This stream is already closed"); }
-		});
+		}
 	}
 
 	@Override
@@ -57,27 +58,27 @@ public class SpyWriter extends FilterWriter {
 
 	@Override
 	public void write(int c) throws IOException {
-		this.lock.mutexLocked(() -> {
+		try (AutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			char[] buf = new char[1];
 			buf[0] = (char) c;
 			write(buf, 0, buf.length);
-		});
+		}
 	}
 
 	@Override
 	public void write(char[] b) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
-		this.lock.mutexLocked(() -> {
+		try (AutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			write(b, 0, b.length);
-		});
+		}
 	}
 
 	@Override
 	public void write(char[] b, int off, int len) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
-		this.lock.mutexLocked(() -> {
+		try (AutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			final CharBuffer buf = CharBuffer.wrap(b).asReadOnlyBuffer();
 			super.write(b, off, len);
@@ -86,25 +87,25 @@ public class SpyWriter extends FilterWriter {
 			} catch (Throwable t) {
 				// Do nothing... ignore the problem
 			}
-		});
+		}
 	}
 
 	@Override
 	public void write(String str, int off, int len) throws IOException {
 		Objects.requireNonNull(str, "Must provide the data to write out");
-		this.lock.mutexLocked(() -> {
+		try (AutoLock lock = this.lock.autoMutexLock()) {
 			super.write(str, off, len);
 			try {
 				this.spy.accept(CharBuffer.wrap(str).asReadOnlyBuffer());
 			} catch (Throwable t) {
 				// Do nothing... ignore the problem
 			}
-		});
+		}
 	}
 
 	@Override
 	public void close() throws IOException {
-		this.lock.mutexLocked(() -> {
+		try (AutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			try {
 				this.closer.accept(this.out);
@@ -112,6 +113,6 @@ public class SpyWriter extends FilterWriter {
 			} finally {
 				this.closed = true;
 			}
-		});
+		}
 	}
 }

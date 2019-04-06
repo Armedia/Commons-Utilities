@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
 public class LineScanner extends BaseShareableLockable {
@@ -32,11 +33,11 @@ public class LineScanner extends BaseShareableLockable {
 	}
 
 	public final Collection<LineSourceFactory> getSourceFactories() {
-		return shareLocked(() -> {
+		try (AutoLock lock = autoSharedLock()) {
 			Collection<LineSourceFactory> ret = new ArrayList<>(this.factories.values());
 			ret.addAll(LineScanner.DEFAULT_FACTORIES.values()); // Append the defaults
 			return ret;
-		});
+		}
 
 	}
 
@@ -54,10 +55,10 @@ public class LineScanner extends BaseShareableLockable {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		return mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			factories.stream().filter(Objects::nonNull).forEach(f -> this.factories.put(System.identityHashCode(f), f));
 			return this;
-		});
+		}
 	}
 
 	public final LineScanner removeSourceFactory(LineSourceFactory factory) {
@@ -74,11 +75,11 @@ public class LineScanner extends BaseShareableLockable {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		return mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			factories.stream().filter(Objects::nonNull)
 				.forEach(f -> this.factories.remove(System.identityHashCode(f), f));
 			return this;
-		});
+		}
 	}
 
 	public final boolean hasSourceFactory(LineSourceFactory factory) {

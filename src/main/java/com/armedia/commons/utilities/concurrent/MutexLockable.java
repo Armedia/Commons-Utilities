@@ -40,8 +40,8 @@ public interface MutexLockable {
 	/**
 	 * <p>
 	 * Returns the mutex lock, wrapped inside an {@link AutoLock} instance for use in
-	 * try-with-resources constructs. Contrary to {@link #acquireAutoMutexLock()}, no attempt is
-	 * made to acquire the lock before returning it.
+	 * try-with-resources constructs. Contrary to {@link #autoMutexLock()}, no attempt is made to
+	 * acquire the lock before returning it.
 	 * </p>
 	 *
 	 * @return the mutex lock, wrapped inside an {@link AutoLock}
@@ -73,7 +73,7 @@ public interface MutexLockable {
 	 *
 	 * @return the held mutex lock, wrapped inside an {@link AutoLock}
 	 */
-	public default AutoLock acquireAutoMutexLock() {
+	public default AutoLock autoMutexLock() {
 		return new AutoLock(acquireMutexLock());
 	}
 
@@ -105,7 +105,7 @@ public interface MutexLockable {
 	 */
 	public default <E, EX extends Throwable> E mutexLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		try (AutoLock l = acquireAutoMutexLock()) {
+		try (AutoLock l = autoMutexLock()) {
 			return operation.getChecked();
 		}
 	}
@@ -137,9 +137,8 @@ public interface MutexLockable {
 	 */
 	public default <EX extends Throwable> void mutexLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			operation.run();
-			return null;
-		});
+		}
 	}
 }

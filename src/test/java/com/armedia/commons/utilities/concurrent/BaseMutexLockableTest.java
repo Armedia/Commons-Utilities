@@ -104,7 +104,7 @@ public class BaseMutexLockableTest {
 		Assertions.assertFalse(lock.isLocked());
 		Assertions.assertFalse(lock.isHeldByCurrentThread());
 
-		try (AutoLock auto = rwl.acquireAutoMutexLock()) {
+		try (AutoLock auto = rwl.autoMutexLock()) {
 			Assertions.assertSame(lock, auto.getLock());
 			Assertions.assertTrue(lock.isLocked());
 			Assertions.assertTrue(lock.isHeldByCurrentThread());
@@ -118,7 +118,7 @@ public class BaseMutexLockableTest {
 		Assertions.assertFalse(lock.isHeldByCurrentThread());
 		List<AutoLock> autoLocks = new LinkedList<>();
 		for (int i = 1; i <= 10; i++) {
-			AutoLock l = rwl.acquireAutoMutexLock();
+			AutoLock l = rwl.autoMutexLock();
 			Assertions.assertNotNull(l, String.format("Failed to acquire the writing lock on attempt # %d", i));
 			Assertions.assertSame(lock, l.getLock());
 			Assertions.assertTrue(lock.isHeldByCurrentThread());

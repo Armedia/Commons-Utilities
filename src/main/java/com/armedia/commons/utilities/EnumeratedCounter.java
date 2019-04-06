@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
 public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends BaseShareableLockable {
@@ -51,12 +52,12 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final long increment(T type, R result) {
 		if (type == null) { throw new IllegalArgumentException("Unsupported null object type"); }
 		if (result == null) { throw new IllegalArgumentException("Must provide a valid result to count for"); }
-		return shareLocked(() -> {
+		try (AutoLock lock = autoSharedLock()) {
 			AtomicLong counter = getLiveCounters(type).get(result);
 			final long ret = counter.incrementAndGet();
 			this.cummulative.get(result).incrementAndGet();
 			return ret;
-		});
+		}
 	}
 
 	private Map<R, AtomicLong> getLiveCounters(T type) {
@@ -66,22 +67,22 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final Map<R, Long> getCounters(T type) {
 		Map<R, Long> ret = new EnumMap<>(this.rClass);
 		Map<R, AtomicLong> m = getLiveCounters(type);
-		return mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				ret.put(e.getKey(), e.getValue().get());
 			}
 			return Collections.unmodifiableMap(ret);
-		});
+		}
 	}
 
 	public final Map<T, Map<R, Long>> getCounters() {
 		Map<T, Map<R, Long>> ret = new EnumMap<>(this.tClass);
-		return mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			for (T t : this.counters.keySet()) {
 				ret.put(t, getCounters(t));
 			}
 			return Collections.unmodifiableMap(ret);
-		});
+		}
 	}
 
 	public final Map<R, Long> getCummulative() {
@@ -91,7 +92,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final Map<R, Long> reset(T type) {
 		Map<R, Long> ret = new EnumMap<>(this.rClass);
 		Map<R, AtomicLong> m = getLiveCounters(type);
-		return mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				final R r = e.getKey();
 				final long val = e.getValue().getAndSet(0);
@@ -99,17 +100,17 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 				this.cummulative.get(r).addAndGet(-val);
 			}
 			return Collections.unmodifiableMap(ret);
-		});
+		}
 	}
 
 	public final Map<T, Map<R, Long>> reset() {
 		Map<T, Map<R, Long>> ret = new EnumMap<>(this.tClass);
-		return mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			for (T t : this.tClass.getEnumConstants()) {
 				ret.put(t, reset(t));
 			}
 			return Collections.unmodifiableMap(ret);
-		});
+		}
 	}
 
 	public final String generateCummulativeReport() {
@@ -125,7 +126,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	}
 
 	public final String generateFullReport(int indentlevel) {
-		return mutexLocked(() -> {
+		try (AutoLock lock = autoMutexLock()) {
 			StringBuilder buf = new StringBuilder();
 			for (T type : this.tClass.getEnumConstants()) {
 				if (buf.length() > 0) {
@@ -134,7 +135,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 				buf.append(generateReport(type, indentlevel));
 			}
 			return buf.toString();
-		});
+		}
 	}
 
 	public final String generateReport(T type, int indentLevel) {

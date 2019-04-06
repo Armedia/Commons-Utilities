@@ -105,7 +105,7 @@ public interface ShareableLockable extends MutexLockable {
 	/**
 	 * <p>
 	 * Return the shared (read) lock, wrapped inside an {@link AutoLock} instance for use in
-	 * try-with-resources constructs. Contrary to {@link #acquireAutoSharedLock()}, no attempt is
+	 * try-with-resources constructs. Contrary to {@link #autoSharedLock()}, no attempt is
 	 * made to acquire the lock before returning it.
 	 * </p>
 	 *
@@ -138,7 +138,7 @@ public interface ShareableLockable extends MutexLockable {
 	 *
 	 * @return the (held) write lock
 	 */
-	public default AutoLock acquireAutoSharedLock() {
+	public default AutoLock autoSharedLock() {
 		return new AutoLock(acquireSharedLock());
 	}
 
@@ -170,7 +170,7 @@ public interface ShareableLockable extends MutexLockable {
 	 */
 	public default <E, EX extends Throwable> E shareLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		try (AutoLock l = acquireAutoSharedLock()) {
+		try (AutoLock l = autoSharedLock()) {
 			return operation.getChecked();
 		}
 	}
@@ -344,11 +344,11 @@ public interface ShareableLockable extends MutexLockable {
 			checker = () -> null;
 		}
 
-		try (AutoLock readLock = acquireAutoSharedLock()) {
+		try (AutoLock readLock = autoSharedLock()) {
 			E e = checker.getChecked();
 			if (decision.testChecked(e)) {
 				readLock.unlock();
-				try (AutoLock writeLock = acquireAutoMutexLock()) {
+				try (AutoLock writeLock = autoMutexLock()) {
 					try {
 						e = checker.getChecked();
 						if (decision.testChecked(e)) {

@@ -111,14 +111,14 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 
 	@Override
 	public boolean equals(Object o) {
-		return shareLocked(() -> {
+		try (AutoLock lock = autoSharedLock()) {
 			if (o == null) { return false; }
 			if (o == this) { return true; }
 			if (!Set.class.isInstance(o)) { return false; }
 			Set<?> s = Set.class.cast(o);
 			if (this.c.size() != s.size()) { return false; }
 			return this.c.equals(o);
-		});
+		}
 	}
 
 	@Override
