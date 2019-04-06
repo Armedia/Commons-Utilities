@@ -1,5 +1,7 @@
 package com.armedia.commons.utilities.concurrent;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -64,12 +66,36 @@ public class BaseShareableLockableTest {
 	}
 
 	@Test
+	public void testGetAutoReadLock() {
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
+
+		AutoLock autoLock = rwl.getAutoSharedLock();
+		Assertions.assertSame(readLock, autoLock.getLock());
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		Assertions.assertEquals(0, lock.getReadLockCount());
+	}
+
+	@Test
 	public void testGetWriteLock() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertSame(writeLock, rwl.getMutexLock());
+	}
+
+	@Test
+	public void testGetAutoWriteLock() {
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
+
+		AutoLock autoLock = rwl.getAutoMutexLock();
+		Assertions.assertSame(writeLock, autoLock.getLock());
+		Assertions.assertFalse(lock.isWriteLocked());
+		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
 	}
 
 	@Test
@@ -105,6 +131,56 @@ public class BaseShareableLockableTest {
 		for (int i = 10; i > 0; i--) {
 			try {
 				readLock.unlock();
+			} catch (Exception e) {
+				Assertions.fail(String.format("Failed to release the reading lock on attempt # %d", i));
+			}
+		}
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		Assertions.assertTrue(rwl.getMutexLock().tryLock(),
+			"Failed to acquire the write lock while the read lock was not held");
+		rwl.getMutexLock().unlock();
+	}
+
+	@Test
+	public void testAcquireAutoReadLock() {
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
+
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+
+		try (AutoLock auto = rwl.acquireAutoSharedLock()) {
+			Assertions.assertNotNull(auto);
+			Assertions.assertSame(lock.readLock(), auto.getLock());
+			Assertions.assertEquals(1, lock.getReadHoldCount());
+			Assertions.assertFalse(rwl.getMutexLock().tryLock(),
+				"Succeeded in acquiring the write lock while the read lock was held");
+			Assertions.assertEquals(1, lock.getReadHoldCount());
+		}
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+
+		Assertions.assertSame(lock.readLock(), rwl.getSharedLock());
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		Assertions.assertThrows(RuntimeException.class, () -> readLock.unlock(),
+			"The read lock was not held but was unlocked");
+
+		Assertions.assertEquals(0, lock.getReadHoldCount());
+		List<AutoLock> autoLocks = new LinkedList<>();
+		for (int i = 1; i <= 10; i++) {
+			AutoLock l = rwl.acquireAutoSharedLock();
+			Assertions.assertNotNull(l, String.format("Failed to acquire the reading lock on attempt # %d", i));
+			autoLocks.add(l);
+		}
+		Assertions.assertEquals(10, lock.getReadHoldCount());
+		Assertions.assertFalse(rwl.getMutexLock().tryLock(),
+			"Succeeded in acquiring the write lock while the read lock was held");
+		int i = 1;
+		for (AutoLock l : autoLocks) {
+			try {
+				l.close();
+				i++;
 			} catch (Exception e) {
 				Assertions.fail(String.format("Failed to release the reading lock on attempt # %d", i));
 			}
@@ -154,6 +230,54 @@ public class BaseShareableLockableTest {
 	}
 
 	@Test
+	public void testAcquireAutoWriteLock() throws Exception {
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
+
+		Assertions.assertSame(lock.writeLock(), rwl.getMutexLock());
+		Assertions.assertFalse(lock.isWriteLocked());
+		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
+
+		try (AutoLock auto = rwl.acquireAutoMutexLock()) {
+			Assertions.assertSame(lock.writeLock(), auto.getLock());
+			Assertions.assertTrue(lock.isWriteLocked());
+			Assertions.assertTrue(lock.isWriteLockedByCurrentThread());
+		}
+		Assertions.assertFalse(lock.isWriteLocked());
+		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
+
+		Assertions.assertThrows(RuntimeException.class, () -> writeLock.unlock(),
+			"The write lock was not held but was unlocked");
+
+		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
+		List<AutoLock> autoLocks = new LinkedList<>();
+		for (int i = 1; i <= 10; i++) {
+			AutoLock l = rwl.acquireAutoMutexLock();
+			Assertions.assertNotNull(l, String.format("Failed to acquire the writing lock on attempt # %d", i));
+			Assertions.assertSame(writeLock, l.getLock());
+			Assertions.assertTrue(writeLock.isHeldByCurrentThread());
+			autoLocks.add(l);
+		}
+		Assertions.assertTrue(rwl.getSharedLock().tryLock(),
+			"Failed to acquire the read lock while the write lock was held");
+		rwl.getSharedLock().unlock();
+
+		int i = 0;
+		for (AutoLock l : autoLocks) {
+			Assertions.assertTrue(writeLock.isHeldByCurrentThread());
+			try {
+				l.close();
+				i++;
+			} catch (Exception e) {
+				Assertions.fail(String.format("Failed to release the writing lock on attempt # %d", i));
+			}
+		}
+		Assertions.assertFalse(lock.isWriteLocked());
+		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
+	}
+
+	@Test
 	public void testDeadlockDetection() throws Exception {
 		final CyclicBarrier barrier = new CyclicBarrier(2);
 		ExecutorService thread = Executors.newSingleThreadExecutor();
@@ -170,6 +294,13 @@ public class BaseShareableLockableTest {
 			Assertions.assertEquals(1, lock.getReadHoldCount());
 			Assertions.assertSame(readLock, sl);
 			Assertions.assertThrows(LockDisallowedException.class, () -> rwl.acquireMutexLock());
+			try {
+				rwl.acquireMutexLock();
+			} catch (LockDisallowedException e) {
+				Assertions.assertSame(rwl, e.getTarget());
+				Assertions.assertEquals(1, e.getReadHoldCount());
+
+			}
 			Assertions.assertEquals(0, lock.getWriteHoldCount());
 			sl.unlock();
 			Assertions.assertEquals(0, lock.getReadHoldCount());
