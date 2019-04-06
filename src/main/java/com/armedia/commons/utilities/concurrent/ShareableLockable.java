@@ -81,12 +81,19 @@ public interface ShareableLockable extends MutexLockable {
 		return mutexLock;
 	}
 
+	/**
+	 * <p>
+	 * Returns the shareable (read-write) lock instance backing the whole construct
+	 * </p>
+	 *
+	 * @return the shareable (read-write) lock instance
+	 */
 	public ReadWriteLock getShareableLock();
 
 	/**
 	 * <p>
-	 * Return a reference to the read (shared) lock. Contrary to {@link #acquireSharedLock()}, no
-	 * attempt is made to acquire the lock before returning it.
+	 * Return the shared (read) lock. Contrary to {@link #acquireSharedLock()}, no attempt is made
+	 * to acquire the lock before returning it.
 	 * </p>
 	 *
 	 * @return the write lock
@@ -97,8 +104,21 @@ public interface ShareableLockable extends MutexLockable {
 
 	/**
 	 * <p>
-	 * Return a reference to the read (shared) lock. The lock is already held when it's returned so
-	 * this method may block while other threads hold the mutex lock.
+	 * Return the shared (read) lock, wrapped inside an {@link AutoLock} instance for use in
+	 * try-with-resources constructs. Contrary to {@link #acquireAutoSharedLock()}, no attempt is
+	 * made to acquire the lock before returning it.
+	 * </p>
+	 *
+	 * @return the write lock
+	 */
+	public default AutoLock getAutoSharedLock() {
+		return new AutoLock(getShareableLock().readLock());
+	}
+
+	/**
+	 * <p>
+	 * Return the shared (read) lock. The lock is already held when it's returned so this method may
+	 * block while other threads hold the mutex lock.
 	 * </p>
 	 *
 	 * @return the (held) write lock
@@ -107,6 +127,19 @@ public interface ShareableLockable extends MutexLockable {
 		Lock ret = getSharedLock();
 		ret.lock();
 		return ret;
+	}
+
+	/**
+	 * <p>
+	 * Return the shared (read) lock, wrapped inside an {@link AutoLock} instance for use in
+	 * try-with-resources constructs. The lock is already held when it's returned so this method may
+	 * block while other threads hold the mutex lock.
+	 * </p>
+	 *
+	 * @return the (held) write lock
+	 */
+	public default AutoLock acquireAutoSharedLock() {
+		return new AutoLock(acquireSharedLock());
 	}
 
 	/**
@@ -137,11 +170,8 @@ public interface ShareableLockable extends MutexLockable {
 	 */
 	public default <E, EX extends Throwable> E shareLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireSharedLock();
-		try {
+		try (AutoLock l = acquireAutoSharedLock()) {
 			return operation.getChecked();
-		} finally {
-			l.unlock();
 		}
 	}
 
@@ -172,12 +202,10 @@ public interface ShareableLockable extends MutexLockable {
 	 */
 	public default <EX extends Throwable> void shareLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireSharedLock();
-		try {
-			operation.runChecked();
-		} finally {
-			l.unlock();
-		}
+		shareLocked(() -> {
+			operation.run();
+			return null;
+		});
 	}
 
 	/**
@@ -316,13 +344,11 @@ public interface ShareableLockable extends MutexLockable {
 			checker = () -> null;
 		}
 
-		final Lock readLock = acquireSharedLock();
-		try {
+		try (AutoLock readLock = acquireAutoSharedLock()) {
 			E e = checker.getChecked();
 			if (decision.testChecked(e)) {
 				readLock.unlock();
-				final Lock writeLock = acquireMutexLock();
-				try {
+				try (AutoLock writeLock = acquireAutoMutexLock()) {
 					try {
 						e = checker.getChecked();
 						if (decision.testChecked(e)) {
@@ -331,13 +357,9 @@ public interface ShareableLockable extends MutexLockable {
 					} finally {
 						readLock.lock();
 					}
-				} finally {
-					writeLock.unlock();
 				}
 			}
 			return e;
-		} finally {
-			readLock.unlock();
 		}
 	}
 
@@ -463,33 +485,10 @@ public interface ShareableLockable extends MutexLockable {
 	 */
 	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedConsumer<E, EX> writeBlock) throws EX {
-		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
-		if (checker == null) {
-			checker = () -> null;
-		}
-
-		final Lock readLock = acquireSharedLock();
-		try {
-			E e = checker.getChecked();
-			if (decision.testChecked(e)) {
-				readLock.unlock();
-				final Lock writeLock = acquireMutexLock();
-				try {
-					try {
-						e = checker.getChecked();
-						if (decision.testChecked(e)) {
-							writeBlock.acceptChecked(e);
-						}
-					} finally {
-						readLock.lock();
-					}
-				} finally {
-					writeLock.unlock();
-				}
-			}
-		} finally {
-			readLock.unlock();
-		}
+		shareLockedUpgradable(checker, decision, (e) -> {
+			writeBlock.accept(e);
+			return null;
+		});
 	}
 }

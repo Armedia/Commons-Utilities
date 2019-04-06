@@ -29,7 +29,8 @@ public interface MutexLockable {
 
 	/**
 	 * <p>
-	 * Returns the mutex lock
+	 * Returns the mutex lock. Contrary to {@link #acquireMutexLock()}, no attempt is made to
+	 * acquire the lock before returning it.
 	 * </p>
 	 *
 	 * @return the mutex lock
@@ -38,16 +39,42 @@ public interface MutexLockable {
 
 	/**
 	 * <p>
-	 * Return a reference to the lock. The lock is already held when it's returned so this method
-	 * may block while other threads hold the lock.
+	 * Returns the mutex lock, wrapped inside an {@link AutoLock} instance for use in
+	 * try-with-resources constructs. Contrary to {@link #acquireAutoMutexLock()}, no attempt is
+	 * made to acquire the lock before returning it.
 	 * </p>
 	 *
-	 * @return the (held) mutex lock
+	 * @return the mutex lock, wrapped inside an {@link AutoLock}
+	 */
+	public default AutoLock getAutoMutexLock() {
+		return new AutoLock(getMutexLock());
+	}
+
+	/**
+	 * <p>
+	 * Return the mutex lock. The lock is already held when it's returned so this method may block
+	 * while other threads hold the lock.
+	 * </p>
+	 *
+	 * @return the held mutex lock
 	 */
 	public default Lock acquireMutexLock() {
 		Lock ret = getMutexLock();
 		ret.lock();
 		return ret;
+	}
+
+	/**
+	 * <p>
+	 * Return the mutex lock, wrapped inside an {@link AutoLock} instance for use in
+	 * try-with-resources constructs. The lock is already held when it's returned so this method may
+	 * block while other threads hold the lock.
+	 * </p>
+	 *
+	 * @return the held mutex lock, wrapped inside an {@link AutoLock}
+	 */
+	public default AutoLock acquireAutoMutexLock() {
+		return new AutoLock(acquireMutexLock());
 	}
 
 	/**
@@ -78,11 +105,8 @@ public interface MutexLockable {
 	 */
 	public default <E, EX extends Throwable> E mutexLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireMutexLock();
-		try {
+		try (AutoLock l = acquireAutoMutexLock()) {
 			return operation.getChecked();
-		} finally {
-			l.unlock();
 		}
 	}
 
@@ -113,11 +137,9 @@ public interface MutexLockable {
 	 */
 	public default <EX extends Throwable> void mutexLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		final Lock l = acquireMutexLock();
-		try {
-			operation.runChecked();
-		} finally {
-			l.unlock();
-		}
+		mutexLocked(() -> {
+			operation.run();
+			return null;
+		});
 	}
 }
