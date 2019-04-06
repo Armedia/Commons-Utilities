@@ -62,7 +62,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 	@Override
 	public final E unmarshal(String v) throws Exception {
-		if (v == null) { return nullEnum(); }
+		if ((v == null) || Tools.equals(nullString(), v)) { return nullEnum(); }
 
 		// Make sure we stip out the spaces
 		v = StringUtils.strip(v);
