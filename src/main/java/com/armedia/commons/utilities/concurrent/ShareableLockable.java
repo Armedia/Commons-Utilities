@@ -474,7 +474,7 @@ public interface ShareableLockable extends MutexLockable {
 		CheckedPredicate<E, EX> decision, CheckedConsumer<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		shareLockedUpgradable(checker, decision, (e) -> {
-			writeBlock.accept(e);
+			writeBlock.acceptChecked(e);
 			return null;
 		});
 	}
