@@ -19,7 +19,7 @@ public final class AutoLock implements AutoCloseable {
 		this.lock.lock();
 	}
 
-	public Lock getLock() {
+	Lock getLock() {
 		return this.lock;
 	}
 
