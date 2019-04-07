@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author diego
  *
  */
+@XmlTransient
 public class BaseShareableLockable extends BaseMutexLockable implements ShareableLockable {
 
 	@XmlTransient
@@ -47,7 +48,7 @@ public class BaseShareableLockable extends BaseMutexLockable implements Shareabl
 	 * <p>
 	 * This constructor exists to facilitate inheritance from the superclass
 	 * </p>
-	 * 
+	 *
 	 * @param rwLock
 	 * @param marker
 	 */

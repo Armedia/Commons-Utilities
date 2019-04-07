@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author diego
  *
  */
+@XmlTransient
 public class BaseMutexLockable implements MutexLockable {
 
 	@XmlTransient
