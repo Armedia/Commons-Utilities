@@ -6,9 +6,11 @@ import java.util.concurrent.locks.Lock;
 public final class AutoLock implements AutoCloseable {
 
 	private final Lock lock;
+	private boolean locked;
 
 	AutoLock(Lock lock) {
 		this.lock = Objects.requireNonNull(lock, "Must provide a lock instance");
+		this.locked = true;
 	}
 
 	void unlock() {
@@ -25,6 +27,9 @@ public final class AutoLock implements AutoCloseable {
 
 	@Override
 	public void close() {
-		this.lock.unlock();
+		if (this.locked) {
+			this.lock.unlock();
+			this.locked = false;
+		}
 	}
 }
