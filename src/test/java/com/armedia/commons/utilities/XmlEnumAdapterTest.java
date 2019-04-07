@@ -2,11 +2,14 @@ package com.armedia.commons.utilities;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.armedia.commons.utilities.XmlEnumAdapter.Flag;
 
 public class XmlEnumAdapterTest {
 
@@ -61,60 +64,79 @@ public class XmlEnumAdapterTest {
 		}
 	}
 
-	public <E extends Enum<E>> XmlEnumAdapter<E> newAdapter(Class<E> enumClass, Boolean ignoreCase) {
-		return new XmlEnumAdapter<>(enumClass, ignoreCase);
+	public <E extends Enum<E>> XmlEnumAdapter<E> newAdapter(Class<E> enumClass, Flag... flags) {
+		return new XmlEnumAdapter<>(enumClass, flags);
 	}
 
 	@Test
 	public void testXmlEnumAdapterClassOfEBoolean() throws Exception {
 		XmlEnumAdapter<?> adapter = null;
 
-		adapter = newAdapter(CaseSensitive.class, null);
+		adapter = newAdapter(CaseSensitive.class);
 		Assertions.assertTrue(adapter.isCaseSensitive());
-		adapter = newAdapter(CaseSensitive.class, true);
+		adapter = newAdapter(CaseSensitive.class, Flag.STRICT_CASE);
 		Assertions.assertTrue(adapter.isCaseSensitive());
-		adapter = newAdapter(CaseSensitive.class, false);
+		adapter = newAdapter(CaseSensitive.class, Flag.values());
 		Assertions.assertTrue(adapter.isCaseSensitive());
 
-		adapter = newAdapter(CaseInsensitive.class, null);
+		adapter = newAdapter(CaseInsensitive.class);
 		Assertions.assertFalse(adapter.isCaseSensitive());
-		adapter = newAdapter(CaseInsensitive.class, true);
-		Assertions.assertFalse(adapter.isCaseSensitive());
-		adapter = newAdapter(CaseInsensitive.class, false);
+		adapter = newAdapter(CaseInsensitive.class, Flag.STRICT_CASE);
+		Assertions.assertTrue(adapter.isCaseSensitive());
+		adapter = newAdapter(CaseInsensitive.class, Flag.values());
 		Assertions.assertTrue(adapter.isCaseSensitive());
 
-		adapter = newAdapter(Empty.class, null);
+		adapter = newAdapter(Empty.class);
 		Assertions.assertTrue(adapter.isCaseSensitive());
-		adapter = newAdapter(Empty.class, true);
+		adapter = newAdapter(Empty.class, Flag.STRICT_CASE);
 		Assertions.assertTrue(adapter.isCaseSensitive());
-		adapter = newAdapter(Empty.class, false);
+		adapter = newAdapter(Empty.class, Flag.values());
 		Assertions.assertTrue(adapter.isCaseSensitive());
 
-		@SuppressWarnings("rawtypes")
-		Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class, Boolean.class);
-		try {
-			c.newInstance(Object.class, null);
-			Assertions.fail("Did not fail with a non-enum class");
-		} catch (InvocationTargetException e) {
-			Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+		{
+			@SuppressWarnings("rawtypes")
+			Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class, Iterable.class);
+			try {
+				c.newInstance(Object.class, null);
+				Assertions.fail("Did not fail with a non-enum class");
+			} catch (InvocationTargetException e) {
+				Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			}
+			try {
+				c.newInstance(Object.class, Collections.emptyList());
+				Assertions.fail("Did not fail with a non-enum class");
+			} catch (InvocationTargetException e) {
+				Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			}
 		}
-		try {
-			c.newInstance(Object.class, Boolean.FALSE);
-			Assertions.fail("Did not fail with a non-enum class");
-		} catch (InvocationTargetException e) {
-			Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
-		}
-		try {
-			c.newInstance(Object.class, Boolean.TRUE);
-			Assertions.fail("Did not fail with a non-enum class");
-		} catch (InvocationTargetException e) {
-			Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+		{
+			Flag[] arr = {};
+			@SuppressWarnings("rawtypes")
+			Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class, arr.getClass());
+			try {
+				c.newInstance(Object.class, null);
+				Assertions.fail("Did not fail with a non-enum class");
+			} catch (InvocationTargetException e) {
+				Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			}
+			try {
+				c.newInstance(Object.class, arr);
+				Assertions.fail("Did not fail with a non-enum class");
+			} catch (InvocationTargetException e) {
+				Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			}
+			try {
+				c.newInstance(Object.class, Flag.values());
+				Assertions.fail("Did not fail with a non-enum class");
+			} catch (InvocationTargetException e) {
+				Assertions.assertSame(IllegalArgumentException.class, e.getCause().getClass());
+			}
 		}
 	}
 
 	private <E extends Enum<E>> void testUnmarshalString(Class<E> enumClass) throws Exception {
 		// Autodetect case sensitivity
-		XmlEnumAdapter<E> adapter = newAdapter(enumClass, null);
+		XmlEnumAdapter<E> adapter = newAdapter(enumClass);
 		Assertions.assertNull(adapter.unmarshal(null));
 
 		for (E e : enumClass.getEnumConstants()) {
@@ -141,7 +163,7 @@ public class XmlEnumAdapterTest {
 	private <E extends Enum<E>> void testMarshalString(Class<E> enumClass) throws Exception {
 		XmlEnumAdapter<E> adapter = null;
 
-		adapter = newAdapter(enumClass, null);
+		adapter = newAdapter(enumClass);
 		Assertions.assertNull(adapter.marshal(null));
 
 		for (E e : enumClass.getEnumConstants()) {

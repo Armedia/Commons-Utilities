@@ -1,5 +1,8 @@
 package com.armedia.commons.utilities;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,10 +15,21 @@ import org.apache.commons.lang3.StringUtils;
 
 public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
+	private static final Iterable<Flag> NO_FLAGS = Collections.emptyList();
+
+	protected static enum Flag {
+		//
+		STRICT_CASE, //
+		MARSHAL_FOLDED, //
+		//
+		;
+	}
+
 	private final Class<E> enumClass;
 	private final Map<String, E> caseInsensitiveMap;
+	private final boolean marshalFolded;
 
-	private static <E extends Enum<E>> boolean detectIgnoreCase(Class<E> enumClass) {
+	private static <E extends Enum<E>> boolean canIgnoreCase(Class<E> enumClass) {
 		Set<String> lower = new HashSet<>();
 		for (E e : enumClass.getEnumConstants()) {
 			if (!lower.add(e.name().toLowerCase())) { return false; }
@@ -24,17 +38,29 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 	}
 
 	public XmlEnumAdapter(Class<E> enumClass) {
-		this(enumClass, null);
+		this(enumClass, XmlEnumAdapter.NO_FLAGS);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, Boolean ignoreCase) {
+	public XmlEnumAdapter(Class<E> enumClass, Flag... flags) {
+		this(enumClass, (flags != null ? Arrays.asList(flags) : Collections.emptyList()));
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, Iterable<Flag> flags) {
 		this.enumClass = Objects.requireNonNull(enumClass, "Must provide a non-null Enum class");
 		if (!enumClass.isEnum()) {
 			throw new IllegalArgumentException(
 				String.format("The class %s is not a valid Enum", enumClass.getCanonicalName()));
 		}
-		ignoreCase = (XmlEnumAdapter.detectIgnoreCase(enumClass)
-			&& ((ignoreCase == null) || ignoreCase.booleanValue()));
+		Set<Flag> f = EnumSet.noneOf(Flag.class);
+		for (Flag flag : flags) {
+			if (flag != null) {
+				f.add(flag);
+			}
+		}
+
+		final boolean ignoreCase = XmlEnumAdapter.canIgnoreCase(enumClass) && !f.contains(Flag.STRICT_CASE);
+		this.marshalFolded = (!ignoreCase || f.contains(Flag.MARSHAL_FOLDED));
+
 		Map<String, E> m = null;
 		if (ignoreCase) {
 			m = new LinkedHashMap<>();
@@ -103,7 +129,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 		String ret = specialMarshal(e);
 		if (ret == null) {
 			ret = e.name();
-			if (this.caseInsensitiveMap != null) {
+			if (this.marshalFolded && (this.caseInsensitiveMap != null)) {
 				ret = ret.toLowerCase();
 			}
 		}
