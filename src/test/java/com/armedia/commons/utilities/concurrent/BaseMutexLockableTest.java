@@ -49,17 +49,6 @@ public class BaseMutexLockableTest {
 	}
 
 	@Test
-	public void testGetAutoWriteLock() {
-		final ReentrantLock lock = new ReentrantLock();
-		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
-
-		AutoLock autoLock = rwl.getAutoMutexLock();
-		Assertions.assertSame(lock, autoLock.getLock());
-		Assertions.assertFalse(lock.isLocked());
-		Assertions.assertFalse(lock.isHeldByCurrentThread());
-	}
-
-	@Test
 	public void testAcquireWriteLock() throws Exception {
 		final ReentrantLock lock = new ReentrantLock();
 		final BaseMutexLockable rwl = new BaseMutexLockable(lock);

@@ -39,19 +39,6 @@ public interface MutexLockable {
 
 	/**
 	 * <p>
-	 * Returns the mutex lock, wrapped inside an {@link AutoLock} instance for use in
-	 * try-with-resources constructs. Contrary to {@link #autoMutexLock()}, no attempt is made to
-	 * acquire the lock before returning it.
-	 * </p>
-	 *
-	 * @return the mutex lock, wrapped inside an {@link AutoLock}
-	 */
-	public default AutoLock getAutoMutexLock() {
-		return new AutoLock(getMutexLock());
-	}
-
-	/**
-	 * <p>
 	 * Return the mutex lock. The lock is already held when it's returned so this method may block
 	 * while other threads hold the lock.
 	 * </p>

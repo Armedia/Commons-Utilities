@@ -104,19 +104,6 @@ public interface ShareableLockable extends MutexLockable {
 
 	/**
 	 * <p>
-	 * Return the shared (read) lock, wrapped inside an {@link AutoLock} instance for use in
-	 * try-with-resources constructs. Contrary to {@link #autoSharedLock()}, no attempt is
-	 * made to acquire the lock before returning it.
-	 * </p>
-	 *
-	 * @return the write lock
-	 */
-	public default AutoLock getAutoSharedLock() {
-		return new AutoLock(getShareableLock().readLock());
-	}
-
-	/**
-	 * <p>
 	 * Return the shared (read) lock. The lock is already held when it's returned so this method may
 	 * block while other threads hold the mutex lock.
 	 * </p>

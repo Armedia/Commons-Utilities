@@ -66,36 +66,12 @@ public class BaseShareableLockableTest {
 	}
 
 	@Test
-	public void testGetAutoReadLock() {
-		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
-
-		AutoLock autoLock = rwl.getAutoSharedLock();
-		Assertions.assertSame(readLock, autoLock.getLock());
-		Assertions.assertEquals(0, lock.getReadHoldCount());
-		Assertions.assertEquals(0, lock.getReadLockCount());
-	}
-
-	@Test
 	public void testGetWriteLock() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 
 		Assertions.assertSame(writeLock, rwl.getMutexLock());
-	}
-
-	@Test
-	public void testGetAutoWriteLock() {
-		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
-
-		AutoLock autoLock = rwl.getAutoMutexLock();
-		Assertions.assertSame(writeLock, autoLock.getLock());
-		Assertions.assertFalse(lock.isWriteLocked());
-		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
 	}
 
 	@Test
