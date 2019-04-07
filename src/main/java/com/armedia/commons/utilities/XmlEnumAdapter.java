@@ -103,6 +103,9 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 		String ret = specialMarshal(e);
 		if (ret == null) {
 			ret = e.name();
+			if (this.caseInsensitiveMap != null) {
+				ret = ret.toLowerCase();
+			}
 		}
 		return ret;
 	}
