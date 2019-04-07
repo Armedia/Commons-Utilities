@@ -5,6 +5,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 /**
  * <p>
  * This class exists as a simple concrete implementation of {@link ShareableLockable}, for
@@ -16,6 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class BaseMutexLockable implements MutexLockable {
 
+	@XmlTransient
 	private final Lock lock;
 
 	/**

@@ -4,6 +4,8 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 /**
  * <p>
  * This class exists as a simple concrete implementation of {@link ShareableLockable}, for
@@ -13,8 +15,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author diego
  *
  */
-public class BaseShareableLockable implements ShareableLockable {
+public class BaseShareableLockable extends BaseMutexLockable implements ShareableLockable {
 
+	@XmlTransient
 	private final ReadWriteLock rwLock;
 
 	/**
@@ -37,7 +40,20 @@ public class BaseShareableLockable implements ShareableLockable {
 	 * </p>
 	 */
 	public BaseShareableLockable(ReadWriteLock rwLock) {
-		this.rwLock = (rwLock != null ? rwLock : new ReentrantReadWriteLock());
+		this(rwLock != null ? rwLock : new ReentrantReadWriteLock(), null);
+	}
+
+	/**
+	 * <p>
+	 * This constructor exists to facilitate inheritance from the superclass
+	 * </p>
+	 * 
+	 * @param rwLock
+	 * @param marker
+	 */
+	private BaseShareableLockable(ReadWriteLock rwLock, Object marker) {
+		super(rwLock.writeLock());
+		this.rwLock = rwLock;
 	}
 
 	@Override

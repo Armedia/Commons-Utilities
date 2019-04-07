@@ -69,7 +69,12 @@ public class BaseShareableLockableTest {
 	public void testGetWriteLock() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
+		final ShareableLockable rwl = new ShareableLockable() {
+			@Override
+			public ReadWriteLock getShareableLock() {
+				return lock;
+			}
+		};
 
 		Assertions.assertSame(writeLock, rwl.getMutexLock());
 	}

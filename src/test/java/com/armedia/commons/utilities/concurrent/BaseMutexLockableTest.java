@@ -2,6 +2,8 @@ package com.armedia.commons.utilities.concurrent;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -123,6 +125,28 @@ public class BaseMutexLockableTest {
 			} catch (Exception e) {
 				Assertions.fail(String.format("Failed to release the writing lock on attempt # %d", i));
 			}
+		}
+		Assertions.assertFalse(lock.isLocked());
+		Assertions.assertFalse(lock.isHeldByCurrentThread());
+	}
+
+	@Test
+	public void testGetCondition() throws Exception {
+		final ReentrantLock lock = new ReentrantLock();
+		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
+
+		Assertions.assertSame(lock, rwl.getMutexLock());
+
+		Condition c = rwl.newMutexCondition();
+		Assertions.assertNotNull(c);
+		Assertions.assertFalse(lock.isLocked());
+		Assertions.assertFalse(lock.isHeldByCurrentThread());
+		Assertions.assertThrows(Throwable.class, () -> c.await());
+
+		try (AutoLock auto = rwl.autoMutexLock()) {
+			Assertions.assertTrue(lock.isLocked());
+			Assertions.assertTrue(lock.isHeldByCurrentThread());
+			Assertions.assertFalse(c.await(100, TimeUnit.MILLISECONDS));
 		}
 		Assertions.assertFalse(lock.isLocked());
 		Assertions.assertFalse(lock.isHeldByCurrentThread());

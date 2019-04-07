@@ -1,6 +1,7 @@
 package com.armedia.commons.utilities.concurrent;
 
 import java.util.Objects;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
@@ -36,6 +37,17 @@ public interface MutexLockable {
 	 * @return the mutex lock
 	 */
 	public Lock getMutexLock();
+
+	/**
+	 * <p>
+	 * Returns a new {@link Condition} instance based on the mutex lock.
+	 * </p>
+	 * 
+	 * @return a new {@link Condition} instance based on the mutex lock
+	 */
+	public default Condition newMutexCondition() {
+		return getMutexLock().newCondition();
+	}
 
 	/**
 	 * <p>
