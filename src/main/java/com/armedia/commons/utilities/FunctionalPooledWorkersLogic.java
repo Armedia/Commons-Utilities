@@ -123,12 +123,12 @@ public final class FunctionalPooledWorkersLogic<STATE, ITEM, EX extends Throwabl
 
 	@Override
 	public STATE initialize() throws EX {
-		return this.initializer.get();
+		return this.initializer.getChecked();
 	}
 
 	@Override
 	public void process(STATE state, ITEM item) throws EX {
-		this.processor.accept(state, item);
+		this.processor.acceptChecked(state, item);
 	}
 
 	@Override
