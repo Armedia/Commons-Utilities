@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
@@ -17,7 +18,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 	private static final Iterable<Flag> NO_FLAGS = Collections.emptyList();
 
-	protected static enum Flag {
+	public static enum Flag {
 		//
 		STRICT_CASE, //
 		MARSHAL_FOLDED, //
@@ -27,6 +28,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 	private final Class<E> enumClass;
 	private final Map<String, E> caseInsensitiveMap;
+	private final Set<String> validMarshalledValues;
 	private final boolean marshalFolded;
 
 	private static <E extends Enum<E>> boolean canIgnoreCase(Class<E> enumClass) {
@@ -72,10 +74,23 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 			}
 		}
 		this.caseInsensitiveMap = ((m != null) ? Tools.freezeMap(m) : null);
+		if (this.caseInsensitiveMap != null) {
+			this.validMarshalledValues = this.caseInsensitiveMap.keySet();
+		} else {
+			Set<String> validMarshalledValues = new TreeSet<>();
+			for (E e : enumClass.getEnumConstants()) {
+				validMarshalledValues.add(e.name());
+			}
+			this.validMarshalledValues = Tools.freezeSet(validMarshalledValues);
+		}
 	}
 
 	public final boolean isCaseSensitive() {
 		return (this.caseInsensitiveMap == null);
+	}
+
+	public final Set<String> getValidMarshalledValues() {
+		return this.validMarshalledValues;
 	}
 
 	protected E specialUnmarshal(String v) throws Exception {
