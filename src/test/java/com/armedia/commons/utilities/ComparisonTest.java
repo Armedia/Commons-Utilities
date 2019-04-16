@@ -26,6 +26,12 @@ public class ComparisonTest implements GoodServiceTest {
 		final Comparison comparison = Comparison.LT;
 		Object[][] intData = {
 			{
+				null, null, false
+			}, {
+				null, 0, true
+			}, {
+				0, null, false
+			}, {
 				0, 0, false
 			}, {
 				0, 1, true
@@ -41,6 +47,12 @@ public class ComparisonTest implements GoodServiceTest {
 		}
 		Object[][] stringData = {
 			{
+				null, null, false
+			}, {
+				null, "", true
+			}, {
+				"", null, false
+			}, {
 				"", "ASDF", true
 			}, {
 				"ASDF", "", false
@@ -65,6 +77,12 @@ public class ComparisonTest implements GoodServiceTest {
 		final Comparison comparison = Comparison.LE;
 		Object[][] intData = {
 			{
+				null, null, true
+			}, {
+				null, 0, true
+			}, {
+				0, null, false
+			}, {
 				0, 0, true
 			}, {
 				0, 1, true
@@ -80,6 +98,12 @@ public class ComparisonTest implements GoodServiceTest {
 		}
 		Object[][] stringData = {
 			{
+				null, null, true
+			}, {
+				null, "", true
+			}, {
+				"", null, false
+			}, {
 				"", "ASDF", true
 			}, {
 				"ASDF", "", false
@@ -104,6 +128,12 @@ public class ComparisonTest implements GoodServiceTest {
 		final Comparison comparison = Comparison.EQ;
 		Object[][] intData = {
 			{
+				null, null, true
+			}, {
+				null, 0, false
+			}, {
+				0, null, false
+			}, {
 				0, 0, true
 			}, {
 				0, 1, false
@@ -119,6 +149,12 @@ public class ComparisonTest implements GoodServiceTest {
 		}
 		Object[][] stringData = {
 			{
+				null, null, true
+			}, {
+				null, "", false
+			}, {
+				"", null, false
+			}, {
 				"", "ASDF", false
 			}, {
 				"ASDF", "", false
@@ -143,6 +179,12 @@ public class ComparisonTest implements GoodServiceTest {
 		final Comparison comparison = Comparison.GE;
 		Object[][] intData = {
 			{
+				null, null, true
+			}, {
+				null, 0, false
+			}, {
+				0, null, true
+			}, {
 				0, 0, true
 			}, {
 				0, 1, false
@@ -158,6 +200,12 @@ public class ComparisonTest implements GoodServiceTest {
 		}
 		Object[][] stringData = {
 			{
+				null, null, true
+			}, {
+				null, "", false
+			}, {
+				"", null, true
+			}, {
 				"", "ASDF", false
 			}, {
 				"ASDF", "", true
@@ -182,6 +230,12 @@ public class ComparisonTest implements GoodServiceTest {
 		final Comparison comparison = Comparison.GT;
 		Object[][] intData = {
 			{
+				null, null, false
+			}, {
+				null, 0, false
+			}, {
+				0, null, true
+			}, {
 				0, 0, false
 			}, {
 				0, 1, false
@@ -197,6 +251,12 @@ public class ComparisonTest implements GoodServiceTest {
 		}
 		Object[][] stringData = {
 			{
+				null, null, false
+			}, {
+				null, "", false
+			}, {
+				"", null, true
+			}, {
 				"", "ASDF", false
 			}, {
 				"ASDF", "", true
