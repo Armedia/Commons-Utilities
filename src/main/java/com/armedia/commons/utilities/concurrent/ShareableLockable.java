@@ -1,14 +1,19 @@
 package com.armedia.commons.utilities.concurrent;
 
 import java.util.Objects;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.armedia.commons.utilities.function.CheckedBiConsumer;
+import com.armedia.commons.utilities.function.CheckedBiFunction;
 import com.armedia.commons.utilities.function.CheckedConsumer;
 import com.armedia.commons.utilities.function.CheckedFunction;
 import com.armedia.commons.utilities.function.CheckedPredicate;
@@ -220,11 +225,21 @@ public interface ShareableLockable extends MutexLockable {
 	 * @returns the value returned by the {@code writeBlock} if it was executed, or {@code null} if
 	 *          it wasn't.
 	 */
+	public default <E> E shareLockedUpgradable(Supplier<Boolean> decision,
+		Function<Supplier<Condition>, E> writeBlock) {
+		Objects.requireNonNull(decision, "Must provide a non-null decision");
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
+		final CheckedBiFunction<E, Supplier<Condition>, E, RuntimeException> newWriteBlock = (e, c) -> writeBlock
+			.apply(c);
+		return shareLockedUpgradable(null, newDecision, newWriteBlock);
+	}
+
 	public default <E> E shareLockedUpgradable(Supplier<Boolean> decision, Supplier<E> writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
-		final CheckedFunction<E, E, RuntimeException> newWriteBlock = (e) -> writeBlock.get();
+		final CheckedBiFunction<E, Supplier<Condition>, E, RuntimeException> newWriteBlock = (e, c) -> writeBlock.get();
 		return shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
@@ -255,11 +270,20 @@ public interface ShareableLockable extends MutexLockable {
 	 * @throws EX
 	 */
 	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+		CheckedFunction<Supplier<Condition>, E, EX> writeBlock) throws EX {
+		Objects.requireNonNull(decision, "Must provide a non-null decision");
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
+		final CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> writeBlock.applyChecked(c);
+		return shareLockedUpgradable(null, newDecision, newWriteBlock);
+	}
+
+	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedSupplier<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
-		final CheckedFunction<E, E, EX> newWriteBlock = (e) -> writeBlock.getChecked();
+		final CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> writeBlock.getChecked();
 		return shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
@@ -290,9 +314,18 @@ public interface ShareableLockable extends MutexLockable {
 	 * @returns either the value returned by the {@code writeBlock} (if it was executed), or the
 	 *          last value returned by the {@code checker} parameter.
 	 */
-	public default <E> E shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Function<E, E> writeBlock) {
+	public default <E> E shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision,
+		BiFunction<E, Supplier<Condition>, E> writeBlock) {
 		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
 		return shareLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
+	}
+
+	public default <E> E shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Function<E, E> writeBlock) {
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
+		final CheckedBiFunction<E, Supplier<Condition>, E, RuntimeException> newWriteBlock = (e, c) -> writeBlock
+			.apply(e);
+		return shareLockedUpgradable(newChecker, CheckedTools.check(decision), newWriteBlock);
 	}
 
 	/**
@@ -324,7 +357,7 @@ public interface ShareableLockable extends MutexLockable {
 	 * @throws EX
 	 */
 	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
-		CheckedPredicate<E, EX> decision, CheckedFunction<E, E, EX> writeBlock) throws EX {
+		CheckedPredicate<E, EX> decision, CheckedBiFunction<E, Supplier<Condition>, E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		if (checker == null) {
@@ -337,12 +370,19 @@ public interface ShareableLockable extends MutexLockable {
 				try (MutexAutoLock m = s.upgrade()) {
 					e = checker.getChecked();
 					if (decision.testChecked(e)) {
-						e = writeBlock.applyChecked(e);
+						e = writeBlock.applyChecked(e, m::newCondition);
 					}
 				}
 			}
 			return e;
 		}
+	}
+
+	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
+		CheckedPredicate<E, EX> decision, CheckedFunction<E, E, EX> writeBlock) throws EX {
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		final CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> writeBlock.applyChecked(e);
+		return shareLockedUpgradable(checker, decision, newWriteBlock);
 	}
 
 	/**
@@ -368,11 +408,21 @@ public interface ShareableLockable extends MutexLockable {
 	 * @param decision
 	 * @param writeBlock
 	 */
+	public default <E> void shareLockedUpgradable(Supplier<Boolean> decision,
+		Consumer<Supplier<Condition>> writeBlock) {
+		Objects.requireNonNull(decision, "Must provide a non-null decision");
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
+		final CheckedBiConsumer<E, Supplier<Condition>, RuntimeException> newWriteBlock = (e, c) -> writeBlock
+			.accept(c);
+		shareLockedUpgradable(null, newDecision, newWriteBlock);
+	}
+
 	public default <E> void shareLockedUpgradable(Supplier<Boolean> decision, Runnable writeBlock) {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, RuntimeException> newDecision = (e) -> decision.get() == Boolean.TRUE;
-		final CheckedConsumer<E, RuntimeException> newWriteBlock = (e) -> writeBlock.run();
+		final CheckedBiConsumer<E, Supplier<Condition>, RuntimeException> newWriteBlock = (e, c) -> writeBlock.run();
 		shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
@@ -401,11 +451,20 @@ public interface ShareableLockable extends MutexLockable {
 	 * @throws EX
 	 */
 	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+		CheckedConsumer<Supplier<Condition>, EX> writeBlock) throws EX {
+		Objects.requireNonNull(decision, "Must provide a non-null decision");
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
+		final CheckedBiConsumer<E, Supplier<Condition>, EX> newWriteBlock = (e, c) -> writeBlock.acceptChecked(c);
+		shareLockedUpgradable(null, newDecision, newWriteBlock);
+	}
+
+	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedRunnable<EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedPredicate<E, EX> newDecision = (e) -> decision.getChecked() == Boolean.TRUE;
-		final CheckedConsumer<E, EX> newWriteBlock = (e) -> writeBlock.runChecked();
+		final CheckedBiConsumer<E, Supplier<Condition>, EX> newWriteBlock = (e, c) -> writeBlock.runChecked();
 		shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
@@ -434,9 +493,17 @@ public interface ShareableLockable extends MutexLockable {
 	 * @param decision
 	 * @param writeBlock
 	 */
-	public default <E> void shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Consumer<E> writeBlock) {
+	public default <E> void shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision,
+		BiConsumer<E, Supplier<Condition>> writeBlock) {
 		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
 		shareLockedUpgradable(newChecker, CheckedTools.check(decision), CheckedTools.check(writeBlock));
+	}
+
+	public default <E> void shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision, Consumer<E> writeBlock) {
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		final CheckedSupplier<E, RuntimeException> newChecker = (checker != null ? CheckedTools.check(checker) : null);
+		CheckedBiConsumer<E, Supplier<Condition>, RuntimeException> newWriteBlock = (e, c) -> writeBlock.accept(e);
+		shareLockedUpgradable(newChecker, CheckedTools.check(decision), newWriteBlock);
 	}
 
 	/**
@@ -466,11 +533,22 @@ public interface ShareableLockable extends MutexLockable {
 	 * @throws EX
 	 */
 	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
+		CheckedPredicate<E, EX> decision, CheckedBiConsumer<E, Supplier<Condition>, EX> writeBlock) throws EX {
+		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
+		CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> {
+			writeBlock.acceptChecked(e, c);
+			return null;
+		};
+		shareLockedUpgradable(checker, decision, newWriteBlock);
+	}
+
+	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedConsumer<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
-		shareLockedUpgradable(checker, decision, (e) -> {
+		CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> {
 			writeBlock.acceptChecked(e);
 			return null;
-		});
+		};
+		shareLockedUpgradable(checker, decision, newWriteBlock);
 	}
 }
