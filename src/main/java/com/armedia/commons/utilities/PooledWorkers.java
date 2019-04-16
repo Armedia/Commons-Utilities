@@ -25,8 +25,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
+import com.armedia.commons.utilities.concurrent.MutexAutoLock;
+import com.armedia.commons.utilities.concurrent.SharedAutoLock;
 
 /**
  * A simple multi-threaded worker pool that supports having an optionally size-constrained work
@@ -239,7 +240,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 * @return all remaining work items from the queue
 	 */
 	public final List<ITEM> clearWorkItems() {
-		try (AutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = autoSharedLock()) {
 			List<ITEM> ret = new ArrayList<>();
 			this.workQueue.drainTo(ret);
 			return ret;
@@ -308,7 +309,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
 		String name, boolean waitForWork) {
 		Objects.requireNonNull(logic, "Must provide the logic that these workers will apply");
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			if (this.executor != null) { return false; }
 			this.threadCount = Math.max(1, threadCount);
 			this.activeCounter.set(0);
@@ -367,7 +368,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	}
 
 	private List<ITEM> shutdown(boolean abort, long maxWait, TimeUnit timeUnit) {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			if (this.executor == null) { return null; }
 			long actualMaxWait = maxWait;
 			TimeUnit actualTimeUnit = timeUnit;

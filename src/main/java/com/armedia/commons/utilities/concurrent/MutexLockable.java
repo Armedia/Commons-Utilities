@@ -42,7 +42,7 @@ public interface MutexLockable {
 	 * <p>
 	 * Returns a new {@link Condition} instance based on the mutex lock.
 	 * </p>
-	 * 
+	 *
 	 * @return a new {@link Condition} instance based on the mutex lock
 	 */
 	public default Condition newMutexCondition() {
@@ -65,15 +65,15 @@ public interface MutexLockable {
 
 	/**
 	 * <p>
-	 * Return the mutex lock, wrapped inside an {@link AutoLock} instance for use in
+	 * Return the mutex lock, wrapped inside an {@link MutexAutoLock} instance for use in
 	 * try-with-resources constructs. The lock is already held when it's returned so this method may
 	 * block while other threads hold the lock.
 	 * </p>
 	 *
-	 * @return the held mutex lock, wrapped inside an {@link AutoLock}
+	 * @return the held mutex lock, wrapped inside an {@link MutexAutoLock}
 	 */
-	public default AutoLock autoMutexLock() {
-		return new AutoLock(acquireMutexLock());
+	public default MutexAutoLock autoMutexLock() {
+		return new MutexAutoLock(acquireMutexLock());
 	}
 
 	/**
@@ -104,7 +104,7 @@ public interface MutexLockable {
 	 */
 	public default <E, EX extends Throwable> E mutexLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		try (AutoLock l = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			return operation.getChecked();
 		}
 	}
@@ -136,7 +136,7 @@ public interface MutexLockable {
 	 */
 	public default <EX extends Throwable> void mutexLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			operation.run();
 		}
 	}

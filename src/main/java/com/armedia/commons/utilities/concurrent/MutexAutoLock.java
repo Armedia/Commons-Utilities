@@ -1,28 +1,21 @@
 package com.armedia.commons.utilities.concurrent;
 
 import java.util.Objects;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-public final class AutoLock implements AutoCloseable {
+public class MutexAutoLock implements AutoCloseable {
 
 	private final Lock lock;
 	private boolean locked;
 
-	AutoLock(Lock lock) {
+	MutexAutoLock(Lock lock) {
 		this.lock = Objects.requireNonNull(lock, "Must provide a lock instance");
 		this.locked = true;
 	}
 
-	void unlock() {
-		this.lock.unlock();
-	}
-
-	void lock() {
-		this.lock.lock();
-	}
-
-	Lock getLock() {
-		return this.lock;
+	public final Condition newCondition() {
+		return this.lock.newCondition();
 	}
 
 	@Override

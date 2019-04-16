@@ -132,9 +132,8 @@ public class BaseShareableLockableTest {
 		Assertions.assertEquals(0, lock.getReadHoldCount());
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
 
-		try (AutoLock auto = rwl.autoSharedLock()) {
+		try (SharedAutoLock auto = rwl.autoSharedLock()) {
 			Assertions.assertNotNull(auto);
-			Assertions.assertSame(lock.readLock(), auto.getLock());
 			Assertions.assertEquals(1, lock.getReadHoldCount());
 			Assertions.assertFalse(rwl.getMutexLock().tryLock(),
 				"Succeeded in acquiring the write lock while the read lock was held");
@@ -148,9 +147,9 @@ public class BaseShareableLockableTest {
 			"The read lock was not held but was unlocked");
 
 		Assertions.assertEquals(0, lock.getReadHoldCount());
-		List<AutoLock> autoLocks = new LinkedList<>();
+		List<SharedAutoLock> autoLocks = new LinkedList<>();
 		for (int i = 1; i <= 10; i++) {
-			AutoLock l = rwl.autoSharedLock();
+			SharedAutoLock l = rwl.autoSharedLock();
 			Assertions.assertNotNull(l, String.format("Failed to acquire the reading lock on attempt # %d", i));
 			autoLocks.add(l);
 		}
@@ -158,7 +157,7 @@ public class BaseShareableLockableTest {
 		Assertions.assertFalse(rwl.getMutexLock().tryLock(),
 			"Succeeded in acquiring the write lock while the read lock was held");
 		int i = 1;
-		for (AutoLock l : autoLocks) {
+		for (SharedAutoLock l : autoLocks) {
 			try {
 				l.close();
 				i++;
@@ -220,8 +219,7 @@ public class BaseShareableLockableTest {
 		Assertions.assertFalse(lock.isWriteLocked());
 		Assertions.assertFalse(lock.isWriteLockedByCurrentThread());
 
-		try (AutoLock auto = rwl.autoMutexLock()) {
-			Assertions.assertSame(lock.writeLock(), auto.getLock());
+		try (MutexAutoLock auto = rwl.autoMutexLock()) {
 			Assertions.assertTrue(lock.isWriteLocked());
 			Assertions.assertTrue(lock.isWriteLockedByCurrentThread());
 		}
@@ -232,11 +230,10 @@ public class BaseShareableLockableTest {
 			"The write lock was not held but was unlocked");
 
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
-		List<AutoLock> autoLocks = new LinkedList<>();
+		List<MutexAutoLock> autoLocks = new LinkedList<>();
 		for (int i = 1; i <= 10; i++) {
-			AutoLock l = rwl.autoMutexLock();
+			MutexAutoLock l = rwl.autoMutexLock();
 			Assertions.assertNotNull(l, String.format("Failed to acquire the writing lock on attempt # %d", i));
-			Assertions.assertSame(writeLock, l.getLock());
 			Assertions.assertTrue(writeLock.isHeldByCurrentThread());
 			autoLocks.add(l);
 		}
@@ -245,7 +242,7 @@ public class BaseShareableLockableTest {
 		rwl.getSharedLock().unlock();
 
 		int i = 0;
-		for (AutoLock l : autoLocks) {
+		for (MutexAutoLock l : autoLocks) {
 			Assertions.assertTrue(writeLock.isHeldByCurrentThread());
 			try {
 				l.close();

@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
+import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 
 public class KeyGenerator extends BaseShareableLockable implements Supplier<String> {
 
@@ -109,7 +109,7 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 	}
 
 	public KeyGenerator setCacheCount(final int cacheCount) {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			this.cacheCount = Tools.ensureBetween(KeyGenerator.CACHE_COUNT_MAX, cacheCount,
 				KeyGenerator.CACHE_COUNT_MIN);
 			return this;

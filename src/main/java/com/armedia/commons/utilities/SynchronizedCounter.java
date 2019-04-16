@@ -3,8 +3,8 @@ package com.armedia.commons.utilities;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 
-import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
+import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 
 /**
  * <p>
@@ -105,7 +105,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @return the value's current value
 	 */
 	public long set(long value) {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			final long ret = this.value;
 			this.value = value;
 			if (value != ret) {
@@ -128,7 +128,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @return the new value after applying the delta
 	 */
 	public long add(long delta) {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			long ret = (this.value += delta);
 			if (delta != 0) {
 				// Only trigger the change if there actually was a change
@@ -204,7 +204,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @throws InterruptedException
 	 */
 	public void waitUntil(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			while (value != this.value) {
 				if (timeout > 0) {
 					this.changed.await(timeout, timeUnit);
@@ -245,7 +245,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @throws InterruptedException
 	 */
 	public long waitForChange(long timeout, TimeUnit timeUnit) throws InterruptedException {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			if (timeout > 0) {
 				this.changed.await(timeout, timeUnit);
 			} else {

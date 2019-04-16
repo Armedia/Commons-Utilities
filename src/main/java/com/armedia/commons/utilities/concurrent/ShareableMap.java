@@ -97,7 +97,7 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 
 	@Override
 	public boolean equals(Object o) {
-		try (AutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = autoSharedLock()) {
 			if (o == null) { return false; }
 			if (o == this) { return true; }
 			if (!Map.class.isInstance(o)) { return false; }

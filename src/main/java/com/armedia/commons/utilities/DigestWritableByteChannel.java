@@ -9,8 +9,8 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
+import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 
 public class DigestWritableByteChannel extends BaseShareableLockable
 	implements WritableByteChannel, DigestHashCollector {
@@ -40,7 +40,7 @@ public class DigestWritableByteChannel extends BaseShareableLockable
 
 	@Override
 	public Pair<Long, byte[]> collectHash() {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
 			this.length = 0;
 			return ret;
@@ -49,7 +49,7 @@ public class DigestWritableByteChannel extends BaseShareableLockable
 
 	@Override
 	public void resetHash() {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			this.digest.reset();
 			this.length = 0;
 		}
@@ -57,7 +57,7 @@ public class DigestWritableByteChannel extends BaseShareableLockable
 
 	@Override
 	public int write(ByteBuffer src) throws IOException {
-		try (AutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = autoMutexLock()) {
 			ByteBuffer slice = src.slice();
 			int ret = this.channel.write(slice);
 			this.digest.update(src);

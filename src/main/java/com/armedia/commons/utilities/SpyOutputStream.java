@@ -7,8 +7,8 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import com.armedia.commons.utilities.concurrent.AutoLock;
 import com.armedia.commons.utilities.concurrent.BaseMutexLockable;
+import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 import com.armedia.commons.utilities.concurrent.MutexLockable;
 
 public class SpyOutputStream extends FilterOutputStream {
@@ -33,14 +33,14 @@ public class SpyOutputStream extends FilterOutputStream {
 	}
 
 	private void assertOpen() throws IOException {
-		try (AutoLock lock = this.lock.autoMutexLock()) {
+		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			if (this.closed) { throw new IOException("This stream is already closed"); }
 		}
 	}
 
 	@Override
 	public void write(int c) throws IOException {
-		try (AutoLock lock = this.lock.autoMutexLock()) {
+		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			byte[] buf = new byte[1];
 			buf[0] = (byte) c;
@@ -51,7 +51,7 @@ public class SpyOutputStream extends FilterOutputStream {
 	@Override
 	public void write(byte[] b) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
-		try (AutoLock lock = this.lock.autoMutexLock()) {
+		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			write(b, 0, b.length);
 		}
@@ -60,7 +60,7 @@ public class SpyOutputStream extends FilterOutputStream {
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
-		try (AutoLock lock = this.lock.autoMutexLock()) {
+		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			ByteBuffer buf = ByteBuffer.wrap(b.clone()).asReadOnlyBuffer();
 			super.write(b, off, len);
@@ -74,7 +74,7 @@ public class SpyOutputStream extends FilterOutputStream {
 
 	@Override
 	public void close() throws IOException {
-		try (AutoLock lock = this.lock.autoMutexLock()) {
+		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
 			try {
 				this.closer.accept(this.out);
