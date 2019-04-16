@@ -12,7 +12,6 @@
 package com.armedia.commons.utilities;
 
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,14 +27,6 @@ import org.apache.commons.lang3.concurrent.ConcurrentUtils;
  *
  */
 public final class LockDispenser<K, C> {
-
-	public static <C> Function<C, Reference<C>> weakReferenceBuilder() {
-		return (v) -> new WeakReference<>(v);
-	}
-
-	public static <C> Function<C, Reference<C>> softReferenceBuilder() {
-		return (v) -> new SoftReference<>(v);
-	}
 
 	/**
 	 * <p>
@@ -95,7 +86,7 @@ public final class LockDispenser<K, C> {
 	private final ConcurrentMap<K, LockBox> locks = new ConcurrentHashMap<>();
 
 	public LockDispenser(Function<K, C> lockBuilder) {
-		this(lockBuilder, LockDispenser.weakReferenceBuilder());
+		this(lockBuilder, WeakReference::new);
 	}
 
 	public LockDispenser(Function<K, C> lockBuilder, Function<C, Reference<C>> referenceBuilder) {
