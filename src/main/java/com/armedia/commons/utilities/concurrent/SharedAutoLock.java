@@ -26,7 +26,7 @@ public final class SharedAutoLock implements AutoCloseable {
 
 				@Override
 				public void close() {
-					// Re-ackquire the shared lock
+					// Re-acquire the shared lock
 					SharedAutoLock.this.lock.lock();
 					SharedAutoLock.this.locked = true;
 					super.close();
