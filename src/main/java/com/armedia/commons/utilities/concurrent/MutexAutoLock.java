@@ -4,25 +4,40 @@ import java.util.Objects;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-public class MutexAutoLock implements AutoCloseable {
+import com.armedia.commons.utilities.Tools;
+
+public final class MutexAutoLock implements AutoCloseable {
+
+	private static final Runnable NOOP = () -> {
+	};
 
 	private final Lock lock;
+	private final Runnable preLock;
 	private boolean locked;
 
-	MutexAutoLock(Lock lock) {
-		this.lock = Objects.requireNonNull(lock, "Must provide a lock instance");
+	public MutexAutoLock(MutexLockable lock) {
+		this(lock, null);
+	}
+
+	MutexAutoLock(MutexLockable lock, Runnable preLock) {
+		this.lock = Objects.requireNonNull(lock, "Must provide a MutexLockable instance").acquireMutexLock();
+		this.preLock = Tools.coalesce(preLock, MutexAutoLock.NOOP);
 		this.locked = true;
 	}
 
-	public final Condition newCondition() {
+	public Condition newCondition() {
 		return this.lock.newCondition();
 	}
 
 	@Override
 	public void close() {
 		if (this.locked) {
-			this.lock.unlock();
-			this.locked = false;
+			try {
+				this.preLock.run();
+			} finally {
+				this.lock.unlock();
+				this.locked = false;
+			}
 		}
 	}
 }

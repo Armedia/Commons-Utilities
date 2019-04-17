@@ -7,12 +7,18 @@ public final class SharedAutoLock implements AutoCloseable {
 
 	private final ShareableLockable source;
 	private final Lock lock;
+	private final Runnable preMutexClose;
 	private boolean locked;
 
-	SharedAutoLock(ShareableLockable source) {
+	public SharedAutoLock(ShareableLockable source) {
 		this.source = Objects.requireNonNull(source, "Must provide a ShareableLockable instance");
 		this.lock = this.source.acquireSharedLock();
 		this.locked = true;
+		this.preMutexClose = () -> {
+			// Re-acquire the shared lock
+			this.lock.lock();
+			this.locked = true;
+		};
 	}
 
 	public MutexAutoLock upgrade() {
@@ -22,17 +28,7 @@ public final class SharedAutoLock implements AutoCloseable {
 		this.locked = false;
 		boolean ok = false;
 		try {
-			MutexAutoLock ret = new MutexAutoLock(this.source.acquireMutexLock()) {
-
-				@Override
-				public void close() {
-					// Re-acquire the shared lock
-					SharedAutoLock.this.lock.lock();
-					SharedAutoLock.this.locked = true;
-					super.close();
-				}
-
-			};
+			MutexAutoLock ret = new MutexAutoLock(this.source, this.preMutexClose);
 			ok = true;
 			return ret;
 		} finally {
