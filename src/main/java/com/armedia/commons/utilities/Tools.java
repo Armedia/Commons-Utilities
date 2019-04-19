@@ -45,6 +45,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2299,5 +2300,26 @@ public class Tools {
 		if (klass.isInstance(o)) { return klass.cast(o); }
 		if (ifNull == null) { return null; }
 		return ifNull.getChecked();
+	}
+
+	public static <F, T> Iterable<T> convertIterable(final Iterable<F> from, final Function<F, T> converter) {
+		return () -> new Iterator<T>() {
+			final Iterator<F> f = from.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return this.f.hasNext();
+			}
+
+			@Override
+			public T next() {
+				return converter.apply(this.f.next());
+			}
+
+			@Override
+			public void remove() {
+				this.f.remove();
+			}
+		};
 	}
 }
