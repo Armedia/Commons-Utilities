@@ -54,6 +54,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringTokenizer;
 
 import com.armedia.commons.utilities.function.CheckedSupplier;
+import com.armedia.commons.utilities.function.CheckedTools;
 
 /**
  * @author drivera@armedia.com
@@ -2290,10 +2291,7 @@ public class Tools {
 	}
 
 	public static final <T> T cast(Class<T> klass, Object o, Supplier<T> ifNull) {
-		Objects.requireNonNull(klass, "Must provide a class to perform the cast to");
-		if (klass.isInstance(o)) { return klass.cast(o); }
-		if (ifNull == null) { return null; }
-		return ifNull.get();
+		return Tools.cast(klass, o, (ifNull != null ? CheckedTools.check(ifNull) : null));
 	}
 
 	public static final <T, EX extends Throwable> T cast(Class<T> klass, Object o, CheckedSupplier<T, EX> ifNull)
