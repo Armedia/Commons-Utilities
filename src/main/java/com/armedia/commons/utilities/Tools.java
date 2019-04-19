@@ -2290,8 +2290,7 @@ public class Tools {
 	}
 
 	public static final <T> T cast(Class<T> klass, Object o, Supplier<T> ifNull) {
-		CheckedSupplier<T, RuntimeException> s = (ifNull != null ? CheckedTools.check(ifNull) : null);
-		return Tools.cast(klass, o, s);
+		return Tools.cast(klass, o, (ifNull != null ? CheckedTools.check(ifNull) : null));
 	}
 
 	public static final <T, EX extends Throwable> T cast(Class<T> klass, Object o, CheckedSupplier<T, EX> ifNull)
