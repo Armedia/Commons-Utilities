@@ -2302,23 +2302,29 @@ public class Tools {
 		return ifNull.getChecked();
 	}
 
-	public static <F, T> Iterable<T> convertIterable(final Iterable<F> from, final Function<F, T> converter) {
-		return () -> new Iterator<T>() {
-			final Iterator<F> f = from.iterator();
+	public static <F, T> Iterable<T> convert(final Iterable<F> from, final Function<F, T> converter) {
+		Objects.requireNonNull(from);
+		Objects.requireNonNull(converter);
+		return () -> Tools.convert(from.iterator(), converter);
+	}
 
+	public static <F, T> Iterator<T> convert(final Iterator<F> from, final Function<F, T> converter) {
+		Objects.requireNonNull(from);
+		Objects.requireNonNull(converter);
+		return new Iterator<T>() {
 			@Override
 			public boolean hasNext() {
-				return this.f.hasNext();
+				return from.hasNext();
 			}
 
 			@Override
 			public T next() {
-				return converter.apply(this.f.next());
+				return converter.apply(from.next());
 			}
 
 			@Override
 			public void remove() {
-				this.f.remove();
+				from.remove();
 			}
 		};
 	}
