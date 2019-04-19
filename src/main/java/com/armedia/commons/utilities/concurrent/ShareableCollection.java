@@ -17,7 +17,7 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 	private final Collection<ELEMENT> c;
 
 	public ShareableCollection(Collection<ELEMENT> c) {
-		this(ShareableLockable.NULL_LOCK, c);
+		this(BaseShareableLockable.extractShareableLockable(c), c);
 	}
 
 	public ShareableCollection(ShareableLockable lockable, Collection<ELEMENT> c) {

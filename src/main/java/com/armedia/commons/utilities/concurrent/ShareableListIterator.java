@@ -8,7 +8,7 @@ public class ShareableListIterator<ELEMENT> extends ShareableIterator<ELEMENT> i
 	private final ListIterator<ELEMENT> iterator;
 
 	public ShareableListIterator(ListIterator<ELEMENT> iterator) {
-		this(ShareableLockable.NULL_LOCK, iterator);
+		this(BaseShareableLockable.extractShareableLockable(iterator), iterator);
 	}
 
 	public ShareableListIterator(ShareableLockable lockable, ListIterator<ELEMENT> iterator) {
