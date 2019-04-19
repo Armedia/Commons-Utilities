@@ -19,7 +19,7 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 	protected final Collection<VALUE> values;
 
 	public ShareableMap(Map<KEY, VALUE> map) {
-		this(ShareableLockable.NULL_LOCK, map);
+		this(BaseShareableLockable.extractShareableLockable(map), map);
 	}
 
 	public ShareableMap(ShareableLockable lockable, Map<KEY, VALUE> map) {

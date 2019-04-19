@@ -73,7 +73,7 @@ public interface MutexLockable {
 	 * @return the held mutex lock, wrapped inside an {@link MutexAutoLock}
 	 */
 	public default MutexAutoLock autoMutexLock() {
-		return new MutexAutoLock(acquireMutexLock());
+		return new MutexAutoLock(this);
 	}
 
 	/**

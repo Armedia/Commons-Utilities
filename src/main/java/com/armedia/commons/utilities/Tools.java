@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
@@ -51,6 +52,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringTokenizer;
+
+import com.armedia.commons.utilities.function.CheckedSupplier;
 
 /**
  * @author drivera@armedia.com
@@ -2271,5 +2274,33 @@ public class Tools {
 		values
 			.forEachRemaining(consumer.andThen((s) -> sb.append(String.valueOf(s).replaceAll(replacer, replacement))));
 		return sb.toString();
+	}
+
+	public static final <T> Supplier<T> asSupplier(T t) {
+		return () -> t;
+	}
+
+	public static final <T> T cast(Class<T> klass, Object o) {
+		return Tools.cast(klass, o, (T) null);
+	}
+
+	public static final <T> T cast(Class<T> klass, Object o, T ifNull) {
+		Supplier<T> s = (ifNull != null ? Tools.asSupplier(ifNull) : null);
+		return Tools.cast(klass, o, s);
+	}
+
+	public static final <T> T cast(Class<T> klass, Object o, Supplier<T> ifNull) {
+		Objects.requireNonNull(klass, "Must provide a class to perform the cast to");
+		if (klass.isInstance(o)) { return klass.cast(o); }
+		if (ifNull == null) { return null; }
+		return ifNull.get();
+	}
+
+	public static final <T, EX extends Throwable> T cast(Class<T> klass, Object o, CheckedSupplier<T, EX> ifNull)
+		throws EX {
+		Objects.requireNonNull(klass, "Must provide a class to perform the cast to");
+		if (klass.isInstance(o)) { return klass.cast(o); }
+		if (ifNull == null) { return null; }
+		return ifNull.getChecked();
 	}
 }

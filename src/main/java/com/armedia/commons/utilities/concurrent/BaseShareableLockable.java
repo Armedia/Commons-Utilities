@@ -6,6 +6,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.armedia.commons.utilities.Tools;
+
 /**
  * <p>
  * This class exists as a simple concrete implementation of {@link ShareableLockable}, for
@@ -65,5 +67,9 @@ public class BaseShareableLockable extends BaseMutexLockable implements Shareabl
 	protected static ReadWriteLock extractLock(ShareableLockable lockable) {
 		return Objects.requireNonNull(lockable, "Must provide a non-null ReadWriteLockable instance")
 			.getShareableLock();
+	}
+
+	protected static ShareableLockable extractShareableLockable(Object o) {
+		return Tools.cast(ShareableLockable.class, o);
 	}
 }
