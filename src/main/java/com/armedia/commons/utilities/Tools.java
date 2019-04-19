@@ -2286,8 +2286,7 @@ public class Tools {
 	}
 
 	public static final <T> T cast(Class<T> klass, Object o, T ifNull) {
-		Supplier<T> s = (ifNull != null ? Tools.asSupplier(ifNull) : null);
-		return Tools.cast(klass, o, s);
+		return Tools.cast(klass, o, (ifNull != null ? Tools.asSupplier(ifNull) : null));
 	}
 
 	public static final <T> T cast(Class<T> klass, Object o, Supplier<T> ifNull) {
