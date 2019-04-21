@@ -853,23 +853,13 @@ public class Tools {
 	 * A {@link Comparator} instance that utilizes {@link #strcmp(String, String)} to perform its
 	 * comparison.
 	 */
-	public static final Comparator<String> STRCMP = new Comparator<>() {
-		@Override
-		public int compare(String o1, String o2) {
-			return Tools.strcmp(o1, o2);
-		}
-	};
+	public static final Comparator<String> STRCMP = Tools::strcmp;
 
 	/**
 	 * A {@link Comparator} instance that utilizes {@link #stricmp(String, String)} to perform its
 	 * comparison.
 	 */
-	public static final Comparator<String> STRICMP = new Comparator<>() {
-		@Override
-		public int compare(String o1, String o2) {
-			return Tools.stricmp(o1, o2);
-		}
-	};
+	public static final Comparator<String> STRICMP = Tools::stricmp;
 
 	public static <K, V> Map<K, V> freezeCopy(Map<K, V> m) {
 		return Tools.freezeCopy(m, false);
@@ -2216,7 +2206,7 @@ public class Tools {
 
 	public static final Iterator<String> splitEscapedIterator(char separator, String value) {
 		if (value == null) { return null; }
-		return new CloseableIterator<>() {
+		return new CloseableIterator<String>() {
 			final Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
 			final Matcher matcher = this.splitter.matcher(value);
 			private int previous = 0;
@@ -2310,7 +2300,7 @@ public class Tools {
 	public static <F, T> Iterator<T> convert(final Iterator<F> from, final Function<F, T> converter) {
 		Objects.requireNonNull(from);
 		Objects.requireNonNull(converter);
-		return new Iterator<>() {
+		return new Iterator<T>() {
 			@Override
 			public boolean hasNext() {
 				return from.hasNext();
