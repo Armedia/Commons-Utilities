@@ -11,7 +11,6 @@
  */
 package com.armedia.commons.utilities;
 
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -854,7 +853,7 @@ public class Tools {
 	 * A {@link Comparator} instance that utilizes {@link #strcmp(String, String)} to perform its
 	 * comparison.
 	 */
-	public static final Comparator<String> STRCMP = new Comparator<String>() {
+	public static final Comparator<String> STRCMP = new Comparator<>() {
 		@Override
 		public int compare(String o1, String o2) {
 			return Tools.strcmp(o1, o2);
@@ -865,7 +864,7 @@ public class Tools {
 	 * A {@link Comparator} instance that utilizes {@link #stricmp(String, String)} to perform its
 	 * comparison.
 	 */
-	public static final Comparator<String> STRICMP = new Comparator<String>() {
+	public static final Comparator<String> STRICMP = new Comparator<>() {
 		@Override
 		public int compare(String o1, String o2) {
 			return Tools.stricmp(o1, o2);
@@ -1755,8 +1754,8 @@ public class Tools {
 
 	/**
 	 * Returns a {@link Properties} instance populated from the contents of the given resource,
-	 * located using getResourceAsStream() from the class loader onto which the {@link Toolkit}
-	 * class was loaded.
+	 * located using getResourceAsStream() from the class loader onto which the {@link Tools} class
+	 * was loaded.
 	 *
 	 * @param resource
 	 *
@@ -1803,7 +1802,7 @@ public class Tools {
 	/**
 	 * Returns a {@link Properties} instance populated from the contents of the given XML-formatted
 	 * resource, located using getResourceAsStream() from the class loader onto which the
-	 * {@link Toolkit} class was loaded.
+	 * {@link Tools} class was loaded.
 	 *
 	 * @param resource
 	 *
@@ -2217,7 +2216,7 @@ public class Tools {
 
 	public static final Iterator<String> splitEscapedIterator(char separator, String value) {
 		if (value == null) { return null; }
-		return new CloseableIterator<String>() {
+		return new CloseableIterator<>() {
 			final Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
 			final Matcher matcher = this.splitter.matcher(value);
 			private int previous = 0;
@@ -2311,7 +2310,7 @@ public class Tools {
 	public static <F, T> Iterator<T> convert(final Iterator<F> from, final Function<F, T> converter) {
 		Objects.requireNonNull(from);
 		Objects.requireNonNull(converter);
-		return new Iterator<T>() {
+		return new Iterator<>() {
 			@Override
 			public boolean hasNext() {
 				return from.hasNext();
