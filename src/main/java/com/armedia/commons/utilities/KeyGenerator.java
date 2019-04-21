@@ -10,9 +10,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 
@@ -65,8 +62,6 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 	public static final int DEFAULT_CACHE_COUNT = 1000;
 	public static final KeyFactory DEFAULT_PREFIX = Factories.UUID;
 
-	private final Logger log = LoggerFactory.getLogger(getClass());
-
 	private final KeyFactory keyFactory;
 	private final Supplier<String> generator;
 
@@ -88,11 +83,9 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 
 	protected String generateCached() {
 		return shareLockedUpgradable(this.cache::poll, Objects::isNull, (e) -> {
-			this.log.debug("Rendering {} new keys for the empty cache", this.cacheCount);
 			for (int i = 0; i <= this.cacheCount; i++) {
 				String newKey = this.keyFactory.get();
 				if (!this.cache.offer(newKey)) {
-					this.log.trace("Cached {} keys of the intended {}", i, this.cacheCount);
 					if (i == 0) {
 						// NOT EVEN ONE!!! Return the currently-rendered key
 						return newKey;
