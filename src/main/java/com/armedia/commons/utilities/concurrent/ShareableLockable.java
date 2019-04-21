@@ -222,8 +222,8 @@ public interface ShareableLockable extends MutexLockable {
 	 *
 	 * @param decision
 	 * @param writeBlock
-	 * @returns the value returned by the {@code writeBlock} if it was executed, or {@code null} if
-	 *          it wasn't.
+	 * @return the value returned by the {@code writeBlock} if it was executed, or {@code null} if
+	 *         it wasn't.
 	 */
 	public default <E> E shareLockedUpgradable(Supplier<Boolean> decision,
 		Function<Supplier<Condition>, E> writeBlock) {
@@ -265,8 +265,8 @@ public interface ShareableLockable extends MutexLockable {
 	 *
 	 * @param decision
 	 * @param writeBlock
-	 * @returns the value returned by the {@code writeBlock} if it was executed, or {@code null} if
-	 *          it wasn't.
+	 * @return the value returned by the {@code writeBlock} if it was executed, or {@code null} if
+	 *         it wasn't.
 	 * @throws EX
 	 */
 	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
@@ -311,8 +311,8 @@ public interface ShareableLockable extends MutexLockable {
 	 * @param checker
 	 * @param decision
 	 * @param writeBlock
-	 * @returns either the value returned by the {@code writeBlock} (if it was executed), or the
-	 *          last value returned by the {@code checker} parameter.
+	 * @return either the value returned by the {@code writeBlock} (if it was executed), or the last
+	 *         value returned by the {@code checker} parameter.
 	 */
 	public default <E> E shareLockedUpgradable(Supplier<E> checker, Predicate<E> decision,
 		BiFunction<E, Supplier<Condition>, E> writeBlock) {
@@ -352,8 +352,8 @@ public interface ShareableLockable extends MutexLockable {
 	 * @param checker
 	 * @param decision
 	 * @param writeBlock
-	 * @returns either the value returned by the {@code writeBlock} (if it was executed), or the
-	 *          last value returned by the {@code checker} parameter.
+	 * @return either the value returned by the {@code writeBlock} (if it was executed), or the last
+	 *         value returned by the {@code checker} parameter.
 	 * @throws EX
 	 */
 	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
