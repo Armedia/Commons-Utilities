@@ -37,7 +37,7 @@
 	<properties>
 		<maven.min-version>3.2.2</maven.min-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.build.target>1.8</project.build.target>
+		<project.build.target>11</project.build.target>
 		<project.osgi.repoName>NONE</project.osgi.repoName>
 		<project.osgi.repoUrl>file:///${user.home}/OSGi/releases</project.osgi.repoUrl>
 	</properties>
@@ -70,6 +70,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.6</version>
@@ -98,6 +104,18 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.25</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-core</artifactId>
+			<version>2.3.0.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.3.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
