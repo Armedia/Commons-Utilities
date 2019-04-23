@@ -520,6 +520,7 @@ public class ToolsTest {
 			arr_obj[0][i] = String.valueOf(Integer.valueOf(i));
 		}
 		do {
+			Arrays.fill(arr_obj[1], null);
 			for (int i = 0; i < arr_obj[1].length; i++) {
 				if ((rand.nextInt(10) % 5) == 0) {
 					continue;
