@@ -513,6 +513,7 @@ public class ToolsTest {
 		Object[][] arr_obj = {
 			new Object[10], new Object[10]
 		};
+		Arrays.fill(arr_obj[0], null);
 		for (int i = 0; i < arr_obj[0].length; i++) {
 			if ((rand.nextInt(10) % 5) == 0) {
 				continue;
