@@ -4,11 +4,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
-import com.armedia.commons.utilities.KeyGenerator;
-
-class KeyGeneratorTest {
+public class KeyGeneratorTest {
 	@Test
-	void testGet() throws Exception {
+	public void testGet() throws Exception {
 		KeyGenerator gen = new KeyGenerator();
 
 		System.out.printf("=== START ===%n");

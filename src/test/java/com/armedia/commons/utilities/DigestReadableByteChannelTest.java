@@ -22,7 +22,7 @@ import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class DigestReadableByteChannelTest {
+public class DigestReadableByteChannelTest {
 
 	private static final String NULL_STRING = null;
 	private static final MessageDigest NULL_DIGEST = null;
@@ -36,7 +36,7 @@ class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	void testDigestReadableByteChannel() throws Exception {
+	public void testDigestReadableByteChannel() throws Exception {
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new DigestReadableByteChannel(null, DigestReadableByteChannelTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
@@ -64,7 +64,7 @@ class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	void testGetDigest() throws Exception {
+	public void testGetDigest() throws Exception {
 		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
 		try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256)) {
 			Assertions.assertSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
@@ -76,7 +76,7 @@ class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	void testCollectHash() throws Exception {
+	public void testCollectHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 
 		for (Provider p : Security.getProviders()) {
@@ -114,7 +114,7 @@ class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	void testResetHash() throws Exception {
+	public void testResetHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 
 		for (Provider p : Security.getProviders()) {
@@ -153,7 +153,7 @@ class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	void testRead() throws Exception {
+	public void testRead() throws Exception {
 		byte[] c = RandomStringUtils.random(1000).getBytes();
 		try (final ReadableByteChannel channel = new DigestReadableByteChannel(
 			Channels.newChannel(new ByteArrayInputStream(c)), DigestReadableByteChannelTest.SHA256)) {
@@ -172,7 +172,7 @@ class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	void testIsOpen() throws Exception {
+	public void testIsOpen() throws Exception {
 		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
 		DigestReadableByteChannel C = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256);
 		try (DigestReadableByteChannel c = C) {
@@ -182,7 +182,7 @@ class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	void testClose() throws IOException {
+	public void testClose() throws IOException {
 		ReadableByteChannel wbc = EasyMock.createMock(ReadableByteChannel.class);
 		wbc.close();
 		EasyMock.expectLastCall().once();
