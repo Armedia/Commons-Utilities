@@ -1,8 +1,0 @@
---add-opens
-  com.armedia.commons.utilities/com.armedia.commons.utilities=org.junit.platform.commons
-
---add-reads
-  com.armedia.commons.utilities=com.junit.jupiter.api
-
---add-reads
-  com.armedia.commons.utilities=org.easymock
