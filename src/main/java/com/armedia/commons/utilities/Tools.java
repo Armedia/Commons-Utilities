@@ -2206,7 +2206,7 @@ public class Tools {
 
 	public static final Iterator<String> splitEscapedIterator(char separator, String value) {
 		if (value == null) { return null; }
-		return new CloseableIterator<String>() {
+		return new CloseableIterator<>() {
 			final Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
 			final Matcher matcher = this.splitter.matcher(value);
 			private int previous = 0;
@@ -2280,7 +2280,8 @@ public class Tools {
 	}
 
 	public static final <T> T cast(Class<T> klass, Object o, Supplier<T> ifNull) {
-		return Tools.cast(klass, o, (ifNull != null ? CheckedTools.check(ifNull) : null));
+		CheckedSupplier<T, RuntimeException> s = (ifNull != null ? CheckedTools.check(ifNull) : null);
+		return Tools.cast(klass, o, s);
 	}
 
 	public static final <T, EX extends Throwable> T cast(Class<T> klass, Object o, CheckedSupplier<T, EX> ifNull)
@@ -2300,7 +2301,7 @@ public class Tools {
 	public static <F, T> Iterator<T> convert(final Iterator<F> from, final Function<F, T> converter) {
 		Objects.requireNonNull(from);
 		Objects.requireNonNull(converter);
-		return new Iterator<T>() {
+		return new Iterator<>() {
 			@Override
 			public boolean hasNext() {
 				return from.hasNext();
