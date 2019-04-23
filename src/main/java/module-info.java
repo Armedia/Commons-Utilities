@@ -1,4 +1,4 @@
-open module com.armedia.commons.utilities {
+module com.armedia.commons.utilities {
 	exports com.armedia.commons.utilities;
 	exports com.armedia.commons.utilities.concurrent;
 	exports com.armedia.commons.utilities.function;
@@ -6,9 +6,12 @@ open module com.armedia.commons.utilities {
 
 	requires static transitive java.xml;
 	requires static transitive java.xml.bind;
-	requires static transitive org.apache.commons.codec;
-	requires static transitive org.apache.commons.io;
-	requires static transitive org.apache.commons.lang3;
-	requires static transitive org.apache.commons.text;
-	requires static transitive slf4j.api;
+	requires static transitive java.activation;
+
+	requires org.apache.commons.codec;
+	requires org.apache.commons.io;
+	requires org.apache.commons.lang3;
+	requires org.apache.commons.text;
+
+	requires slf4j.api;
 }
