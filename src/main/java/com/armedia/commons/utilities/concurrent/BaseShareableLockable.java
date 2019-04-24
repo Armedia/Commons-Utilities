@@ -65,7 +65,7 @@ public class BaseShareableLockable extends BaseMutexLockable implements Shareabl
 	}
 
 	protected static ReadWriteLock extractLock(ShareableLockable lockable) {
-		return Objects.requireNonNull(lockable, "Must provide a non-null ReadWriteLockable instance")
+		return Objects.requireNonNull(lockable, "Must provide a non-null ShareableLockable instance")
 			.getShareableLock();
 	}
 
