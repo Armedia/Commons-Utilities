@@ -80,7 +80,7 @@ public interface ShareableLockable extends MutexLockable {
 			ReentrantReadWriteLock rrwl = ReentrantReadWriteLock.class.cast(rwl);
 			final int readCount = rrwl.getReadHoldCount();
 			final int writeCount = rrwl.getWriteHoldCount();
-			if ((writeCount == 0) && (readCount > 0)) { throw new LockDisallowedException(this, readCount); }
+			if ((writeCount == 0) && (readCount > 0)) { throw new LockUpgradeDisallowedException(this, readCount); }
 		}
 		mutexLock.lock();
 		return mutexLock;

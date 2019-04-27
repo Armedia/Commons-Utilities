@@ -280,10 +280,10 @@ public class BaseShareableLockableTest {
 			Lock sl = rwl.acquireSharedLock();
 			Assertions.assertEquals(1, lock.getReadHoldCount());
 			Assertions.assertSame(readLock, sl);
-			Assertions.assertThrows(LockDisallowedException.class, () -> rwl.acquireMutexLock());
+			Assertions.assertThrows(LockUpgradeDisallowedException.class, () -> rwl.acquireMutexLock());
 			try {
 				rwl.acquireMutexLock();
-			} catch (LockDisallowedException e) {
+			} catch (LockUpgradeDisallowedException e) {
 				Assertions.assertSame(rwl, e.getTarget());
 				Assertions.assertEquals(1, e.getReadHoldCount());
 

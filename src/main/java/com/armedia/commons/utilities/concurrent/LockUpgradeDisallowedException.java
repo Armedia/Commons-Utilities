@@ -1,12 +1,12 @@
 package com.armedia.commons.utilities.concurrent;
 
-public class LockDisallowedException extends RuntimeException {
+public class LockUpgradeDisallowedException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
 	private final ShareableLockable target;
 	private final int readCount;
 
-	LockDisallowedException(ShareableLockable target, int readCount) {
+	LockUpgradeDisallowedException(ShareableLockable target, int readCount) {
 		super(String.format("Locking operation is not allowed: %d read locks held when requesting a write lock",
 			readCount));
 		this.target = target;
