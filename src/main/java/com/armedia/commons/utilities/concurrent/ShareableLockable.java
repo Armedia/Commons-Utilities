@@ -80,7 +80,7 @@ public interface ShareableLockable extends MutexLockable {
 			ReentrantReadWriteLock rrwl = ReentrantReadWriteLock.class.cast(rwl);
 			final int readCount = rrwl.getReadHoldCount();
 			final int writeCount = rrwl.getWriteHoldCount();
-			if ((writeCount == 0) && (readCount > 0)) { throw new LockDisallowedException(this, readCount); }
+			if ((writeCount == 0) && (readCount > 0)) { throw new LockUpgradeDeadlockException(this, readCount); }
 		}
 		mutexLock.lock();
 		return mutexLock;
@@ -146,7 +146,7 @@ public interface ShareableLockable extends MutexLockable {
 	 */
 	public default <E> E shareLocked(Supplier<E> operation) {
 		Objects.requireNonNull(operation, "Must provide an operation to run");
-		return shareLocked(() -> operation.get());
+		return shareLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -178,8 +178,7 @@ public interface ShareableLockable extends MutexLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default void shareLocked(Runnable operation) {
-		Objects.requireNonNull(operation, "Must provide an operation to run");
-		shareLocked(() -> operation.run());
+		shareLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -195,7 +194,7 @@ public interface ShareableLockable extends MutexLockable {
 	public default <EX extends Throwable> void shareLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
 		shareLocked(() -> {
-			operation.run();
+			operation.runChecked();
 			return null;
 		});
 	}

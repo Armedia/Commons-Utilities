@@ -52,19 +52,17 @@
 
 	<repositories>
 		<repository>
-			<id>Armedia Commons</id>
-			<name>Armedia Common Artifacts Repository</name>
-			<url>https://project.armedia.com/nexus/content/groups/armedia</url>
-			<layout>default</layout>
+			<id>Armedia Repository</id>
+			<name>Armedia Artifacts Repository</name>
+			<url>https://project.armedia.com/nexus/content/groups/armedia/</url>
 		</repository>
 	</repositories>
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>Armedia Commons</id>
-			<name>Armedia Common Artifacts Repository</name>
-			<url>https://project.armedia.com/nexus/content/repositories/commons/</url>
-			<layout>default</layout>
+			<id>Armedia Repository</id>
+			<name>Armedia Artifacts Repository</name>
+			<url>https://project.armedia.com/nexus/content/groups/armedia/</url>
 		</pluginRepository>
 	</pluginRepositories>
 
