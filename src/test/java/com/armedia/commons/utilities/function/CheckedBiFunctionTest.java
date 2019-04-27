@@ -9,10 +9,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class CheckedBiFunctionTest {
+public class CheckedBiFunctionTest {
 
 	@Test
-	void testApplyChecked() throws Throwable {
+	public void testApplyChecked() throws Throwable {
 		CheckedBiFunction<String, Double, UUID, Throwable> f = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -46,7 +46,7 @@ class CheckedBiFunctionTest {
 	}
 
 	@Test
-	void testApply() {
+	public void testApply() {
 		CheckedBiFunction<String, Double, UUID, Throwable> f = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -83,7 +83,7 @@ class CheckedBiFunctionTest {
 	}
 
 	@Test
-	void testAndThen() throws Throwable {
+	public void testAndThen() throws Throwable {
 		CheckedBiFunction<String, Double, UUID, Throwable> a = null;
 		CheckedBiFunction<String, Double, Long, Throwable> b = null;
 

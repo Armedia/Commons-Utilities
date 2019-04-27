@@ -8,10 +8,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class CheckedBiConsumerTest {
+public class CheckedBiConsumerTest {
 
 	@Test
-	void testAcceptChecked() throws Throwable {
+	public void testAcceptChecked() throws Throwable {
 		CheckedBiConsumer<String, Number, Throwable> c = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -42,7 +42,7 @@ class CheckedBiConsumerTest {
 	}
 
 	@Test
-	void testAccept() {
+	public void testAccept() {
 		CheckedBiConsumer<String, Number, Throwable> c = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -75,7 +75,7 @@ class CheckedBiConsumerTest {
 	}
 
 	@Test
-	void testAndThen() throws Throwable {
+	public void testAndThen() throws Throwable {
 		CheckedBiConsumer<String, Number, Throwable> a = null;
 		CheckedBiConsumer<String, Number, Throwable> b = null;
 

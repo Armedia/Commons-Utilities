@@ -9,10 +9,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class CheckedBiPredicateTest {
+public class CheckedBiPredicateTest {
 
 	@Test
-	void testApplyChecked() throws Throwable {
+	public void testApplyChecked() throws Throwable {
 		CheckedBiPredicate<String, Double, Throwable> p = null;
 
 		final Random r = new Random(System.nanoTime());
@@ -47,7 +47,7 @@ class CheckedBiPredicateTest {
 	}
 
 	@Test
-	void testApply() {
+	public void testApply() {
 		CheckedBiPredicate<String, Double, Throwable> p = null;
 
 		final Random r = new Random(System.nanoTime());
@@ -85,7 +85,7 @@ class CheckedBiPredicateTest {
 	}
 
 	@Test
-	void testAnd() throws Throwable {
+	public void testAnd() throws Throwable {
 		CheckedBiPredicate<String, Double, Throwable> a = null;
 		CheckedBiPredicate<String, Double, Throwable> b = null;
 
@@ -242,7 +242,7 @@ class CheckedBiPredicateTest {
 	}
 
 	@Test
-	void testOr() throws Throwable {
+	public void testOr() throws Throwable {
 		CheckedBiPredicate<String, Double, Throwable> a = null;
 		CheckedBiPredicate<String, Double, Throwable> b = null;
 
@@ -399,7 +399,7 @@ class CheckedBiPredicateTest {
 	}
 
 	@Test
-	void testNegate() throws Throwable {
+	public void testNegate() throws Throwable {
 		CheckedBiPredicate<String, Double, Throwable> a = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -442,7 +442,7 @@ class CheckedBiPredicateTest {
 	}
 
 	@Test
-	void testXor() throws Throwable {
+	public void testXor() throws Throwable {
 		CheckedBiPredicate<String, Double, Throwable> a = null;
 		CheckedBiPredicate<String, Double, Throwable> b = null;
 
