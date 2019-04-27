@@ -83,7 +83,7 @@ class SharedAutoLockTest {
 				Assertions.assertEquals(0, lock.getWriteHoldCount());
 				try (MutexAutoLock upgraded = basic.upgrade()) {
 					Assertions.fail("Did not fail on an obvious deadlock");
-				} catch (LockUpgradeDisallowedException e) {
+				} catch (LockUpgradeDeadlockException e) {
 					Assertions.assertSame(rwl, e.getTarget());
 					Assertions.assertEquals(1, e.getReadHoldCount());
 				}
