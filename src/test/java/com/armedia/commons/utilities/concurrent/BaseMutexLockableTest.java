@@ -297,4 +297,22 @@ public class BaseMutexLockableTest {
 		}));
 		Assertions.assertEquals(1, callCount.get());
 	}
+
+	@Test
+	public void testExtractLock() {
+		final ReentrantLock lock = new ReentrantLock();
+		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
+		Assertions.assertSame(lock, BaseMutexLockable.extractLock(rwl));
+		Assertions.assertThrows(NullPointerException.class, () -> BaseMutexLockable.extractLock(null));
+	}
+
+	@Test
+	public void testExtractMutexLockable() {
+		final ReentrantLock lock = new ReentrantLock();
+		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
+
+		Assertions.assertNull(BaseMutexLockable.extractMutexLockable(null));
+		Assertions.assertSame(rwl, BaseMutexLockable.extractMutexLockable(rwl));
+		Assertions.assertNull(BaseMutexLockable.extractMutexLockable(new Object()));
+	}
 }
