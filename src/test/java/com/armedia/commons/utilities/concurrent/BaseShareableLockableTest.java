@@ -1526,4 +1526,22 @@ public class BaseShareableLockableTest {
 		Assertions.assertEquals(2, predicateCount.get());
 		Assertions.assertEquals(1, workerCount.get());
 	}
+
+	@Test
+	public void testExtractLock() {
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
+		Assertions.assertSame(lock, BaseShareableLockable.extractLock(rwl));
+		Assertions.assertThrows(NullPointerException.class, () -> BaseShareableLockable.extractLock(null));
+	}
+
+	@Test
+	public void testExtractMutexLockable() {
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
+
+		Assertions.assertNull(BaseShareableLockable.extractShareableLockable(null));
+		Assertions.assertSame(rwl, BaseShareableLockable.extractShareableLockable(rwl));
+		Assertions.assertNull(BaseShareableLockable.extractShareableLockable(new Object()));
+	}
 }
