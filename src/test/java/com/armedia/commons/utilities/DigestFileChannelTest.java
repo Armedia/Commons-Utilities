@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import com.armedia.commons.utilities.DigestFileChannel.DigestFileLock;
 
-class DigestFileChannelTest {
+public class DigestFileChannelTest {
 
 	private static final String NULL_STRING = null;
 	private static final MessageDigest NULL_DIGEST = null;
@@ -42,7 +42,7 @@ class DigestFileChannelTest {
 	}
 
 	@Test
-	void testDigestFileChannel() throws Exception {
+	public void testDigestFileChannel() throws Exception {
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new DigestFileChannel(null, DigestFileChannelTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
@@ -72,7 +72,7 @@ class DigestFileChannelTest {
 	}
 
 	@Test
-	void testGetDigest() throws Exception {
+	public void testGetDigest() throws Exception {
 		final File tempFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
 		tempFile.deleteOnExit();
 		for (Provider p : Security.getProviders()) {
@@ -98,7 +98,7 @@ class DigestFileChannelTest {
 	}
 
 	@Test
-	void testCollectHash() throws Exception {
+	public void testCollectHash() throws Exception {
 		final File tempFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
 		tempFile.deleteOnExit();
 		final Random r = new Random(System.nanoTime());
@@ -131,7 +131,7 @@ class DigestFileChannelTest {
 	}
 
 	@Test
-	void testResetHash() throws Exception {
+	public void testResetHash() throws Exception {
 		final File tempFile = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
 		tempFile.deleteOnExit();
 		final Random r = new Random(System.nanoTime());
@@ -167,7 +167,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateRead() throws Exception {
+	public void testDelegateRead() throws Exception {
 		final Random r = new Random(System.nanoTime());
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 		final ByteBuffer nullBuf = null;
@@ -324,7 +324,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateWrite() throws Exception {
+	public void testDelegateWrite() throws Exception {
 		final Random r = new Random(System.nanoTime());
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 		final ByteBuffer nullBuf = null;
@@ -481,7 +481,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegatePosition() throws Exception {
+	public void testDelegatePosition() throws Exception {
 		final Random r = new Random(System.nanoTime());
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 
@@ -550,7 +550,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateSize() throws Exception {
+	public void testDelegateSize() throws Exception {
 		final Random r = new Random(System.nanoTime());
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 
@@ -588,7 +588,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateTruncate() throws Exception {
+	public void testDelegateTruncate() throws Exception {
 		final Random r = new Random(System.nanoTime());
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 
@@ -626,7 +626,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateForce() throws Exception {
+	public void testDelegateForce() throws Exception {
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 
 		// public void force(boolean metaData) throws IOException
@@ -666,7 +666,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateMap() throws Exception {
+	public void testDelegateMap() throws Exception {
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 		final MappedByteBuffer buf = EasyMock.createMock(MappedByteBuffer.class);
 		final MapMode[] mapModes = {
@@ -722,7 +722,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateLocks() throws Exception {
+	public void testDelegateLocks() throws Exception {
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 		final boolean[] allShared = {
 			false, true
@@ -853,7 +853,7 @@ class DigestFileChannelTest {
 
 	@Test
 	@SuppressWarnings("resource")
-	void testDelegateTransfers() throws Exception {
+	public void testDelegateTransfers() throws Exception {
 		final Random r = new Random(System.nanoTime());
 		final FileChannel fc = EasyMock.createStrictMock(FileChannel.class);
 		final WritableByteChannel wbc = EasyMock.createStrictMock(WritableByteChannel.class);

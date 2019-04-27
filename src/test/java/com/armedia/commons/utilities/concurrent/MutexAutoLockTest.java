@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("resource")
-class MutexAutoLockTest {
+public class MutexAutoLockTest {
 
 	@Test
-	void testConstructor() {
+	public void testConstructor() {
 		final MutexLockable mutex = new BaseMutexLockable();
 		final Runnable runnable = () -> Assertions.fail("This method should not be called");
 		Assertions.assertThrows(NullPointerException.class, () -> new MutexAutoLock(null));
@@ -30,7 +30,7 @@ class MutexAutoLockTest {
 	}
 
 	@Test
-	void testAutoClose() {
+	public void testAutoClose() {
 		final ReentrantLock lock = new ReentrantLock();
 		final MutexLockable mutex = new BaseMutexLockable(lock);
 		final AtomicInteger runnableCalled = new AtomicInteger(0);
@@ -77,7 +77,7 @@ class MutexAutoLockTest {
 	}
 
 	@Test
-	void testNewCondition() throws Exception {
+	public void testNewCondition() throws Exception {
 		final ReentrantLock lock = new ReentrantLock();
 		final MutexLockable mutex = new BaseMutexLockable(lock);
 		MutexAutoLock autoLock = new MutexAutoLock(mutex);
@@ -128,7 +128,7 @@ class MutexAutoLockTest {
 	}
 
 	@Test
-	void testClose() {
+	public void testClose() {
 		final ReentrantLock lock = new ReentrantLock();
 		final MutexLockable mutex = new BaseMutexLockable(lock);
 		final AtomicInteger runnableCalled = new AtomicInteger(0);
