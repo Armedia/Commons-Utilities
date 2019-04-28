@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -13,6 +14,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.armedia.commons.utilities.Tools;
 
 public class ShareableCollectionTest {
 
@@ -613,10 +616,142 @@ public class ShareableCollectionTest {
 
 	@Test
 	public void testEquals() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+
+			c = new ShareableCollection<>(rwl, new ArrayList<>(l));
+
+			Assertions.assertFalse(c.equals(null));
+			Assertions.assertFalse(c.equals(new Object()));
+			Assertions.assertTrue(c.equals(c));
+
+			EasyMock.reset(rl, wl);
+			rl.lock();
+			EasyMock.expectLastCall().once();
+			rl.unlock();
+			EasyMock.expectLastCall().once();
+			EasyMock.replay(rl, wl);
+			Assertions.assertFalse(c.equals(new ArrayList<>()));
+			EasyMock.verify(rl, wl);
+
+			EasyMock.reset(rl, wl);
+			rl.lock();
+			EasyMock.expectLastCall().once();
+			rl.unlock();
+			EasyMock.expectLastCall().once();
+			EasyMock.replay(rl, wl);
+			Assertions.assertTrue(c.equals(l));
+			EasyMock.verify(rl, wl);
+		}
+	}
+
+	@Test
+	public void testHashCode() {
+		// Temporarily hobbled - there seems to be a bug in EasyMock when processing hashCode()
+		final Collection<Integer> l = new ArrayList<>();
+		ShareableCollection<Integer> c = new ShareableCollection<>(l);
+		for (int i = 0; i < 10; i++) {
+			l.add(i);
+			int cHash = Tools.hashTool(c, null, l);
+			Assertions.assertEquals(cHash, c.hashCode());
+		}
+
+		/*
+		final Collection<String> l = EasyMock.createStrictMock(Collection.class);
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+		
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		
+		ShareableCollection<String> c = null;
+		
+		c = new ShareableCollection<>(rwl, l);
+		
+		EasyMock.reset(rl, wl, l);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		EasyMock.expect(l.hashCode()).andReturn(123).once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl, l);
+		c.hashCode();
+		EasyMock.verify(rl, wl, l);
+		*/
 	}
 
 	@Test
 	public void testRemoveIf() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<Integer> c = null;
+		Collection<Integer> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(i);
+		}
+
+		c = new ShareableCollection<>(rwl, l);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertFalse(c.removeIf(Objects::isNull));
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertTrue(c.removeIf((i) -> (i.intValue() % 3) == 2));
+		EasyMock.verify(rl, wl);
 	}
 
 	@Test
