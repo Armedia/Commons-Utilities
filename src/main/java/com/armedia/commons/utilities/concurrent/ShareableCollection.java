@@ -58,7 +58,7 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 
 	@Override
 	public Iterator<ELEMENT> iterator() {
-		return new ShareableIterator<>(this, this.c.iterator());
+		return shareLocked(() -> new ShareableIterator<>(this, this.c.iterator()));
 	}
 
 	@Override
