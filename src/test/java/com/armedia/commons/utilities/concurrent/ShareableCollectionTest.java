@@ -30,13 +30,18 @@ public class ShareableCollectionTest {
 		new ShareableCollection<>(rwl, new HashSet<>());
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new ShareableCollection<>(new ReentrantReadWriteLock(), c));
-		new ShareableCollection<>(new ReentrantReadWriteLock(), new HashSet<>());
 
 		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(sl, c));
 		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(sl, new HashSet<>()));
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new ShareableCollection<>(new BaseShareableLockable(), c));
-		new ShareableCollection<>(new BaseShareableLockable(), new HashSet<>());
+		{
+			ReadWriteLock l = new ReentrantReadWriteLock();
+			ShareableLockable s = new BaseShareableLockable();
+			Assertions.assertSame(l, new ShareableCollection<>(l, new HashSet<>()).getShareableLock());
+			Assertions.assertSame(s.getShareableLock(),
+				new ShareableCollection<>(s, new HashSet<>()).getShareableLock());
+		}
 	}
 
 	@Test
