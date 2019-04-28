@@ -11,7 +11,7 @@ public class ShareableList<ELEMENT> extends ShareableCollection<ELEMENT> impleme
 	private final List<ELEMENT> list;
 
 	public ShareableList(List<ELEMENT> list) {
-		this(ShareableLockable.NULL_LOCK, list);
+		this(ShareableCollection.extractLock(list), list);
 	}
 
 	public ShareableList(ShareableLockable lockable, List<ELEMENT> list) {
