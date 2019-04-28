@@ -10,13 +10,14 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.function.LazySupplier;
 
 public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements Map<KEY, VALUE> {
 
 	protected final Map<KEY, VALUE> map;
-	protected final Set<KEY> keys;
-	protected final Set<Map.Entry<KEY, VALUE>> entries;
-	protected final Collection<VALUE> values;
+	protected final LazySupplier<Set<Map.Entry<KEY, VALUE>>> entries;
+	protected final LazySupplier<Set<KEY>> keys;
+	protected final LazySupplier<Collection<VALUE>> values;
 
 	protected static ReadWriteLock extractLock(Map<?, ?> m) {
 		ShareableLockable l = Tools.cast(ShareableLockable.class, m);
@@ -35,9 +36,9 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 	public ShareableMap(ReadWriteLock rwLock, Map<KEY, VALUE> map) {
 		super(rwLock);
 		this.map = Objects.requireNonNull(map, "Must provide a non-null backing map");
-		this.keys = new ShareableSet<>(this, map.keySet());
-		this.entries = new ShareableSet<>(this, map.entrySet());
-		this.values = new ShareableCollection<>(this, map.values());
+		this.keys = new LazySupplier<>(() -> shareLocked(() -> new ShareableSet<>(this, map.keySet())));
+		this.entries = new LazySupplier<>(() -> shareLocked(() -> new ShareableSet<>(this, map.entrySet())));
+		this.values = new LazySupplier<>(() -> shareLocked(() -> new ShareableCollection<>(this, map.values())));
 	}
 
 	@Override
@@ -88,17 +89,17 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 
 	@Override
 	public Set<KEY> keySet() {
-		return this.keys;
+		return this.keys.get();
 	}
 
 	@Override
 	public Collection<VALUE> values() {
-		return this.values;
+		return this.values.get();
 	}
 
 	@Override
 	public Set<Entry<KEY, VALUE>> entrySet() {
-		return this.entries;
+		return this.entries.get();
 	}
 
 	@Override
@@ -125,11 +126,13 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 
 	@Override
 	public void forEach(BiConsumer<? super KEY, ? super VALUE> action) {
+		Objects.requireNonNull(action);
 		shareLocked(() -> this.map.forEach(action));
 	}
 
 	@Override
 	public void replaceAll(BiFunction<? super KEY, ? super VALUE, ? extends VALUE> function) {
+		Objects.requireNonNull(function);
 		mutexLocked(() -> this.map.replaceAll(function));
 	}
 
