@@ -222,42 +222,397 @@ public class ShareableCollectionTest {
 
 	@Test
 	public void testToArray() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+		}
+
+		Object[] expected = l.toArray();
+		Object[] actual = null;
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, l);
+		actual = c.toArray();
+		EasyMock.verify(rl, wl);
+		Assertions.assertArrayEquals(expected, actual);
 	}
 
 	@Test
 	public void testToArrayTArray() {
+		final String[] ARR = {};
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+		}
+
+		String[] expected = l.toArray(ARR);
+		String[] actual = null;
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, l);
+		actual = c.toArray(ARR);
+		EasyMock.verify(rl, wl);
+		Assertions.assertArrayEquals(expected, actual);
 	}
 
 	@Test
 	public void testAdd() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+
+		Assertions.assertTrue(l.isEmpty());
+		EasyMock.reset(rl, wl);
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, l);
+		Assertions.assertTrue(c.add("a"));
+		EasyMock.verify(rl, wl);
+		Assertions.assertEquals(1, l.size());
+		Assertions.assertEquals("a", l.iterator().next());
 	}
 
 	@Test
 	public void testRemove() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		l.add("a");
+
+		Assertions.assertEquals(1, l.size());
+		Assertions.assertEquals("a", l.iterator().next());
+		EasyMock.reset(rl, wl);
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, l);
+		Assertions.assertTrue(c.remove("a"));
+		EasyMock.verify(rl, wl);
+		Assertions.assertTrue(l.isEmpty());
 	}
 
 	@Test
 	public void testContainsAll() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+		}
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, l);
+		Assertions.assertTrue(c.containsAll(l));
+		EasyMock.verify(rl, wl);
+		Assertions.assertTrue(c.containsAll(new ArrayList<>()));
 	}
 
 	@Test
 	public void testAddAll() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+		}
+
+		EasyMock.reset(rl, wl);
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, new ArrayList<>());
+		Assertions.assertTrue(c.addAll(l));
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertEquals(l.size(), c.size());
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertTrue(c.containsAll(l));
+		EasyMock.verify(rl, wl);
+
+		Assertions.assertFalse(c.addAll(new ArrayList<>()));
 	}
 
 	@Test
 	public void testRetainAll() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+		}
+		Collection<String> L = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			L.add(String.format("%02d", i));
+			L.add(String.format("%02d-b", i));
+		}
+
+		EasyMock.reset(rl, wl);
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, L);
+		Assertions.assertTrue(c.retainAll(l));
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertEquals(l.size(), c.size());
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertTrue(c.containsAll(l));
+		EasyMock.verify(rl, wl);
+
+		Assertions.assertFalse(c.retainAll(new ArrayList<>()));
 	}
 
 	@Test
 	public void testRemoveAll() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		Collection<String> l2 = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+			l2.add(String.format("%02d-b", i));
+		}
+		Collection<String> L = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			L.add(String.format("%02d", i));
+			L.add(String.format("%02d-b", i));
+		}
+
+		EasyMock.reset(rl, wl);
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, L);
+		Assertions.assertTrue(c.removeAll(l2));
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertEquals(l.size(), c.size());
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertTrue(c.containsAll(l));
+		EasyMock.verify(rl, wl);
+
+		Assertions.assertFalse(c.removeAll(new ArrayList<>()));
 	}
 
 	@Test
 	public void testClear() {
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		ShareableCollection<String> c = null;
+		Collection<String> l = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			l.add(String.format("%02d", i));
+		}
+
+		Assertions.assertFalse(l.isEmpty());
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c = new ShareableCollection<>(rwl, l);
+		Assertions.assertFalse(c.isEmpty());
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		c.clear();
+		EasyMock.verify(rl, wl);
+
+		EasyMock.reset(rl, wl);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl);
+		Assertions.assertTrue(c.isEmpty());
+		EasyMock.verify(rl, wl);
 	}
 
 	@Test
-	public void testEqualsObject() {
+	public void testEquals() {
 	}
 
 	@Test
