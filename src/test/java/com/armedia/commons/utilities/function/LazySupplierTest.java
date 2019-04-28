@@ -1189,13 +1189,11 @@ public class LazySupplierTest {
 		}
 
 		{
-			final UUID firstUuid = UUID.randomUUID();
-			final UUID secondUuid = UUID.randomUUID();
+			final IOException first = new IOException("first");
+			final IOException second = new IOException("second");
 			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(new IOException(firstUuid.toString())))
-				.once();
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(new IOException(secondUuid.toString())))
-				.once();
+			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(first)).once();
+			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(second)).once();
 			EasyMock.replay(initializer);
 			lazySupplier = LazySupplier.fromInitializer(initializer);
 			Assertions.assertNotNull(lazySupplier);
@@ -1205,9 +1203,7 @@ public class LazySupplierTest {
 			} catch (RuntimeException e) {
 				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
 				Assertions.assertNotNull(ce);
-				IOException ie = Tools.cast(IOException.class, ce.getCause());
-				Assertions.assertNotNull(ie);
-				Assertions.assertEquals(firstUuid.toString(), ie.getMessage());
+				Assertions.assertSame(first, ce.getCause());
 			}
 			try {
 				lazySupplier.get();
@@ -1215,9 +1211,7 @@ public class LazySupplierTest {
 			} catch (RuntimeException e) {
 				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
 				Assertions.assertNotNull(ce);
-				IOException ie = Tools.cast(IOException.class, ce.getCause());
-				Assertions.assertNotNull(ie);
-				Assertions.assertEquals(secondUuid.toString(), ie.getMessage());
+				Assertions.assertSame(second, ce.getCause());
 			}
 			EasyMock.verify(initializer);
 		}
@@ -1246,13 +1240,11 @@ public class LazySupplierTest {
 		}
 
 		{
-			final UUID firstUuid = UUID.randomUUID();
-			final UUID secondUuid = UUID.randomUUID();
+			final IOException first = new IOException("first");
+			final IOException second = new IOException("second");
 			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(new IOException(firstUuid.toString())))
-				.once();
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(new IOException(secondUuid.toString())))
-				.once();
+			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(first)).once();
+			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(second)).once();
 			EasyMock.replay(initializer);
 			lazySupplier = LazySupplier.fromInitializer(initializer, null);
 			Assertions.assertNotNull(lazySupplier);
@@ -1262,9 +1254,7 @@ public class LazySupplierTest {
 			} catch (RuntimeException e) {
 				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
 				Assertions.assertNotNull(ce);
-				IOException ie = Tools.cast(IOException.class, ce.getCause());
-				Assertions.assertNotNull(ie);
-				Assertions.assertEquals(firstUuid.toString(), ie.getMessage());
+				Assertions.assertSame(first, ce.getCause());
 			}
 			try {
 				lazySupplier.get();
@@ -1272,9 +1262,7 @@ public class LazySupplierTest {
 			} catch (RuntimeException e) {
 				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
 				Assertions.assertNotNull(ce);
-				IOException ie = Tools.cast(IOException.class, ce.getCause());
-				Assertions.assertNotNull(ie);
-				Assertions.assertEquals(secondUuid.toString(), ie.getMessage());
+				Assertions.assertSame(second, ce.getCause());
 			}
 			EasyMock.verify(initializer);
 		}
@@ -1306,13 +1294,11 @@ public class LazySupplierTest {
 
 		{
 			final UUID uuid = UUID.randomUUID();
-			final UUID firstUuid = UUID.randomUUID();
-			final UUID secondUuid = UUID.randomUUID();
+			final IOException first = new IOException("first");
+			final IOException second = new IOException("second");
 			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(new IOException(firstUuid.toString())))
-				.once();
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(new IOException(secondUuid.toString())))
-				.once();
+			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(first)).once();
+			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(second)).once();
 			EasyMock.replay(initializer);
 			lazySupplier = LazySupplier.fromInitializer(initializer, uuid);
 			Assertions.assertNotNull(lazySupplier);
@@ -1322,9 +1308,7 @@ public class LazySupplierTest {
 			} catch (RuntimeException e) {
 				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
 				Assertions.assertNotNull(ce);
-				IOException ie = Tools.cast(IOException.class, ce.getCause());
-				Assertions.assertNotNull(ie);
-				Assertions.assertEquals(firstUuid.toString(), ie.getMessage());
+				Assertions.assertSame(first, ce.getCause());
 			}
 			try {
 				lazySupplier.get();
@@ -1332,9 +1316,7 @@ public class LazySupplierTest {
 			} catch (RuntimeException e) {
 				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
 				Assertions.assertNotNull(ce);
-				IOException ie = Tools.cast(IOException.class, ce.getCause());
-				Assertions.assertNotNull(ie);
-				Assertions.assertEquals(secondUuid.toString(), ie.getMessage());
+				Assertions.assertSame(second, ce.getCause());
 			}
 			EasyMock.verify(initializer);
 		}
