@@ -24,6 +24,7 @@ public class ShareableCollectionTest {
 
 		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(c));
 		new ShareableCollection<>(new HashSet<>());
+		new ShareableCollection<>(new ShareableCollection<>(new HashSet<>()));
 
 		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(rwl, c));
 		new ShareableCollection<>(rwl, new HashSet<>());
