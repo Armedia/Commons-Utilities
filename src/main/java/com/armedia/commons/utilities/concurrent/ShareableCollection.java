@@ -3,7 +3,6 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -86,7 +85,7 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 	public boolean containsAll(Collection<?> c) {
 		Objects.requireNonNull(c, "Must provide a non-null collection to check against");
 		if (c.isEmpty()) { return true; }
-		return mutexLocked(() -> this.c.containsAll(c));
+		return shareLocked(() -> this.c.containsAll(c));
 	}
 
 	@Override
@@ -117,13 +116,13 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 
 	@Override
 	public boolean equals(Object o) {
+		if (o == null) { return false; }
+		if (o == this) { return true; }
+		final Collection<?> other = Tools.cast(Collection.class, o);
+		if (other == null) { return false; }
 		try (SharedAutoLock lock = autoSharedLock()) {
-			if (o == null) { return false; }
-			if (o == this) { return true; }
-			if (!Set.class.isInstance(o)) { return false; }
-			Set<?> s = Set.class.cast(o);
-			if (this.c.size() != s.size()) { return false; }
-			return this.c.equals(o);
+			if (this.c.size() != other.size()) { return false; }
+			return this.c.equals(other);
 		}
 	}
 
@@ -139,14 +138,16 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 		Lock writeLock = null;
 		try {
 			try {
-				for (ELEMENT e : this.c) {
+				Iterator<ELEMENT> it = this.c.iterator();
+				while (it.hasNext()) {
+					ELEMENT e = it.next();
 					if (filter.test(e)) {
 						// Ok so we need to upgrade to a write lock
 						if (writeLock == null) {
 							readLock.unlock();
 							writeLock = acquireMutexLock();
 						}
-						this.c.remove(e);
+						it.remove();
 					}
 				}
 				if (writeLock == null) { return false; }
