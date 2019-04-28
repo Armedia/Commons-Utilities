@@ -3,7 +3,10 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
@@ -15,6 +18,24 @@ public class ShareableCollectionTest {
 
 	@Test
 	public void testConstructors() {
+		ReadWriteLock rwl = null;
+		ShareableLockable sl = null;
+		Collection<Object> c = null;
+
+		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(c));
+		new ShareableCollection<>(new HashSet<>());
+
+		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(rwl, c));
+		new ShareableCollection<>(rwl, new HashSet<>());
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new ShareableCollection<>(new ReentrantReadWriteLock(), c));
+		new ShareableCollection<>(new ReentrantReadWriteLock(), new HashSet<>());
+
+		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(sl, c));
+		Assertions.assertThrows(NullPointerException.class, () -> new ShareableCollection<>(sl, new HashSet<>()));
+		Assertions.assertThrows(NullPointerException.class,
+			() -> new ShareableCollection<>(new BaseShareableLockable(), c));
+		new ShareableCollection<>(new BaseShareableLockable(), new HashSet<>());
 	}
 
 	@Test
