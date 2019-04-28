@@ -60,10 +60,8 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableL
 
 	public T await() throws InterruptedException {
 		shareLockedUpgradable(() -> !this.initialized, () -> {
-			if (!this.initialized) {
-				this.condition.await();
-				this.condition.signal();
-			}
+			this.condition.await();
+			this.condition.signal();
 		});
 		return this.item;
 	}
