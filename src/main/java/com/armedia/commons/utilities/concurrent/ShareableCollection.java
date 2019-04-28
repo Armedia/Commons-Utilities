@@ -140,8 +140,7 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 			try {
 				Iterator<ELEMENT> it = this.c.iterator();
 				while (it.hasNext()) {
-					ELEMENT e = it.next();
-					if (filter.test(e)) {
+					if (filter.test(it.next())) {
 						// Ok so we need to upgrade to a write lock
 						if (writeLock == null) {
 							readLock.unlock();
