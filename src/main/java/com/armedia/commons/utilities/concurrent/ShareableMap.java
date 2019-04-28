@@ -18,8 +18,14 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 	protected final Set<Map.Entry<KEY, VALUE>> entries;
 	protected final Collection<VALUE> values;
 
+	protected static ReadWriteLock extractLock(Map<?, ?> m) {
+		ShareableLockable l = Tools.cast(ShareableLockable.class, m);
+		if (l != null) { return BaseShareableLockable.extractLock(l); }
+		return null;
+	}
+
 	public ShareableMap(Map<KEY, VALUE> map) {
-		this(BaseShareableLockable.extractShareableLockable(map), map);
+		this(ShareableMap.extractLock(map), map);
 	}
 
 	public ShareableMap(ShareableLockable lockable, Map<KEY, VALUE> map) {
@@ -97,13 +103,13 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 
 	@Override
 	public boolean equals(Object o) {
+		if (o == null) { return false; }
+		if (o == this) { return true; }
+		Map<?, ?> other = Tools.cast(Map.class, o);
+		if (other == null) { return false; }
 		try (SharedAutoLock lock = autoSharedLock()) {
-			if (o == null) { return false; }
-			if (o == this) { return true; }
-			if (!Map.class.isInstance(o)) { return false; }
-			Map<?, ?> m = Map.class.cast(o);
-			if (this.map.size() != m.size()) { return false; }
-			return this.map.equals(o);
+			if (this.map.size() != other.size()) { return false; }
+			return this.map.equals(other);
 		}
 	}
 
