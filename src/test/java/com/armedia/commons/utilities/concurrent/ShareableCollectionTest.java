@@ -647,7 +647,8 @@ public class ShareableCollectionTest {
 			rl.unlock();
 			EasyMock.expectLastCall().once();
 			EasyMock.replay(rl, wl);
-			Assertions.assertFalse(c.equals(new ArrayList<>()));
+			Object o = c;
+			Assertions.assertFalse(o.equals(new ArrayList<>()));
 			EasyMock.verify(rl, wl);
 
 			EasyMock.reset(rl, wl);
@@ -681,17 +682,17 @@ public class ShareableCollectionTest {
 			public Lock readLock() {
 				return rl;
 			}
-		
+
 			@Override
 			public Lock writeLock() {
 				return wl;
 			}
 		};
-		
+
 		ShareableCollection<String> c = null;
-		
+
 		c = new ShareableCollection<>(rwl, l);
-		
+
 		EasyMock.reset(rl, wl, l);
 		rl.lock();
 		EasyMock.expectLastCall().once();
