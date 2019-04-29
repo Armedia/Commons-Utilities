@@ -65,7 +65,7 @@ public class FileNameTools {
 	 *         {@code sep} character
 	 */
 	public static List<String> tokenize(String str, char sep) {
-		List<String> l = new ArrayList<String>();
+		List<String> l = new ArrayList<>();
 		FileNameTools.tokenize(l, str, sep);
 		return l;
 	}
@@ -79,7 +79,7 @@ public class FileNameTools {
 	 *         {@code File#separatorChar} character
 	 */
 	public static List<String> tokenize(String str) {
-		List<String> l = new ArrayList<String>();
+		List<String> l = new ArrayList<>();
 		FileNameTools.tokenize(l, str);
 		return l;
 	}
@@ -262,9 +262,7 @@ public class FileNameTools {
 
 		int s = fullPath.lastIndexOf(sep);
 		if (s == -1) { return fullPath; }
-		fullPath = FileNameTools.removeLeadingSeparators(fullPath.substring(s), sep);
-		if (fullPath.length() == 0) { return String.valueOf(sep); }
-		return fullPath;
+		return FileNameTools.removeLeadingSeparators(fullPath.substring(s), sep);
 	}
 
 	/**
