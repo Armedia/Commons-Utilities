@@ -5,6 +5,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
+import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
 import com.armedia.commons.utilities.function.CheckedTools;
@@ -28,6 +29,13 @@ import com.armedia.commons.utilities.function.CheckedTools;
 public interface MutexLockable {
 
 	public static final Lock NULL_LOCK = null;
+
+	public static Lock extractMutexLock(Object o) {
+		Objects.requireNonNull(o, "Must provide a non-null Object from which to extract the Mutex lock");
+		MutexLockable l = Tools.cast(MutexLockable.class, o);
+		if (l != null) { return l.getMutexLock(); }
+		return Tools.cast(Lock.class, o);
+	}
 
 	/**
 	 * <p>

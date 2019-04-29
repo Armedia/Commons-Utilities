@@ -15,18 +15,12 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 
 	private final Collection<ELEMENT> c;
 
-	protected static ReadWriteLock extractLock(Collection<?> c) {
-		ShareableLockable l = Tools.cast(ShareableLockable.class, c);
-		if (l != null) { return BaseShareableLockable.extractLock(l); }
-		return null;
-	}
-
 	public ShareableCollection(Collection<ELEMENT> c) {
-		this(ShareableCollection.extractLock(c), c);
+		this(ShareableLockable.extractShareableLock(c), c);
 	}
 
 	public ShareableCollection(ShareableLockable lockable, Collection<ELEMENT> c) {
-		this(BaseShareableLockable.extractLock(lockable), c);
+		this(ShareableLockable.extractShareableLock(lockable), c);
 	}
 
 	public ShareableCollection(ReadWriteLock rwLock, Collection<ELEMENT> c) {

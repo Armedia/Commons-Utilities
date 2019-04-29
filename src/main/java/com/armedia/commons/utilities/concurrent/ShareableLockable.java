@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.function.CheckedBiConsumer;
 import com.armedia.commons.utilities.function.CheckedBiFunction;
 import com.armedia.commons.utilities.function.CheckedConsumer;
@@ -40,6 +41,13 @@ import com.armedia.commons.utilities.function.CheckedTools;
 public interface ShareableLockable extends MutexLockable {
 
 	public static final ReadWriteLock NULL_LOCK = null;
+
+	public static ReadWriteLock extractShareableLock(Object o) {
+		Objects.requireNonNull(o, "Must provide a non-null Object from which to extract the lock");
+		ShareableLockable l = Tools.cast(ShareableLockable.class, o);
+		if (l != null) { return l.getShareableLock(); }
+		return Tools.cast(ReadWriteLock.class, o);
+	}
 
 	/**
 	 * <p>

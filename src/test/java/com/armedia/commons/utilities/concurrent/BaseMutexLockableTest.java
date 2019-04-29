@@ -299,20 +299,12 @@ public class BaseMutexLockableTest {
 	}
 
 	@Test
-	public void testExtractLock() {
+	public void testExtractMutexLock() {
 		final ReentrantLock lock = new ReentrantLock();
 		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
-		Assertions.assertSame(lock, BaseMutexLockable.extractLock(rwl));
-		Assertions.assertThrows(NullPointerException.class, () -> BaseMutexLockable.extractLock(null));
-	}
-
-	@Test
-	public void testExtractMutexLockable() {
-		final ReentrantLock lock = new ReentrantLock();
-		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
-
-		Assertions.assertNull(BaseMutexLockable.extractMutexLockable(null));
-		Assertions.assertSame(rwl, BaseMutexLockable.extractMutexLockable(rwl));
-		Assertions.assertNull(BaseMutexLockable.extractMutexLockable(new Object()));
+		Assertions.assertSame(lock, MutexLockable.extractMutexLock(rwl));
+		Assertions.assertThrows(NullPointerException.class, () -> MutexLockable.extractMutexLock(null));
+		Assertions.assertNull(MutexLockable.extractMutexLock(new Object()));
+		Assertions.assertSame(lock, MutexLockable.extractMutexLock(lock));
 	}
 }

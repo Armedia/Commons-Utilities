@@ -11,7 +11,7 @@ public class ShareableSpliterator<E> extends BaseShareableLockable implements Sp
 	private final Spliterator<E> spliterator;
 
 	public ShareableSpliterator(Spliterator<E> spliterator) {
-		this(ShareableLockable.NULL_LOCK, spliterator);
+		this(ShareableLockable.extractShareableLock(spliterator), spliterator);
 	}
 
 	public ShareableSpliterator(ReadWriteLock rwLock, Spliterator<E> spliterator) {
@@ -26,17 +26,22 @@ public class ShareableSpliterator<E> extends BaseShareableLockable implements Sp
 
 	@Override
 	public boolean tryAdvance(Consumer<? super E> action) {
+		Objects.requireNonNull(action, "Must provide an action to apply on advancement");
 		return shareLocked(() -> this.spliterator.tryAdvance(action));
 	}
 
 	@Override
 	public void forEachRemaining(Consumer<? super E> action) {
+		Objects.requireNonNull(action, "Must provide an action to apply on iteration");
 		shareLocked(() -> this.spliterator.forEachRemaining(action));
 	}
 
 	@Override
 	public Spliterator<E> trySplit() {
-		return shareLocked(() -> new ShareableSpliterator<>(this, this.spliterator.trySplit()));
+		return shareLocked(() -> {
+			Spliterator<E> it = this.spliterator.trySplit();
+			return (it != null ? new ShareableSpliterator<>(this, it) : null);
+		});
 	}
 
 	@Override
