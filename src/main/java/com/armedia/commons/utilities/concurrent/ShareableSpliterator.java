@@ -6,20 +6,12 @@ import java.util.Spliterator;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Consumer;
 
-import com.armedia.commons.utilities.Tools;
-
 public class ShareableSpliterator<E> extends BaseShareableLockable implements Spliterator<E> {
 
 	private final Spliterator<E> spliterator;
 
-	protected static ReadWriteLock extractLock(Spliterator<?> c) {
-		ShareableLockable l = Tools.cast(ShareableLockable.class, c);
-		if (l != null) { return BaseShareableLockable.extractLock(l); }
-		return null;
-	}
-
 	public ShareableSpliterator(Spliterator<E> spliterator) {
-		this(ShareableSpliterator.extractLock(spliterator), spliterator);
+		this(ShareableLockable.extractShareableLock(spliterator), spliterator);
 	}
 
 	public ShareableSpliterator(ReadWriteLock rwLock, Spliterator<E> spliterator) {

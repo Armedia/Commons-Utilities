@@ -1528,20 +1528,12 @@ public class BaseShareableLockableTest {
 	}
 
 	@Test
-	public void testExtractLock() {
+	public void testExtractShareableLock() {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
-		Assertions.assertSame(lock, BaseShareableLockable.extractLock(rwl));
-		Assertions.assertThrows(NullPointerException.class, () -> BaseShareableLockable.extractLock(null));
-	}
-
-	@Test
-	public void testExtractMutexLockable() {
-		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
-
-		Assertions.assertNull(BaseShareableLockable.extractShareableLockable(null));
-		Assertions.assertSame(rwl, BaseShareableLockable.extractShareableLockable(rwl));
-		Assertions.assertNull(BaseShareableLockable.extractShareableLockable(new Object()));
+		Assertions.assertSame(lock, ShareableLockable.extractShareableLock(rwl));
+		Assertions.assertThrows(NullPointerException.class, () -> ShareableLockable.extractShareableLock(null));
+		Assertions.assertNull(ShareableLockable.extractShareableLock(new Object()));
+		Assertions.assertSame(lock, ShareableLockable.extractShareableLock(lock));
 	}
 }

@@ -11,11 +11,11 @@ public class ShareableList<ELEMENT> extends ShareableCollection<ELEMENT> impleme
 	private final List<ELEMENT> list;
 
 	public ShareableList(List<ELEMENT> list) {
-		this(ShareableCollection.extractLock(list), list);
+		this(ShareableLockable.extractShareableLock(list), list);
 	}
 
 	public ShareableList(ShareableLockable lockable, List<ELEMENT> list) {
-		this(BaseShareableLockable.extractLock(lockable), list);
+		this(ShareableLockable.extractShareableLock(lockable), list);
 	}
 
 	public ShareableList(ReadWriteLock rwLock, List<ELEMENT> list) {

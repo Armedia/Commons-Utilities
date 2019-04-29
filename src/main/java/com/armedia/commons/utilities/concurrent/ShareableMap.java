@@ -19,18 +19,12 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 	protected final LazySupplier<Set<KEY>> keys;
 	protected final LazySupplier<Collection<VALUE>> values;
 
-	protected static ReadWriteLock extractLock(Map<?, ?> m) {
-		ShareableLockable l = Tools.cast(ShareableLockable.class, m);
-		if (l != null) { return BaseShareableLockable.extractLock(l); }
-		return null;
-	}
-
 	public ShareableMap(Map<KEY, VALUE> map) {
-		this(ShareableMap.extractLock(map), map);
+		this(ShareableLockable.extractShareableLock(map), map);
 	}
 
 	public ShareableMap(ShareableLockable lockable, Map<KEY, VALUE> map) {
-		this(BaseShareableLockable.extractLock(lockable), map);
+		this(ShareableLockable.extractShareableLock(lockable), map);
 	}
 
 	public ShareableMap(ReadWriteLock rwLock, Map<KEY, VALUE> map) {
