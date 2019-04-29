@@ -30,20 +30,6 @@ public class LineIteratorTest {
 		}
 	}
 
-	private void run(long pos, LineIteratorConfig config) throws Exception {
-		AtomicLong n = new AtomicLong(0);
-		LineSource ls = null;
-
-		n.set(0);
-		ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null);
-		try (LineIterator rli = new LineIterator(LineScanner.DEFAULT_FACTORIES.values(), config, ls)) {
-			System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
-			System.out.printf("Processed lines:%n");
-			rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
-		}
-		ls.close();
-	}
-
 	@Test
 	public void testConstructors() throws Exception {
 		final LineIteratorConfig cfg = new LineIteratorConfig();
@@ -136,6 +122,31 @@ public class LineIteratorTest {
 						Assertions.assertNotSame(cfg, it.getConfig());
 						Assertions.assertEquals(cfg, it.getConfig());
 					}
+				}
+			}
+		}
+	}
+
+	private void run(long pos, LineIteratorConfig config) throws Exception {
+		AtomicLong n = new AtomicLong(0);
+		n.set(0);
+		try (LineSource ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null)) {
+			try (LineIterator rli = new LineIterator(LineScanner.DEFAULT_FACTORIES.values(), config, ls)) {
+				System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
+				System.out.printf("Processed lines:%n");
+				rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
+			}
+
+			try (LineSource ls2 = new LineSource(ls.getId(), false) {
+				@Override
+				public Iterable<String> load() throws LineSourceException {
+					return ls.load();
+				}
+			}) {
+				try (LineIterator rli = new LineIterator(LineScanner.DEFAULT_FACTORIES.values(), config, ls2)) {
+					System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
+					System.out.printf("Processed lines:%n");
+					rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
 				}
 			}
 		}
