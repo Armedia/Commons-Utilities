@@ -179,10 +179,6 @@ public class LineIteratorConfigTest {
 	}
 
 	@Test
-	public void testHashCode() {
-	}
-
-	@Test
 	public void testRemoveFeature() {
 		LineIteratorConfig cfg = new LineIteratorConfig();
 		cfg.setFeatures(getFeatureCombination(0b11111));
