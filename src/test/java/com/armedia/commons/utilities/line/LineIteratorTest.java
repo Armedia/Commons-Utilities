@@ -1,7 +1,12 @@
 package com.armedia.commons.utilities.line;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
+import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +42,103 @@ public class LineIteratorTest {
 			rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
 		}
 		ls.close();
+	}
+
+	@Test
+	public void testConstructors() throws Exception {
+		final LineIteratorConfig cfg = new LineIteratorConfig();
+		final Collection<String> c = Collections.emptyList();
+		final LineSource ls = new LineSource("abc") {
+			@Override
+			public Iterable<String> load() throws LineSourceException {
+				return c;
+			}
+		};
+		final Collection<LineSourceFactory> f = Collections.emptyList();
+
+		try (LineIterator it = new LineIterator(null, null, (LineSource) null)) {
+		}
+		try (LineIterator it = new LineIterator(null, null, ls)) {
+		}
+		try (LineIterator it = new LineIterator(null, cfg, (LineSource) null)) {
+		}
+		try (LineIterator it = new LineIterator(null, cfg, ls)) {
+		}
+		try (LineIterator it = new LineIterator(f, null, (LineSource) null)) {
+		}
+		try (LineIterator it = new LineIterator(f, null, ls)) {
+		}
+		try (LineIterator it = new LineIterator(f, cfg, (LineSource) null)) {
+		}
+		try (LineIterator it = new LineIterator(f, cfg, ls)) {
+		}
+
+		try (LineIterator it = new LineIterator(null, null, (Iterable<String>) null)) {
+		}
+		try (LineIterator it = new LineIterator(null, null, c)) {
+		}
+		try (LineIterator it = new LineIterator(null, cfg, (Iterable<String>) null)) {
+		}
+		try (LineIterator it = new LineIterator(null, cfg, c)) {
+		}
+		try (LineIterator it = new LineIterator(f, null, (Iterable<String>) null)) {
+		}
+		try (LineIterator it = new LineIterator(f, null, c)) {
+		}
+		try (LineIterator it = new LineIterator(f, cfg, (Iterable<String>) null)) {
+		}
+		try (LineIterator it = new LineIterator(f, cfg, c)) {
+		}
+	}
+
+	@Test
+	public void testGetFactories() {
+		Collection<LineSourceFactory> f = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			f.add(EasyMock.createStrictMock(LineSourceFactory.class));
+
+			EasyMock.reset(f.toArray());
+			EasyMock.replay(f.toArray());
+			try (LineIterator it = new LineIterator(f, null, Collections.emptyList())) {
+				Assertions.assertEquals(f.size(), it.getFactories().size());
+				Assertions.assertEquals(f, it.getFactories());
+			}
+			EasyMock.verify(f.toArray());
+		}
+	}
+
+	@Test
+	public void testGetTransformer() {
+		try (LineIterator it = new LineIterator(null, null, Collections.emptyList())) {
+			for (int i = 0; i < 10; i++) {
+				Assertions.assertNotNull(it.getTransformer());
+				Function<String, String> transformer = EasyMock.createStrictMock(Function.class);
+				Assertions.assertNotSame(it.getTransformer(), transformer);
+				EasyMock.reset(transformer);
+				EasyMock.replay(transformer);
+				it.setTransformer(transformer);
+				EasyMock.verify(transformer);
+				Assertions.assertSame(it.getTransformer(), transformer);
+			}
+		}
+	}
+
+	@Test
+	public void testGetConfig() {
+		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+			for (Trim trim : LineIteratorConfig.Trim.values()) {
+				for (int d = 0; d < 100; d++) {
+					LineIteratorConfig cfg = new LineIteratorConfig();
+					cfg.setTrim(trim);
+					cfg.setFeatures(f);
+					cfg.setMaxDepth(d);
+					try (LineIterator it = new LineIterator(null, cfg, Collections.emptyList())) {
+						Assertions.assertNotSame(cfg, it.getConfig());
+						Assertions.assertEquals(cfg, it.getConfig());
+					}
+				}
+			}
+		}
 	}
 
 	@Test
