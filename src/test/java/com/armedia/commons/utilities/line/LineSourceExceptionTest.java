@@ -3,15 +3,15 @@ package com.armedia.commons.utilities.line;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class LineSourceExceptionTest {
+public class LineSourceExceptionTest {
 
 	@Test
-	void testLineSourceException() {
+	public void testLineSourceException() {
 		new LineSourceException();
 	}
 
 	@Test
-	void testLineSourceExceptionString() {
+	public void testLineSourceExceptionString() {
 		for (int i = 0; i < 10; i++) {
 			String msg = String.format("%02d", i);
 			LineSourceException ex = new LineSourceException(msg);
@@ -20,14 +20,14 @@ class LineSourceExceptionTest {
 	}
 
 	@Test
-	void testLineSourceExceptionThrowable() {
+	public void testLineSourceExceptionThrowable() {
 		Throwable cause = new Throwable();
 		LineSourceException ex = new LineSourceException(cause);
 		Assertions.assertSame(cause, ex.getCause());
 	}
 
 	@Test
-	void testLineSourceExceptionStringThrowable() {
+	public void testLineSourceExceptionStringThrowable() {
 		Throwable cause = new Throwable();
 		for (int i = 0; i < 10; i++) {
 			String msg = String.format("%02d", i);
@@ -38,7 +38,7 @@ class LineSourceExceptionTest {
 	}
 
 	@Test
-	void testLineSourceExceptionStringThrowableBooleanBoolean() {
+	public void testLineSourceExceptionStringThrowableBooleanBoolean() {
 		Throwable cause = new Throwable();
 		LineSourceException ex = null;
 		for (int i = 0; i < 10; i++) {
