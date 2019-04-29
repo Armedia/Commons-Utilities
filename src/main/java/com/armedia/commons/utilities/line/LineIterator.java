@@ -103,9 +103,10 @@ public class LineIterator extends CloseableIterator<String> {
 	}
 
 	private LineSource getLineSource(final Line line) throws LineSourceException {
+		final String cleanLine = line.str.replaceAll("^\\s*@", "");
 		for (LineSourceFactory f : this.factories) {
 			try {
-				LineSource ls = f.newInstance(line.str.replaceAll("^\\s*@", ""), line.source);
+				LineSource ls = f.newInstance(cleanLine, line.source);
 				if (ls != null) { return ls; }
 			} catch (Exception e) {
 				throw new LineSourceException(
@@ -205,6 +206,7 @@ public class LineIterator extends CloseableIterator<String> {
 		if (this.stack.isEmpty()) {
 			// This only happens once...
 			this.stack.push(new State(this.root));
+			this.visited.add(this.root.getId());
 		}
 
 		State state = null;
@@ -223,10 +225,6 @@ public class LineIterator extends CloseableIterator<String> {
 				return null;
 			}
 		}
-
-		// Flipside - we have a current state, so let's see how deep we have to recurse until we
-		// find our first "true" line
-		if (!state.hasNext()) { return null; }
 
 		Line line = state.next();
 		if (!shouldRecurse(line.str)) { return line; }
