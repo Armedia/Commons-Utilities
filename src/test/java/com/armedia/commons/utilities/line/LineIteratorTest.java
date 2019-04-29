@@ -3,6 +3,7 @@ package com.armedia.commons.utilities.line;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -136,7 +137,9 @@ public class LineIteratorTest {
 				System.out.printf("Processed lines:%n");
 				rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
 			}
-
+		}
+		n.set(0);
+		try (LineSource ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null)) {
 			try (LineSource ls2 = new LineSource(ls.getId(), false) {
 				@Override
 				public Iterable<String> load() throws LineSourceException {
@@ -147,6 +150,68 @@ public class LineIteratorTest {
 					System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
 					System.out.printf("Processed lines:%n");
 					rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
+				}
+			}
+		}
+		n.set(0);
+		try (LineSource ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-1.test", null)) {
+			try (LineSource ls2 = new LineSource(ls.getId(), true) {
+				@Override
+				public Iterable<String> load() throws LineSourceException {
+					return ls.load();
+				}
+			}) {
+				try (LineIterator rli = new LineIterator(LineScanner.DEFAULT_FACTORIES.values(), config, ls2)) {
+					System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
+					System.out.printf("Processed lines:%n");
+					rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
+				}
+			}
+		}
+		if (config.hasFeature(Feature.RECURSION) && (config.getMaxDepth() > 0)) {
+			n.set(0);
+			try (LineSource ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-3.test", null)) {
+				try (LineIterator rli = new LineIterator(LineScanner.DEFAULT_FACTORIES.values(), config, ls)) {
+					System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
+					System.out.printf("Processed lines:%n");
+					try {
+						rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
+						Assertions.fail("Did not fail with a reference loop");
+					} catch (Exception e) {
+						Assertions.assertTrue(LineSourceException.class.isInstance(e.getCause()));
+					}
+				}
+			}
+			n.set(0);
+			try (LineSource ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-4.test", null)) {
+				Collection<LineSourceFactory> f = new LinkedList<>(LineScanner.DEFAULT_FACTORIES.values());
+				f.add((s, r) -> null);
+				try (LineIterator rli = new LineIterator(f, config, ls)) {
+					System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
+					System.out.printf("Processed lines:%n");
+					try {
+						rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
+						Assertions.fail("Did not fail with a bad source reference");
+					} catch (Exception e) {
+						Assertions.assertTrue(LineSourceException.class.isInstance(e.getCause()));
+					}
+				}
+			}
+			n.set(0);
+			try (LineSource ls = new ResourceLineSourceFactory().newInstance("classpath:/lines-4.test", null)) {
+				Collection<LineSourceFactory> f = new LinkedList<>(LineScanner.DEFAULT_FACTORIES.values());
+				f.add((s, r) -> {
+					throw new Exception("intentional fault");
+				});
+				try (LineIterator rli = new LineIterator(f, config, ls)) {
+					System.out.printf("%n%nCONFIG[ %-3d ]: %s%n", pos, config);
+					System.out.printf("Processed lines:%n");
+					try {
+						rli.forEachRemaining((l) -> System.out.printf("\t[%-4d]: [%s]%n", n.incrementAndGet(), l));
+						Assertions.fail("Did not fail with a chained exception");
+					} catch (Exception e) {
+						Assertions.assertTrue(LineSourceException.class.isInstance(e.getCause()));
+					}
 				}
 			}
 		}
