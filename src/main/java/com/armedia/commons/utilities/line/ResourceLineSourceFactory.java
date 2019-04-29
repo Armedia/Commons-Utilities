@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.armedia.commons.utilities.ResourceLoader;
 import com.armedia.commons.utilities.ResourceLoaderException;
 
-class ResourceLineSourceFactory implements LineSourceFactory {
+public class ResourceLineSourceFactory implements LineSourceFactory {
 
 	private static final String STDIN = "@-";
 	private static final String STDIN_ID = "<STDIN>";
