@@ -121,7 +121,7 @@ public final class LineIteratorConfig implements Serializable, Cloneable {
 
 	public LineIteratorConfig addFeatures(Collection<LineIteratorConfig.Feature> features) {
 		if (features != null) {
-			features.stream().filter(Objects::nonNull).forEachOrdered(this.features::remove);
+			features.stream().filter(Objects::nonNull).forEachOrdered(this.features::add);
 		}
 		return this;
 	}
@@ -158,7 +158,7 @@ public final class LineIteratorConfig implements Serializable, Cloneable {
 	}
 
 	public boolean hasFeature(LineIteratorConfig.Feature f) {
-		if (f == null) { throw new IllegalArgumentException("Must provide a non-null feature"); }
+		Objects.requireNonNull(f, "Must provide a non-null Feature to check for");
 		return this.features.contains(f);
 	}
 
