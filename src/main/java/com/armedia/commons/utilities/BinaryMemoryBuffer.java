@@ -136,7 +136,7 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 		@Override
 		public synchronized int available() throws IOException {
 			long remainder = (getCurrentSize() - this.rpos);
-			if (remainder > Integer.MAX_VALUE) { return Integer.MAX_VALUE; }
+			remainder = Math.min(remainder, Integer.MAX_VALUE);
 			return Math.max((int) remainder, 0);
 		}
 
