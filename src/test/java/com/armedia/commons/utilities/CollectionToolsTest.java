@@ -26,6 +26,12 @@ import org.junit.jupiter.api.Test;
  *
  */
 public class CollectionToolsTest implements GoodServiceTest {
+
+	@Test
+	public void testConstructor() {
+		new CollectionTools();
+	}
+
 	/**
 	 * Test method for
 	 * {@link com.armedia.commons.utilities.CollectionTools#addUnique(java.util.Collection, java.util.Collection)}
