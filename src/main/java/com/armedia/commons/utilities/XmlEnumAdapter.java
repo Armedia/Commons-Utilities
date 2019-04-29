@@ -180,7 +180,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 	@Override
 	public final String marshal(E e) throws Exception {
-		if (e == null) { return this.nullString; }
+		if ((e == null) || (e == this.nullEnum)) { return this.nullString; }
 		String ret = specialMarshal(e);
 		if (ret == null) {
 			ret = e.name();
