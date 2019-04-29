@@ -1,5 +1,6 @@
 package com.armedia.commons.utilities.line;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -35,10 +36,7 @@ class ResourceLineSourceFactory implements LineSourceFactory {
 			String relative = (relativeTo != null ? relativeTo.getId() : null);
 			try {
 				URL url = ResourceLoader.getResourceOrFile(resource, relative);
-				if (url == null) {
-					// This, on the other hand, is an error
-					throw new LineSourceException(String.format("Couldn't find the resource at [%s]", resource));
-				}
+				if (url == null) { return null; }
 				in = url.openStream();
 				try {
 					id = url.toURI().normalize().toString();
@@ -47,6 +45,8 @@ class ResourceLineSourceFactory implements LineSourceFactory {
 					// itself
 					id = url.toString();
 				}
+			} catch (FileNotFoundException e) {
+				return null;
 			} catch (IOException e) {
 				throw new LineSourceException(String.format("Couldn't read the resource at [%s]", resource), e);
 			} catch (ResourceLoaderException e) {
