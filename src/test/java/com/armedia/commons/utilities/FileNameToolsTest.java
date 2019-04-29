@@ -25,6 +25,11 @@ import org.junit.jupiter.api.Test;
  */
 public class FileNameToolsTest implements GoodServiceTest {
 
+	@Test
+	public void testConstructor() {
+		new FileNameTools();
+	}
+
 	/**
 	 * Test method for
 	 * {@link com.armedia.commons.utilities.FileNameTools#removeEdgeSeparators(java.lang.String, char)}
@@ -197,6 +202,8 @@ public class FileNameToolsTest implements GoodServiceTest {
 		String[][] testData = {
 			{
 				"|", "|", "|"
+			}, {
+				"|", "||", "|"
 			}, {
 				"|", "asdf", "asdf"
 			}, {

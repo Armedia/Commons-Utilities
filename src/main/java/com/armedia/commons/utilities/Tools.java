@@ -691,11 +691,14 @@ public class Tools {
 		if (o != null) {
 			ret = o.get();
 		}
-		int i = 0;
-		while (ret == null) {
-			Supplier<T> s = others[i++];
-			if (s != null) {
-				ret = s.get();
+		if (ret == null) {
+			for (Supplier<T> s : others) {
+				if (s != null) {
+					ret = s.get();
+					if (ret != null) {
+						break;
+					}
+				}
 			}
 		}
 		return ret;
