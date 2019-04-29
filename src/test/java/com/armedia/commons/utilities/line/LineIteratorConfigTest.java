@@ -170,6 +170,7 @@ public class LineIteratorConfigTest {
 	@Test
 	public void testHasFeature() {
 		LineIteratorConfig cfg = new LineIteratorConfig();
+		Assertions.assertThrows(NullPointerException.class, () -> cfg.hasFeature(null));
 		for (Collection<Feature> features : getAllFeatureCombinations()) {
 			cfg.setFeatures(features);
 			for (Feature f : Feature.values()) {

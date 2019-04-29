@@ -158,8 +158,7 @@ public final class LineIteratorConfig implements Serializable, Cloneable {
 	}
 
 	public boolean hasFeature(LineIteratorConfig.Feature f) {
-		if (f == null) { throw new IllegalArgumentException("Must provide a non-null feature"); }
-		return this.features.contains(f);
+		return this.features.contains(Objects.requireNonNull(f, "Must provide a non-null feature"));
 	}
 
 	public LineIteratorConfig.Trim getTrim() {
