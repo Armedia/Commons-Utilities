@@ -14,13 +14,12 @@ import com.armedia.commons.utilities.ResourceLoaderException;
 
 public class ResourceLineSourceFactory implements LineSourceFactory {
 
-	private static final String STDIN = "@-";
+	public static final String STDIN = "@-";
 	private static final String STDIN_ID = "<STDIN>";
 
 	@Override
 	public LineSource newInstance(String resource, LineSource relativeTo) throws LineSourceException {
 		if (StringUtils.isBlank(resource)) { return null; }
-		resource = StringUtils.strip(resource);
 
 		Charset charset = null;
 
