@@ -264,6 +264,13 @@ public class XmlEnumAdapterTest {
 			String nullString = UUID.randomUUID().toString();
 			XmlEnumAdapter<E> a2 = new XmlEnumAdapter<>(enumClass, nullString);
 			Assertions.assertNull(a2.unmarshal(nullString));
+			E[] values = enumClass.getEnumConstants();
+			if (values.length > 0) {
+				for (E e : values) {
+					a2 = new XmlEnumAdapter<>(enumClass, nullString, e);
+					Assertions.assertSame(e, a2.unmarshal(nullString));
+				}
+			}
 		}
 	}
 
@@ -305,9 +312,12 @@ public class XmlEnumAdapterTest {
 
 		E[] arr = enumClass.getEnumConstants();
 		if (arr.length > 0) {
+			String nullString = UUID.randomUUID().toString();
 			for (E nullValue : arr) {
 				adapter = new XmlEnumAdapter<>(enumClass, nullValue);
 				Assertions.assertNull(adapter.marshal(nullValue));
+				adapter = new XmlEnumAdapter<>(enumClass, nullString, nullValue);
+				Assertions.assertEquals(nullString, adapter.marshal(nullValue));
 			}
 		}
 	}
