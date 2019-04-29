@@ -27,6 +27,8 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 	}
 
 	private final Class<E> enumClass;
+	private final String nullString;
+	private final E nullEnum;
 	private final Map<String, E> caseInsensitiveMap;
 	private final Set<String> validMarshalledValues;
 	private final boolean marshalFolded;
@@ -40,14 +42,50 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 	}
 
 	public XmlEnumAdapter(Class<E> enumClass) {
-		this(enumClass, XmlEnumAdapter.NO_FLAGS);
+		this(enumClass, null, null, XmlEnumAdapter.NO_FLAGS);
 	}
 
 	public XmlEnumAdapter(Class<E> enumClass, Flag... flags) {
-		this(enumClass, (flags != null ? Arrays.asList(flags) : Collections.emptyList()));
+		this(enumClass, null, null, flags);
 	}
 
 	public XmlEnumAdapter(Class<E> enumClass, Iterable<Flag> flags) {
+		this(enumClass, null, null, flags);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, String nullString) {
+		this(enumClass, nullString, null, XmlEnumAdapter.NO_FLAGS);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, String nullString, Flag... flags) {
+		this(enumClass, nullString, null, flags);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, String nullString, Iterable<Flag> flags) {
+		this(enumClass, nullString, null, flags);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, E nullEnum) {
+		this(enumClass, null, nullEnum, XmlEnumAdapter.NO_FLAGS);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, E nullEnum, Flag... flags) {
+		this(enumClass, null, nullEnum, flags);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, E nullEnum, Iterable<Flag> flags) {
+		this(enumClass, null, nullEnum, flags);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, String nullString, E nullEnum) {
+		this(enumClass, nullString, nullEnum, XmlEnumAdapter.NO_FLAGS);
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, String nullString, E nullEnum, Flag... flags) {
+		this(enumClass, nullString, nullEnum, (flags != null ? Arrays.asList(flags) : Collections.emptyList()));
+	}
+
+	public XmlEnumAdapter(Class<E> enumClass, String nullString, E nullEnum, Iterable<Flag> flags) {
 		this.enumClass = Objects.requireNonNull(enumClass, "Must provide a non-null Enum class");
 		if (!enumClass.isEnum()) {
 			throw new IllegalArgumentException(
@@ -62,6 +100,8 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 		final boolean ignoreCase = XmlEnumAdapter.canIgnoreCase(enumClass) && !f.contains(Flag.STRICT_CASE);
 		this.marshalFolded = (!ignoreCase || f.contains(Flag.MARSHAL_FOLDED));
+		this.nullString = nullString;
+		this.nullEnum = nullEnum;
 
 		Map<String, E> m = null;
 		if (ignoreCase) {
@@ -85,6 +125,14 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 		}
 	}
 
+	public final String getNullString() {
+		return this.nullString;
+	}
+
+	public final E getNullValue() {
+		return this.nullEnum;
+	}
+
 	public final boolean isCaseSensitive() {
 		return (this.caseInsensitiveMap == null);
 	}
@@ -97,13 +145,9 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 		return null;
 	}
 
-	protected E nullEnum() {
-		return null;
-	}
-
 	@Override
 	public final E unmarshal(String v) throws Exception {
-		if ((v == null) || Tools.equals(nullString(), v)) { return nullEnum(); }
+		if ((v == null) || Tools.equals(this.nullString, v)) { return this.nullEnum; }
 
 		// Make sure we stip out the spaces
 		v = StringUtils.strip(v);
@@ -130,17 +174,13 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 			this.enumClass.getCanonicalName()));
 	}
 
-	protected String nullString() {
-		return null;
-	}
-
 	protected String specialMarshal(E e) throws Exception {
 		return null;
 	}
 
 	@Override
 	public final String marshal(E e) throws Exception {
-		if (e == null) { return nullString(); }
+		if (e == null) { return this.nullString; }
 		String ret = specialMarshal(e);
 		if (ret == null) {
 			ret = e.name();
