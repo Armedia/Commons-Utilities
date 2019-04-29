@@ -1,12 +1,12 @@
 /**
  * *******************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
  * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
  * STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
- * 
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -18,10 +18,11 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public class TextMemoryBuffer extends Writer implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -29,7 +30,7 @@ public class TextMemoryBuffer extends Writer implements Serializable {
 	public static final int MINIMUM_CHUNK_SIZE = 128;
 	public static final int DEFAULT_CHUNK_SIZE = 1024;
 
-	private final List<char[]> buffers = new ArrayList<char[]>();
+	private final List<char[]> buffers = new ArrayList<>();
 
 	private final int chunkSize;
 
@@ -109,12 +110,17 @@ public class TextMemoryBuffer extends Writer implements Serializable {
 		public synchronized int read(char[] b, int off, int len) throws IOException {
 			// First, a little parameter QA
 			if (b == null) { throw new NullPointerException("The given array was null"); }
-			if (len < 0) { throw new IllegalArgumentException(String.format("Cannot read negative lengths (%d)", len)); }
-			if (off < 0) { throw new IllegalArgumentException(String.format("Cannot read into a negative offset (%d)",
-				off)); }
-			if (b.length < (off + len)) { throw new IllegalArgumentException(String.format(
-				"The given offset (%d) and length (%d) exceed the size of the given byte array (%d)", off, len,
-				b.length)); }
+			if (len < 0) {
+				throw new IllegalArgumentException(String.format("Cannot read negative lengths (%d)", len));
+			}
+			if (off < 0) {
+				throw new IllegalArgumentException(String.format("Cannot read into a negative offset (%d)", off));
+			}
+			if (b.length < (off + len)) {
+				throw new IllegalArgumentException(
+					String.format("The given offset (%d) and length (%d) exceed the size of the given byte array (%d)",
+						off, len, b.length));
+			}
 
 			// Take a shortcut to avoid work
 			if (len == 0) { return 0; }
@@ -166,7 +172,7 @@ public class TextMemoryBuffer extends Writer implements Serializable {
 
 		public synchronized int available() {
 			long remainder = (getCurrentSize() - this.rpos);
-			if (remainder > Integer.MAX_VALUE) { return Integer.MAX_VALUE; }
+			remainder = Math.min(remainder, Integer.MAX_VALUE);
 			return Math.max((int) remainder, 0);
 		}
 
@@ -228,43 +234,30 @@ public class TextMemoryBuffer extends Writer implements Serializable {
 	@Override
 	public void write(char[] data) throws IOException {
 		if (data == null) { throw new NullPointerException(); }
+		Objects.requireNonNull(data, "Must provide a non-null char[]");
 		write(data, 0, data.length);
 	}
 
 	public synchronized void write(CharSequence seq) throws IOException {
 		if (this.closed) { throw new IOException("This buffer is closed"); }
-		if (seq == null) { throw new NullPointerException("The given array was null"); }
+		Objects.requireNonNull(seq, "Must provide a non-null CharSequence");
 		write(seq, 0, seq.length());
-	}
-
-	public synchronized void write(CharSequence seq, int off, int len) throws IOException {
-		if (this.closed) { throw new IOException("This buffer is closed"); }
-		if (seq == null) { throw new NullPointerException("The given array was null"); }
-		if (len < 0) { throw new IllegalArgumentException(String.format("Cannot copy negative lengths (%d)", len)); }
-		if (off < 0) { throw new IllegalArgumentException(String.format("Cannot copy from a negative offset (%d)", off)); }
-		if (seq.length() < (off + len)) { throw new IllegalArgumentException(String.format(
-			"The given offset (%d) and length (%d) exceed the size of the given CharSequence (%d)", off, len,
-			seq.length())); }
-		// Take a shortcut to avoid work
-		if (len == 0) { return; }
-
-		// Use a 1-character buffer to copy the thing over and re-use existing, tested code
-		char[] buf = new char[1];
-		for (int i = 0; i < len; i++) {
-			buf[0] = seq.charAt(i + off);
-			write(buf);
-		}
 	}
 
 	@Override
 	public synchronized void write(char[] b, int off, int len) throws IOException {
 		if (this.closed) { throw new IOException("This buffer is closed"); }
 		// First, a little parameter QA
-		if (b == null) { throw new NullPointerException("The given array was null"); }
+		Objects.requireNonNull(b, "Must provide a non-null char[]");
 		if (len < 0) { throw new IllegalArgumentException(String.format("Cannot copy negative lengths (%d)", len)); }
-		if (off < 0) { throw new IllegalArgumentException(String.format("Cannot copy from a negative offset (%d)", off)); }
-		if (b.length < (off + len)) { throw new IllegalArgumentException(String.format(
-			"The given offset (%d) and length (%d) exceed the size of the given byte array (%d)", off, len, b.length)); }
+		if (off < 0) {
+			throw new IllegalArgumentException(String.format("Cannot copy from a negative offset (%d)", off));
+		}
+		if (b.length < (off + len)) {
+			throw new IllegalArgumentException(
+				String.format("The given offset (%d) and length (%d) exceed the size of the given byte array (%d)", off,
+					len, b.length));
+		}
 
 		// Take a shortcut to avoid work
 		if (len == 0) { return; }
@@ -281,6 +274,29 @@ public class TextMemoryBuffer extends Writer implements Serializable {
 			off += remainder;
 			this.wpos += remainder;
 			notify();
+		}
+	}
+
+	public synchronized void write(CharSequence seq, int off, int len) throws IOException {
+		if (this.closed) { throw new IOException("This buffer is closed"); }
+		Objects.requireNonNull(seq, "Must provide a non-null CharSequence");
+		if (len < 0) { throw new IllegalArgumentException(String.format("Cannot copy negative lengths (%d)", len)); }
+		if (off < 0) {
+			throw new IllegalArgumentException(String.format("Cannot copy from a negative offset (%d)", off));
+		}
+		if (seq.length() < (off + len)) {
+			throw new IllegalArgumentException(
+				String.format("The given offset (%d) and length (%d) exceed the size of the given CharSequence (%d)",
+					off, len, seq.length()));
+		}
+		// Take a shortcut to avoid work
+		if (len == 0) { return; }
+
+		// Use a 1-character buffer to copy the thing over and re-use existing, tested code
+		char[] buf = new char[1];
+		for (int i = 0; i < len; i++) {
+			buf[0] = seq.charAt(i + off);
+			write(buf);
 		}
 	}
 
