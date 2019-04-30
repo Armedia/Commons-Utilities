@@ -12,6 +12,7 @@ package com.armedia.commons.utilities;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,12 @@ import org.junit.jupiter.api.Test;
 public class GlobberTest implements GoodServiceTest {
 
 	@Test
-	public void testAsPatternString() {
+	public void testConstructor() {
+		new Globber();
+	}
+
+	@Test
+	public void testAsPattern() {
 		String[][] data = {
 			{
 				"*.htm*", "index.html", "true"
@@ -55,6 +61,18 @@ public class GlobberTest implements GoodServiceTest {
 				"{one,two,three,fo{ur,rt}}.htm", "1.htm", "false"
 			}, {
 				"{one,two,three,fo{ur,rt}}.htm", "fourt.htm", "false"
+			}, {
+				"{one,two,three,fo\\{ur\\,rt\\}}.htm", "one.htm", "true"
+			}, {
+				"{one,two,three,fo\\{ur\\,rt\\}}.htm", "two.htm", "true"
+			}, {
+				"{one,two,three,fo\\{ur\\,rt\\}}.htm", "three.htm", "true"
+			}, {
+				"{one,two,three,fo\\{ur\\,rt\\}}.htm", "four.htm", "false"
+			}, {
+				"{one,two,three,fo\\{ur\\,rt\\}}.htm", "fort.htm", "false"
+			}, {
+				"{one,two,three,fo\\{ur\\,rt\\}}.htm", "fo{ur,rt}.htm", "true"
 			}, {
 				"a\\*b", "a*b", "true"
 			}, {
@@ -94,5 +112,11 @@ public class GlobberTest implements GoodServiceTest {
 			Assertions.assertEquals(expected, m.matches(),
 				String.format("While matching %s (%s)", Arrays.toString(d), p.pattern()));
 		}
+	}
+
+	@Test
+	public void testErrors() {
+		Assertions.assertThrows(PatternSyntaxException.class, () -> Globber.asPattern("abc{def"));
+		Assertions.assertThrows(PatternSyntaxException.class, () -> Globber.asPattern("abcdef\\"));
 	}
 }

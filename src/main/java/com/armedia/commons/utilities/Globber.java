@@ -23,7 +23,6 @@ import java.util.regex.PatternSyntaxException;
  */
 public class Globber {
 
-	private static final boolean DEFAULT_COMPLETE = true;
 	private static final int DEFAULT_OPTIONS = 0;
 
 	/**
@@ -35,20 +34,7 @@ public class Globber {
 	 * @return a {@link Pattern} instance that can be used to match the given glob.
 	 */
 	public static Pattern asPattern(String glob) {
-		return Globber.asPattern(glob, Globber.DEFAULT_COMPLETE, Globber.DEFAULT_OPTIONS);
-	}
-
-	/**
-	 * Converts the given glob into a regular expression pattern. If {@code complete} is true, the
-	 * resulting pattern is constructed such that it matches the entire pattern space (i.e. starts
-	 * with ^ and ends with $).
-	 *
-	 * @param glob
-	 * @param complete
-	 * @return {@link Pattern} instance that can be used to match the given glob
-	 */
-	public static Pattern asPattern(String glob, boolean complete) {
-		return Globber.asPattern(glob, complete, Globber.DEFAULT_OPTIONS);
+		return Globber.asPattern(glob, Globber.DEFAULT_OPTIONS);
 	}
 
 	/**
@@ -61,36 +47,7 @@ public class Globber {
 	 * @return {@link Pattern} instance that can be used to match the given glob
 	 */
 	public static Pattern asPattern(String glob, int patternOptions) {
-		return Globber.asPattern(glob, Globber.DEFAULT_COMPLETE, patternOptions);
-	}
-
-	/**
-	 * Converts the given glob into a regular expression pattern with the selected pattern options.
-	 * The options are the same as can be fed into {@link Pattern#compile(String, int)}, and are
-	 * intended to be added to the returned pattern upon compilation.If {@code complete} is true,
-	 * the resulting pattern is constructed such that it matches the entire pattern space (i.e.
-	 * starts with ^ and ends with $).
-	 *
-	 * @param glob
-	 * @param complete
-	 * @param patternOptions
-	 * @throws PatternSyntaxException
-	 *             if the resulting pattern is not a valid regular expression (possible, but
-	 *             unlikely)
-	 * @return {@link Pattern} instance that can be used to match the given glob
-	 */
-	public static Pattern asPattern(String glob, boolean complete, int patternOptions) {
-		return Pattern.compile(Globber.asRegex(glob, complete), patternOptions);
-	}
-
-	/**
-	 * Converts the given glob into a regular expression string.
-	 *
-	 * @param glob
-	 * @return regular expression string that can be used to match the given glob
-	 */
-	public static String asRegex(String glob) {
-		return Globber.asRegex(glob, Globber.DEFAULT_COMPLETE);
+		return Pattern.compile(Globber.asRegex(glob), patternOptions);
 	}
 
 	/**
@@ -99,16 +56,13 @@ public class Globber {
 	 * starts with ^ and ends with $).
 	 *
 	 * @param glob
-	 * @param complete
 	 * @return regular expression string that can be used to match the given glob
 	 */
-	public static String asRegex(String glob, boolean complete) {
+	public static String asRegex(String glob) {
 		glob = glob.trim();
 		int length = glob.length();
 		StringBuilder buf = new StringBuilder(length);
-		if (complete) {
-			buf.append("^");
-		}
+		buf.append("^");
 		int braceIndex = 0;
 		int escapeIndex = 0;
 		boolean escape = false;
@@ -195,9 +149,7 @@ public class Globber {
 					escapeIndex = -1;
 			}
 		}
-		if (complete) {
-			buf.append("$");
-		}
+		buf.append("$");
 		if (braces > 0) { throw new PatternSyntaxException("Unclosed brace", glob, braceIndex); }
 		if (escape) { throw new PatternSyntaxException("Dangling escape character", glob, escapeIndex); }
 		return buf.toString();
