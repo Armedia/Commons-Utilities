@@ -1,12 +1,12 @@
 package com.armedia.commons.utilities.line;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -66,27 +66,30 @@ public class LineIterator extends CloseableIterator<String> {
 
 	private final Map<String, Collection<Line>> cache = new HashMap<>();
 
-	private final Collection<LineSourceFactory> factories = new ArrayList<>();
+	private final Collection<LineSourceFactory> factories;
 	private final LineIteratorConfig config = new LineIteratorConfig();
 	private final LineSource root;
 
 	private Function<String, String> transformer = Function.identity();
 
-	protected LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, Iterable<String> root) {
+	LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, Iterable<String> root) {
 		this(factories, config,
 			(root != null) ? LineSource.wrap(LineIterator.ROOT_ID, root) : LineIterator.NULL_SOURCE);
 	}
 
-	protected LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, LineSource root) {
+	LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, LineSource root) {
 		if (factories != null) {
-			this.factories.addAll(factories);
-			this.factories.removeIf(Objects::isNull);
+			List<LineSourceFactory> f = new LinkedList<>(factories);
+			f.removeIf(Objects::isNull);
+			this.factories = Tools.freezeList(f);
+		} else {
+			this.factories = Collections.emptyList();
 		}
 		this.config.copyFrom(config);
 		this.root = Tools.coalesce(root, LineIterator.NULL_SOURCE);
 	}
 
-	public final Collection<LineSourceFactory> getFactories() {
+	public final Collection<LineSourceFactory> getSourceFactories() {
 		return this.factories;
 	}
 
