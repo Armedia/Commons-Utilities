@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 public class CloseableIteratorTest {
 
-	private static final Collection<Integer> ALL_CHARACTERISTICS;
+	static final Collection<Integer> ALL_CHARACTERISTICS;
 
 	static {
 		List<Integer> c = Arrays.asList(new Integer[] {
