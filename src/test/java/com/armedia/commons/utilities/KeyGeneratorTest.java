@@ -10,11 +10,14 @@ public class KeyGeneratorTest {
 		KeyGenerator gen = new KeyGenerator();
 
 		System.out.printf("=== START ===%n");
-		for (int i = 1; i <= 100; i++) {
+		int max = 100;
+		for (int i = 1; i <= max; i++) {
 			System.out.printf("ID=[%s]%n", gen.get());
 			if ((i % 10) == 0) {
 				System.out.printf("==== PAUSE ====%n");
-				Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+				if (i < max) {
+					Thread.sleep(TimeUnit.MILLISECONDS.toMillis(100));
+				}
 			}
 		}
 		System.out.printf("==== END ====%n");
