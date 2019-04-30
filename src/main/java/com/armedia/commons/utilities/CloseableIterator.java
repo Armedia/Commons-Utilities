@@ -60,16 +60,9 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 	@Override
 	public final E next() {
 		assertOpen();
-
 		if (!hasNext()) { throw new NoSuchElementException(); }
-
-		try {
-			this.state = State.FETCHED;
-			return this.current;
-		} catch (Exception e) {
-			close();
-			throw new RuntimeException("Failed to fetch the next item in the iterator, closed automatically", e);
-		}
+		this.state = State.FETCHED;
+		return this.current;
 	}
 
 	/**
@@ -87,7 +80,6 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 
 	@Override
 	public final void remove() {
-		assertOpen();
 		if (this.state != State.FETCHED) { throw new IllegalStateException("No element to remove"); }
 		remove(this.current);
 		this.state = State.WAITING;
