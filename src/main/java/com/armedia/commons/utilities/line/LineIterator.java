@@ -89,7 +89,7 @@ public class LineIterator extends CloseableIterator<String> {
 		this.root = Tools.coalesce(root, LineIterator.NULL_SOURCE);
 	}
 
-	public final Collection<LineSourceFactory> getFactories() {
+	public final Collection<LineSourceFactory> getSourceFactories() {
 		return this.factories;
 	}
 

@@ -87,8 +87,8 @@ public class LineIteratorTest {
 			EasyMock.reset(f.toArray());
 			EasyMock.replay(f.toArray());
 			try (LineIterator it = new LineIterator(f, null, Collections.emptyList())) {
-				Assertions.assertEquals(f.size(), it.getFactories().size());
-				Assertions.assertEquals(f, it.getFactories());
+				Assertions.assertEquals(f.size(), it.getSourceFactories().size());
+				Assertions.assertEquals(f, it.getSourceFactories());
 			}
 			EasyMock.verify(f.toArray());
 		}
