@@ -1,12 +1,12 @@
 /**
  * *******************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
  * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
  * STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011-2011. All Rights reserved.
- * 
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -17,9 +17,9 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Utility class that converts a globbing pattern (wildcard match with *, ?, {}, etc) to a regular
  * expression.
- * 
+ *
  * @author drivera@armedia.com
- * 
+ *
  */
 public class Globber {
 
@@ -30,7 +30,7 @@ public class Globber {
 	 * Converts the given glob into a regular expression pattern. This pattern can then be used to
 	 * for string matching. The pattern returned will match the entire pattern space (i.e. starts
 	 * with ^ and ends with $).
-	 * 
+	 *
 	 * @param glob
 	 * @return a {@link Pattern} instance that can be used to match the given glob.
 	 */
@@ -42,7 +42,7 @@ public class Globber {
 	 * Converts the given glob into a regular expression pattern. If {@code complete} is true, the
 	 * resulting pattern is constructed such that it matches the entire pattern space (i.e. starts
 	 * with ^ and ends with $).
-	 * 
+	 *
 	 * @param glob
 	 * @param complete
 	 * @return {@link Pattern} instance that can be used to match the given glob
@@ -55,7 +55,7 @@ public class Globber {
 	 * Converts the given glob into a regular expression pattern with the selected pattern options.
 	 * The options are the same as can be fed into {@link Pattern#compile(String, int)}, and are
 	 * intended to be added to the returned pattern upon compilation.
-	 * 
+	 *
 	 * @param glob
 	 * @param patternOptions
 	 * @return {@link Pattern} instance that can be used to match the given glob
@@ -70,7 +70,7 @@ public class Globber {
 	 * intended to be added to the returned pattern upon compilation.If {@code complete} is true,
 	 * the resulting pattern is constructed such that it matches the entire pattern space (i.e.
 	 * starts with ^ and ends with $).
-	 * 
+	 *
 	 * @param glob
 	 * @param complete
 	 * @param patternOptions
@@ -85,7 +85,7 @@ public class Globber {
 
 	/**
 	 * Converts the given glob into a regular expression string.
-	 * 
+	 *
 	 * @param glob
 	 * @return regular expression string that can be used to match the given glob
 	 */
@@ -97,7 +97,7 @@ public class Globber {
 	 * Converts the given glob into a regular expression string. If {@code complete} is true, the
 	 * resulting expression is constructed such that it matches the entire pattern space (i.e.
 	 * starts with ^ and ends with $).
-	 * 
+	 *
 	 * @param glob
 	 * @param complete
 	 * @return regular expression string that can be used to match the given glob
@@ -109,9 +109,13 @@ public class Globber {
 		if (complete) {
 			buf.append("^");
 		}
+		int braceIndex = 0;
+		int escapeIndex = 0;
 		boolean escape = false;
 		int braces = 0;
+		int pos = -1;
 		for (char current : glob.toCharArray()) {
+			pos++;
 			switch (current) {
 				case '*':
 					if (escape) {
@@ -120,6 +124,7 @@ public class Globber {
 						buf.append(".*");
 					}
 					escape = false;
+					escapeIndex = -1;
 					break;
 				case '?':
 					if (escape) {
@@ -128,6 +133,7 @@ public class Globber {
 						buf.append('.');
 					}
 					escape = false;
+					escapeIndex = -1;
 					break;
 				case '.':
 				case '(':
@@ -141,13 +147,16 @@ public class Globber {
 					buf.append('\\');
 					buf.append(current);
 					escape = false;
+					escapeIndex = -1;
 					break;
 				case '\\':
 					if (escape) {
 						buf.append("\\\\");
 						escape = false;
+						escapeIndex = -1;
 					} else {
 						escape = true;
+						escapeIndex = pos;
 					}
 					break;
 				case '{':
@@ -156,19 +165,20 @@ public class Globber {
 					} else {
 						buf.append('(');
 						braces++;
+						braceIndex = pos;
 					}
 					escape = false;
+					escapeIndex = -1;
 					break;
 				case '}':
-					if ((braces > 0) && !escape) {
-						buf.append(')');
-						braces--;
-					} else if (escape) {
+					if (escape || (braces == 0)) {
 						buf.append("\\}");
 					} else {
-						buf.append("}");
+						buf.append(')');
+						braces--;
 					}
 					escape = false;
+					escapeIndex = -1;
 					break;
 				case ',':
 					if ((braces > 0) && !escape) {
@@ -180,13 +190,16 @@ public class Globber {
 					}
 					break;
 				default:
-					escape = false;
 					buf.append(current);
+					escape = false;
+					escapeIndex = -1;
 			}
 		}
 		if (complete) {
 			buf.append("$");
 		}
+		if (braces > 0) { throw new PatternSyntaxException("Unclosed brace", glob, braceIndex); }
+		if (escape) { throw new PatternSyntaxException("Dangling escape character", glob, escapeIndex); }
 		return buf.toString();
 	}
 }
