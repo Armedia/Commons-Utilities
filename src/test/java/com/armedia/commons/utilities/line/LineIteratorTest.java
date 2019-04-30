@@ -112,7 +112,7 @@ public class LineIteratorTest {
 
 	@Test
 	public void testGetConfig() {
-		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> f : LineIteratorConfigTest.ALL_FEATURES) {
 			for (Trim trim : LineIteratorConfig.Trim.values()) {
 				for (int d = 0; d < 100; d++) {
 					LineIteratorConfig cfg = new LineIteratorConfig();
