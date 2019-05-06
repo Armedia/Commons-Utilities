@@ -281,7 +281,7 @@ public class ShareableCollectionTest {
 		final Object[] o = {};
 		final Object[] p = {};
 
-		Assertions.assertThrows(NullPointerException.class, () -> sc.toArray(null));
+		Assertions.assertThrows(NullPointerException.class, () -> sc.toArray((Object[])null));
 
 		EasyMock.reset(rl, wl, l);
 		rl.lock();
