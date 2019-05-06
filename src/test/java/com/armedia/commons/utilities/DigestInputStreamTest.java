@@ -21,7 +21,7 @@ import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class DigestInputStreamTest {
+public class DigestInputStreamTest {
 
 	private static final String NULL_STRING = null;
 	private static final MessageDigest NULL_DIGEST = null;
@@ -35,7 +35,7 @@ class DigestInputStreamTest {
 	}
 
 	@Test
-	void testDigestInputStream() throws Exception {
+	public void testDigestInputStream() throws Exception {
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new DigestInputStream(null, DigestInputStreamTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
@@ -62,7 +62,7 @@ class DigestInputStreamTest {
 	}
 
 	@Test
-	void testGetDigest() throws Exception {
+	public void testGetDigest() throws Exception {
 		InputStream wbc = new NullInputStream(0);
 		try (DigestInputStream c = new DigestInputStream(wbc, DigestInputStreamTest.SHA256)) {
 			Assertions.assertSame(DigestInputStreamTest.SHA256, c.getDigest());
@@ -73,7 +73,7 @@ class DigestInputStreamTest {
 	}
 
 	@Test
-	void testCollectHash() throws Exception {
+	public void testCollectHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 
 		for (Provider p : Security.getProviders()) {
@@ -111,7 +111,7 @@ class DigestInputStreamTest {
 	}
 
 	@Test
-	void testResetHash() throws Exception {
+	public void testResetHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 
 		for (Provider p : Security.getProviders()) {
@@ -150,7 +150,7 @@ class DigestInputStreamTest {
 	}
 
 	@Test
-	void testRead() throws Exception {
+	public void testRead() throws Exception {
 		byte[] c = RandomStringUtils.random(1000).getBytes();
 		try (final InputStream channel = new DigestInputStream(new ByteArrayInputStream(c),
 			DigestInputStreamTest.SHA256)) {
@@ -178,7 +178,7 @@ class DigestInputStreamTest {
 	}
 
 	@Test
-	void testClose() throws IOException {
+	public void testClose() throws IOException {
 		InputStream wbc = EasyMock.createMock(InputStream.class);
 		wbc.close();
 		EasyMock.expectLastCall().once();

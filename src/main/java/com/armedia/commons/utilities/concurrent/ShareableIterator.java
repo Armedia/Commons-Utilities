@@ -9,11 +9,11 @@ public class ShareableIterator<E> extends BaseShareableLockable implements Itera
 	private final Iterator<E> iterator;
 
 	public ShareableIterator(Iterator<E> iterator) {
-		this(ShareableLockable.NULL_LOCK, iterator);
+		this(ShareableLockable.extractShareableLock(iterator), iterator);
 	}
 
 	public ShareableIterator(ShareableLockable lockable, Iterator<E> iterator) {
-		this(BaseShareableLockable.extractLock(lockable), iterator);
+		this(ShareableLockable.extractShareableLock(lockable), iterator);
 	}
 
 	public ShareableIterator(ReadWriteLock rwLock, Iterator<E> iterator) {

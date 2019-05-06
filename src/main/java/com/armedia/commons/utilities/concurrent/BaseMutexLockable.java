@@ -1,13 +1,10 @@
 package com.armedia.commons.utilities.concurrent;
 
-import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.bind.annotation.XmlTransient;
-
-import com.armedia.commons.utilities.Tools;
 
 /**
  * <p>
@@ -34,7 +31,7 @@ public class BaseMutexLockable implements MutexLockable {
 	}
 
 	public BaseMutexLockable(MutexLockable lockable) {
-		this(BaseMutexLockable.extractLock(lockable));
+		this(MutexLockable.extractMutexLock(lockable));
 	}
 
 	/**
@@ -50,13 +47,5 @@ public class BaseMutexLockable implements MutexLockable {
 	@Override
 	public final Lock getMutexLock() {
 		return this.lock;
-	}
-
-	protected static Lock extractLock(MutexLockable lockable) {
-		return Objects.requireNonNull(lockable, "Must provide a non-null MutexLockable instance").getMutexLock();
-	}
-
-	protected static MutexLockable extractMutexLockable(Object o) {
-		return Tools.cast(MutexLockable.class, o);
 	}
 }

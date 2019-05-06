@@ -23,7 +23,7 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 
 	}
 
-	public static enum Factories implements KeyFactory {
+	public static enum Factory implements KeyFactory {
 
 		//
 		TIME {
@@ -60,7 +60,7 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 	public static final int CACHE_COUNT_MIN = 100;
 	public static final int CACHE_COUNT_MAX = 100000;
 	public static final int DEFAULT_CACHE_COUNT = 1000;
-	public static final KeyFactory DEFAULT_PREFIX = Factories.UUID;
+	public static final KeyFactory DEFAULT_FACTORY = Factory.UUID;
 
 	private final KeyFactory keyFactory;
 	private final Supplier<String> generator;
@@ -73,7 +73,7 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 	}
 
 	public KeyGenerator(KeyFactory keyFactory) {
-		this.keyFactory = Tools.coalesce(keyFactory, KeyGenerator.DEFAULT_PREFIX);
+		this.keyFactory = Tools.coalesce(keyFactory, KeyGenerator.DEFAULT_FACTORY);
 		this.generator = (this.keyFactory.isCacheable() ? this::generateCached : this.keyFactory);
 	}
 
@@ -84,14 +84,7 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 	protected String generateCached() {
 		return shareLockedUpgradable(this.cache::poll, Objects::isNull, (e) -> {
 			for (int i = 0; i <= this.cacheCount; i++) {
-				String newKey = this.keyFactory.get();
-				if (!this.cache.offer(newKey)) {
-					if (i == 0) {
-						// NOT EVEN ONE!!! Return the currently-rendered key
-						return newKey;
-					}
-					break;
-				}
+				this.cache.offer(this.keyFactory.get());
 			}
 			return this.cache.poll();
 		});
@@ -103,8 +96,8 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 
 	public KeyGenerator setCacheCount(final int cacheCount) {
 		try (MutexAutoLock lock = autoMutexLock()) {
-			this.cacheCount = Tools.ensureBetween(KeyGenerator.CACHE_COUNT_MAX, cacheCount,
-				KeyGenerator.CACHE_COUNT_MIN);
+			this.cacheCount = Tools.ensureBetween(KeyGenerator.CACHE_COUNT_MIN, cacheCount,
+				KeyGenerator.CACHE_COUNT_MAX);
 			return this;
 		}
 	}

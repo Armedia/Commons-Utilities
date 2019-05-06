@@ -1,12 +1,9 @@
 package com.armedia.commons.utilities.concurrent;
 
-import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.bind.annotation.XmlTransient;
-
-import com.armedia.commons.utilities.Tools;
 
 /**
  * <p>
@@ -33,7 +30,7 @@ public class BaseShareableLockable extends BaseMutexLockable implements Shareabl
 	}
 
 	public BaseShareableLockable(ShareableLockable lockable) {
-		this(BaseShareableLockable.extractLock(lockable));
+		this(ShareableLockable.extractShareableLock(lockable));
 	}
 
 	/**
@@ -62,14 +59,5 @@ public class BaseShareableLockable extends BaseMutexLockable implements Shareabl
 	@Override
 	public final ReadWriteLock getShareableLock() {
 		return this.rwLock;
-	}
-
-	protected static ReadWriteLock extractLock(ShareableLockable lockable) {
-		return Objects.requireNonNull(lockable, "Must provide a non-null ReadWriteLockable instance")
-			.getShareableLock();
-	}
-
-	protected static ShareableLockable extractShareableLockable(Object o) {
-		return Tools.cast(ShareableLockable.class, o);
 	}
 }

@@ -10,28 +10,29 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.function.LazySupplier;
 
 public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements Map<KEY, VALUE> {
 
 	protected final Map<KEY, VALUE> map;
-	protected final Set<KEY> keys;
-	protected final Set<Map.Entry<KEY, VALUE>> entries;
-	protected final Collection<VALUE> values;
+	protected final LazySupplier<Set<Map.Entry<KEY, VALUE>>> entries;
+	protected final LazySupplier<Set<KEY>> keys;
+	protected final LazySupplier<Collection<VALUE>> values;
 
 	public ShareableMap(Map<KEY, VALUE> map) {
-		this(BaseShareableLockable.extractShareableLockable(map), map);
+		this(ShareableLockable.extractShareableLock(map), map);
 	}
 
 	public ShareableMap(ShareableLockable lockable, Map<KEY, VALUE> map) {
-		this(BaseShareableLockable.extractLock(lockable), map);
+		this(ShareableLockable.extractShareableLock(lockable), map);
 	}
 
 	public ShareableMap(ReadWriteLock rwLock, Map<KEY, VALUE> map) {
 		super(rwLock);
 		this.map = Objects.requireNonNull(map, "Must provide a non-null backing map");
-		this.keys = new ShareableSet<>(this, map.keySet());
-		this.entries = new ShareableSet<>(this, map.entrySet());
-		this.values = new ShareableCollection<>(this, map.values());
+		this.keys = new LazySupplier<>(() -> shareLocked(() -> new ShareableSet<>(this, map.keySet())));
+		this.entries = new LazySupplier<>(() -> shareLocked(() -> new ShareableSet<>(this, map.entrySet())));
+		this.values = new LazySupplier<>(() -> shareLocked(() -> new ShareableCollection<>(this, map.values())));
 	}
 
 	@Override
@@ -82,28 +83,28 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 
 	@Override
 	public Set<KEY> keySet() {
-		return this.keys;
+		return this.keys.get();
 	}
 
 	@Override
 	public Collection<VALUE> values() {
-		return this.values;
+		return this.values.get();
 	}
 
 	@Override
 	public Set<Entry<KEY, VALUE>> entrySet() {
-		return this.entries;
+		return this.entries.get();
 	}
 
 	@Override
 	public boolean equals(Object o) {
+		if (o == null) { return false; }
+		if (o == this) { return true; }
+		Map<?, ?> other = Tools.cast(Map.class, o);
+		if (other == null) { return false; }
 		try (SharedAutoLock lock = autoSharedLock()) {
-			if (o == null) { return false; }
-			if (o == this) { return true; }
-			if (!Map.class.isInstance(o)) { return false; }
-			Map<?, ?> m = Map.class.cast(o);
-			if (this.map.size() != m.size()) { return false; }
-			return this.map.equals(o);
+			if (this.map.size() != other.size()) { return false; }
+			return this.map.equals(other);
 		}
 	}
 
@@ -119,11 +120,13 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 
 	@Override
 	public void forEach(BiConsumer<? super KEY, ? super VALUE> action) {
+		Objects.requireNonNull(action);
 		shareLocked(() -> this.map.forEach(action));
 	}
 
 	@Override
 	public void replaceAll(BiFunction<? super KEY, ? super VALUE, ? extends VALUE> function) {
+		Objects.requireNonNull(function);
 		mutexLocked(() -> this.map.replaceAll(function));
 	}
 
@@ -174,18 +177,5 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 			}
 			return V;
 		});
-	}
-
-	@Override
-	public VALUE compute(KEY key, BiFunction<? super KEY, ? super VALUE, ? extends VALUE> remappingFunction) {
-		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
-		return mutexLocked(() -> this.map.compute(key, remappingFunction));
-	}
-
-	@Override
-	public VALUE merge(KEY key, VALUE value,
-		BiFunction<? super VALUE, ? super VALUE, ? extends VALUE> remappingFunction) {
-		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
-		return mutexLocked(() -> this.map.merge(key, value, remappingFunction));
 	}
 }

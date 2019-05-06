@@ -1,8 +1,10 @@
 package com.armedia.commons.utilities.concurrent;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -219,5 +221,90 @@ public class BaseMutexLockableTest {
 			Assertions.assertFalse(lock.isLocked());
 			Assertions.assertFalse(lock.isHeldByCurrentThread());
 		}
+	}
+
+	@Test
+	public void testRunnableAlwaysChecked() throws Throwable {
+		final ReentrantLock lock = new ReentrantLock();
+		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
+		final AtomicLong callCount = new AtomicLong(0);
+
+		callCount.set(0);
+		rwl.mutexLocked(new CheckedRunnable<Throwable>() {
+			@Override
+			public void run() {
+				Assertions.fail("CheckedRunnable.run() should never be called!");
+			}
+
+			@Override
+			public void runChecked() throws Throwable {
+				callCount.incrementAndGet();
+			}
+		});
+		Assertions.assertEquals(1, callCount.get());
+
+		callCount.set(0);
+		Assertions.assertThrows(IOException.class, () -> rwl.mutexLocked(new CheckedRunnable<IOException>() {
+			@Override
+			public void run() {
+				Assertions.fail("CheckedRunnable.run() should never be called!");
+			}
+
+			@Override
+			public void runChecked() throws IOException {
+				callCount.incrementAndGet();
+				throw new IOException("This is a test exception");
+			}
+		}));
+		Assertions.assertEquals(1, callCount.get());
+	}
+
+	@Test
+	public void testSupplierAlwaysChecked() throws Throwable {
+		final ReentrantLock lock = new ReentrantLock();
+		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
+		final AtomicLong callCount = new AtomicLong(0);
+
+		callCount.set(0);
+		rwl.mutexLocked(new CheckedSupplier<Object, Throwable>() {
+			@Override
+			public Object get() {
+				Assertions.fail("CheckedSupplier.get() should never be called!");
+				return null;
+			}
+
+			@Override
+			public Object getChecked() throws Throwable {
+				callCount.incrementAndGet();
+				return null;
+			}
+		});
+		Assertions.assertEquals(1, callCount.get());
+
+		callCount.set(0);
+		Assertions.assertThrows(IOException.class, () -> rwl.mutexLocked(new CheckedSupplier<Object, IOException>() {
+			@Override
+			public Object get() {
+				Assertions.fail("CheckedSupplier.get() should never be called!");
+				return null;
+			}
+
+			@Override
+			public Object getChecked() throws IOException {
+				callCount.incrementAndGet();
+				throw new IOException("This is a test exception");
+			}
+		}));
+		Assertions.assertEquals(1, callCount.get());
+	}
+
+	@Test
+	public void testExtractMutexLock() {
+		final ReentrantLock lock = new ReentrantLock();
+		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
+		Assertions.assertSame(lock, MutexLockable.extractMutexLock(rwl));
+		Assertions.assertThrows(NullPointerException.class, () -> MutexLockable.extractMutexLock(null));
+		Assertions.assertNull(MutexLockable.extractMutexLock(new Object()));
+		Assertions.assertSame(lock, MutexLockable.extractMutexLock(lock));
 	}
 }

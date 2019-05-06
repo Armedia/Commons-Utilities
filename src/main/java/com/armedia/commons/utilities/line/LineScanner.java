@@ -39,7 +39,6 @@ public class LineScanner extends BaseShareableLockable {
 			ret.addAll(LineScanner.DEFAULT_FACTORIES.values()); // Append the defaults
 			return ret;
 		}
-
 	}
 
 	public final LineScanner addSourceFactory(LineSourceFactory factory) {
@@ -107,8 +106,6 @@ public class LineScanner extends BaseShareableLockable {
 		}
 		Iterator<String> it = sourceSpecs.iterator();
 		if (!it.hasNext()) { return LineIterator.NULL_ITERATOR; }
-		config = new LineIteratorConfig(config);
-
 		return new LineIterator(getSourceFactories(), config, sourceSpecs);
 	}
 

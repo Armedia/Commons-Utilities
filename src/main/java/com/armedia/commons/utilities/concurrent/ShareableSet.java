@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 public class ShareableSet<ELEMENT> extends ShareableCollection<ELEMENT> implements Set<ELEMENT> {
 
 	public ShareableSet(Set<ELEMENT> set) {
-		this(ShareableLockable.NULL_LOCK, set);
+		super(set);
 	}
 
 	public ShareableSet(ReadWriteLock rwLock, Set<ELEMENT> set) {

@@ -1,14 +1,13 @@
 package com.armedia.commons.utilities.concurrent;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 
+import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,178 +34,133 @@ public class ShareableIteratorTest {
 	}
 
 	@Test
-	public void testTraversal() {
-		final List<String> elements = new ArrayList<>();
-		for (int i = 0; i < 10; i++) {
-			elements.add(String.valueOf(i));
-		}
-
-		{
-			ShareableIterator<String> it = new ShareableIterator<>(Collections.emptyIterator());
-			Assertions.assertFalse(it.hasNext());
-			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
-			Assertions.assertThrows(NullPointerException.class, () -> it.forEachRemaining(null));
-		}
-		{
-			ShareableIterator<String> it = new ShareableIterator<>(elements.iterator());
-			for (int i = 0; i < 10; i++) {
-				Assertions.assertTrue(it.hasNext());
-				String a = String.valueOf(i);
-				Assertions.assertEquals(a, it.next());
+	public void testHasNext() {
+		final Iterator<Object> i = EasyMock.createStrictMock(Iterator.class);
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
 			}
-		}
-		{
-			List<String> newElements = new ArrayList<>(elements);
-			ShareableIterator<String> it = new ShareableIterator<>(newElements.iterator());
-			Assertions.assertFalse(newElements.isEmpty());
-			for (int i = 0; i < 10; i++) {
-				Assertions.assertTrue(it.hasNext());
-				String a = String.valueOf(i);
-				Assertions.assertEquals(a, it.next());
-				it.remove();
+
+			@Override
+			public Lock writeLock() {
+				return wl;
 			}
-			Assertions.assertTrue(newElements.isEmpty());
-		}
+		};
+		final ShareableIterator<Object> si = new ShareableIterator<>(rwl, i);
 
-		// Now test the locking
-		{
-			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ShareableIterator<String> it = new ShareableIterator<>(rwl, elements.iterator());
-			AtomicInteger current = new AtomicInteger(0);
-			Assertions.assertEquals(0, rwl.getReadHoldCount());
-			it.forEachRemaining((e) -> {
-				String v = String.valueOf(current.getAndIncrement());
-				Assertions.assertEquals(v, e);
-				Assertions.assertEquals(1, rwl.getReadHoldCount());
-				Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-			});
-			Assertions.assertEquals(0, rwl.getReadHoldCount());
-		}
-		{
-			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ShareableIterator<String> it = new ShareableIterator<>(rwl, new Iterator<String>() {
-				@Override
-				public boolean hasNext() {
-					Assertions.assertEquals(1, rwl.getReadHoldCount());
-					Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-					return false;
-				}
+		EasyMock.reset(rl, wl, i);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		EasyMock.expect(i.hasNext()).andReturn(true).once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl, i);
+		Assertions.assertTrue(si.hasNext());
+		EasyMock.verify(rl, wl, i);
 
-				@Override
-				public String next() {
-					Assertions.assertEquals(1, rwl.getReadHoldCount());
-					Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-					throw new NoSuchElementException();
-				}
-
-			});
-			Assertions.assertFalse(it.hasNext());
-			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
-		}
-		{
-			ShareableIterator<String> base = new ShareableIterator<>(elements.iterator());
-			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ShareableIterator<String> it = new ShareableIterator<>(rwl, new Iterator<String>() {
-				@Override
-				public boolean hasNext() {
-					Assertions.assertEquals(1, rwl.getReadHoldCount());
-					Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-					return base.hasNext();
-				}
-
-				@Override
-				public String next() {
-					Assertions.assertEquals(1, rwl.getReadHoldCount());
-					Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-					return base.next();
-				}
-
-				@Override
-				public void remove() {
-					Assertions.assertEquals(0, rwl.getReadHoldCount());
-					Assertions.assertTrue(rwl.writeLock().isHeldByCurrentThread());
-					base.remove();
-				}
-
-			});
-			for (int i = 0; i < 10; i++) {
-				Assertions.assertTrue(it.hasNext());
-				String a = String.valueOf(i);
-				Assertions.assertEquals(a, it.next());
-				it.remove();
-			}
-			Assertions.assertFalse(it.hasNext());
-			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
-		}
+		EasyMock.reset(rl, wl, i);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		EasyMock.expect(i.hasNext()).andReturn(false).once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl, i);
+		Assertions.assertFalse(si.hasNext());
+		EasyMock.verify(rl, wl, i);
 	}
 
 	@Test
 	public void testNext() {
-		final List<String> elements = new ArrayList<>();
-		for (int i = 0; i < 10; i++) {
-			elements.add(String.valueOf(i));
-		}
-
-		{
-			ShareableIterator<String> it = new ShareableIterator<>(Collections.emptyIterator());
-			Assertions.assertFalse(it.hasNext());
-			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
-		}
-		{
-			ShareableIterator<String> it = new ShareableIterator<>(elements.iterator());
-			for (int i = 0; i < 10; i++) {
-				Assertions.assertTrue(it.hasNext());
-				String a = String.valueOf(i);
-				Assertions.assertEquals(a, it.next());
+		final Iterator<Object> i = EasyMock.createStrictMock(Iterator.class);
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
 			}
-		}
-		{
-			List<String> newElements = new ArrayList<>(elements);
-			ShareableIterator<String> it = new ShareableIterator<>(newElements.iterator());
-			Assertions.assertFalse(newElements.isEmpty());
-			for (int i = 0; i < 10; i++) {
-				Assertions.assertTrue(it.hasNext());
-				String a = String.valueOf(i);
-				Assertions.assertEquals(a, it.next());
-				it.remove();
+
+			@Override
+			public Lock writeLock() {
+				return wl;
 			}
-			Assertions.assertTrue(newElements.isEmpty());
-		}
+		};
+		final ShareableIterator<Object> si = new ShareableIterator<>(rwl, i);
+		final Object o = new Object();
 
-		// Now test the locking
-		{
-			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ShareableIterator<String> it = new ShareableIterator<>(rwl, elements.iterator());
-			AtomicInteger current = new AtomicInteger(0);
-			Assertions.assertEquals(0, rwl.getReadHoldCount());
-			it.forEachRemaining((e) -> {
-				String v = String.valueOf(current.getAndIncrement());
-				Assertions.assertEquals(v, e);
-				Assertions.assertEquals(1, rwl.getReadHoldCount());
-				Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-			});
-			Assertions.assertEquals(0, rwl.getReadHoldCount());
-		}
-		{
-			ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-			ShareableIterator<String> it = new ShareableIterator<>(rwl, new Iterator<String>() {
-				@Override
-				public boolean hasNext() {
-					Assertions.assertEquals(1, rwl.getReadHoldCount());
-					Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-					return false;
-				}
+		EasyMock.reset(rl, wl, i);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		EasyMock.expect(i.next()).andReturn(o).once();
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl, i);
+		Assertions.assertSame(o, si.next());
+		EasyMock.verify(rl, wl, i);
+	}
 
-				@Override
-				public String next() {
-					Assertions.assertEquals(1, rwl.getReadHoldCount());
-					Assertions.assertFalse(rwl.writeLock().isHeldByCurrentThread());
-					throw new NoSuchElementException();
-				}
+	@Test
+	public void testRemove() {
+		final Iterator<Object> i = EasyMock.createStrictMock(Iterator.class);
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
 
-			});
-			Assertions.assertFalse(it.hasNext());
-			Assertions.assertThrows(NoSuchElementException.class, () -> it.next());
-		}
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		final ShareableIterator<Object> si = new ShareableIterator<>(rwl, i);
+
+		EasyMock.reset(rl, wl, i);
+		wl.lock();
+		EasyMock.expectLastCall().once();
+		i.remove();
+		EasyMock.expectLastCall().once();
+		wl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl, i);
+		si.remove();
+		EasyMock.verify(rl, wl, i);
+	}
+
+	@Test
+	public void testForEachRemaining() {
+		final Iterator<Object> i = EasyMock.createStrictMock(Iterator.class);
+		final Lock rl = EasyMock.createStrictMock(Lock.class);
+		final Lock wl = EasyMock.createStrictMock(Lock.class);
+		final ReadWriteLock rwl = new ReadWriteLock() {
+			@Override
+			public Lock readLock() {
+				return rl;
+			}
+
+			@Override
+			public Lock writeLock() {
+				return wl;
+			}
+		};
+		final ShareableIterator<Object> si = new ShareableIterator<>(rwl, i);
+		final Consumer<Object> c = EasyMock.createStrictMock(Consumer.class);
+
+		Assertions.assertThrows(NullPointerException.class, () -> si.forEachRemaining(null));
+
+		EasyMock.reset(rl, wl, i, c);
+		rl.lock();
+		EasyMock.expectLastCall().once();
+		i.forEachRemaining(EasyMock.same(c));
+		rl.unlock();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(rl, wl, i, c);
+		si.forEachRemaining(c);
+		EasyMock.verify(rl, wl, i, c);
 	}
 }

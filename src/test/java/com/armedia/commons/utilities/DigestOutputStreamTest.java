@@ -20,7 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class DigestOutputStreamTest {
+public class DigestOutputStreamTest {
 
 	private static final OutputStream NULL_STREAM = null;
 	private static final String NULL_STRING = null;
@@ -36,7 +36,7 @@ class DigestOutputStreamTest {
 	}
 
 	@Test
-	void testDigestOutputStream() throws Exception {
+	public void testDigestOutputStream() throws Exception {
 		OutputStream o = NullOutputStream.NULL_OUTPUT_STREAM;
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new DigestOutputStream(DigestOutputStreamTest.NULL_STREAM, DigestOutputStreamTest.NULL_STRING));
@@ -62,7 +62,7 @@ class DigestOutputStreamTest {
 	}
 
 	@Test
-	void testFlush() throws IOException {
+	public void testFlush() throws IOException {
 		final AtomicInteger flushCalled = new AtomicInteger(0);
 		OutputStream out = new OutputStream() {
 			@Override
@@ -85,7 +85,7 @@ class DigestOutputStreamTest {
 	}
 
 	@Test
-	void testClose() throws IOException {
+	public void testClose() throws IOException {
 		final AtomicInteger closeCalled = new AtomicInteger(0);
 		OutputStream out = new OutputStream() {
 			@Override
@@ -106,7 +106,7 @@ class DigestOutputStreamTest {
 	}
 
 	@Test
-	void testWrite() throws IOException {
+	public void testWrite() throws IOException {
 		final List<byte[]> data = new ArrayList<>();
 		final Random r = new Random(System.nanoTime());
 		for (int i = 1; i <= 10; i++) {
@@ -136,7 +136,7 @@ class DigestOutputStreamTest {
 	}
 
 	@Test
-	void testCollectHash() throws Exception {
+	public void testCollectHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 		final Random r = new Random(System.nanoTime());
 		for (Provider p : Security.getProviders()) {
@@ -173,7 +173,7 @@ class DigestOutputStreamTest {
 	}
 
 	@Test
-	void testResetHash() throws Exception {
+	public void testResetHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 		final Random r = new Random(System.nanoTime());
 		for (Provider p : Security.getProviders()) {
@@ -212,7 +212,7 @@ class DigestOutputStreamTest {
 	}
 
 	@Test
-	void testGetDigest() throws Exception {
+	public void testGetDigest() throws Exception {
 		final OutputStream nos = NullOutputStream.NULL_OUTPUT_STREAM;
 		for (Provider p : Security.getProviders()) {
 			for (Service s : p.getServices()) {

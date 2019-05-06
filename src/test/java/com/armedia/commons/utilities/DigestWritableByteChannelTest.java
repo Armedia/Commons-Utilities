@@ -22,7 +22,7 @@ import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class DigestWritableByteChannelTest {
+public class DigestWritableByteChannelTest {
 
 	private static final String NULL_STRING = null;
 	private static final MessageDigest NULL_DIGEST = null;
@@ -36,7 +36,7 @@ class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	void testDigestWritableByteChannel() throws Exception {
+	public void testDigestWritableByteChannel() throws Exception {
 		Assertions.assertThrows(NullPointerException.class,
 			() -> new DigestWritableByteChannel(null, DigestWritableByteChannelTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
@@ -61,7 +61,7 @@ class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	void testGetDigest() throws Exception {
+	public void testGetDigest() throws Exception {
 		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
 		try (DigestWritableByteChannel c = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256)) {
 			Assertions.assertSame(DigestWritableByteChannelTest.SHA256, c.getDigest());
@@ -73,7 +73,7 @@ class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	void testCollectHash() throws Exception {
+	public void testCollectHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 		for (Provider p : Security.getProviders()) {
 			for (Service s : p.getServices()) {
@@ -109,7 +109,7 @@ class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	void testResetHash() throws Exception {
+	public void testResetHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
 
 		for (Provider p : Security.getProviders()) {
@@ -147,7 +147,7 @@ class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	void testWrite() throws Exception {
+	public void testWrite() throws Exception {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (final WritableByteChannel channel = new DigestWritableByteChannel(Channels.newChannel(baos),
 			DigestWritableByteChannelTest.SHA256)) {
@@ -158,7 +158,7 @@ class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	void testIsOpen() throws Exception {
+	public void testIsOpen() throws Exception {
 		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
 		DigestWritableByteChannel C = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256);
 		try (DigestWritableByteChannel c = C) {
@@ -168,7 +168,7 @@ class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	void testClose() throws IOException {
+	public void testClose() throws IOException {
 		WritableByteChannel wbc = EasyMock.createMock(WritableByteChannel.class);
 		wbc.close();
 		EasyMock.expectLastCall().once();

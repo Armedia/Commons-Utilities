@@ -1,12 +1,12 @@
 /**
  * *******************************************************************
- * 
+ *
  * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
  * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
  * STRICTLY PROHIBITED.
- * 
+ *
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
- * 
+ *
  * *******************************************************************
  */
 package com.armedia.commons.utilities;
@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * @author drivera@armedia.com
- * 
+ *
  */
 public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -29,7 +29,7 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 	public static final int MINIMUM_CHUNK_SIZE = 128;
 	public static final int DEFAULT_CHUNK_SIZE = 1024;
 
-	private final List<byte[]> buffers = new ArrayList<byte[]>();
+	private final List<byte[]> buffers = new ArrayList<>();
 
 	private final int chunkSize;
 
@@ -72,12 +72,17 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 		public synchronized int read(byte[] b, int off, int len) throws IOException {
 			// First, a little parameter QA
 			if (b == null) { throw new NullPointerException("The given array was null"); }
-			if (len < 0) { throw new IllegalArgumentException(String.format("Cannot read negative lengths (%d)", len)); }
-			if (off < 0) { throw new IllegalArgumentException(String.format("Cannot read into a negative offset (%d)",
-				off)); }
-			if (b.length < (off + len)) { throw new IllegalArgumentException(String.format(
-				"The given offset (%d) and length (%d) exceed the size of the given byte array (%d)", off, len,
-				b.length)); }
+			if (len < 0) {
+				throw new IllegalArgumentException(String.format("Cannot read negative lengths (%d)", len));
+			}
+			if (off < 0) {
+				throw new IllegalArgumentException(String.format("Cannot read into a negative offset (%d)", off));
+			}
+			if (b.length < (off + len)) {
+				throw new IllegalArgumentException(
+					String.format("The given offset (%d) and length (%d) exceed the size of the given byte array (%d)",
+						off, len, b.length));
+			}
 
 			// Take a shortcut to avoid work
 			if (len == 0) { return 0; }
@@ -86,7 +91,6 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 
 			// Ok...so...copy the data over in chunks
 			int totalRead = 0;
-			final boolean notify = (len > 0);
 			while (len > 0) {
 				long a = available();
 				if (a <= 0) { return totalRead; }
@@ -105,9 +109,7 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 				this.rpos += r;
 				totalRead += r;
 			}
-			if (notify) {
-				notify();
-			}
+			notify();
 			return totalRead;
 		}
 
@@ -134,7 +136,7 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 		@Override
 		public synchronized int available() throws IOException {
 			long remainder = (getCurrentSize() - this.rpos);
-			if (remainder > Integer.MAX_VALUE) { return Integer.MAX_VALUE; }
+			remainder = Math.min(remainder, Integer.MAX_VALUE);
 			return Math.max((int) remainder, 0);
 		}
 
@@ -213,15 +215,19 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 		// First, a little parameter QA
 		if (b == null) { throw new NullPointerException("The given array was null"); }
 		if (len < 0) { throw new IllegalArgumentException(String.format("Cannot copy negative lengths (%d)", len)); }
-		if (off < 0) { throw new IllegalArgumentException(String.format("Cannot copy from a negative offset (%d)", off)); }
-		if (b.length < (off + len)) { throw new IllegalArgumentException(String.format(
-			"The given offset (%d) and length (%d) exceed the size of the given byte array (%d)", off, len, b.length)); }
+		if (off < 0) {
+			throw new IllegalArgumentException(String.format("Cannot copy from a negative offset (%d)", off));
+		}
+		if (b.length < (off + len)) {
+			throw new IllegalArgumentException(
+				String.format("The given offset (%d) and length (%d) exceed the size of the given byte array (%d)", off,
+					len, b.length));
+		}
 
 		// Take a shortcut to avoid work
 		if (len == 0) { return; }
 
 		// Ok...so...copy the data over in chunks
-		final boolean notify = (len > 0);
 		while (len > 0) {
 			byte[] chunk = getWritableChunk();
 			// p is guaranteed to be a valid integer, since it's modulated by an integer value
@@ -233,9 +239,7 @@ public class BinaryMemoryBuffer extends OutputStream implements Serializable {
 			off += remainder;
 			this.wpos += remainder;
 		}
-		if (notify) {
-			notify();
-		}
+		notify();
 	}
 
 	public final InputStream getInputStream() {

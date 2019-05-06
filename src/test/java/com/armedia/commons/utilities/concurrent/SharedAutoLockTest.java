@@ -12,17 +12,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("resource")
-class SharedAutoLockTest {
+public class SharedAutoLockTest {
 
 	@Test
-	void testConstructor() {
+	public void testConstructor() {
 		final ShareableLockable lock = new BaseShareableLockable();
 		Assertions.assertThrows(NullPointerException.class, () -> new SharedAutoLock(null));
 		new SharedAutoLock(lock);
 	}
 
 	@Test
-	void testUpgrade() {
+	public void testUpgrade() {
 		final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 		final ShareableLockable lock = new BaseShareableLockable(rwLock);
 		try (SharedAutoLock basic = new SharedAutoLock(lock)) {
@@ -83,7 +83,7 @@ class SharedAutoLockTest {
 				Assertions.assertEquals(0, lock.getWriteHoldCount());
 				try (MutexAutoLock upgraded = basic.upgrade()) {
 					Assertions.fail("Did not fail on an obvious deadlock");
-				} catch (LockDisallowedException e) {
+				} catch (LockUpgradeDeadlockException e) {
 					Assertions.assertSame(rwl, e.getTarget());
 					Assertions.assertEquals(1, e.getReadHoldCount());
 				}
@@ -108,7 +108,7 @@ class SharedAutoLockTest {
 	}
 
 	@Test
-	void testAutoClose() {
+	public void testAutoClose() {
 		final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 		final ShareableLockable lock = new BaseShareableLockable(rwLock);
 		try (SharedAutoLock autoLock = new SharedAutoLock(lock)) {
@@ -126,7 +126,7 @@ class SharedAutoLockTest {
 	}
 
 	@Test
-	void testClose() {
+	public void testClose() {
 		final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 		final ShareableLockable lock = new BaseShareableLockable(rwLock);
 		SharedAutoLock autoLock = new SharedAutoLock(lock);

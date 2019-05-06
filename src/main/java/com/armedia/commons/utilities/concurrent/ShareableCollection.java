@@ -3,7 +3,6 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -17,11 +16,11 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 	private final Collection<ELEMENT> c;
 
 	public ShareableCollection(Collection<ELEMENT> c) {
-		this(BaseShareableLockable.extractShareableLockable(c), c);
+		this(ShareableLockable.extractShareableLock(c), c);
 	}
 
 	public ShareableCollection(ShareableLockable lockable, Collection<ELEMENT> c) {
-		this(BaseShareableLockable.extractLock(lockable), c);
+		this(ShareableLockable.extractShareableLock(lockable), c);
 	}
 
 	public ShareableCollection(ReadWriteLock rwLock, Collection<ELEMENT> c) {
@@ -52,7 +51,7 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 
 	@Override
 	public Iterator<ELEMENT> iterator() {
-		return new ShareableIterator<>(this, this.c.iterator());
+		return shareLocked(() -> new ShareableIterator<>(this, this.c.iterator()));
 	}
 
 	@Override
@@ -80,7 +79,7 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 	public boolean containsAll(Collection<?> c) {
 		Objects.requireNonNull(c, "Must provide a non-null collection to check against");
 		if (c.isEmpty()) { return true; }
-		return mutexLocked(() -> this.c.containsAll(c));
+		return shareLocked(() -> this.c.containsAll(c));
 	}
 
 	@Override
@@ -111,13 +110,13 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 
 	@Override
 	public boolean equals(Object o) {
+		if (o == null) { return false; }
+		if (o == this) { return true; }
+		final Collection<?> other = Tools.cast(Collection.class, o);
+		if (other == null) { return false; }
 		try (SharedAutoLock lock = autoSharedLock()) {
-			if (o == null) { return false; }
-			if (o == this) { return true; }
-			if (!Set.class.isInstance(o)) { return false; }
-			Set<?> s = Set.class.cast(o);
-			if (this.c.size() != s.size()) { return false; }
-			return this.c.equals(o);
+			if (this.c.size() != other.size()) { return false; }
+			return this.c.equals(other);
 		}
 	}
 
@@ -133,14 +132,15 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 		Lock writeLock = null;
 		try {
 			try {
-				for (ELEMENT e : this.c) {
-					if (filter.test(e)) {
+				Iterator<ELEMENT> it = this.c.iterator();
+				while (it.hasNext()) {
+					if (filter.test(it.next())) {
 						// Ok so we need to upgrade to a write lock
 						if (writeLock == null) {
 							readLock.unlock();
 							writeLock = acquireMutexLock();
 						}
-						this.c.remove(e);
+						it.remove();
 					}
 				}
 				if (writeLock == null) { return false; }

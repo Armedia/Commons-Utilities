@@ -9,13 +9,20 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
-import org.apache.commons.lang3.concurrent.ConcurrentRuntimeException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
 public class LazySupplier<T> extends BaseShareableLockable implements Supplier<T> {
+
+	private static class ConcurrentInitializerException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		private ConcurrentInitializerException(Throwable cause) {
+			super(cause);
+		}
+	}
 
 	private final Condition condition;
 	private final Supplier<T> defaultInitializer;
@@ -105,6 +112,8 @@ public class LazySupplier<T> extends BaseShareableLockable implements Supplier<T
 	public T get() {
 		try {
 			return get(this.defaultInitializer);
+		} catch (ConcurrentInitializerException e) {
+			throw new RuntimeException(e.getCause());
 		} catch (Throwable t) {
 			throw new RuntimeException(t.getMessage(), t);
 		}
@@ -145,7 +154,7 @@ public class LazySupplier<T> extends BaseShareableLockable implements Supplier<T
 			try {
 				return defaultInitializer.get();
 			} catch (ConcurrentException e) {
-				throw new ConcurrentRuntimeException(e.getMessage(), e);
+				throw new ConcurrentInitializerException(e);
 			}
 		} : null, defaultValue);
 	}

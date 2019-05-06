@@ -5,8 +5,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
+import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.function.CheckedRunnable;
 import com.armedia.commons.utilities.function.CheckedSupplier;
+import com.armedia.commons.utilities.function.CheckedTools;
 
 /**
  * <p>
@@ -27,6 +29,13 @@ import com.armedia.commons.utilities.function.CheckedSupplier;
 public interface MutexLockable {
 
 	public static final Lock NULL_LOCK = null;
+
+	public static Lock extractMutexLock(Object o) {
+		Objects.requireNonNull(o, "Must provide a non-null Object from which to extract the Mutex lock");
+		MutexLockable l = Tools.cast(MutexLockable.class, o);
+		if (l != null) { return l.getMutexLock(); }
+		return Tools.cast(Lock.class, o);
+	}
 
 	/**
 	 * <p>
@@ -87,8 +96,7 @@ public interface MutexLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default <E> E mutexLocked(Supplier<E> operation) {
-		Objects.requireNonNull(operation, "Must provide an operation to run");
-		return mutexLocked(() -> operation.get());
+		return mutexLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -121,7 +129,7 @@ public interface MutexLockable {
 	 */
 	public default void mutexLocked(Runnable operation) {
 		Objects.requireNonNull(operation, "Must provide an operation to run");
-		mutexLocked(() -> operation.run());
+		mutexLocked(CheckedTools.check(operation));
 	}
 
 	/**
@@ -136,8 +144,9 @@ public interface MutexLockable {
 	 */
 	public default <EX extends Throwable> void mutexLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		try (MutexAutoLock lock = autoMutexLock()) {
-			operation.run();
-		}
+		mutexLocked(() -> {
+			operation.runChecked();
+			return null;
+		});
 	}
 }

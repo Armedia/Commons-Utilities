@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -65,24 +67,29 @@ public class LineIterator extends CloseableIterator<String> {
 	private final Map<String, Collection<Line>> cache = new HashMap<>();
 
 	private final Collection<LineSourceFactory> factories;
-	private final LineIteratorConfig config;
+	private final LineIteratorConfig config = new LineIteratorConfig();
 	private final LineSource root;
 
 	private Function<String, String> transformer = Function.identity();
 
-	protected LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, Iterable<String> root) {
-		this.factories = Tools.freezeCollection(factories);
-		this.config = (config != null ? config : new LineIteratorConfig());
-		this.root = (root != null ? LineSource.wrap(LineIterator.ROOT_ID, root) : LineIterator.NULL_SOURCE);
+	LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, Iterable<String> root) {
+		this(factories, config,
+			(root != null) ? LineSource.wrap(LineIterator.ROOT_ID, root) : LineIterator.NULL_SOURCE);
 	}
 
-	protected LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, LineSource root) {
-		this.factories = Tools.freezeCollection(factories);
-		this.config = (config != null ? config : new LineIteratorConfig());
+	LineIterator(Collection<LineSourceFactory> factories, LineIteratorConfig config, LineSource root) {
+		if (factories != null) {
+			List<LineSourceFactory> f = new LinkedList<>(factories);
+			f.removeIf(Objects::isNull);
+			this.factories = Tools.freezeList(f);
+		} else {
+			this.factories = Collections.emptyList();
+		}
+		this.config.copyFrom(config);
 		this.root = Tools.coalesce(root, LineIterator.NULL_SOURCE);
 	}
 
-	public final Collection<LineSourceFactory> getFactories() {
+	public final Collection<LineSourceFactory> getSourceFactories() {
 		return this.factories;
 	}
 
@@ -99,9 +106,10 @@ public class LineIterator extends CloseableIterator<String> {
 	}
 
 	private LineSource getLineSource(final Line line) throws LineSourceException {
+		final String cleanLine = line.str.replaceAll("^\\s*@", "");
 		for (LineSourceFactory f : this.factories) {
 			try {
-				LineSource ls = f.newInstance(line.str.replaceAll("^\\s*@", ""), line.source);
+				LineSource ls = f.newInstance(cleanLine, line.source);
 				if (ls != null) { return ls; }
 			} catch (Exception e) {
 				throw new LineSourceException(
@@ -201,6 +209,7 @@ public class LineIterator extends CloseableIterator<String> {
 		if (this.stack.isEmpty()) {
 			// This only happens once...
 			this.stack.push(new State(this.root));
+			this.visited.add(this.root.getId());
 		}
 
 		State state = null;
@@ -219,10 +228,6 @@ public class LineIterator extends CloseableIterator<String> {
 				return null;
 			}
 		}
-
-		// Flipside - we have a current state, so let's see how deep we have to recurse until we
-		// find our first "true" line
-		if (!state.hasNext()) { return null; }
 
 		Line line = state.next();
 		if (!shouldRecurse(line.str)) { return line; }
