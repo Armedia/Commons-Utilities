@@ -171,7 +171,7 @@ public class LineScannerTest {
 	public void testIteratorWithConfig() {
 		LineScanner ls = new LineScanner();
 
-		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> f : LineIteratorConfigTest.ALL_FEATURES) {
 			for (Trim trim : LineIteratorConfig.Trim.values()) {
 				for (int d = 0; d < 100; d++) {
 					LineIteratorConfig config = new LineIteratorConfig();

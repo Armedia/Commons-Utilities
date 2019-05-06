@@ -2,6 +2,7 @@ package com.armedia.commons.utilities;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -164,21 +165,11 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 						final S next;
 						try {
 							next = this.it.next();
-						} catch (RuntimeException t) {
+						} catch (ServiceConfigurationError e) {
 							if (!this.hideErrors) {
-								if (this.listener == null) { throw t; }
+								if (this.listener == null) { throw e; }
 								try {
-									this.listener.accept(this.serviceClass, t);
-								} catch (Throwable t2) {
-									// Do nothing...
-								}
-							}
-							continue;
-						} catch (Error t) {
-							if (!this.hideErrors) {
-								if (this.listener == null) { throw t; }
-								try {
-									this.listener.accept(this.serviceClass, t);
+									this.listener.accept(this.serviceClass, e);
 								} catch (Throwable t2) {
 									// Do nothing...
 								}

@@ -1,6 +1,7 @@
 package com.armedia.commons.utilities;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 public final class CloseableIteratorWrapper<E> extends CloseableIterator<E> {
 
@@ -15,18 +16,7 @@ public final class CloseableIteratorWrapper<E> extends CloseableIterator<E> {
 	}
 
 	public CloseableIteratorWrapper(Iterator<E> it, Runnable closer) {
-		if (it == null) { throw new IllegalArgumentException("Must provide a non-null iterator"); }
-		this.it = it;
-		this.closer = Tools.coalesce(closer, CloseableIteratorWrapper.NOOP);
-	}
-
-	public CloseableIteratorWrapper(Iterable<E> c) {
-		this(c, null);
-	}
-
-	public CloseableIteratorWrapper(Iterable<E> c, Runnable closer) {
-		if (c == null) { throw new IllegalArgumentException("Must provide an iterable object to iterate over"); }
-		this.it = c.iterator();
+		this.it = Objects.requireNonNull(it, "Must provide a non-null iterator");
 		this.closer = Tools.coalesce(closer, CloseableIteratorWrapper.NOOP);
 	}
 

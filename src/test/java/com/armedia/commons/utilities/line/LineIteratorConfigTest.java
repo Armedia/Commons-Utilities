@@ -4,37 +4,48 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.line.LineIteratorConfig.Feature;
 import com.armedia.commons.utilities.line.LineIteratorConfig.Trim;
 
 public class LineIteratorConfigTest {
 
-	static EnumSet<Feature> getFeatureCombination(int bits) {
-		Feature[] values = Feature.values();
-		EnumSet<Feature> features = EnumSet.noneOf(Feature.class);
-		for (Feature f : values) {
-			int bit = (1 << f.ordinal());
-			if ((bits & bit) != 0) {
-				features.add(f);
-			}
-		}
-		return features;
+	static final Collection<Set<Feature>> ALL_FEATURES;
+	static final int FEATURE_MASK;
+	static final Map<Integer, Set<Feature>> BIT_FEATURES;
+
+	static Set<Feature> getFeatureCombination(int bits) {
+		return LineIteratorConfigTest.BIT_FEATURES.get(bits & LineIteratorConfigTest.FEATURE_MASK);
 	}
 
-	static Collection<Collection<Feature>> getAllFeatureCombinations() {
-		Collection<Collection<Feature>> features = new ArrayList<>();
+	static {
+		Collection<Set<Feature>> allFeatures = new ArrayList<>();
+		Map<Integer, Set<Feature>> bitFeatures = new LinkedHashMap<>();
 		Feature[] values = Feature.values();
 		for (int i = 0; i < (1 << values.length); i++) {
-			features.add(LineIteratorConfigTest.getFeatureCombination(i));
+			Set<Feature> features = EnumSet.noneOf(Feature.class);
+			for (Feature f : values) {
+				int bit = (1 << f.ordinal());
+				if ((i & bit) != 0) {
+					features.add(f);
+				}
+			}
+			features = Tools.freezeSet(features);
+			allFeatures.add(features);
+			bitFeatures.put(i, features);
 		}
-		return features;
+		ALL_FEATURES = Tools.freezeCollection(allFeatures);
+		BIT_FEATURES = Tools.freezeMap(bitFeatures);
+		FEATURE_MASK = ((1 << values.length) - 1);
 	}
 
 	@Test
@@ -47,7 +58,7 @@ public class LineIteratorConfigTest {
 		cfg = new LineIteratorConfig(null);
 		Assertions.assertEquals(LineIteratorConfig.DEFAULT_FEATURES, cfg.getFeatures());
 
-		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> f : LineIteratorConfigTest.ALL_FEATURES) {
 			for (Trim trim : LineIteratorConfig.Trim.values()) {
 				for (int d = 0; d < 100; d++) {
 					LineIteratorConfig other = new LineIteratorConfig();
@@ -78,9 +89,10 @@ public class LineIteratorConfigTest {
 	@Test
 	public void testAddFeatures() {
 		LineIteratorConfig cfg = new LineIteratorConfig();
-		Collection<Collection<Feature>> allCombinations = LineIteratorConfigTest.getAllFeatureCombinations();
 		for (Feature base : Feature.values()) {
-			for (Collection<Feature> features : allCombinations) {
+			for (Set<Feature> baseFeatures : LineIteratorConfigTest.ALL_FEATURES) {
+				Set<Feature> features = (baseFeatures.isEmpty() ? EnumSet.noneOf(Feature.class)
+					: EnumSet.copyOf(baseFeatures));
 				cfg.setFeatures(Collections.emptyList());
 				cfg.addFeature(base);
 				for (Feature f : Feature.values()) {
@@ -107,7 +119,7 @@ public class LineIteratorConfigTest {
 	public void testCopyFrom() {
 		LineIteratorConfig cfg = new LineIteratorConfig();
 
-		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> f : LineIteratorConfigTest.ALL_FEATURES) {
 			for (Trim trim : LineIteratorConfig.Trim.values()) {
 				for (int d = 0; d < 100; d++) {
 					LineIteratorConfig other = new LineIteratorConfig();
@@ -136,7 +148,7 @@ public class LineIteratorConfigTest {
 	public void testEquals() {
 		List<LineIteratorConfig> A = new LinkedList<>();
 		List<LineIteratorConfig> B = new LinkedList<>();
-		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> f : LineIteratorConfigTest.ALL_FEATURES) {
 			for (Trim trim : LineIteratorConfig.Trim.values()) {
 				for (int d = 0; d < 5; d++) {
 					LineIteratorConfig cfg = new LineIteratorConfig();
@@ -171,7 +183,7 @@ public class LineIteratorConfigTest {
 	public void testHasFeature() {
 		LineIteratorConfig cfg = new LineIteratorConfig();
 		Assertions.assertThrows(NullPointerException.class, () -> cfg.hasFeature(null));
-		for (Collection<Feature> features : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> features : LineIteratorConfigTest.ALL_FEATURES) {
 			cfg.setFeatures(features);
 			for (Feature f : Feature.values()) {
 				Assertions.assertEquals(features.contains(f), cfg.hasFeature(f));
@@ -194,9 +206,10 @@ public class LineIteratorConfigTest {
 	public void testRemoveFeatures() {
 		LineIteratorConfig cfg = new LineIteratorConfig();
 		Set<Feature> allFeatures = EnumSet.allOf(Feature.class);
-		Collection<Collection<Feature>> allCombinations = LineIteratorConfigTest.getAllFeatureCombinations();
 		for (Feature base : Feature.values()) {
-			for (Collection<Feature> features : allCombinations) {
+			for (Set<Feature> baseFeatures : LineIteratorConfigTest.ALL_FEATURES) {
+				Set<Feature> features = (baseFeatures.isEmpty() ? EnumSet.noneOf(Feature.class)
+					: EnumSet.copyOf(baseFeatures));
 				cfg.setFeatures(allFeatures);
 				cfg.removeFeature(base);
 				for (Feature f : Feature.values()) {
@@ -222,7 +235,7 @@ public class LineIteratorConfigTest {
 	@Test
 	public void testReset() {
 		LineIteratorConfig cfg = new LineIteratorConfig(null);
-		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> f : LineIteratorConfigTest.ALL_FEATURES) {
 			for (Trim trim : LineIteratorConfig.Trim.values()) {
 				for (int d = -1; d < 10; d++) {
 					cfg.setTrim(trim);
@@ -247,7 +260,7 @@ public class LineIteratorConfigTest {
 			null
 		};
 		LineIteratorConfig cfg = new LineIteratorConfig();
-		for (Collection<Feature> f : LineIteratorConfigTest.getAllFeatureCombinations()) {
+		for (Collection<Feature> f : LineIteratorConfigTest.ALL_FEATURES) {
 			cfg.setFeatures(f);
 			Assertions.assertEquals(f, cfg.getFeatures());
 
