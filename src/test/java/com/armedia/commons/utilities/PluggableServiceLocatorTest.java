@@ -3,6 +3,7 @@ package com.armedia.commons.utilities;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ServiceConfigurationError;
@@ -17,9 +18,10 @@ import org.junit.jupiter.api.Test;
 
 public class PluggableServiceLocatorTest {
 
-	private static final Set<String> SERVICE_CLASSES;
+	private static final Set<String> GOOD_CLASSES;
 	private static final Set<String> SUBSET_1;
 	private static final Set<String> SUBSET_2;
+	private static final Set<Class<?>> BAD_CLASSES;
 
 	static {
 		Class<?>[] goodClasses = {
@@ -41,14 +43,14 @@ public class PluggableServiceLocatorTest {
 				"The following classes must ALL implement the GoodServiceTest interface (or this test changed to not require it): ",
 				b));
 		}
-		SERVICE_CLASSES = Collections.unmodifiableSet(a);
+		GOOD_CLASSES = Collections.unmodifiableSet(a);
 		Assertions.assertTrue(a.size() > 1, "Must have more than one class implementing GoodServiceTest");
 
 		a = new TreeSet<>();
 		b = new TreeSet<>();
 		int i = 0;
-		for (String str : PluggableServiceLocatorTest.SERVICE_CLASSES) {
-			if (i < (PluggableServiceLocatorTest.SERVICE_CLASSES.size() / 2)) {
+		for (String str : PluggableServiceLocatorTest.GOOD_CLASSES) {
+			if (i < (PluggableServiceLocatorTest.GOOD_CLASSES.size() / 2)) {
 				a.add(str);
 			} else {
 				b.add(str);
@@ -60,6 +62,15 @@ public class PluggableServiceLocatorTest {
 		Assertions.assertNotEquals(a, b);
 		SUBSET_1 = Collections.unmodifiableSet(a);
 		SUBSET_2 = Collections.unmodifiableSet(b);
+
+		Class<?>[] badClasses = {
+			ExplodingTest.class, ClassNotFoundTest.class
+		};
+		Set<Class<?>> bc = new LinkedHashSet<>();
+		for (Class<?> c : badClasses) {
+			bc.add(c);
+		}
+		BAD_CLASSES = Tools.freezeSet(bc);
 	}
 
 	@Test
@@ -225,7 +236,7 @@ public class PluggableServiceLocatorTest {
 		for (Iterator<GoodServiceTest> it = goodLocator.getAll(); it.hasNext(); count++) {
 			it.next();
 		}
-		Assertions.assertEquals(PluggableServiceLocatorTest.SERVICE_CLASSES.size(), count);
+		Assertions.assertEquals(PluggableServiceLocatorTest.GOOD_CLASSES.size(), count);
 
 		{
 			Predicate<GoodServiceTest> goodSelector = (s) -> false;
@@ -234,13 +245,13 @@ public class PluggableServiceLocatorTest {
 		}
 
 		{
-			Predicate<GoodServiceTest> goodSelector = (s) -> PluggableServiceLocatorTest.SERVICE_CLASSES
+			Predicate<GoodServiceTest> goodSelector = (s) -> PluggableServiceLocatorTest.GOOD_CLASSES
 				.contains(s.getClass().getCanonicalName());
 			for (Iterator<GoodServiceTest> it = goodLocator.getAll(); it.hasNext();) {
 				GoodServiceTest s = it.next();
 				if (!goodSelector.test(s)) {
 					Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
-						s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SERVICE_CLASSES));
+						s.getClass().getCanonicalName(), PluggableServiceLocatorTest.GOOD_CLASSES));
 				}
 			}
 		}
@@ -277,13 +288,9 @@ public class PluggableServiceLocatorTest {
 		Assertions.assertNull(badLocator.getDefaultSelector());
 		Assertions.assertNull(badLocator.getErrorListener());
 		Assertions.assertFalse(badLocator.isHideErrors());
-		try {
-			badLocator.getAll().hasNext();
-			Assertions.fail("Should have failed with a ServiceConfigurationError");
-		} catch (ServiceConfigurationError e) {
-			Throwable t = e.getCause();
-			Assertions.assertEquals(RuntimeException.class, t.getClass());
-			Assertions.assertEquals(ExplodingTest.ERROR_STR, t.getMessage());
+		Iterator<BadServiceTest> it = badLocator.getAll();
+		for (int i = 0; i < PluggableServiceLocatorTest.BAD_CLASSES.size(); i++) {
+			Assertions.assertThrows(ServiceConfigurationError.class, () -> it.hasNext());
 		}
 		badLocator = new PluggableServiceLocator<>(BadServiceTest.class);
 		Assertions.assertFalse(badLocator.isHideErrors());
@@ -349,19 +356,19 @@ public class PluggableServiceLocatorTest {
 		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext(); count++) {
 			it.next();
 		}
-		Assertions.assertEquals(PluggableServiceLocatorTest.SERVICE_CLASSES.size(), count);
+		Assertions.assertEquals(PluggableServiceLocatorTest.GOOD_CLASSES.size(), count);
 
 		goodSelector = (s) -> false;
 		goodLocator.setDefaultSelector(goodSelector);
 		Assertions.assertFalse(goodLocator.iterator().hasNext());
 		Assertions.assertThrows(NoSuchElementException.class, () -> goodLocator.iterator().next());
 
-		goodSelector = (s) -> PluggableServiceLocatorTest.SERVICE_CLASSES.contains(s.getClass().getCanonicalName());
+		goodSelector = (s) -> PluggableServiceLocatorTest.GOOD_CLASSES.contains(s.getClass().getCanonicalName());
 		for (Iterator<GoodServiceTest> it = goodLocator.iterator(); it.hasNext();) {
 			GoodServiceTest s = it.next();
 			if (!goodSelector.test(s)) {
 				Assertions.fail(String.format("Got class [%s] but it's not listed as part of %s",
-					s.getClass().getCanonicalName(), PluggableServiceLocatorTest.SERVICE_CLASSES));
+					s.getClass().getCanonicalName(), PluggableServiceLocatorTest.GOOD_CLASSES));
 			}
 		}
 
