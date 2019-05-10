@@ -15,9 +15,10 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.armedia.commons.utilities.SimpleTypeCodec;
 import com.armedia.commons.utilities.Tools;
 
-public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> implements AnyElementCodec<E> {
+public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> implements SimpleTypeCodec<E> {
 
 	private static final Iterable<Flag> NO_FLAGS = Collections.emptyList();
 

@@ -13,9 +13,10 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 
+import com.armedia.commons.utilities.SimpleTypeCodec;
 import com.armedia.commons.utilities.Tools;
 
-public class DateElementCodec implements AnyElementCodec<Date> {
+public class DateElementCodec implements SimpleTypeCodec<Date> {
 
 	private final FastDateFormat encoder;
 	private final Collection<FastDateFormat> decoders;

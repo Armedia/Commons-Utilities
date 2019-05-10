@@ -7,12 +7,14 @@ import java.util.function.Function;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
+import com.armedia.commons.utilities.SimpleTypeCodec;
+
 public abstract class AnyElementMapAdapter<KEY, VALUE> extends XmlAdapter<AnyElementMap, Map<KEY, VALUE>> {
 
-	private final AnyElementCodec<VALUE> valueCodec;
-	private final AnyElementCodec<KEY> keyCodec;
+	private final SimpleTypeCodec<VALUE> valueCodec;
+	private final SimpleTypeCodec<KEY> keyCodec;
 
-	protected AnyElementMapAdapter(AnyElementCodec<KEY> keyCodec, AnyElementCodec<VALUE> valueCodec) {
+	protected AnyElementMapAdapter(SimpleTypeCodec<KEY> keyCodec, SimpleTypeCodec<VALUE> valueCodec) {
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Must provide a codec for the keys");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Must provide a codec for the values");
 	}

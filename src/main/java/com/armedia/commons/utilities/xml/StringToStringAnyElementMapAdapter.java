@@ -1,7 +1,9 @@
 package com.armedia.commons.utilities.xml;
 
+import com.armedia.commons.utilities.SimpleTypeCodec;
+
 public class StringToStringAnyElementMapAdapter extends AnyElementMapAdapter<String, String> {
 	public StringToStringAnyElementMapAdapter() {
-		super(AnyElementCodec.STRING, AnyElementCodec.STRING);
+		super(SimpleTypeCodec.STRING, SimpleTypeCodec.STRING);
 	}
 }

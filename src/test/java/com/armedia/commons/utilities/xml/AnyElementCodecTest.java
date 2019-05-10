@@ -9,9 +9,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.armedia.commons.utilities.SimpleTypeCodec;
+
 public class AnyElementCodecTest {
 
-	private <T> void runTest(Collection<Pair<T, String>> values, AnyElementCodec<T> codec) {
+	private <T> void runTest(Collection<Pair<T, String>> values, SimpleTypeCodec<T> codec) {
 		final Function<T, String> encoder = codec.getEncoder();
 		final Function<String, T> decoder = codec.getDecoder();
 		values.forEach((p) -> {
@@ -29,7 +31,7 @@ public class AnyElementCodecTest {
 		values.add(Pair.of(Boolean.TRUE, Boolean.TRUE.toString()));
 		values.add(Pair.of(Boolean.FALSE, Boolean.FALSE.toString()));
 		values.add(Pair.of(null, null));
-		runTest(values, AnyElementCodec.BOOLEAN);
+		runTest(values, SimpleTypeCodec.BOOLEAN);
 	}
 
 	@Test
@@ -49,7 +51,7 @@ public class AnyElementCodecTest {
 		for (byte v : s) {
 			values.add(Pair.of(v, String.valueOf(v)));
 		}
-		runTest(values, AnyElementCodec.BYTE);
+		runTest(values, SimpleTypeCodec.BYTE);
 	}
 
 	@Test
@@ -75,7 +77,7 @@ public class AnyElementCodecTest {
 		for (short v : s) {
 			values.add(Pair.of(v, String.valueOf(v)));
 		}
-		runTest(values, AnyElementCodec.SHORT);
+		runTest(values, SimpleTypeCodec.SHORT);
 	}
 
 	@Test
@@ -105,7 +107,7 @@ public class AnyElementCodecTest {
 		for (int v : s) {
 			values.add(Pair.of(v, String.valueOf(v)));
 		}
-		runTest(values, AnyElementCodec.INTEGER);
+		runTest(values, SimpleTypeCodec.INTEGER);
 	}
 
 	@Test
@@ -141,7 +143,7 @@ public class AnyElementCodecTest {
 		for (long v : s) {
 			values.add(Pair.of(v, String.valueOf(v)));
 		}
-		runTest(values, AnyElementCodec.LONG);
+		runTest(values, SimpleTypeCodec.LONG);
 	}
 
 	@Test
@@ -153,7 +155,7 @@ public class AnyElementCodecTest {
 		for (BigInteger v : s) {
 			values.add(Pair.of(v, String.valueOf(v)));
 		}
-		runTest(values, AnyElementCodec.BIG_INTEGER);
+		runTest(values, SimpleTypeCodec.BIG_INTEGER);
 	}
 
 	@Test

@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities.xml;
+package com.armedia.commons.utilities;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -6,14 +6,12 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.armedia.commons.utilities.Tools;
-
-public interface AnyElementCodec<T> {
+public interface SimpleTypeCodec<T> {
 	public Function<T, String> getEncoder();
 
 	public Function<String, T> getDecoder();
 
-	public static final AnyElementCodec<Boolean> BOOLEAN = new AnyElementCodec<Boolean>() {
+	public static final SimpleTypeCodec<Boolean> BOOLEAN = new SimpleTypeCodec<Boolean>() {
 		@Override
 		public Function<Boolean, String> getEncoder() {
 			return Tools::toString;
@@ -25,7 +23,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<Byte> BYTE = new AnyElementCodec<Byte>() {
+	public static final SimpleTypeCodec<Byte> BYTE = new SimpleTypeCodec<Byte>() {
 		@Override
 		public Function<Byte, String> getEncoder() {
 			return Tools::toString;
@@ -37,7 +35,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<Short> SHORT = new AnyElementCodec<Short>() {
+	public static final SimpleTypeCodec<Short> SHORT = new SimpleTypeCodec<Short>() {
 		@Override
 		public Function<Short, String> getEncoder() {
 			return Tools::toString;
@@ -49,7 +47,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<Integer> INTEGER = new AnyElementCodec<Integer>() {
+	public static final SimpleTypeCodec<Integer> INTEGER = new SimpleTypeCodec<Integer>() {
 		@Override
 		public Function<Integer, String> getEncoder() {
 			return Tools::toString;
@@ -61,7 +59,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<Long> LONG = new AnyElementCodec<Long>() {
+	public static final SimpleTypeCodec<Long> LONG = new SimpleTypeCodec<Long>() {
 		@Override
 		public Function<Long, String> getEncoder() {
 			return Tools::toString;
@@ -73,7 +71,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<BigInteger> BIG_INTEGER = new AnyElementCodec<BigInteger>() {
+	public static final SimpleTypeCodec<BigInteger> BIG_INTEGER = new SimpleTypeCodec<BigInteger>() {
 		@Override
 		public Function<BigInteger, String> getEncoder() {
 			return Tools::toString;
@@ -85,7 +83,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<Float> FLOAT = new AnyElementCodec<Float>() {
+	public static final SimpleTypeCodec<Float> FLOAT = new SimpleTypeCodec<Float>() {
 		@Override
 		public Function<Float, String> getEncoder() {
 			return Tools::toString;
@@ -97,7 +95,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<Double> DOUBLE = new AnyElementCodec<Double>() {
+	public static final SimpleTypeCodec<Double> DOUBLE = new SimpleTypeCodec<Double>() {
 		@Override
 		public Function<Double, String> getEncoder() {
 			return Tools::toString;
@@ -109,7 +107,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<BigDecimal> BIG_DECIMAL = new AnyElementCodec<BigDecimal>() {
+	public static final SimpleTypeCodec<BigDecimal> BIG_DECIMAL = new SimpleTypeCodec<BigDecimal>() {
 		@Override
 		public Function<BigDecimal, String> getEncoder() {
 			return Tools::toString;
@@ -121,7 +119,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<Character> CHARACTER = new AnyElementCodec<Character>() {
+	public static final SimpleTypeCodec<Character> CHARACTER = new SimpleTypeCodec<Character>() {
 		@Override
 		public Function<Character, String> getEncoder() {
 			return Tools::toString;
@@ -138,7 +136,7 @@ public interface AnyElementCodec<T> {
 		}
 	};
 
-	public static final AnyElementCodec<String> STRING = new AnyElementCodec<String>() {
+	public static final SimpleTypeCodec<String> STRING = new SimpleTypeCodec<String>() {
 		@Override
 		public Function<String, String> getEncoder() {
 			return Function.identity();
