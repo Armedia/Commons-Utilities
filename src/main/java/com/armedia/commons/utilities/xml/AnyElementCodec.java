@@ -13,35 +13,6 @@ public interface AnyElementCodec<T> {
 
 	public Function<String, T> getDecoder();
 
-	public static final AnyElementCodec<Character> CHARACTER = new AnyElementCodec<Character>() {
-		@Override
-		public Function<Character, String> getEncoder() {
-			return Tools::toString;
-		}
-
-		@Override
-		public Function<String, Character> getDecoder() {
-			return this::decode;
-		}
-
-		private Character decode(String str) {
-			if (StringUtils.isEmpty(str)) { return null; }
-			return str.charAt(0);
-		}
-	};
-
-	public static final AnyElementCodec<String> STRING = new AnyElementCodec<String>() {
-		@Override
-		public Function<String, String> getEncoder() {
-			return Function.identity();
-		}
-
-		@Override
-		public Function<String, String> getDecoder() {
-			return Function.identity();
-		}
-	};
-
 	public static final AnyElementCodec<Boolean> BOOLEAN = new AnyElementCodec<Boolean>() {
 		@Override
 		public Function<Boolean, String> getEncoder() {
@@ -50,7 +21,7 @@ public interface AnyElementCodec<T> {
 
 		@Override
 		public Function<String, Boolean> getDecoder() {
-			return Boolean::valueOf;
+			return Tools::decodeBoolean;
 		}
 	};
 
@@ -147,6 +118,35 @@ public interface AnyElementCodec<T> {
 		@Override
 		public Function<String, BigDecimal> getDecoder() {
 			return BigDecimal::new;
+		}
+	};
+
+	public static final AnyElementCodec<Character> CHARACTER = new AnyElementCodec<Character>() {
+		@Override
+		public Function<Character, String> getEncoder() {
+			return Tools::toString;
+		}
+
+		@Override
+		public Function<String, Character> getDecoder() {
+			return this::decode;
+		}
+
+		private Character decode(String str) {
+			if (StringUtils.isEmpty(str)) { return null; }
+			return str.charAt(0);
+		}
+	};
+
+	public static final AnyElementCodec<String> STRING = new AnyElementCodec<String>() {
+		@Override
+		public Function<String, String> getEncoder() {
+			return Function.identity();
+		}
+
+		@Override
+		public Function<String, String> getDecoder() {
+			return Function.identity();
 		}
 	};
 }
