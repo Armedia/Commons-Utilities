@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.xml;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -13,7 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.armedia.commons.utilities.XmlEnumAdapter.Flag;
+import com.armedia.commons.utilities.xml.XmlEnumAdapter;
+import com.armedia.commons.utilities.xml.XmlEnumAdapter.Flag;
 
 public class XmlEnumAdapterTest {
 

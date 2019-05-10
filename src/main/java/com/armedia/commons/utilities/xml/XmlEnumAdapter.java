@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.xml;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,12 +9,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
+import com.armedia.commons.utilities.Tools;
+
+public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> implements AnyElementCodec<E> {
 
 	private static final Iterable<Flag> NO_FLAGS = Collections.emptyList();
 
@@ -174,6 +177,21 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 			this.enumClass.getCanonicalName()));
 	}
 
+	private E uncheckedUnmarshal(String s) {
+		try {
+			return this.unmarshal(s);
+		} catch (Exception ex) {
+			throw new RuntimeException(
+				String.format("Failed to unmarshal the String %s", (s != null ? String.format("[%s]", s) : "<null>")),
+				ex);
+		}
+	}
+
+	@Override
+	public Function<String, E> getDecoder() {
+		return this::uncheckedUnmarshal;
+	}
+
 	protected String specialMarshal(E e) throws Exception {
 		return null;
 	}
@@ -189,5 +207,19 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 			}
 		}
 		return ret;
+	}
+
+	private final String uncheckedMarshal(E e) {
+		try {
+			return this.marshal(e);
+		} catch (Exception ex) {
+			throw new RuntimeException(
+				String.format("Failed to marshal the enum value [%s]", (e != null ? e.name() : "<null>")), ex);
+		}
+	}
+
+	@Override
+	public Function<E, String> getEncoder() {
+		return this::uncheckedMarshal;
 	}
 }
