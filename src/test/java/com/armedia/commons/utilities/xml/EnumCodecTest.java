@@ -13,10 +13,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.armedia.commons.utilities.xml.XmlEnumAdapter;
-import com.armedia.commons.utilities.xml.XmlEnumAdapter.Flag;
+import com.armedia.commons.utilities.xml.EnumCodec.Flag;
 
-public class XmlEnumAdapterTest {
+public class EnumCodecTest {
 
 	private static enum CaseSensitive {
 		//
@@ -42,13 +41,13 @@ public class XmlEnumAdapterTest {
 		;
 	}
 
-	public <E extends Enum<E>> XmlEnumAdapter<E> newAdapter(Class<E> enumClass) {
-		return new XmlEnumAdapter<>(enumClass);
+	public <E extends Enum<E>> EnumCodec<E> newAdapter(Class<E> enumClass) {
+		return new EnumCodec<>(enumClass);
 	}
 
 	@Test
 	public void testXmlEnumAdapterClass() throws Exception {
-		XmlEnumAdapter<?> adapter = null;
+		EnumCodec<?> adapter = null;
 
 		adapter = newAdapter(CaseSensitive.class);
 		Assertions.assertTrue(adapter.isCaseSensitive());
@@ -60,7 +59,7 @@ public class XmlEnumAdapterTest {
 		Assertions.assertTrue(adapter.isCaseSensitive());
 
 		@SuppressWarnings("rawtypes")
-		Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class);
+		Constructor<EnumCodec> c = EnumCodec.class.getConstructor(Class.class);
 		try {
 			c.newInstance(Object.class);
 			Assertions.fail("Did not fail with a non-enum class");
@@ -69,13 +68,13 @@ public class XmlEnumAdapterTest {
 		}
 	}
 
-	public <E extends Enum<E>> XmlEnumAdapter<E> newAdapter(Class<E> enumClass, Flag... flags) {
-		return new XmlEnumAdapter<>(enumClass, flags);
+	public <E extends Enum<E>> EnumCodec<E> newAdapter(Class<E> enumClass, Flag... flags) {
+		return new EnumCodec<>(enumClass, flags);
 	}
 
 	@Test
 	public void testConstructors() throws Exception {
-		XmlEnumAdapter<?> adapter = null;
+		EnumCodec<?> adapter = null;
 
 		adapter = newAdapter(CaseSensitive.class);
 		Assertions.assertTrue(adapter.isCaseSensitive());
@@ -127,7 +126,7 @@ public class XmlEnumAdapterTest {
 
 		{
 			@SuppressWarnings("rawtypes")
-			Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class, Iterable.class);
+			Constructor<EnumCodec> c = EnumCodec.class.getConstructor(Class.class, Iterable.class);
 			try {
 				c.newInstance(Object.class, null);
 				Assertions.fail("Did not fail with a non-enum class");
@@ -144,7 +143,7 @@ public class XmlEnumAdapterTest {
 		{
 			Flag[] arr = {};
 			@SuppressWarnings("rawtypes")
-			Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class, arr.getClass());
+			Constructor<EnumCodec> c = EnumCodec.class.getConstructor(Class.class, arr.getClass());
 			try {
 				c.newInstance(Object.class, null);
 				Assertions.fail("Did not fail with a non-enum class");
@@ -167,7 +166,7 @@ public class XmlEnumAdapterTest {
 		{
 			Flag[] arr = {};
 			@SuppressWarnings("rawtypes")
-			Constructor<XmlEnumAdapter> c = XmlEnumAdapter.class.getConstructor(Class.class, arr.getClass());
+			Constructor<EnumCodec> c = EnumCodec.class.getConstructor(Class.class, arr.getClass());
 			try {
 				c.newInstance(Object.class, null);
 				Assertions.fail("Did not fail with a non-enum class");
@@ -192,60 +191,60 @@ public class XmlEnumAdapterTest {
 			Collection<Flag> c = Collections.emptyList();
 			String nullString = UUID.randomUUID().toString();
 			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, c);
-			Assertions.assertNull(adapter.getNullString());
+			adapter = new EnumCodec<>(CaseSensitive.class, c);
+			Assertions.assertNull(adapter.getNullEncoding());
 			Assertions.assertNull(adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, c);
-			Assertions.assertEquals(nullString, adapter.getNullString());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullValue, c);
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, c);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, c);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, nullValue, c);
-			Assertions.assertEquals(nullString, adapter.getNullString());
-			Assertions.assertSame(nullValue, adapter.getNullValue());
-		}
-		{
-			String nullString = UUID.randomUUID().toString();
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString);
-			Assertions.assertEquals(nullString, adapter.getNullString());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, Flag.STRICT_CASE);
-			Assertions.assertEquals(nullString, adapter.getNullString());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, Flag.MARSHAL_FOLDED);
-			Assertions.assertEquals(nullString, adapter.getNullString());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, Flag.values());
-			Assertions.assertEquals(nullString, adapter.getNullString());
-		}
-		{
-			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullValue);
-			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullValue, Flag.STRICT_CASE);
-			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullValue, Flag.MARSHAL_FOLDED);
-			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullValue, Flag.values());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, c);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
 		}
 		{
 			String nullString = UUID.randomUUID().toString();
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, Flag.STRICT_CASE);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, Flag.MARSHAL_FOLDED);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, Flag.values());
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+		}
+		{
 			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, nullValue);
-			Assertions.assertEquals(nullString, adapter.getNullString());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullValue);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, nullValue, Flag.STRICT_CASE);
-			Assertions.assertEquals(nullString, adapter.getNullString());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, Flag.STRICT_CASE);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, nullValue, Flag.MARSHAL_FOLDED);
-			Assertions.assertEquals(nullString, adapter.getNullString());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, Flag.MARSHAL_FOLDED);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new XmlEnumAdapter<>(CaseSensitive.class, nullString, nullValue, Flag.values());
-			Assertions.assertEquals(nullString, adapter.getNullString());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, Flag.values());
+			Assertions.assertSame(nullValue, adapter.getNullValue());
+		}
+		{
+			String nullString = UUID.randomUUID().toString();
+			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+			Assertions.assertSame(nullValue, adapter.getNullValue());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, Flag.STRICT_CASE);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+			Assertions.assertSame(nullValue, adapter.getNullValue());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, Flag.MARSHAL_FOLDED);
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
+			Assertions.assertSame(nullValue, adapter.getNullValue());
+			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, Flag.values());
+			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
 		}
 	}
 
 	private <E extends Enum<E>> void testUnmarshalString(Class<E> enumClass) throws Exception {
 		// Autodetect case sensitivity
-		XmlEnumAdapter<E> adapter = newAdapter(enumClass);
+		EnumCodec<E> adapter = newAdapter(enumClass);
 		Assertions.assertNull(adapter.unmarshal(null));
 
 		for (E e : enumClass.getEnumConstants()) {
@@ -263,12 +262,12 @@ public class XmlEnumAdapterTest {
 
 		{
 			String nullString = UUID.randomUUID().toString();
-			XmlEnumAdapter<E> a2 = new XmlEnumAdapter<>(enumClass, nullString);
+			EnumCodec<E> a2 = new EnumCodec<>(enumClass, nullString);
 			Assertions.assertNull(a2.unmarshal(nullString));
 			E[] values = enumClass.getEnumConstants();
 			if (values.length > 0) {
 				for (E e : values) {
-					a2 = new XmlEnumAdapter<>(enumClass, nullString, e);
+					a2 = new EnumCodec<>(enumClass, nullString, e);
 					Assertions.assertSame(e, a2.unmarshal(nullString));
 				}
 			}
@@ -283,7 +282,7 @@ public class XmlEnumAdapterTest {
 	}
 
 	private <E extends Enum<E>> void testMarshalEnum(Class<E> enumClass) throws Exception {
-		XmlEnumAdapter<E> adapter = null;
+		EnumCodec<E> adapter = null;
 		Flag[][] flags = {
 			{}, {
 				Flag.MARSHAL_FOLDED
@@ -315,9 +314,9 @@ public class XmlEnumAdapterTest {
 		if (arr.length > 0) {
 			String nullString = UUID.randomUUID().toString();
 			for (E nullValue : arr) {
-				adapter = new XmlEnumAdapter<>(enumClass, nullValue);
+				adapter = new EnumCodec<>(enumClass, nullValue);
 				Assertions.assertNull(adapter.marshal(nullValue));
-				adapter = new XmlEnumAdapter<>(enumClass, nullString, nullValue);
+				adapter = new EnumCodec<>(enumClass, nullString, nullValue);
 				Assertions.assertEquals(nullString, adapter.marshal(nullValue));
 			}
 		}
@@ -332,7 +331,7 @@ public class XmlEnumAdapterTest {
 
 	private <E extends Enum<E>> void testSpecialMarshal(final Class<E> enumClass, final E special) throws Exception {
 		final String uuid = UUID.randomUUID().toString();
-		XmlEnumAdapter<E> adapter = new XmlEnumAdapter<E>(enumClass, uuid) {
+		EnumCodec<E> adapter = new EnumCodec<E>(enumClass, uuid) {
 			@Override
 			protected String specialMarshal(E e) throws Exception {
 				if (e == special) { return uuid; }
@@ -358,7 +357,7 @@ public class XmlEnumAdapterTest {
 
 	private <E extends Enum<E>> void testSpecialUnmarshal(final Class<E> enumClass, final E special) throws Exception {
 		final String uuid = UUID.randomUUID().toString();
-		XmlEnumAdapter<E> adapter = new XmlEnumAdapter<E>(enumClass, special) {
+		EnumCodec<E> adapter = new EnumCodec<E>(enumClass, special) {
 			@Override
 			protected E specialUnmarshal(String s) throws Exception {
 				if (StringUtils.equalsIgnoreCase(uuid, s)) { return special; }
@@ -391,7 +390,7 @@ public class XmlEnumAdapterTest {
 			expected.add(v.name());
 		}
 
-		XmlEnumAdapter<CaseSensitive> cs = newAdapter(CaseSensitive.class);
+		EnumCodec<CaseSensitive> cs = newAdapter(CaseSensitive.class);
 		Assertions.assertEquals(expected, cs.getValidMarshalledValues());
 
 		cs = newAdapter(CaseSensitive.class, Flag.MARSHAL_FOLDED);
@@ -402,7 +401,7 @@ public class XmlEnumAdapterTest {
 		for (CaseInsensitive v : CaseInsensitive.values()) {
 			expected.add(v.name());
 		}
-		XmlEnumAdapter<CaseInsensitive> ci = newAdapter(CaseInsensitive.class, Flag.STRICT_CASE);
+		EnumCodec<CaseInsensitive> ci = newAdapter(CaseInsensitive.class, Flag.STRICT_CASE);
 		Assertions.assertEquals(expected, ci.getValidMarshalledValues());
 
 		expected = new LinkedHashSet<>();
@@ -417,7 +416,7 @@ public class XmlEnumAdapterTest {
 
 		// Empty -> nothing
 		expected = new LinkedHashSet<>();
-		XmlEnumAdapter<Empty> e = newAdapter(Empty.class, Flag.STRICT_CASE);
+		EnumCodec<Empty> e = newAdapter(Empty.class, Flag.STRICT_CASE);
 		Assertions.assertEquals(expected, e.getValidMarshalledValues());
 
 		e = newAdapter(Empty.class, Flag.MARSHAL_FOLDED);
