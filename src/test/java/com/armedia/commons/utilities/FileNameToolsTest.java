@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class FileNameToolsTest implements GoodServiceTest {
+public class FileNameToolsTest implements GoodService {
 
 	@Test
 	public void testConstructor() {

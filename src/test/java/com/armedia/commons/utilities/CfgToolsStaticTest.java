@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class CfgToolsStaticTest implements GoodServiceTest {
+public class CfgToolsStaticTest implements GoodService {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 
 	private static Map<String, String> CONFIG = null;

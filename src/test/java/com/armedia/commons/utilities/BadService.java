@@ -1,5 +1,5 @@
 package com.armedia.commons.utilities;
 
-public interface BadServiceTest {
+public interface BadService {
 
 }

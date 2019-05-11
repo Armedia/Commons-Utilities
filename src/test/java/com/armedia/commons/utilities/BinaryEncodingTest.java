@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class BinaryEncodingTest implements GoodServiceTest {
+public class BinaryEncodingTest implements GoodService {
 
 	private static final byte[] EMPTY = new byte[0];
 	private final Random random = new Random(System.currentTimeMillis());

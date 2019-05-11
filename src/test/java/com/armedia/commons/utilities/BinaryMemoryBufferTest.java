@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class BinaryMemoryBufferTest implements GoodServiceTest {
+public class BinaryMemoryBufferTest implements GoodService {
 
 	private static final byte[] FWD = new byte[256];
 	private static final byte[] REV = new byte[256];
