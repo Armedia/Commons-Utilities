@@ -141,16 +141,17 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 		if (this.caseInsensitiveMap != null) {
 			comparer = StringUtils::equalsIgnoreCase;
 		}
-		return ((e == null) || comparer.apply(e, this.nullString));
+		return comparer.apply(e, this.nullString);
 	}
 
 	@Override
 	public String encode(E e) {
 		try {
 			return this.marshal(e);
-		} catch (Exception ex) {
-			throw new RuntimeException(
-				String.format("Failed to encode the enum value [%s]", (e != null ? e.name() : "<null>")), ex);
+		} catch (Throwable t) {
+			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
+			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
+			throw new RuntimeException(String.format("Failed to encode the enum value [%s]", e), t);
 		}
 	}
 
@@ -168,9 +169,10 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 	public E decode(String s) {
 		try {
 			return this.unmarshal(s);
-		} catch (Exception ex) {
-			throw new RuntimeException(
-				String.format("Failed to decode the String %s", (s != null ? String.format("[%s]", s) : "<null>")), ex);
+		} catch (Throwable t) {
+			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
+			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
+			throw new RuntimeException(String.format("Failed to decode the String [%s]", s), t);
 		}
 	}
 
@@ -188,7 +190,7 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 
 	@Override
 	public final E unmarshal(String v) throws Exception {
-		if ((v == null) || Tools.equals(this.nullString, v)) { return this.nullEnum; }
+		if (isNullEncoding(v)) { return this.nullEnum; }
 
 		// Make sure we stip out the spaces
 		v = StringUtils.strip(v);
@@ -221,7 +223,7 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 
 	@Override
 	public final String marshal(E e) throws Exception {
-		if ((e == null) || (e == this.nullEnum)) { return this.nullString; }
+		if (isNullValue(e)) { return this.nullString; }
 		String ret = specialMarshal(e);
 		if (ret == null) {
 			ret = e.name();
