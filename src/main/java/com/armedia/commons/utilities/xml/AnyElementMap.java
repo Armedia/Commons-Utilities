@@ -84,13 +84,6 @@ public final class AnyElementMap {
 		this.map = new ShareableMap<>(map);
 	}
 
-	public List<?> getProperties() {
-		if (this.properties == null) {
-			this.properties = new ArrayList<>();
-		}
-		return this.properties;
-	}
-
 	Map<String, String> getMap() {
 		return this.map;
 	}
