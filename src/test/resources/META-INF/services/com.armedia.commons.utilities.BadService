@@ -1,0 +1,4 @@
+com.armedia.commons.utilities.BadServiceClassInitializationFailed
+com.armedia.commons.utilities.BadServiceError
+com.armedia.commons.utilities.BadServiceException
+com.armedia.commons.utilities.BadServiceUncheckedException

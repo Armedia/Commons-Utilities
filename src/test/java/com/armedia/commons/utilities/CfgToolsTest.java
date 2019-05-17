@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class CfgToolsTest implements GoodServiceTest {
+public class CfgToolsTest implements GoodService {
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
 
 	private static CfgTools CONFIG = null;

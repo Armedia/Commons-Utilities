@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class BasicIndexedIteratorTest implements GoodServiceTest {
+public class BasicIndexedIteratorTest implements GoodService {
 
 	@Test
 	public void testBasicIndexedIterator() {

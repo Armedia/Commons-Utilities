@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class CollectionToolsTest implements GoodServiceTest {
+public class CollectionToolsTest implements GoodService {
 
 	@Test
 	public void testConstructor() {

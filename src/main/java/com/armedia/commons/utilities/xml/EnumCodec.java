@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.xml;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,12 +9,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
+import com.armedia.commons.utilities.Codec;
+import com.armedia.commons.utilities.Tools;
+
+public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implements Codec<E, String> {
 
 	private static final Iterable<Flag> NO_FLAGS = Collections.emptyList();
 
@@ -41,51 +45,51 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 		return true;
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass) {
-		this(enumClass, null, null, XmlEnumAdapter.NO_FLAGS);
+	public EnumCodec(Class<E> enumClass) {
+		this(enumClass, null, null, EnumCodec.NO_FLAGS);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, Flag... flags) {
+	public EnumCodec(Class<E> enumClass, Flag... flags) {
 		this(enumClass, null, null, flags);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, Iterable<Flag> flags) {
+	public EnumCodec(Class<E> enumClass, Iterable<Flag> flags) {
 		this(enumClass, null, null, flags);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, String nullString) {
-		this(enumClass, nullString, null, XmlEnumAdapter.NO_FLAGS);
+	public EnumCodec(Class<E> enumClass, String nullString) {
+		this(enumClass, nullString, null, EnumCodec.NO_FLAGS);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, String nullString, Flag... flags) {
+	public EnumCodec(Class<E> enumClass, String nullString, Flag... flags) {
 		this(enumClass, nullString, null, flags);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, String nullString, Iterable<Flag> flags) {
+	public EnumCodec(Class<E> enumClass, String nullString, Iterable<Flag> flags) {
 		this(enumClass, nullString, null, flags);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, E nullEnum) {
-		this(enumClass, null, nullEnum, XmlEnumAdapter.NO_FLAGS);
+	public EnumCodec(Class<E> enumClass, E nullEnum) {
+		this(enumClass, null, nullEnum, EnumCodec.NO_FLAGS);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, E nullEnum, Flag... flags) {
+	public EnumCodec(Class<E> enumClass, E nullEnum, Flag... flags) {
 		this(enumClass, null, nullEnum, flags);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, E nullEnum, Iterable<Flag> flags) {
+	public EnumCodec(Class<E> enumClass, E nullEnum, Iterable<Flag> flags) {
 		this(enumClass, null, nullEnum, flags);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, String nullString, E nullEnum) {
-		this(enumClass, nullString, nullEnum, XmlEnumAdapter.NO_FLAGS);
+	public EnumCodec(Class<E> enumClass, String nullString, E nullEnum) {
+		this(enumClass, nullString, nullEnum, EnumCodec.NO_FLAGS);
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, String nullString, E nullEnum, Flag... flags) {
+	public EnumCodec(Class<E> enumClass, String nullString, E nullEnum, Flag... flags) {
 		this(enumClass, nullString, nullEnum, (flags != null ? Arrays.asList(flags) : Collections.emptyList()));
 	}
 
-	public XmlEnumAdapter(Class<E> enumClass, String nullString, E nullEnum, Iterable<Flag> flags) {
+	public EnumCodec(Class<E> enumClass, String nullString, E nullEnum, Iterable<Flag> flags) {
 		this.enumClass = Objects.requireNonNull(enumClass, "Must provide a non-null Enum class");
 		if (!enumClass.isEnum()) {
 			throw new IllegalArgumentException(
@@ -98,7 +102,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 			}
 		}
 
-		final boolean ignoreCase = XmlEnumAdapter.canIgnoreCase(enumClass) && !f.contains(Flag.STRICT_CASE);
+		final boolean ignoreCase = EnumCodec.canIgnoreCase(enumClass) && !f.contains(Flag.STRICT_CASE);
 		this.marshalFolded = (!ignoreCase || f.contains(Flag.MARSHAL_FOLDED));
 		this.nullString = nullString;
 		this.nullEnum = nullEnum;
@@ -125,12 +129,51 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 		}
 	}
 
-	public final String getNullString() {
+	@Override
+	public final String getNullEncoding() {
 		return this.nullString;
 	}
 
+	@Override
+	public boolean isNullEncoding(String e) {
+		if (e == null) { return true; }
+		BiFunction<String, String, Boolean> comparer = Tools::equals;
+		if (this.caseInsensitiveMap != null) {
+			comparer = StringUtils::equalsIgnoreCase;
+		}
+		return comparer.apply(e, this.nullString);
+	}
+
+	@Override
+	public String encode(E e) {
+		try {
+			return this.marshal(e);
+		} catch (Throwable t) {
+			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
+			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
+			throw new RuntimeException(String.format("Failed to encode the enum value [%s]", e), t);
+		}
+	}
+
+	@Override
 	public final E getNullValue() {
 		return this.nullEnum;
+	}
+
+	@Override
+	public boolean isNullValue(E e) {
+		return ((e == null) || (e == this.nullEnum));
+	}
+
+	@Override
+	public E decode(String s) {
+		try {
+			return this.unmarshal(s);
+		} catch (Throwable t) {
+			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
+			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
+			throw new RuntimeException(String.format("Failed to decode the String [%s]", s), t);
+		}
 	}
 
 	public final boolean isCaseSensitive() {
@@ -147,7 +190,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 	@Override
 	public final E unmarshal(String v) throws Exception {
-		if ((v == null) || Tools.equals(this.nullString, v)) { return this.nullEnum; }
+		if (isNullEncoding(v)) { return this.nullEnum; }
 
 		// Make sure we stip out the spaces
 		v = StringUtils.strip(v);
@@ -180,7 +223,7 @@ public class XmlEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
 	@Override
 	public final String marshal(E e) throws Exception {
-		if ((e == null) || (e == this.nullEnum)) { return this.nullString; }
+		if (isNullValue(e)) { return this.nullString; }
 		String ret = specialMarshal(e);
 		if (ret == null) {
 			ret = e.name();

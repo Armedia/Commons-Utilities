@@ -7,7 +7,7 @@
  * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2007. All Rights reserved.
  *
  *********************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.xml;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -175,6 +175,10 @@ public class XmlTools {
 	public static <T> T unmarshal(final Class<T> targetClass, final String schemaName, final Reader r)
 		throws JAXBException {
 		return XmlTools.doUnmarshal(targetClass, schemaName, r);
+	}
+
+	public static Unmarshaller getUnmarshaller(Class<?>... targetClasses) throws JAXBException {
+		return XmlTools.getUnmarshaller(null, targetClasses);
 	}
 
 	/**

@@ -17,7 +17,7 @@ import java.util.regex.PatternSyntaxException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class GlobberTest implements GoodServiceTest {
+public class GlobberTest implements GoodService {
 
 	@Test
 	public void testConstructor() {

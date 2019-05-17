@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
  * @author drivera@armedia.com
  *
  */
-public class ComparisonTest implements GoodServiceTest {
+public class ComparisonTest implements GoodService {
 
 	@Test
 	public void testLT() {
