@@ -1,0 +1,2 @@
+--add-opens
+	com.armedia.commons.utilities/com.armedia.commons.utilities.xml=java.xml.bind
