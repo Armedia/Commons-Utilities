@@ -3,6 +3,7 @@ module com.armedia.commons.utilities {
 	exports com.armedia.commons.utilities.concurrent;
 	exports com.armedia.commons.utilities.function;
 	exports com.armedia.commons.utilities.line;
+	exports com.armedia.commons.utilities.xml;
 
 	requires static transitive java.xml;
 	requires static transitive java.xml.bind;
