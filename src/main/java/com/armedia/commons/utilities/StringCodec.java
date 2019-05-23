@@ -99,12 +99,13 @@ public class StringCodec<T> extends BaseCodec<T, String> {
 	public static final StringCodec<BigDecimal> BIG_DECIMAL = new StringCodec<>(Tools::toString,
 		(s) -> (s == null ? null : new BigDecimal(s)));
 
-	private static Character decodeChar(String str) {
-		return str.charAt(0);
+	public static final StringCodec<Character> CHARACTER;
+	static {
+		Function<Character, String> encoder = Tools::toString;
+		Predicate<String> nullStringCheck = StringUtils::isEmpty;
+		Function<String, Character> decoder = (s) -> s.charAt(0);
+		CHARACTER = new StringCodec<>(encoder, nullStringCheck, decoder);
 	}
-
-	public static final StringCodec<Character> CHARACTER = new StringCodec<>(Tools::toString, StringUtils::isEmpty,
-		StringCodec::decodeChar);
 
 	public static final StringCodec<String> STRING = new StringCodec<>(Function.identity(), Function.identity());
 }

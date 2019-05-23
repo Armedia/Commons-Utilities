@@ -154,7 +154,8 @@ public interface ShareableLockable extends MutexLockable {
 	 */
 	public default <E> E shareLocked(Supplier<E> operation) {
 		Objects.requireNonNull(operation, "Must provide an operation to run");
-		return shareLocked(CheckedTools.check(operation));
+		CheckedSupplier<E, RuntimeException> s = CheckedTools.check(operation);
+		return shareLocked(s);
 	}
 
 	/**
@@ -186,7 +187,8 @@ public interface ShareableLockable extends MutexLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default void shareLocked(Runnable operation) {
-		shareLocked(CheckedTools.check(operation));
+		CheckedRunnable<RuntimeException> r = CheckedTools.check(operation);
+		shareLocked(r);
 	}
 
 	/**
