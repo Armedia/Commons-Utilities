@@ -71,15 +71,18 @@ public class DateCodec extends StringCodec<Date> {
 	public static DateCodec from(FastDateFormat encoder, Collection<FastDateFormat> extraDecoders) {
 		Objects.requireNonNull(encoder, "Must provide a non-null date encoder");
 		final Collection<FastDateFormat> decoders = new LinkedList<>();
+		decoders.add(encoder);
 		if (extraDecoders != null) {
 			decoders.addAll(extraDecoders);
 		}
 		Function<String, Date> parse = (s) -> {
 			for (FastDateFormat f : decoders) {
-				try {
-					return f.parse(s);
-				} catch (ParseException e) {
-					// Do nothing...
+				if (f != null) {
+					try {
+						return f.parse(s);
+					} catch (ParseException e) {
+						// Do nothing...
+					}
 				}
 			}
 			throw new RuntimeException(
