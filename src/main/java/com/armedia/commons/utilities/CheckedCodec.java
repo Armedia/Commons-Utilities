@@ -2,9 +2,9 @@ package com.armedia.commons.utilities;
 
 import java.util.Objects;
 
-public interface CheckedCodec<VALUE, ENCODING> {
+public interface CheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception> {
 
-	public ENCODING encode(VALUE v) throws Exception;
+	public ENCODING encode(VALUE v) throws EXCEPTION;
 
 	public default boolean isNullValue(VALUE v) {
 		return Objects.isNull(v);
@@ -14,7 +14,7 @@ public interface CheckedCodec<VALUE, ENCODING> {
 		return null;
 	}
 
-	public VALUE decode(ENCODING e) throws Exception;
+	public VALUE decode(ENCODING e) throws EXCEPTION;
 
 	public default boolean isNullEncoding(ENCODING e) {
 		return Objects.isNull(e);
