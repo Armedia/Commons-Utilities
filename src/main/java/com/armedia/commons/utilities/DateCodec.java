@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities.xml;
+package com.armedia.commons.utilities;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -12,8 +12,6 @@ import java.util.TimeZone;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.time.FastDateFormat;
-
-import com.armedia.commons.utilities.StringCodec;
 
 public class DateCodec extends StringCodec<Date> {
 
