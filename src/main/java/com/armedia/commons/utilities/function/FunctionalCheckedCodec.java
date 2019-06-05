@@ -3,20 +3,98 @@ package com.armedia.commons.utilities.function;
 import java.util.function.Predicate;
 
 import com.armedia.commons.utilities.CheckedCodec;
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
+import com.armedia.commons.utilities.concurrent.SharedAutoLock;
 
 public class FunctionalCheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception>
 	implements CheckedCodec<VALUE, ENCODING, EXCEPTION> {
 
-	private final VALUE nullValue;
-	private final ENCODING nullEncoding;
-	private final Predicate<VALUE> nullValueChecker;
-	private final CheckedFunction<VALUE, ENCODING, EXCEPTION> specialEncoder;
-	private final Predicate<ENCODING> nullEncodingChecker;
-	private final CheckedFunction<ENCODING, VALUE, EXCEPTION> specialDecoder;
+	public static class Builder<VALUE, ENCODING, EXCEPTION extends Exception> extends BaseShareableLockable {
+		private VALUE nullValue = null;
+		private Predicate<VALUE> nullValueChecker = null;
+		private CheckedFunction<ENCODING, VALUE, EXCEPTION> specialDecoder = null;
+		private ENCODING nullEncoding = null;
+		private Predicate<ENCODING> nullEncodingChecker = null;
+		private CheckedFunction<VALUE, ENCODING, EXCEPTION> specialEncoder = null;
 
-	public FunctionalCheckedCodec(VALUE nullValue, Predicate<ENCODING> nullEncodingChecker,
+		public VALUE getNullValue() {
+			return shareLocked(() -> this.nullValue);
+		}
+
+		public Builder<VALUE, ENCODING, EXCEPTION> setNullValue(VALUE nullValue) {
+			mutexLocked(() -> this.nullValue = nullValue);
+			return this;
+		}
+
+		public Predicate<VALUE> getNullValueChecker() {
+			return shareLocked(() -> this.nullValueChecker);
+		}
+
+		public Builder<VALUE, ENCODING, EXCEPTION> setNullValueChecker(Predicate<VALUE> nullValueChecker) {
+			mutexLocked(() -> this.nullValueChecker = nullValueChecker);
+			return this;
+		}
+
+		public CheckedFunction<ENCODING, VALUE, EXCEPTION> getSpecialDecoder() {
+			return shareLocked(() -> this.specialDecoder);
+		}
+
+		public Builder<VALUE, ENCODING, EXCEPTION> setSpecialDecoder(
+			CheckedFunction<ENCODING, VALUE, EXCEPTION> specialDecoder) {
+			mutexLocked(() -> this.specialDecoder = specialDecoder);
+			return this;
+		}
+
+		public ENCODING getNullEncoding() {
+			return shareLocked(() -> this.nullEncoding);
+		}
+
+		public Builder<VALUE, ENCODING, EXCEPTION> setNullEncoding(ENCODING nullEncoding) {
+			mutexLocked(() -> this.nullEncoding = nullEncoding);
+			return this;
+		}
+
+		public Predicate<ENCODING> getNullEncodingChecker() {
+			return shareLocked(() -> this.nullEncodingChecker);
+		}
+
+		public Builder<VALUE, ENCODING, EXCEPTION> setNullEncodingChecker(Predicate<ENCODING> nullEncodingChecker) {
+			mutexLocked(() -> this.nullEncodingChecker = nullEncodingChecker);
+			return this;
+		}
+
+		public CheckedFunction<VALUE, ENCODING, EXCEPTION> getSpecialEncoder() {
+			return shareLocked(() -> this.specialEncoder);
+		}
+
+		public Builder<VALUE, ENCODING, EXCEPTION> setSpecialEncoder(
+			CheckedFunction<VALUE, ENCODING, EXCEPTION> specialEncoder) {
+			mutexLocked(() -> this.specialEncoder = specialEncoder);
+			return this;
+		}
+
+		public FunctionalCheckedCodec<VALUE, ENCODING, EXCEPTION> build() {
+			try (SharedAutoLock lock = autoSharedLock()) {
+				return new FunctionalCheckedCodec<>(this);
+			}
+		}
+	}
+
+	private final VALUE nullValue;
+	private final Predicate<VALUE> nullValueChecker;
+	private final CheckedFunction<ENCODING, VALUE, EXCEPTION> specialDecoder;
+	private final ENCODING nullEncoding;
+	private final Predicate<ENCODING> nullEncodingChecker;
+	private final CheckedFunction<VALUE, ENCODING, EXCEPTION> specialEncoder;
+
+	private FunctionalCheckedCodec(Builder<VALUE, ENCODING, EXCEPTION> builder) {
+		this(builder.getNullValue(), builder.getNullValueChecker(), builder.getSpecialEncoder(),
+			builder.getNullEncoding(), builder.getNullEncodingChecker(), builder.getSpecialDecoder());
+	}
+
+	public FunctionalCheckedCodec(VALUE nullValue, Predicate<VALUE> nullValueChecker,
 		CheckedFunction<VALUE, ENCODING, EXCEPTION> specialEncoder, ENCODING nullEncoding,
-		Predicate<VALUE> nullValueChecker, CheckedFunction<ENCODING, VALUE, EXCEPTION> specialDecoder) {
+		Predicate<ENCODING> nullEncodingChecker, CheckedFunction<ENCODING, VALUE, EXCEPTION> specialDecoder) {
 		this.nullValue = nullValue;
 		this.nullValueChecker = nullValueChecker;
 		this.nullEncoding = nullEncoding;
