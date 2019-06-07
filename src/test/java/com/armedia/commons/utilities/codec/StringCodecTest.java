@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.armedia.commons.utilities.Tools;
-import com.armedia.commons.utilities.codec.StringCodec;
 
 public class StringCodecTest {
 
@@ -23,6 +22,15 @@ public class StringCodecTest {
 			Assertions.assertEquals(p.getKey(), v,
 				String.format("Decoded [%s] as [%s], should have been [%s]", s, v, p.getValue()));
 		});
+
+		{
+			Pair<T, String> p = Pair.of(null, null);
+			String s = codec.encode(p.getKey());
+			Assertions.assertEquals(p.getValue(), s, String.format("Encoded [%s] as [%s]", p.getKey(), s));
+			T v = codec.decode(s);
+			Assertions.assertEquals(p.getKey(), v,
+				String.format("Decoded [%s] as [%s], should have been [%s]", s, v, p.getValue()));
+		}
 	}
 
 	@Test
