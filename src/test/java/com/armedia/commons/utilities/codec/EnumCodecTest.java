@@ -15,9 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.armedia.commons.utilities.codec.CheckedCodec;
-import com.armedia.commons.utilities.codec.EnumCodec;
-import com.armedia.commons.utilities.codec.FunctionalCheckedCodec;
 import com.armedia.commons.utilities.codec.EnumCodec.Flag;
 import com.armedia.commons.utilities.function.CheckedFunction;
 
@@ -49,6 +46,10 @@ public class EnumCodecTest {
 
 	public <E extends Enum<E>> EnumCodec<E> newAdapter(Class<E> enumClass) {
 		return new EnumCodec<>(enumClass);
+	}
+
+	private static <A, B> CheckedFunction<A, B, Exception> nullFunction() {
+		return (e) -> null;
 	}
 
 	@Test
@@ -201,21 +202,24 @@ public class EnumCodecTest {
 			adapter = new EnumCodec<>(CaseSensitive.class, c);
 			Assertions.assertNull(adapter.getNullEncoding());
 			Assertions.assertNull(adapter.getNullValue());
-			special = new FunctionalCheckedCodec<>(null, null, null, null, nullString, null);
+			special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), null, null,
+				EnumCodecTest.nullFunction(), nullString, null);
 			adapter = new EnumCodec<>(CaseSensitive.class, special, c);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
-			special = new FunctionalCheckedCodec<>(null, nullValue, null, null, null, null);
+			special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+				EnumCodecTest.nullFunction(), null, null);
 			adapter = new EnumCodec<>(CaseSensitive.class, special, c);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			special = new FunctionalCheckedCodec<>(null, nullValue, null, null, nullString, null);
+			special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+				EnumCodecTest.nullFunction(), nullString, null);
 			adapter = new EnumCodec<>(CaseSensitive.class, special, c);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
 		}
 		{
 			String nullString = UUID.randomUUID().toString();
-			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(null, null, null,
-				null, nullString, null);
+			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), null, null, EnumCodecTest.nullFunction(), nullString, null);
 			adapter = new EnumCodec<>(CaseSensitive.class, special);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.STRICT_CASE);
@@ -227,8 +231,8 @@ public class EnumCodecTest {
 		}
 		{
 			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
-			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(null, nullValue, null,
-				null, null, null);
+			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), nullValue, null, EnumCodecTest.nullFunction(), null, null);
 			adapter = new EnumCodec<>(CaseSensitive.class, special);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
 			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.STRICT_CASE);
@@ -241,8 +245,8 @@ public class EnumCodecTest {
 		{
 			String nullString = UUID.randomUUID().toString();
 			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
-			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(null, nullValue, null,
-				null, nullString, null);
+			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), nullValue, null, EnumCodecTest.nullFunction(), nullString, null);
 			adapter = new EnumCodec<>(CaseSensitive.class, special);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
@@ -278,14 +282,15 @@ public class EnumCodecTest {
 
 		{
 			String nullString = UUID.randomUUID().toString();
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(null, null, null, null,
-				nullString, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, EnumCodecTest.nullFunction(), nullString, null);
 			EnumCodec<E> a2 = new EnumCodec<>(enumClass, special);
 			Assertions.assertNull(a2.decode(nullString));
 			E[] values = enumClass.getEnumConstants();
 			if (values.length > 0) {
 				for (E e : values) {
-					special = new FunctionalCheckedCodec<>(null, e, null, null, nullString, null);
+					special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), e, null,
+						EnumCodecTest.nullFunction(), nullString, null);
 					a2 = new EnumCodec<>(enumClass, special);
 					Assertions.assertSame(e, a2.decode(nullString));
 				}
@@ -320,14 +325,15 @@ public class EnumCodecTest {
 
 		{
 			String nullString = UUID.randomUUID().toString();
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(null, null, null, null,
-				nullString, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, EnumCodecTest.nullFunction(), nullString, null);
 			EnumCodec<E> a2 = new EnumCodec<>(enumClass, special);
 			Assertions.assertNull(a2.decode(nullString));
 			E[] values = enumClass.getEnumConstants();
 			if (values.length > 0) {
 				for (E e : values) {
-					special = new FunctionalCheckedCodec<>(null, e, null, null, nullString, null);
+					special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), e, null,
+						EnumCodecTest.nullFunction(), nullString, null);
 					a2 = new EnumCodec<>(enumClass, special);
 					Assertions.assertSame(e, a2.decode(nullString));
 				}
@@ -339,7 +345,8 @@ public class EnumCodecTest {
 			CheckedFunction<String, E, Exception> f = (e) -> {
 				throw new Exception("First, a checked exception");
 			};
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(null, null, null, f, null, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, f, null, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(RuntimeException.class, () -> codec.decode(UUID.randomUUID().toString()));
 		}
@@ -349,7 +356,8 @@ public class EnumCodecTest {
 			CheckedFunction<String, E, Exception> f = (e) -> {
 				throw new IllegalArgumentException("Then, an unchecked exception");
 			};
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(null, null, null, f, null, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, f, null, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(IllegalArgumentException.class, () -> codec.decode(UUID.randomUUID().toString()));
 		}
@@ -359,7 +367,8 @@ public class EnumCodecTest {
 			CheckedFunction<String, E, Exception> f = (e) -> {
 				throw new OutOfMemoryError("Finally, an Error");
 			};
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(null, null, null, f, null, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, f, null, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(OutOfMemoryError.class, () -> codec.decode(UUID.randomUUID().toString()));
 		}
@@ -406,10 +415,12 @@ public class EnumCodecTest {
 			String nullString = UUID.randomUUID().toString();
 			CheckedCodec<E, String, Exception> special = null;
 			for (E nullValue : arr) {
-				special = new FunctionalCheckedCodec<>(null, nullValue, null, null, null, null);
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), null, null);
 				adapter = new EnumCodec<>(enumClass, special);
 				Assertions.assertNull(adapter.encode(nullValue));
-				special = new FunctionalCheckedCodec<>(null, nullValue, null, null, nullString, null);
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), nullString, null);
 				adapter = new EnumCodec<>(enumClass, special);
 				Assertions.assertEquals(nullString, adapter.encode(nullValue));
 			}
@@ -423,7 +434,8 @@ public class EnumCodecTest {
 			CheckedFunction<E, String, Exception> f = (v) -> {
 				throw new Exception("First, a checked exception");
 			};
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null, null, null, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null,
+				EnumCodecTest.nullFunction(), null, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(RuntimeException.class, () -> codec.encode(e));
 		}
@@ -433,7 +445,8 @@ public class EnumCodecTest {
 			CheckedFunction<E, String, Exception> f = (v) -> {
 				throw new IllegalArgumentException("Then, an unchecked exception");
 			};
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null, null, null, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null,
+				EnumCodecTest.nullFunction(), null, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(IllegalArgumentException.class, () -> codec.encode(e));
 		}
@@ -443,7 +456,8 @@ public class EnumCodecTest {
 			CheckedFunction<E, String, Exception> f = (v) -> {
 				throw new OutOfMemoryError("Finally, an Error");
 			};
-			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null, null, null, null);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null,
+				EnumCodecTest.nullFunction(), null, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(OutOfMemoryError.class, () -> codec.encode(e));
 		}
@@ -490,10 +504,12 @@ public class EnumCodecTest {
 			String nullString = UUID.randomUUID().toString();
 			CheckedCodec<E, String, Exception> special = null;
 			for (E nullValue : arr) {
-				special = new FunctionalCheckedCodec<>(null, nullValue, null, null, null, null);
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), null, null);
 				adapter = new EnumCodec<>(enumClass, special);
 				Assertions.assertNull(adapter.encode(nullValue));
-				special = new FunctionalCheckedCodec<>(null, nullValue, null, null, nullString, null);
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), nullString, null);
 				adapter = new EnumCodec<>(enumClass, special);
 				Assertions.assertEquals(nullString, adapter.encode(nullValue));
 			}
@@ -512,12 +528,11 @@ public class EnumCodecTest {
 		final CheckedCodec<E, String, Exception> sc = new FunctionalCheckedCodec<>((e) -> {
 			if (e == special) { return uuid; }
 			return null;
-		}, special, null, null, uuid, null);
+		}, special, null, EnumCodecTest.nullFunction(), uuid, null);
 		EnumCodec<E> adapter = new EnumCodec<>(enumClass, sc);
 
 		Assertions.assertSame(uuid, adapter.encode(null));
 		Assertions.assertSame(uuid, adapter.encode(special));
-
 		for (E v : enumClass.getEnumConstants()) {
 			if (v != special) {
 				Assertions.assertNotEquals(uuid, adapter.encode(v));
@@ -533,11 +548,11 @@ public class EnumCodecTest {
 
 	private <E extends Enum<E>> void testSpecialDecode(final Class<E> enumClass, final E special) throws Exception {
 		final String uuid = UUID.randomUUID().toString();
-		final CheckedCodec<E, String, Exception> sc = new FunctionalCheckedCodec<>(null, special, null, (s) -> {
-			if (StringUtils.equalsIgnoreCase(uuid, s)) { return special; }
-			return null;
-		}, uuid,
-			null);
+		final CheckedCodec<E, String, Exception> sc = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+			special, null, (s) -> {
+				if (StringUtils.equalsIgnoreCase(uuid, s)) { return special; }
+				return null;
+			}, uuid, null);
 		EnumCodec<E> adapter = new EnumCodec<>(enumClass, sc);
 
 		Assertions.assertSame(special, adapter.decode(null));
@@ -609,8 +624,8 @@ public class EnumCodecTest {
 			l.add(e);
 		}
 		for (E e : l) {
-			final CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(null, e, null, null, null,
-				null);
+			final CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), e, null, EnumCodecTest.nullFunction(), null, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertTrue(codec.isNullValue(e));
 			if (e != null) {
@@ -632,8 +647,8 @@ public class EnumCodecTest {
 			l.add(e.name());
 		}
 		for (String s : l) {
-			final CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(null, null, null, null, s,
-				null);
+			final CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), null, null, EnumCodecTest.nullFunction(), s, null);
 			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertTrue(codec.isNullEncoding(s));
 			if (s != null) {
