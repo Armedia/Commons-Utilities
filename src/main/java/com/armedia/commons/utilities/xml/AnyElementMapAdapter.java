@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-import com.armedia.commons.utilities.StringCodec;
+import com.armedia.commons.utilities.codec.StringCodec;
 
 public abstract class AnyElementMapAdapter<KEY, VALUE> extends XmlAdapter<AnyElementMap, Map<KEY, VALUE>> {
 

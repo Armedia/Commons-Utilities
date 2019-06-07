@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-import com.armedia.commons.utilities.EnumCodec;
+import com.armedia.commons.utilities.codec.EnumCodec;
 
 public abstract class AbstractEnumAdapter<E extends Enum<E>> extends XmlAdapter<String, E> {
 
