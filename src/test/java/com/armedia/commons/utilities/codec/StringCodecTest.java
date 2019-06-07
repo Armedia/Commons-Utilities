@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.codec;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -9,6 +9,9 @@ import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.codec.StringCodec;
 
 public class StringCodecTest {
 

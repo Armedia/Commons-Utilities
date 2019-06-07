@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.codec;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,6 +13,7 @@ import java.util.function.BiFunction;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.function.CheckedFunction;
 
 public class EnumCodec<E extends Enum<E>> implements Codec<E, String> {
