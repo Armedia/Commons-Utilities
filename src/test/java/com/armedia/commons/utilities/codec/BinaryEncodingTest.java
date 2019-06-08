@@ -9,7 +9,7 @@
  *
  * *******************************************************************
  */
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.codec;
 
 import java.nio.charset.Charset;
 import java.util.Random;
@@ -19,6 +19,9 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.armedia.commons.utilities.GoodService;
+import com.armedia.commons.utilities.codec.BinaryEncoding;
 
 /**
  * @author drivera@armedia.com
@@ -104,7 +107,7 @@ public class BinaryEncodingTest implements GoodService {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.BinaryEncoding#identify(java.lang.String)}.
+	 * {@link com.armedia.commons.utilities.codec.BinaryEncoding#identify(java.lang.String)}.
 	 */
 	@Test
 	public void testIdentify() {
