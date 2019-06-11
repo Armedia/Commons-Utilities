@@ -18,7 +18,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 
-public enum BinaryEncoding implements CheckedCodec<byte[], String, DecoderException> {
+public enum BinaryEncoding implements Codec<byte[], String> {
 	//
 	HEX {
 		@Override
