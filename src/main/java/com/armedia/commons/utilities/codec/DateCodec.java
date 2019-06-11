@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities.xml;
+package com.armedia.commons.utilities.codec;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -12,8 +12,6 @@ import java.util.TimeZone;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.time.FastDateFormat;
-
-import com.armedia.commons.utilities.StringCodec;
 
 public class DateCodec extends StringCodec<Date> {
 
@@ -47,7 +45,7 @@ public class DateCodec extends StringCodec<Date> {
 	}
 
 	public static DateCodec from(String encoderString, TimeZone timeZone, Locale locale,
-		Collection<String> extraDecoders) {
+		Collection<String> extraDecoderStrings) {
 		Objects.requireNonNull(encoderString, "Must provide a non-null date encoder");
 		if (locale == null) {
 			locale = Locale.getDefault();
@@ -58,7 +56,7 @@ public class DateCodec extends StringCodec<Date> {
 		final FastDateFormat encoder = FastDateFormat.getInstance(encoderString, timeZone, locale);
 		final Collection<FastDateFormat> decoders = new LinkedList<>();
 		decoders.add(encoder); // Always start with this one
-		for (String d : extraDecoders) {
+		for (String d : extraDecoderStrings) {
 			decoders.add(FastDateFormat.getInstance(d, timeZone, locale));
 		}
 		return DateCodec.from(encoder, decoders);
@@ -71,8 +69,9 @@ public class DateCodec extends StringCodec<Date> {
 	public static DateCodec from(FastDateFormat encoder, Collection<FastDateFormat> extraDecoders) {
 		Objects.requireNonNull(encoder, "Must provide a non-null date encoder");
 		final Collection<FastDateFormat> decoders = new LinkedList<>();
+		decoders.add(encoder);
 		if (extraDecoders != null) {
-			decoders.addAll(extraDecoders);
+			extraDecoders.stream().filter(Objects::nonNull).forEach(decoders::add);
 		}
 		Function<String, Date> parse = (s) -> {
 			for (FastDateFormat f : decoders) {

@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-import com.armedia.commons.utilities.StringCodec;
+import com.armedia.commons.utilities.codec.StringCodec;
 
 public abstract class AnyElementMapAdapter<KEY, VALUE> extends XmlAdapter<AnyElementMap, Map<KEY, VALUE>> {
 
@@ -26,7 +26,7 @@ public abstract class AnyElementMapAdapter<KEY, VALUE> extends XmlAdapter<AnyEle
 	}
 
 	@Override
-	public Map<KEY, VALUE> unmarshal(AnyElementMap adaptedMap) throws Exception {
+	public final Map<KEY, VALUE> unmarshal(AnyElementMap adaptedMap) throws Exception {
 		// Convert the Map<String, String> to the other type
 		Map<KEY, VALUE> map = new LinkedHashMap<>();
 		adaptedMap.getMap().forEach((k, v) -> map.put(this.keyCodec.decode(k), this.valueCodec.decode(v)));

@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities.xml;
+package com.armedia.commons.utilities.codec;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.armedia.commons.utilities.xml.EnumCodec.Flag;
+import com.armedia.commons.utilities.codec.EnumCodec.Flag;
+import com.armedia.commons.utilities.function.CheckedFunction;
 
 public class EnumCodecTest {
 
@@ -45,6 +46,10 @@ public class EnumCodecTest {
 
 	public <E extends Enum<E>> EnumCodec<E> newAdapter(Class<E> enumClass) {
 		return new EnumCodec<>(enumClass);
+	}
+
+	private static <A, B> CheckedFunction<A, B, Exception> nullFunction() {
+		return (e) -> null;
 	}
 
 	@Test
@@ -190,97 +195,114 @@ public class EnumCodecTest {
 		}
 
 		{
+			CheckedCodec<CaseSensitive, String, Exception> special = null;
 			Collection<Flag> c = Collections.emptyList();
 			String nullString = UUID.randomUUID().toString();
 			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
 			adapter = new EnumCodec<>(CaseSensitive.class, c);
 			Assertions.assertNull(adapter.getNullEncoding());
 			Assertions.assertNull(adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, c);
+			special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), null, null,
+				EnumCodecTest.nullFunction(), nullString, null);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, c);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, c);
+			special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+				EnumCodecTest.nullFunction(), null, null);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, c);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, c);
+			special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+				EnumCodecTest.nullFunction(), nullString, null);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, c);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
 		}
 		{
 			String nullString = UUID.randomUUID().toString();
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString);
+			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), null, null, EnumCodecTest.nullFunction(), nullString, null);
+			adapter = new EnumCodec<>(CaseSensitive.class, special);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, Flag.STRICT_CASE);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.STRICT_CASE);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, Flag.MARSHAL_FOLDED);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.MARSHAL_FOLDED);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, Flag.values());
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.values());
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 		}
 		{
 			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
-			adapter = new EnumCodec<>(CaseSensitive.class, nullValue);
+			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), nullValue, null, EnumCodecTest.nullFunction(), null, null);
+			adapter = new EnumCodec<>(CaseSensitive.class, special);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, Flag.STRICT_CASE);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.STRICT_CASE);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, Flag.MARSHAL_FOLDED);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.MARSHAL_FOLDED);
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullValue, Flag.values());
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.values());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
 		}
 		{
 			String nullString = UUID.randomUUID().toString();
 			CaseSensitive nullValue = CaseSensitive.FIRSTVALUE;
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue);
+			CheckedCodec<CaseSensitive, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), nullValue, null, EnumCodecTest.nullFunction(), nullString, null);
+			adapter = new EnumCodec<>(CaseSensitive.class, special);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, Flag.STRICT_CASE);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.STRICT_CASE);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, Flag.MARSHAL_FOLDED);
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.MARSHAL_FOLDED);
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
-			adapter = new EnumCodec<>(CaseSensitive.class, nullString, nullValue, Flag.values());
+			adapter = new EnumCodec<>(CaseSensitive.class, special, Flag.values());
 			Assertions.assertEquals(nullString, adapter.getNullEncoding());
 			Assertions.assertSame(nullValue, adapter.getNullValue());
 		}
 	}
 
-	private <E extends Enum<E>> void testUnmarshalString(Class<E> enumClass) throws Exception {
+	private <E extends Enum<E>> void testDecodeString(Class<E> enumClass) throws Exception {
 		// Autodetect case sensitivity
 		EnumCodec<E> adapter = newAdapter(enumClass);
-		Assertions.assertNull(adapter.unmarshal(null));
+		Assertions.assertNull(adapter.decode(null));
 
 		for (E e : enumClass.getEnumConstants()) {
-			Assertions.assertSame(e, adapter.unmarshal(e.name()),
+			Assertions.assertSame(e, adapter.decode(e.name()),
 				String.format("%s::%s", enumClass.getCanonicalName(), e.name()));
 			if (!adapter.isCaseSensitive()) {
-				Assertions.assertSame(e, adapter.unmarshal(e.name().toUpperCase()),
+				Assertions.assertSame(e, adapter.decode(e.name().toUpperCase()),
 					String.format("%s::%s", enumClass.getCanonicalName(), e.name().toUpperCase()));
-				Assertions.assertSame(e, adapter.unmarshal(e.name().toLowerCase()),
+				Assertions.assertSame(e, adapter.decode(e.name().toLowerCase()),
 					String.format("%s::%s", enumClass.getCanonicalName(), e.name().toLowerCase()));
 			}
 		}
 
-		Assertions.assertThrows(IllegalArgumentException.class, () -> adapter.unmarshal(UUID.randomUUID().toString()));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> adapter.decode(UUID.randomUUID().toString()));
 
 		{
 			String nullString = UUID.randomUUID().toString();
-			EnumCodec<E> a2 = new EnumCodec<>(enumClass, nullString);
-			Assertions.assertNull(a2.unmarshal(nullString));
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, EnumCodecTest.nullFunction(), nullString, null);
+			EnumCodec<E> a2 = new EnumCodec<>(enumClass, special);
+			Assertions.assertNull(a2.decode(nullString));
 			E[] values = enumClass.getEnumConstants();
 			if (values.length > 0) {
 				for (E e : values) {
-					a2 = new EnumCodec<>(enumClass, nullString, e);
-					Assertions.assertSame(e, a2.unmarshal(nullString));
+					special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), e, null,
+						EnumCodecTest.nullFunction(), nullString, null);
+					a2 = new EnumCodec<>(enumClass, special);
+					Assertions.assertSame(e, a2.decode(nullString));
 				}
 			}
 		}
 	}
 
 	@Test
-	public void testUnmarshalString() throws Exception {
-		testUnmarshalString(CaseInsensitive.class);
-		testUnmarshalString(CaseSensitive.class);
-		testUnmarshalString(Empty.class);
+	public void testDecodeString() throws Exception {
+		testDecodeString(CaseInsensitive.class);
+		testDecodeString(CaseSensitive.class);
+		testDecodeString(Empty.class);
 	}
 
 	private <E extends Enum<E>> void testDecode(Class<E> enumClass) throws Exception {
@@ -303,12 +325,16 @@ public class EnumCodecTest {
 
 		{
 			String nullString = UUID.randomUUID().toString();
-			EnumCodec<E> a2 = new EnumCodec<>(enumClass, nullString);
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, EnumCodecTest.nullFunction(), nullString, null);
+			EnumCodec<E> a2 = new EnumCodec<>(enumClass, special);
 			Assertions.assertNull(a2.decode(nullString));
 			E[] values = enumClass.getEnumConstants();
 			if (values.length > 0) {
 				for (E e : values) {
-					a2 = new EnumCodec<>(enumClass, nullString, e);
+					special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), e, null,
+						EnumCodecTest.nullFunction(), nullString, null);
+					a2 = new EnumCodec<>(enumClass, special);
 					Assertions.assertSame(e, a2.decode(nullString));
 				}
 			}
@@ -316,34 +342,34 @@ public class EnumCodecTest {
 
 		{
 			// Test the error path
-			EnumCodec<E> codec = new EnumCodec<E>(enumClass) {
-				@Override
-				protected E specialUnmarshal(String v) throws Exception {
-					throw new Exception("First, a checked exception");
-				}
+			CheckedFunction<String, E, Exception> f = (e) -> {
+				throw new Exception("First, a checked exception");
 			};
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, f, null, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(RuntimeException.class, () -> codec.decode(UUID.randomUUID().toString()));
 		}
 
 		{
 			// Test the error path
-			EnumCodec<E> codec = new EnumCodec<E>(enumClass) {
-				@Override
-				protected E specialUnmarshal(String v) throws Exception {
-					throw new IllegalArgumentException("Then, an unchecked exception");
-				}
+			CheckedFunction<String, E, Exception> f = (e) -> {
+				throw new IllegalArgumentException("Then, an unchecked exception");
 			};
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, f, null, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(IllegalArgumentException.class, () -> codec.decode(UUID.randomUUID().toString()));
 		}
 
 		{
 			// Test the error path
-			EnumCodec<E> codec = new EnumCodec<E>(enumClass) {
-				@Override
-				protected E specialUnmarshal(String v) throws Exception {
-					throw new OutOfMemoryError("Finally, an Error");
-				}
+			CheckedFunction<String, E, Exception> f = (e) -> {
+				throw new OutOfMemoryError("Finally, an Error");
 			};
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+				null, null, f, null, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(OutOfMemoryError.class, () -> codec.decode(UUID.randomUUID().toString()));
 		}
 	}
@@ -355,7 +381,7 @@ public class EnumCodecTest {
 		testDecode(Empty.class);
 	}
 
-	private <E extends Enum<E>> void testMarshalEnum(Class<E> enumClass) throws Exception {
+	private <E extends Enum<E>> void testEncodeEnum(Class<E> enumClass) throws Exception {
 		EnumCodec<E> adapter = null;
 		Flag[][] flags = {
 			{}, {
@@ -367,7 +393,7 @@ public class EnumCodecTest {
 
 		for (Flag[] f : flags) {
 			adapter = newAdapter(enumClass, f);
-			Assertions.assertNull(adapter.marshal(null));
+			Assertions.assertNull(adapter.encode(null));
 
 			for (E e : enumClass.getEnumConstants()) {
 				Set<Flag> s = EnumSet.noneOf(Flag.class);
@@ -375,10 +401,10 @@ public class EnumCodecTest {
 					s.add(ff);
 				}
 				if (adapter.isCaseSensitive() || !s.contains(Flag.MARSHAL_FOLDED)) {
-					Assertions.assertEquals(e.name(), adapter.marshal(e),
+					Assertions.assertEquals(e.name(), adapter.encode(e),
 						String.format("%s::%s", enumClass.getCanonicalName(), e.name()));
 				} else {
-					Assertions.assertEquals(e.name().toLowerCase(), adapter.marshal(e),
+					Assertions.assertEquals(e.name().toLowerCase(), adapter.encode(e),
 						String.format("%s::%s", enumClass.getCanonicalName(), e.name()));
 				}
 			}
@@ -387,11 +413,16 @@ public class EnumCodecTest {
 		E[] arr = enumClass.getEnumConstants();
 		if (arr.length > 0) {
 			String nullString = UUID.randomUUID().toString();
+			CheckedCodec<E, String, Exception> special = null;
 			for (E nullValue : arr) {
-				adapter = new EnumCodec<>(enumClass, nullValue);
-				Assertions.assertNull(adapter.marshal(nullValue));
-				adapter = new EnumCodec<>(enumClass, nullString, nullValue);
-				Assertions.assertEquals(nullString, adapter.marshal(nullValue));
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), null, null);
+				adapter = new EnumCodec<>(enumClass, special);
+				Assertions.assertNull(adapter.encode(nullValue));
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), nullString, null);
+				adapter = new EnumCodec<>(enumClass, special);
+				Assertions.assertEquals(nullString, adapter.encode(nullValue));
 			}
 		}
 
@@ -400,43 +431,43 @@ public class EnumCodecTest {
 
 		{
 			// Test the error path
-			EnumCodec<E> codec = new EnumCodec<E>(enumClass) {
-				@Override
-				protected String specialMarshal(E e) throws Exception {
-					throw new Exception("First, a checked exception");
-				}
+			CheckedFunction<E, String, Exception> f = (v) -> {
+				throw new Exception("First, a checked exception");
 			};
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null,
+				EnumCodecTest.nullFunction(), null, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(RuntimeException.class, () -> codec.encode(e));
 		}
 
 		{
 			// Test the error path
-			EnumCodec<E> codec = new EnumCodec<E>(enumClass) {
-				@Override
-				protected String specialMarshal(E e) throws Exception {
-					throw new IllegalArgumentException("Then, an unchecked exception");
-				}
+			CheckedFunction<E, String, Exception> f = (v) -> {
+				throw new IllegalArgumentException("Then, an unchecked exception");
 			};
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null,
+				EnumCodecTest.nullFunction(), null, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(IllegalArgumentException.class, () -> codec.encode(e));
 		}
 
 		{
 			// Test the error path
-			EnumCodec<E> codec = new EnumCodec<E>(enumClass) {
-				@Override
-				protected String specialMarshal(E e) throws Exception {
-					throw new OutOfMemoryError("Finally, an Error");
-				}
+			CheckedFunction<E, String, Exception> f = (v) -> {
+				throw new OutOfMemoryError("Finally, an Error");
 			};
+			CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(f, null, null,
+				EnumCodecTest.nullFunction(), null, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertThrows(OutOfMemoryError.class, () -> codec.encode(e));
 		}
 	}
 
 	@Test
-	public void testMarshalEnum() throws Exception {
-		testMarshalEnum(CaseInsensitive.class);
-		testMarshalEnum(CaseSensitive.class);
-		testMarshalEnum(Empty.class);
+	public void testEncodeEnum() throws Exception {
+		testEncodeEnum(CaseInsensitive.class);
+		testEncodeEnum(CaseSensitive.class);
+		testEncodeEnum(Empty.class);
 	}
 
 	private <E extends Enum<E>> void testEncode(Class<E> enumClass) throws Exception {
@@ -471,10 +502,15 @@ public class EnumCodecTest {
 		E[] arr = enumClass.getEnumConstants();
 		if (arr.length > 0) {
 			String nullString = UUID.randomUUID().toString();
+			CheckedCodec<E, String, Exception> special = null;
 			for (E nullValue : arr) {
-				adapter = new EnumCodec<>(enumClass, nullValue);
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), null, null);
+				adapter = new EnumCodec<>(enumClass, special);
 				Assertions.assertNull(adapter.encode(nullValue));
-				adapter = new EnumCodec<>(enumClass, nullString, nullValue);
+				special = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(), nullValue, null,
+					EnumCodecTest.nullFunction(), nullString, null);
+				adapter = new EnumCodec<>(enumClass, special);
 				Assertions.assertEquals(nullString, adapter.encode(nullValue));
 			}
 		}
@@ -487,60 +523,56 @@ public class EnumCodecTest {
 		testEncode(Empty.class);
 	}
 
-	private <E extends Enum<E>> void testSpecialMarshal(final Class<E> enumClass, final E special) throws Exception {
+	private <E extends Enum<E>> void testSpecialEncode(final Class<E> enumClass, final E special) throws Exception {
 		final String uuid = UUID.randomUUID().toString();
-		EnumCodec<E> adapter = new EnumCodec<E>(enumClass, uuid) {
-			@Override
-			protected String specialMarshal(E e) throws Exception {
-				if (e == special) { return uuid; }
-				return super.specialMarshal(e);
-			}
-		};
+		final CheckedCodec<E, String, Exception> sc = new FunctionalCheckedCodec<>((e) -> {
+			if (e == special) { return uuid; }
+			return null;
+		}, special, null, EnumCodecTest.nullFunction(), uuid, null);
+		EnumCodec<E> adapter = new EnumCodec<>(enumClass, sc);
 
-		Assertions.assertSame(uuid, adapter.marshal(null));
-		Assertions.assertSame(uuid, adapter.marshal(special));
-
+		Assertions.assertSame(uuid, adapter.encode(null));
+		Assertions.assertSame(uuid, adapter.encode(special));
 		for (E v : enumClass.getEnumConstants()) {
 			if (v != special) {
-				Assertions.assertNotEquals(uuid, adapter.marshal(v));
+				Assertions.assertNotEquals(uuid, adapter.encode(v));
 			}
 		}
 	}
 
 	@Test
-	public void testSpecialMarshal() throws Exception {
-		testSpecialMarshal(CaseInsensitive.class, CaseInsensitive.First);
-		testSpecialMarshal(CaseSensitive.class, CaseSensitive.firstvalue);
+	public void testSpecialEncode() throws Exception {
+		testSpecialEncode(CaseInsensitive.class, CaseInsensitive.First);
+		testSpecialEncode(CaseSensitive.class, CaseSensitive.firstvalue);
 	}
 
-	private <E extends Enum<E>> void testSpecialUnmarshal(final Class<E> enumClass, final E special) throws Exception {
+	private <E extends Enum<E>> void testSpecialDecode(final Class<E> enumClass, final E special) throws Exception {
 		final String uuid = UUID.randomUUID().toString();
-		EnumCodec<E> adapter = new EnumCodec<E>(enumClass, special) {
-			@Override
-			protected E specialUnmarshal(String s) throws Exception {
+		final CheckedCodec<E, String, Exception> sc = new FunctionalCheckedCodec<>(EnumCodecTest.nullFunction(),
+			special, null, (s) -> {
 				if (StringUtils.equalsIgnoreCase(uuid, s)) { return special; }
-				return super.specialUnmarshal(s);
-			}
-		};
+				return null;
+			}, uuid, null);
+		EnumCodec<E> adapter = new EnumCodec<>(enumClass, sc);
 
-		Assertions.assertSame(special, adapter.unmarshal(null));
-		Assertions.assertSame(special, adapter.unmarshal(uuid));
+		Assertions.assertSame(special, adapter.decode(null));
+		Assertions.assertSame(special, adapter.decode(uuid));
 
 		for (E v : enumClass.getEnumConstants()) {
 			if (v != special) {
-				Assertions.assertNotEquals(uuid, adapter.unmarshal(v.name()));
+				Assertions.assertNotEquals(uuid, adapter.decode(v.name()));
 			}
 		}
 	}
 
 	@Test
-	public void testSpecialUnmarshal() throws Exception {
-		testSpecialUnmarshal(CaseInsensitive.class, CaseInsensitive.First);
-		testSpecialUnmarshal(CaseSensitive.class, CaseSensitive.firstvalue);
+	public void testSpecialDecode() throws Exception {
+		testSpecialDecode(CaseInsensitive.class, CaseInsensitive.First);
+		testSpecialDecode(CaseSensitive.class, CaseSensitive.firstvalue);
 	}
 
 	@Test
-	public void testGetValidMarshalledValues() {
+	public void testGetValidEncodedValues() {
 		Set<String> expected = null;
 		// CaseSensitive -> always same
 		expected = new LinkedHashSet<>();
@@ -549,10 +581,10 @@ public class EnumCodecTest {
 		}
 
 		EnumCodec<CaseSensitive> cs = newAdapter(CaseSensitive.class);
-		Assertions.assertEquals(expected, cs.getValidMarshalledValues());
+		Assertions.assertEquals(expected, cs.getValidEncodedValues());
 
 		cs = newAdapter(CaseSensitive.class, Flag.MARSHAL_FOLDED);
-		Assertions.assertEquals(expected, cs.getValidMarshalledValues());
+		Assertions.assertEquals(expected, cs.getValidEncodedValues());
 
 		// CaseInsensitive -> both identical and folded
 		expected = new LinkedHashSet<>();
@@ -560,28 +592,28 @@ public class EnumCodecTest {
 			expected.add(v.name());
 		}
 		EnumCodec<CaseInsensitive> ci = newAdapter(CaseInsensitive.class, Flag.STRICT_CASE);
-		Assertions.assertEquals(expected, ci.getValidMarshalledValues());
+		Assertions.assertEquals(expected, ci.getValidEncodedValues());
 
 		expected = new LinkedHashSet<>();
 		for (CaseInsensitive v : CaseInsensitive.values()) {
 			expected.add(v.name().toLowerCase());
 		}
 		ci = newAdapter(CaseInsensitive.class, Flag.MARSHAL_FOLDED);
-		Assertions.assertEquals(expected, ci.getValidMarshalledValues());
+		Assertions.assertEquals(expected, ci.getValidEncodedValues());
 
 		ci = newAdapter(CaseInsensitive.class);
-		Assertions.assertEquals(expected, ci.getValidMarshalledValues());
+		Assertions.assertEquals(expected, ci.getValidEncodedValues());
 
 		// Empty -> nothing
 		expected = new LinkedHashSet<>();
 		EnumCodec<Empty> e = newAdapter(Empty.class, Flag.STRICT_CASE);
-		Assertions.assertEquals(expected, e.getValidMarshalledValues());
+		Assertions.assertEquals(expected, e.getValidEncodedValues());
 
 		e = newAdapter(Empty.class, Flag.MARSHAL_FOLDED);
-		Assertions.assertEquals(expected, e.getValidMarshalledValues());
+		Assertions.assertEquals(expected, e.getValidEncodedValues());
 
 		e = newAdapter(Empty.class);
-		Assertions.assertEquals(expected, e.getValidMarshalledValues());
+		Assertions.assertEquals(expected, e.getValidEncodedValues());
 	}
 
 	private <E extends Enum<E>> void testNullValue(Class<E> enumClass) {
@@ -592,7 +624,9 @@ public class EnumCodecTest {
 			l.add(e);
 		}
 		for (E e : l) {
-			EnumCodec<E> codec = new EnumCodec<>(enumClass, e);
+			final CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), e, null, EnumCodecTest.nullFunction(), null, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertTrue(codec.isNullValue(e));
 			if (e != null) {
 				for (E e2 : l) {
@@ -613,7 +647,9 @@ public class EnumCodecTest {
 			l.add(e.name());
 		}
 		for (String s : l) {
-			EnumCodec<E> codec = new EnumCodec<>(enumClass, s);
+			final CheckedCodec<E, String, Exception> special = new FunctionalCheckedCodec<>(
+				EnumCodecTest.nullFunction(), null, null, EnumCodecTest.nullFunction(), s, null);
+			EnumCodec<E> codec = new EnumCodec<>(enumClass, special);
 			Assertions.assertTrue(codec.isNullEncoding(s));
 			if (s != null) {
 				for (String s2 : l) {

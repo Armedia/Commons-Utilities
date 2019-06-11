@@ -1,5 +1,5 @@
 com.armedia.commons.utilities.BasicIndexedIteratorTest
-com.armedia.commons.utilities.BinaryEncodingTest
+com.armedia.commons.utilities.codec.BinaryEncodingTest
 com.armedia.commons.utilities.BinaryMemoryBufferTest
 com.armedia.commons.utilities.CfgToolsStaticTest
 com.armedia.commons.utilities.CfgToolsTest

@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.codec;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -10,6 +10,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.armedia.commons.utilities.Tools;
+
 public class StringCodecTest {
 
 	private <T> void runTest(Collection<Pair<T, String>> values, final StringCodec<T> codec) {
@@ -20,6 +22,15 @@ public class StringCodecTest {
 			Assertions.assertEquals(p.getKey(), v,
 				String.format("Decoded [%s] as [%s], should have been [%s]", s, v, p.getValue()));
 		});
+
+		{
+			Pair<T, String> p = Pair.of(null, null);
+			String s = codec.encode(p.getKey());
+			Assertions.assertEquals(p.getValue(), s, String.format("Encoded [%s] as [%s]", p.getKey(), s));
+			T v = codec.decode(s);
+			Assertions.assertEquals(p.getKey(), v,
+				String.format("Decoded [%s] as [%s], should have been [%s]", s, v, p.getValue()));
+		}
 	}
 
 	@Test

@@ -15,6 +15,8 @@ import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Assertions;
 
+import com.armedia.commons.utilities.codec.BinaryEncodingTest;
+
 public class PluggableServiceLocatorTest {
 
 	private static final Set<String> GOOD_CLASSES;

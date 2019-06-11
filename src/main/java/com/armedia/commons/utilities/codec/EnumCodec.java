@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities.xml;
+package com.armedia.commons.utilities.codec;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,14 +11,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-
 import org.apache.commons.lang3.StringUtils;
 
-import com.armedia.commons.utilities.Codec;
 import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.function.CheckedFunction;
 
-public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implements Codec<E, String> {
+public class EnumCodec<E extends Enum<E>> implements Codec<E, String> {
 
 	private static final Iterable<Flag> NO_FLAGS = Collections.emptyList();
 
@@ -32,9 +30,11 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 
 	private final Class<E> enumClass;
 	private final String nullString;
+	private final CheckedFunction<E, String, Exception> specialEncoder;
 	private final E nullEnum;
+	private final CheckedFunction<String, E, Exception> specialDecoder;
 	private final Map<String, E> caseInsensitiveMap;
-	private final Set<String> validMarshalledValues;
+	private final Set<String> validEncodedValues;
 	private final boolean marshalFolded;
 
 	private static <E extends Enum<E>> boolean canIgnoreCase(Class<E> enumClass) {
@@ -46,50 +46,26 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 	}
 
 	public EnumCodec(Class<E> enumClass) {
-		this(enumClass, null, null, EnumCodec.NO_FLAGS);
+		this(enumClass, null, EnumCodec.NO_FLAGS);
 	}
 
 	public EnumCodec(Class<E> enumClass, Flag... flags) {
-		this(enumClass, null, null, flags);
+		this(enumClass, null, flags);
 	}
 
 	public EnumCodec(Class<E> enumClass, Iterable<Flag> flags) {
-		this(enumClass, null, null, flags);
+		this(enumClass, null, flags);
 	}
 
-	public EnumCodec(Class<E> enumClass, String nullString) {
-		this(enumClass, nullString, null, EnumCodec.NO_FLAGS);
+	public EnumCodec(Class<E> enumClass, CheckedCodec<E, String, ?> specialCodec) {
+		this(enumClass, specialCodec, EnumCodec.NO_FLAGS);
 	}
 
-	public EnumCodec(Class<E> enumClass, String nullString, Flag... flags) {
-		this(enumClass, nullString, null, flags);
+	public EnumCodec(Class<E> enumClass, CheckedCodec<E, String, ?> specialCodec, Flag... flags) {
+		this(enumClass, specialCodec, (flags != null ? Arrays.asList(flags) : Collections.emptyList()));
 	}
 
-	public EnumCodec(Class<E> enumClass, String nullString, Iterable<Flag> flags) {
-		this(enumClass, nullString, null, flags);
-	}
-
-	public EnumCodec(Class<E> enumClass, E nullEnum) {
-		this(enumClass, null, nullEnum, EnumCodec.NO_FLAGS);
-	}
-
-	public EnumCodec(Class<E> enumClass, E nullEnum, Flag... flags) {
-		this(enumClass, null, nullEnum, flags);
-	}
-
-	public EnumCodec(Class<E> enumClass, E nullEnum, Iterable<Flag> flags) {
-		this(enumClass, null, nullEnum, flags);
-	}
-
-	public EnumCodec(Class<E> enumClass, String nullString, E nullEnum) {
-		this(enumClass, nullString, nullEnum, EnumCodec.NO_FLAGS);
-	}
-
-	public EnumCodec(Class<E> enumClass, String nullString, E nullEnum, Flag... flags) {
-		this(enumClass, nullString, nullEnum, (flags != null ? Arrays.asList(flags) : Collections.emptyList()));
-	}
-
-	public EnumCodec(Class<E> enumClass, String nullString, E nullEnum, Iterable<Flag> flags) {
+	public EnumCodec(Class<E> enumClass, CheckedCodec<E, String, ?> specialCodec, Iterable<Flag> flags) {
 		this.enumClass = Objects.requireNonNull(enumClass, "Must provide a non-null Enum class");
 		if (!enumClass.isEnum()) {
 			throw new IllegalArgumentException(
@@ -104,8 +80,6 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 
 		final boolean ignoreCase = EnumCodec.canIgnoreCase(enumClass) && !f.contains(Flag.STRICT_CASE);
 		this.marshalFolded = (!ignoreCase || f.contains(Flag.MARSHAL_FOLDED));
-		this.nullString = nullString;
-		this.nullEnum = nullEnum;
 
 		Map<String, E> m = null;
 		if (ignoreCase) {
@@ -119,13 +93,25 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 		}
 		this.caseInsensitiveMap = ((m != null) ? Tools.freezeMap(m) : null);
 		if (this.caseInsensitiveMap != null) {
-			this.validMarshalledValues = this.caseInsensitiveMap.keySet();
+			this.validEncodedValues = this.caseInsensitiveMap.keySet();
 		} else {
 			Set<String> validMarshalledValues = new TreeSet<>();
 			for (E e : enumClass.getEnumConstants()) {
 				validMarshalledValues.add(e.name());
 			}
-			this.validMarshalledValues = Tools.freezeSet(validMarshalledValues);
+			this.validEncodedValues = Tools.freezeSet(validMarshalledValues);
+		}
+
+		if (specialCodec != null) {
+			this.nullString = specialCodec.getNullEncoding();
+			this.specialEncoder = specialCodec::encode;
+			this.nullEnum = specialCodec.getNullValue();
+			this.specialDecoder = specialCodec::decode;
+		} else {
+			this.nullString = null;
+			this.specialEncoder = (e) -> null;
+			this.nullEnum = null;
+			this.specialDecoder = (s) -> null;
 		}
 	}
 
@@ -147,7 +133,7 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 	@Override
 	public String encode(E e) {
 		try {
-			return this.marshal(e);
+			return this.encodeChecked(e);
 		} catch (Throwable t) {
 			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
 			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
@@ -168,7 +154,7 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 	@Override
 	public E decode(String s) {
 		try {
-			return this.unmarshal(s);
+			return this.decodeChecked(s);
 		} catch (Throwable t) {
 			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
 			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
@@ -180,16 +166,11 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 		return (this.caseInsensitiveMap == null);
 	}
 
-	public final Set<String> getValidMarshalledValues() {
-		return this.validMarshalledValues;
+	public final Set<String> getValidEncodedValues() {
+		return this.validEncodedValues;
 	}
 
-	protected E specialUnmarshal(String v) throws Exception {
-		return null;
-	}
-
-	@Override
-	public final E unmarshal(String v) throws Exception {
+	public final E decodeChecked(String v) throws Exception {
 		if (isNullEncoding(v)) { return this.nullEnum; }
 
 		// Make sure we stip out the spaces
@@ -197,7 +178,7 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 
 		// If there's no CI map, then valueOf() *must* return a valid value
 		if (this.caseInsensitiveMap == null) {
-			E ret = specialUnmarshal(v);
+			E ret = this.specialDecoder.applyChecked(v);
 			if (ret == null) {
 				ret = Enum.valueOf(this.enumClass, v);
 			}
@@ -205,7 +186,7 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 		}
 
 		String folded = v.toLowerCase();
-		E ret = specialUnmarshal(folded);
+		E ret = this.specialDecoder.applyChecked(folded);
 		if (ret == null) {
 			// If this can be case-insensitive, we fold to lowercase and search
 			ret = this.caseInsensitiveMap.get(folded);
@@ -217,14 +198,9 @@ public class EnumCodec<E extends Enum<E>> extends XmlAdapter<String, E> implemen
 			this.enumClass.getCanonicalName()));
 	}
 
-	protected String specialMarshal(E e) throws Exception {
-		return null;
-	}
-
-	@Override
-	public final String marshal(E e) throws Exception {
+	public final String encodeChecked(E e) throws Exception {
 		if (isNullValue(e)) { return this.nullString; }
-		String ret = specialMarshal(e);
+		String ret = this.specialEncoder.applyChecked(e);
 		if (ret == null) {
 			ret = e.name();
 			if (this.marshalFolded && (this.caseInsensitiveMap != null)) {
