@@ -33,7 +33,7 @@ import java.util.regex.PatternSyntaxException;
  * Utility class that converts a globbing pattern (wildcard match with *, ?, {}, etc) to a regular
  * expression.
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public class Globber {

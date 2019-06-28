@@ -61,7 +61,7 @@ import com.armedia.commons.utilities.concurrent.SharedAutoLock;
  * queue for immediate consumption, as well a blocking mode where the worker threads wait for work
  * to be submitted and execute it as it arrives.
  *
- * @author Diego Rivera &lt;diego.rivera@armedia.com&gt;
+ *
  *
  * @param <STATE>
  *            The state class that will be produced by {@link PooledWorkersLogic#initialize()} and

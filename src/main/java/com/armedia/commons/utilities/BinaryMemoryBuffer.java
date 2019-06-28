@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class BinaryMemoryBuffer extends OutputStream implements Serializable {

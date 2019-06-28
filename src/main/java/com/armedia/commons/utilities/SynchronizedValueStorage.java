@@ -29,7 +29,7 @@ package com.armedia.commons.utilities;
 import java.util.Set;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class SynchronizedValueStorage<T> extends SimpleValueStorage<T> {

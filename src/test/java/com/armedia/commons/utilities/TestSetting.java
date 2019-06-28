@@ -29,7 +29,7 @@ package com.armedia.commons.utilities;
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public enum TestSetting implements ConfigurationSetting {

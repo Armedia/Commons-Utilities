@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * convenience.
  * </p>
  *
- * @author diego
+ *
  *
  */
 @XmlTransient

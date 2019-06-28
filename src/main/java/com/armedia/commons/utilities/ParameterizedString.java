@@ -44,7 +44,7 @@ import org.apache.commons.text.StringSubstitutor;
  * parameter to the string {@code "null"}. Setting a parameter to the {@code null} value has the
  * effect that the parameter will no longer be substituted in the string.
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public class ParameterizedString implements Serializable {

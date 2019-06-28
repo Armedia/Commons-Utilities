@@ -31,7 +31,7 @@
 package com.armedia.commons.utilities;
 
 /**
- * @author diego
+ *
  *
  */
 public class ValueSynchronizer<V extends Object> {

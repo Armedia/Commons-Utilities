@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class BasicIndexedIterator<T> implements IndexedIterator<T> {

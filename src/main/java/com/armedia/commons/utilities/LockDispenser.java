@@ -38,7 +38,7 @@ import java.util.function.Function;
 import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public final class LockDispenser<K, C> {

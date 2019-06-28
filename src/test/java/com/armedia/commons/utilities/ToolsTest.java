@@ -48,7 +48,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class ToolsTest {

@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class ArrayIterator<E> implements Iterator<E> {

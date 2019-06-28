@@ -40,7 +40,7 @@ import java.util.function.Predicate;
  * actual service instance being returned in a modular fashion.
  * </p>
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public class PluggableServiceLocator<S> implements Iterable<S> {

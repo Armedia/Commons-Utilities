@@ -30,7 +30,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class FileSystemTools {

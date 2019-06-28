@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class FileNameTools {

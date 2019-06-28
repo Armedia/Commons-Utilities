@@ -36,7 +36,7 @@ import org.apache.commons.lang3.StringUtils;
  * stream backs it.
  * </p>
  *
- * @author diego
+ *
  *
  */
 public abstract class LineSource implements AutoCloseable {

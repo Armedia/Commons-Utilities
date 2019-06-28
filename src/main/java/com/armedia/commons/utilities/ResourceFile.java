@@ -34,7 +34,7 @@ import java.nio.charset.Charset;
 import org.apache.commons.io.IOUtils;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class ResourceFile {

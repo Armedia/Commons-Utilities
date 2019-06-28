@@ -33,7 +33,7 @@ import java.util.Map;
  * This enum permits easy comparison between to same-classed instances of {@link Comparable}.
  * Importantly, it can be used for parameterized comparison of values.
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public enum Comparison {

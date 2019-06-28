@@ -29,7 +29,7 @@ package com.armedia.commons.utilities;
 /**
  * This interface provides a means for easy handling of configuration settings.
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public interface ConfigurationSetting {

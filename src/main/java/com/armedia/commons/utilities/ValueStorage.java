@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * This interface represents a simplistic key-value pair storage mechanism.
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public interface ValueStorage<T> {

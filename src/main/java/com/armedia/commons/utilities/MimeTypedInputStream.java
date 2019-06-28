@@ -33,7 +33,7 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class MimeTypedInputStream extends InputStream {

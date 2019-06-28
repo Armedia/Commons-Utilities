@@ -44,7 +44,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class CfgTools implements Serializable {

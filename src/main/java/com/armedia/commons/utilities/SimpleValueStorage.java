@@ -33,7 +33,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class SimpleValueStorage<T> implements ValueStorage<T> {

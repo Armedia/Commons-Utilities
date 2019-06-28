@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.armedia.commons.utilities.concurrent.ShareableLockable;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class LockingValueStorage<T> extends SimpleValueStorage<T> implements ShareableLockable {

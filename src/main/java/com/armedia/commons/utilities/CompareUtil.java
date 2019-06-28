@@ -35,7 +35,7 @@ import java.util.TreeSet;
  * cases where references are compared, null-valued references are properly handled (i.e. null !=
  * non-null, and null == null).
  *
- * @author diego
+ *
  *
  */
 public class CompareUtil {

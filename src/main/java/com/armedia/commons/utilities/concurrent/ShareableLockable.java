@@ -60,7 +60,7 @@ import com.armedia.commons.utilities.function.CheckedTools;
  * as double-check locking semantics (for initializers, for instance).
  * </p>
  *
- * @author diego
+ *
  *
  */
 @FunctionalInterface

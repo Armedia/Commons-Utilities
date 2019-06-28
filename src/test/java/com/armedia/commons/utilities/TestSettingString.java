@@ -27,7 +27,7 @@
 package com.armedia.commons.utilities;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public enum TestSettingString implements ConfigurationSetting {

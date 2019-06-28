@@ -42,7 +42,7 @@ import com.armedia.commons.utilities.function.TriConsumer;
  * interfaces and lambda expressions, to facilitate programming.
  * </p>
  *
- * @author diego
+ *
  *
  * @param <STATE>
  * @param <ITEM>

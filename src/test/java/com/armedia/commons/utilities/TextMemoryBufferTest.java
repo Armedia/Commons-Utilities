@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test;
 import com.armedia.commons.utilities.TextMemoryBuffer.TextMemoryBufferReader;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class TextMemoryBufferTest {

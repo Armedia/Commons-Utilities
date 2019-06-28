@@ -40,7 +40,7 @@ import com.armedia.commons.utilities.concurrent.MutexAutoLock;
  * for the last time the value was changed, in nanoseconds.
  * </p>
  *
- * @author Diego Rivera &lt;diego.rivera@armedia.com&gt;
+ *
  *
  */
 public final class SynchronizedCounter extends BaseShareableLockable {

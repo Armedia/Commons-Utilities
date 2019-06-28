@@ -72,7 +72,7 @@ import com.armedia.commons.utilities.function.CheckedSupplier;
 import com.armedia.commons.utilities.function.CheckedTools;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class Tools {

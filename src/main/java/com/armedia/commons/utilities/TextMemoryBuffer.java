@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class TextMemoryBuffer extends Writer implements Serializable {

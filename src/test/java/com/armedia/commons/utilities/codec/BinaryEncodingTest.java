@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 import com.armedia.commons.utilities.GoodService;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class BinaryEncodingTest implements GoodService {

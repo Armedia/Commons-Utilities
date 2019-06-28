@@ -32,7 +32,7 @@ import java.util.Iterator;
  * This is an extension to the classical {@link Iterator} interface that adds three methods that
  * will assist in tracking the iterator's progress.
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public interface IndexedIterator<T> extends Iterator<T> {

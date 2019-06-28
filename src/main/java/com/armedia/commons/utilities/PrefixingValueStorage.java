@@ -33,7 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author drivera@armedia.com
+ *
  *
  */
 public class PrefixingValueStorage<T> implements ValueStorage<T> {

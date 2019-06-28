@@ -52,7 +52,7 @@ import org.xml.sax.SAXException;
  * This class provides some utility methods for JAXB bindings to facilitate the loading and storing
  * of XML-bound classes.
  *
- * @author drivera@armedia.com
+ *
  *
  */
 public class XmlTools {
