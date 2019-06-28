@@ -9,6 +9,13 @@
 	<description>A set of utility classes for use by OSGi modules</description>
 	<packaging>bundle</packaging>
 
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+		</license>
+	</licenses>
+
 	<organization>
 		<name>Armedia</name>
 		<url>http://www.armedia.com</url>
@@ -143,6 +150,25 @@
 							</requireMavenVersion>
 						</rules>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.16</version>
+					<configuration>
+						<licenseName>caliente_license</licenseName>
+						<licenseResolver>${project.baseUri}/license</licenseResolver>
+						<includes>
+							<include>**/*.java</include>
+						</includes>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>com.armedia.caliente</groupId>
+							<artifactId>caliente-license-headers</artifactId>
+							<version>1.0</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -304,6 +330,19 @@
 					</execution>
 				</executions>
 			</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>update-license</id>
+							<goals>
+								<goal>update-file-header</goal>
+							</goals>
+							<phase>process-sources</phase>
+						</execution>
+					</executions>
+				</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
