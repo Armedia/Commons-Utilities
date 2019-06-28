@@ -1,5 +1,6 @@
 module com.armedia.commons.utilities {
 	exports com.armedia.commons.utilities;
+	exports com.armedia.commons.utilities.codec;
 	exports com.armedia.commons.utilities.concurrent;
 	exports com.armedia.commons.utilities.function;
 	exports com.armedia.commons.utilities.line;
