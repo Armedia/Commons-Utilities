@@ -159,6 +159,8 @@
 					<configuration>
 						<licenseName>caliente_license</licenseName>
 						<licenseResolver>${project.baseUri}/license</licenseResolver>
+						<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+						<canUpdateCopyright>true</canUpdateCopyright>
 						<includes>
 							<include>**/*.java</include>
 						</includes>
