@@ -158,13 +158,20 @@
 					<version>1.16</version>
 					<configuration>
 						<licenseName>caliente_license</licenseName>
-						<licenseResolver>${project.baseUri}/license</licenseResolver>
+						<licenseResolver>classpath://caliente</licenseResolver>
 						<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
 						<canUpdateCopyright>true</canUpdateCopyright>
 						<includes>
 							<include>**/*.java</include>
 						</includes>
 					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>com.armedia.caliente</groupId>
+							<artifactId>license-headers</artifactId>
+							<version>1.0</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
