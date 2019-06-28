@@ -8,6 +8,7 @@
 	<version>0.9.3</version>
 	<description>A set of utility classes for use by OSGi modules</description>
 	<packaging>bundle</packaging>
+	<inceptionYear>2013</inceptionYear>
 
 	<licenses>
 		<license>
@@ -162,13 +163,6 @@
 							<include>**/*.java</include>
 						</includes>
 					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>com.armedia.caliente</groupId>
-							<artifactId>caliente-license-headers</artifactId>
-							<version>1.0</version>
-						</dependency>
-					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
