@@ -2,12 +2,20 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<name>OSGi Utilities</name>
+	<name>Armedia Commons Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>0.9.3</version>
-	<description>A set of utility classes for use by OSGi modules</description>
+	<version>1.0.0</version>
+	<description>A set of utility classes for general use</description>
 	<packaging>bundle</packaging>
+	<inceptionYear>2013</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+		</license>
+	</licenses>
 
 	<organization>
 		<name>Armedia</name>
@@ -155,6 +163,27 @@
 							</requireMavenVersion>
 						</rules>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.16</version>
+					<configuration>
+						<licenseName>caliente_license</licenseName>
+						<licenseResolver>classpath://caliente</licenseResolver>
+						<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+						<canUpdateCopyright>true</canUpdateCopyright>
+						<includes>
+							<include>**/*.java</include>
+						</includes>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>com.armedia.caliente</groupId>
+							<artifactId>license-headers</artifactId>
+							<version>1.0</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -314,6 +343,19 @@
 					</execution>
 				</executions>
 			</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>update-license</id>
+							<goals>
+								<goal>update-file-header</goal>
+							</goals>
+							<phase>process-sources</phase>
+						</execution>
+					</executions>
+				</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>

@@ -1,24 +1,36 @@
-/**
- * *******************************************************************
+/*******************************************************************************
+ * #%L
+ * Armedia Commons Utilities
+ * %%
+ * Copyright (C) 2013 - 2019 Armedia
+ * %%
+ * This file is part of the Caliente software.
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS.
- * REPRODUCTION OF ANY PORTION OF THE SOURCE CODE, CONTAINED HEREIN,
- * OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE,
- * IS STRICTLY PROHIBITED.
+ * If the software was purchased under a paid Caliente license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
  * 
- * Confidential Property of Armedia LLC.
- * (c) Copyright Armedia LLC 2011.
- * All Rights reserved.
+ * Caliente is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  * 
- * *******************************************************************
- */
+ * Caliente is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ *******************************************************************************/
 package com.armedia.commons.utilities;
 
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * @author drivera@armedia.com
- * 
+ *
+ *
  */
 public enum TestSetting implements ConfigurationSetting {
 	BOOLEAN_TRUE_UNDEF(true),
@@ -124,12 +136,12 @@ public enum TestSetting implements ConfigurationSetting {
 	BINARY_EMPTY(),
 	BINARY_UNDEF(
 		// Checksum = 3a8facc69441078c0214cab3477997debf35926b79a422f30f51817f2d3f7321
-		Base64
-			.decodeBase64("xy0dZm9C5zT/6ZCdq7ttZ2MHbHLpnqGIlWosnTmHD1v/k30tVc++fhtDdyY31k5tgPpfnDVzNgE4Au8eMvmjlr16e3hrFSuWhc7Bjb05vwodNHoIK0j9LHlO0vcp/WeptHpJlop3ThSYRnr3d/Hx1LkOE3gDpcyUmgeVTr97xkjH3tJgQhCEVzyPd593DHnBu8v0yC0QzJmI+H51Px2sLPlVsapDkztv1ORrwva2XFLhWHyI7C+294/DLHimdZD6qrpsktVXpolGkF09SZsnJvziuRgm/Zdq0gfVSVbjJy4ra8FN3iSegEWMGdg/GweyLyvOVqHFBjMTfg1IxltCzqF5xmQIDvox9CyuzAvYcsQk2/LCn6sciz93Wk5/xheiZIFZrtjx+A9aLfPqmMIDDsPJ4yXD0kgRtBBMzyEMkrTTswLOABmKI3JvMwtxH33vMeiqPTtvhts4gbo1xOUJMb6q0KYq6cs5f/vT5V2r8jHidJ+vc5ROYxi8Wb16js/lLW2AQzOO8Qi7KJZYGpFHB0oCXIuyUO8qvAPYDjX4RbT3Z5wX8bssVUglu/u4hr5i1eV6uR6AfnhueoXl8+duCpegQyNgIvuhUM2sfQYo/l7fIHu18kxKVPj2Tit1ruu1gUNKSNQUUliG0gdWi8xMcjaEIEwOPAihRgU5qDLS9kOd/UTNfdlS+TjtcS8zeT1QwedPD5M40hqmPtdnwv6ZUglcZSF2qlcu7WyimwmGfoyJXmXpK0c64yTL/2lKGsXQo5F12UIeZV82bRWY8FtWBZehM+5w50JLsbjb6kUh6T+Ly3xf8ge0OQdbw/Dp9EBxnhtuYUXeOpOwE0+QSFH15V1847gAGZTtRu2UpXG3vwF4Nn9PlY9HhUHg+redI3YMTs5Tgq/nauMrGmbkm33vDOVuGQ+7Amv0x5hX+jjNvR6oNYe5xEwr3mtRA5Tv9o0jcpkySDIygGbrjJRSIyH78EmgtE30WWIx2YT7qB61pD5nk1/UUHcyO6Z+3IB1Oc+n4ArdvXuGvDFpTT7eg1eKKZnPYg3NbOpAZRJYskZJaGAzCKf6DXDbkopASPZAm7yF/oNdYb3yw02dg4bGWrt6uwlnIYbEBcFVjfEqhEERRO92rhRwaw8fOjnWO3Ho33wv3dwkWdJ3gvAvK+xWHe0TSF2WkhlZZx//zzkDG+ZcXf1y7iPP+GeqZLUypLIrxB73sx6S7Evgj9KKHORDPSYr+S3zj/mgpDkCuhdldPr6rdz4F21DpwTcHOrA8he8r6gKYtUVqCBB2qaSZfUZGB+eo0p3ORyItURgLvYs8GnC9izVXv0tlDDLki0fkpFx7wfOHX4WbCcdIN+31RU6sRaj/Q==")),
+		Base64.decodeBase64(
+			"xy0dZm9C5zT/6ZCdq7ttZ2MHbHLpnqGIlWosnTmHD1v/k30tVc++fhtDdyY31k5tgPpfnDVzNgE4Au8eMvmjlr16e3hrFSuWhc7Bjb05vwodNHoIK0j9LHlO0vcp/WeptHpJlop3ThSYRnr3d/Hx1LkOE3gDpcyUmgeVTr97xkjH3tJgQhCEVzyPd593DHnBu8v0yC0QzJmI+H51Px2sLPlVsapDkztv1ORrwva2XFLhWHyI7C+294/DLHimdZD6qrpsktVXpolGkF09SZsnJvziuRgm/Zdq0gfVSVbjJy4ra8FN3iSegEWMGdg/GweyLyvOVqHFBjMTfg1IxltCzqF5xmQIDvox9CyuzAvYcsQk2/LCn6sciz93Wk5/xheiZIFZrtjx+A9aLfPqmMIDDsPJ4yXD0kgRtBBMzyEMkrTTswLOABmKI3JvMwtxH33vMeiqPTtvhts4gbo1xOUJMb6q0KYq6cs5f/vT5V2r8jHidJ+vc5ROYxi8Wb16js/lLW2AQzOO8Qi7KJZYGpFHB0oCXIuyUO8qvAPYDjX4RbT3Z5wX8bssVUglu/u4hr5i1eV6uR6AfnhueoXl8+duCpegQyNgIvuhUM2sfQYo/l7fIHu18kxKVPj2Tit1ruu1gUNKSNQUUliG0gdWi8xMcjaEIEwOPAihRgU5qDLS9kOd/UTNfdlS+TjtcS8zeT1QwedPD5M40hqmPtdnwv6ZUglcZSF2qlcu7WyimwmGfoyJXmXpK0c64yTL/2lKGsXQo5F12UIeZV82bRWY8FtWBZehM+5w50JLsbjb6kUh6T+Ly3xf8ge0OQdbw/Dp9EBxnhtuYUXeOpOwE0+QSFH15V1847gAGZTtRu2UpXG3vwF4Nn9PlY9HhUHg+redI3YMTs5Tgq/nauMrGmbkm33vDOVuGQ+7Amv0x5hX+jjNvR6oNYe5xEwr3mtRA5Tv9o0jcpkySDIygGbrjJRSIyH78EmgtE30WWIx2YT7qB61pD5nk1/UUHcyO6Z+3IB1Oc+n4ArdvXuGvDFpTT7eg1eKKZnPYg3NbOpAZRJYskZJaGAzCKf6DXDbkopASPZAm7yF/oNdYb3yw02dg4bGWrt6uwlnIYbEBcFVjfEqhEERRO92rhRwaw8fOjnWO3Ho33wv3dwkWdJ3gvAvK+xWHe0TSF2WkhlZZx//zzkDG+ZcXf1y7iPP+GeqZLUypLIrxB73sx6S7Evgj9KKHORDPSYr+S3zj/mgpDkCuhdldPr6rdz4F21DpwTcHOrA8he8r6gKYtUVqCBB2qaSZfUZGB+eo0p3ORyItURgLvYs8GnC9izVXv0tlDDLki0fkpFx7wfOHX4WbCcdIN+31RU6sRaj/Q==")),
 	BINARY_SAMPLE(
 		// Checksum = 9a49cb66ffa9a793f807ba8b69104d319e28a7bfc4fce501d6f074c63d556f99
-		Base64
-			.decodeBase64("Z3ay+B2Js47GLO3lBuSOhyButcqmy5Pv9bk1E/BpcZ9eRLS/rBN0qChaKX+MbZAYgilNtB2G41EZkSqUay1fier4EEmQ/3MDv+/1bQ2I4h1eAiURadhvoWeMiGx2xbRsdAzTJS07wa6xTc95VDtHSMMuBR0EzSPNezx2n3qm256G7Pb3wJAYwJX0TzFtlVkf+UGATrGGTyMSXaZFgOQGPDN0njnVfkGqGXyICtJazMBf2BRRWf2DwfhCDPh33yAXSSg+UHZ2a4eESWhhTMT+cdO5881B+zH7mvVDFweQNxgftNxCOSX+Y1hd4weewy3pqp8M/TuAlSAq/4SxOHIbjBXk9cdbbwsdDVa/OmIujXSPp4TXqaPOLWhrjgqhDUsJGKMVXni+a0dlmDcvzdNSew1pLc7zA3Z1Y4xVgZfJs89qE2YDJG3hEsV7djKlkpifEfu5hyfSGi+S0twsaVPdlPfGNOgUshufyccXr2Ld92NaiukScKToZt5yp0oozCM1Qc1ykGu1ZQS/NyDBzFAMiHK5UeayiE31MjeNt7Wo02EpU/3T/c5XJuihbYZ5rVbGdJ0Lq0YfiyrRX9bFcYBENoKrx6HnvcCMfsgEExkatK3OhDI6aHWgGqUyK7OMsimDBRY5IiK0LwjvI/4HF3QQGVB8XsHM1uBPk6vrtwUKZJUaFRJsk/J2ef+p9rvtDhpbhWmsG4q2h1B7f+RFNxvGXS+t1GXLScZrheeB1wYU3dAWTOPrKBWD9wwp/rN6V2Sw6coqBXHC2HK2xmVFEJAJVfEyneAZfDmfgusR464vLwO2vs3dwBuIY22EgTaZe3hfryvsH5NTHO/J0Xvf0jplx+C8D0TJVL4IHzz7C37kfRvE1XTpfN+725ToVRETkRHH+TQruMb1omGsaBA5AOuHv89jrXoC9pCsye8CLcCEOt2LDvs7Z1TzyGG55GYMPcfQQxg2sV0ARahsw2k+GaicIyW2QmOWoHmJQllcVyREABI9+rR0CItYzefh1EP67Ll/HzuIfFk7GudNOfjyKsdYdMXCc3DnRnzVyOkMzWcb4sF3oSABk3QO7OIKUtFDQ8L1PQmj0auu/MtVcetFlSgh6EZ917PZ/AlGDA8j+Y5B5ByzPj889/MVSISG2RdZw+Zi3y2Ycew3IY0BcnUEUlig0QIAOfYkKHhmgsIwCZzSlJqzffWSxA4NmnS4GTldskckPfopeU5cpudHECcVxS72SNnHSA/WhNJi6VLl+T/zqaLKofNsBigKf6xNwzQzZ17CsmKXpYLRijkaibe85QW5Mb0uIwbB9mFUDFmh4T7DE8QQ2TovkfRaByYGUpL9UlF2ViaJJxvO6zNrs99zUDUsDA=="));
+		Base64.decodeBase64(
+			"Z3ay+B2Js47GLO3lBuSOhyButcqmy5Pv9bk1E/BpcZ9eRLS/rBN0qChaKX+MbZAYgilNtB2G41EZkSqUay1fier4EEmQ/3MDv+/1bQ2I4h1eAiURadhvoWeMiGx2xbRsdAzTJS07wa6xTc95VDtHSMMuBR0EzSPNezx2n3qm256G7Pb3wJAYwJX0TzFtlVkf+UGATrGGTyMSXaZFgOQGPDN0njnVfkGqGXyICtJazMBf2BRRWf2DwfhCDPh33yAXSSg+UHZ2a4eESWhhTMT+cdO5881B+zH7mvVDFweQNxgftNxCOSX+Y1hd4weewy3pqp8M/TuAlSAq/4SxOHIbjBXk9cdbbwsdDVa/OmIujXSPp4TXqaPOLWhrjgqhDUsJGKMVXni+a0dlmDcvzdNSew1pLc7zA3Z1Y4xVgZfJs89qE2YDJG3hEsV7djKlkpifEfu5hyfSGi+S0twsaVPdlPfGNOgUshufyccXr2Ld92NaiukScKToZt5yp0oozCM1Qc1ykGu1ZQS/NyDBzFAMiHK5UeayiE31MjeNt7Wo02EpU/3T/c5XJuihbYZ5rVbGdJ0Lq0YfiyrRX9bFcYBENoKrx6HnvcCMfsgEExkatK3OhDI6aHWgGqUyK7OMsimDBRY5IiK0LwjvI/4HF3QQGVB8XsHM1uBPk6vrtwUKZJUaFRJsk/J2ef+p9rvtDhpbhWmsG4q2h1B7f+RFNxvGXS+t1GXLScZrheeB1wYU3dAWTOPrKBWD9wwp/rN6V2Sw6coqBXHC2HK2xmVFEJAJVfEyneAZfDmfgusR464vLwO2vs3dwBuIY22EgTaZe3hfryvsH5NTHO/J0Xvf0jplx+C8D0TJVL4IHzz7C37kfRvE1XTpfN+725ToVRETkRHH+TQruMb1omGsaBA5AOuHv89jrXoC9pCsye8CLcCEOt2LDvs7Z1TzyGG55GYMPcfQQxg2sV0ARahsw2k+GaicIyW2QmOWoHmJQllcVyREABI9+rR0CItYzefh1EP67Ll/HzuIfFk7GudNOfjyKsdYdMXCc3DnRnzVyOkMzWcb4sF3oSABk3QO7OIKUtFDQ8L1PQmj0auu/MtVcetFlSgh6EZ917PZ/AlGDA8j+Y5B5ByzPj889/MVSISG2RdZw+Zi3y2Ycew3IY0BcnUEUlig0QIAOfYkKHhmgsIwCZzSlJqzffWSxA4NmnS4GTldskckPfopeU5cpudHECcVxS72SNnHSA/WhNJi6VLl+T/zqaLKofNsBigKf6xNwzQzZ17CsmKXpYLRijkaibe85QW5Mb0uIwbB9mFUDFmh4T7DE8QQ2TovkfRaByYGUpL9UlF2ViaJJxvO6zNrs99zUDUsDA=="));
 
 	private final String label;
 	private final Object defaultValue;

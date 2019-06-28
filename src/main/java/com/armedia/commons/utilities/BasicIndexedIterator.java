@@ -1,22 +1,37 @@
-/**
- * *******************************************************************
+/*******************************************************************************
+ * #%L
+ * Armedia Commons Utilities
+ * %%
+ * Copyright (C) 2013 - 2019 Armedia
+ * %%
+ * This file is part of the Caliente software.
  * 
- * THIS SOFTWARE IS PROTECTED BY U.S. AND INTERNATIONAL COPYRIGHT LAWS. REPRODUCTION OF ANY PORTION
- * OF THE SOURCE CODE, CONTAINED HEREIN, OR ANY PORTION OF THE PRODUCT, EITHER IN PART OR WHOLE, IS
- * STRICTLY PROHIBITED.
+ * If the software was purchased under a paid Caliente license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
  * 
- * Confidential Property of Armedia LLC. (c) Copyright Armedia LLC 2011. All Rights reserved.
+ * Caliente is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  * 
- * *******************************************************************
- */
+ * Caliente is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ *******************************************************************************/
 package com.armedia.commons.utilities;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * @author drivera@armedia.com
- * 
+ *
+ *
  */
 public class BasicIndexedIterator<T> implements IndexedIterator<T> {
 
@@ -71,7 +86,9 @@ public class BasicIndexedIterator<T> implements IndexedIterator<T> {
 
 	@Override
 	public T current() {
-		if ((this.currentIndex < 0) && !this.removed) { throw new IllegalStateException("next() must be called first"); }
+		if ((this.currentIndex < 0) && !this.removed) {
+			throw new IllegalStateException("next() must be called first");
+		}
 		return this.currentElement;
 	}
 }
