@@ -18,7 +18,7 @@
 	</licenses>
 
 	<organization>
-		<name>Armedia</name>
+		<name>Armedia, LLC</name>
 		<url>http://www.armedia.com</url>
 	</organization>
 
@@ -169,7 +169,7 @@
 						<dependency>
 							<groupId>com.armedia.caliente</groupId>
 							<artifactId>license-headers</artifactId>
-							<version>1.0</version>
+							<version>1.0.1</version>
 						</dependency>
 					</dependencies>
 				</plugin>
