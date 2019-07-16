@@ -49,8 +49,13 @@ public final class LazyFormatter implements Supplier<String> {
 		return LazyFormatter.of(() -> String.format(format, args));
 	}
 
-	public static LazyFormatter of(Supplier<String> str) {
-		return new LazyFormatter(str);
+	public static LazyFormatter of(Object message) {
+		return LazyFormatter.of(String.valueOf(message));
+	}
+
+	public static LazyFormatter of(Supplier<?> message) {
+		Objects.requireNonNull(message, "Must provide a message supplier");
+		return new LazyFormatter(() -> String.valueOf(message.get()));
 	}
 
 	@Override
