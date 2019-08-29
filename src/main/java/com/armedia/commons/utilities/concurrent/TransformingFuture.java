@@ -10,6 +10,22 @@ import java.util.function.Function;
 import com.armedia.commons.utilities.function.CheckedFunction;
 import com.armedia.commons.utilities.function.CheckedTools;
 
+/**
+ * <p>
+ * This class is a simple wrapper for {@link Future} that allows the use of a
+ * {@link CheckedFunction} to transform the Future's return value into a new value. All it does is
+ * forward all method calls to the underlying future implementation, except for the get() methods:
+ * those are replaced by implementations that {@link CheckedFunction#applyChecked(Object) transform}
+ * the return value using the supplied function.
+ * </p>
+ *
+ * @author diego.rivera@armedia.com
+ *
+ * @param <F>
+ *            The object type the original future returns
+ * @param <T>
+ *            The new object type to transform the return value into
+ */
 public class TransformingFuture<F, T> implements Future<T> {
 
 	private final Future<F> future;
