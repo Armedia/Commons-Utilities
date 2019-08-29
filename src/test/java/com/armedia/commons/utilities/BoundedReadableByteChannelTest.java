@@ -1,5 +1,8 @@
 package com.armedia.commons.utilities;
 
+import java.io.ByteArrayInputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import org.easymock.EasyMock;
@@ -31,18 +34,139 @@ public class BoundedReadableByteChannelTest {
 	}
 
 	@Test
-	public void testIsOpen() {
-		Assertions.fail("Not yet implemented");
+	public void testGetChannel() throws Exception {
+		ReadableByteChannel c = EasyMock.createStrictMock(ReadableByteChannel.class);
+		EasyMock.reset(c);
+		c.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(c);
+		try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, 100)) {
+			Assertions.assertSame(c, brbc.getChannel());
+		}
+		EasyMock.verify(c);
 	}
 
 	@Test
-	public void testRead() {
-		Assertions.fail("Not yet implemented");
+	public void testGetLimit() throws Exception {
+		ReadableByteChannel c = EasyMock.createStrictMock(ReadableByteChannel.class);
+		for (long i = 0; i < 1000; i++) {
+			EasyMock.reset(c);
+			c.close();
+			EasyMock.expectLastCall().once();
+			EasyMock.replay(c);
+			try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, i)) {
+				if (i < 0) {
+					Assertions.assertEquals(0, brbc.getLimit());
+				} else {
+					Assertions.assertEquals(i, brbc.getLimit());
+				}
+			}
+			EasyMock.verify(c);
+		}
 	}
 
 	@Test
-	public void testClose() {
-		Assertions.fail("Not yet implemented");
+	public void testGetRemaining() throws Exception {
+		byte[] data = new byte[256];
+		for (int i = 0; i < data.length; i++) {
+			data[i] = (byte) i;
+		}
+
+		ByteBuffer buf = ByteBuffer.allocate(1);
+		try (ReadableByteChannel c = Channels.newChannel(new ByteArrayInputStream(data))) {
+			try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, data.length)) {
+				long remaining = data.length;
+				while (true) {
+					buf.clear();
+					Assertions.assertEquals(remaining, brbc.getRemaining());
+					int r = brbc.read(buf);
+					if (r < 0) {
+						break;
+					}
+					remaining -= r;
+					Assertions.assertEquals(remaining, brbc.getRemaining());
+				}
+			}
+		}
+	}
+
+	@Test
+	public void testIsOpen() throws Exception {
+		ReadableByteChannel c = EasyMock.createStrictMock(ReadableByteChannel.class);
+		EasyMock.reset(c);
+		EasyMock.expect(c.isOpen()).andReturn(true).once();
+		c.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(c);
+		try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, 100)) {
+			Assertions.assertTrue(brbc.isOpen());
+		}
+		EasyMock.verify(c);
+
+		EasyMock.reset(c);
+		EasyMock.expect(c.isOpen()).andReturn(false).once();
+		c.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(c);
+		try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, 100)) {
+			Assertions.assertFalse(brbc.isOpen());
+		}
+		EasyMock.verify(c);
+	}
+
+	@Test
+	public void testRead() throws Exception {
+		byte[] data = new byte[256];
+		for (int i = 0; i < data.length; i++) {
+			data[i] = (byte) i;
+		}
+
+		ByteBuffer buf = ByteBuffer.allocate(64);
+		try (ReadableByteChannel c = Channels.newChannel(new ByteArrayInputStream(data))) {
+			try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, 100)) {
+				buf.clear();
+				buf.limit(0);
+				Assertions.assertEquals(0, brbc.read(buf));
+			}
+		}
+
+		for (long limit = 0; limit < data.length; limit++) {
+			try (ReadableByteChannel c = Channels.newChannel(new ByteArrayInputStream(data))) {
+				try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, limit)) {
+					System.out.printf("Testing with limit = %d%n", limit);
+					long totalRead = 0;
+					int pos = 0;
+					while (true) {
+						buf.clear();
+						int r = brbc.read(buf);
+						if (r < 0) {
+							break;
+						}
+						totalRead += r;
+						// Ensure the bytes read were the correct bytes
+						buf.flip();
+						for (int i = 0; i < r; i++) {
+							Assertions.assertEquals(data[pos], buf.get(),
+								String.format("Mismatch at position %d (limit = %d)", pos, limit));
+							pos++;
+						}
+					}
+					Assertions.assertEquals(totalRead, limit);
+				}
+			}
+		}
+	}
+
+	@Test
+	public void testClose() throws Exception {
+		ReadableByteChannel c = EasyMock.createStrictMock(ReadableByteChannel.class);
+		EasyMock.reset(c);
+		c.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(c);
+		try (BoundedReadableByteChannel brbc = new BoundedReadableByteChannel(c, 100)) {
+		}
+		EasyMock.verify(c);
 	}
 
 }

@@ -126,6 +126,7 @@ public class BoundedReadableByteChannel implements ReadableByteChannel {
 		}
 
 		int read = this.channel.read(tgt);
+		this.remaining -= read;
 		if (tgt != dst) {
 			dst.position(dst.position() + tgt.position());
 		}
