@@ -39,7 +39,7 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git@github.com:Armedia/Commons-Utilities.git</connection>
+		<connection>scm:git:git@github.com:Armedia/Commons-Utilities.git</connection>
 	</scm>
 
 	<properties>
