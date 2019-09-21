@@ -86,7 +86,11 @@ public class XmlTools {
 					}
 				}
 			}
-			this.classes = m.values().toArray(ArrayUtils.EMPTY_CLASS_ARRAY);
+			if (m.isEmpty()) {
+				this.classes = ArrayUtils.EMPTY_CLASS_ARRAY;
+			} else {
+				this.classes = m.values().toArray(ArrayUtils.EMPTY_CLASS_ARRAY);
+			}
 		}
 
 		@Override
@@ -139,35 +143,6 @@ public class XmlTools {
 	}
 
 	/**
-	 * Loads a {@link Schema} instance from the given URL Classpath resource name rules apply (i.e.
-	 * package names, etc).
-	 *
-	 * @param schemaUrl
-	 * @return the loaded {@link Schema} instance
-	 * @throws JAXBException
-	 */
-	public static Schema loadSchema(URL schemaUrl) throws JAXBException {
-		Objects.requireNonNull(schemaUrl, "Must provide a non-null Schema URL");
-		// Now, load up the schema that will be used for validation
-		Schema schema = null;
-		if (schemaUrl != null) {
-			try {
-				ConcurrentInitializer<Schema> initializer = () -> {
-					try {
-						return XmlTools.SCHEMA_FACTORY.get().newSchema(schemaUrl);
-					} catch (SAXException e) {
-						throw new ConcurrentException(e);
-					}
-				};
-				schema = ConcurrentUtils.createIfAbsent(XmlTools.SCHEMATA, schemaUrl, initializer);
-			} catch (ConcurrentException e) {
-				throw new JAXBException(String.format("Failed to load the schema from [%s]", schemaUrl), e.getCause());
-			}
-		}
-		return schema;
-	}
-
-	/**
 	 * Loads a {@link Schema} instance from the classpath resource name {@code schemaName}.
 	 * Classpath resource name rules apply (i.e. package names, etc).
 	 *
@@ -202,6 +177,35 @@ public class XmlTools {
 			throw new JAXBException(String.format("Failed to load the schema from '%s'", schemaName));
 		}
 		return XmlTools.loadSchema(schemaUrl);
+	}
+
+	/**
+	 * Loads a {@link Schema} instance from the given URL Classpath resource name rules apply (i.e.
+	 * package names, etc).
+	 *
+	 * @param schemaUrl
+	 * @return the loaded {@link Schema} instance
+	 * @throws JAXBException
+	 */
+	public static Schema loadSchema(URL schemaUrl) throws JAXBException {
+		Objects.requireNonNull(schemaUrl, "Must provide a non-null Schema URL");
+		// Now, load up the schema that will be used for validation
+		Schema schema = null;
+		if (schemaUrl != null) {
+			try {
+				ConcurrentInitializer<Schema> initializer = () -> {
+					try {
+						return XmlTools.SCHEMA_FACTORY.get().newSchema(schemaUrl);
+					} catch (SAXException e) {
+						throw new ConcurrentException(e);
+					}
+				};
+				schema = ConcurrentUtils.createIfAbsent(XmlTools.SCHEMATA, schemaUrl, initializer);
+			} catch (ConcurrentException e) {
+				throw new JAXBException(String.format("Failed to load the schema from [%s]", schemaUrl), e.getCause());
+			}
+		}
+		return schema;
 	}
 
 	/**

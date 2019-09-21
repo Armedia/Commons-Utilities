@@ -5,7 +5,7 @@
 	<name>Armedia Commons Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<description>A set of utility classes for general use</description>
 	<packaging>bundle</packaging>
 	<inceptionYear>2013</inceptionYear>
@@ -39,7 +39,7 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git@github.com:Armedia/Commons-Utilities.git</connection>
+		<connection>scm:git:git@github.com:Armedia/Commons-Utilities.git</connection>
 	</scm>
 
 	<properties>
@@ -125,8 +125,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.4.0</version>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.5.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
