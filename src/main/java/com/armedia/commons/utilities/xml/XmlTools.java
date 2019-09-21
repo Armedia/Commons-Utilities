@@ -86,7 +86,11 @@ public class XmlTools {
 					}
 				}
 			}
-			this.classes = m.values().toArray(ArrayUtils.EMPTY_CLASS_ARRAY);
+			if (m.isEmpty()) {
+				this.classes = ArrayUtils.EMPTY_CLASS_ARRAY;
+			} else {
+				this.classes = m.values().toArray(ArrayUtils.EMPTY_CLASS_ARRAY);
+			}
 		}
 
 		@Override
