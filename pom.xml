@@ -5,7 +5,7 @@
 	<name>Armedia Commons Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<description>A set of utility classes for general use</description>
 	<packaging>bundle</packaging>
 	<inceptionYear>2013</inceptionYear>
@@ -39,7 +39,7 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git@gitlab.armedia.com:commons/utilities.git</connection>
+		<connection>scm:git@github.com:Armedia/Commons-Utilities.git</connection>
 	</scm>
 
 	<properties>

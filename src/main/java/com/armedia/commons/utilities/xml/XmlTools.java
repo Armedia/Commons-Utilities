@@ -32,6 +32,11 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -45,8 +50,15 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.xml.sax.SAXException;
+
+import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.function.LazySupplier;
 
 /**
  * This class provides some utility methods for JAXB bindings to facilitate the loading and storing
@@ -61,6 +73,41 @@ public class XmlTools {
 
 	private static final Class<?>[] NO_CLASSES = {};
 
+	private static class JAXBContextConfig {
+		protected final Class<?>[] classes;
+
+		public JAXBContextConfig(Class<?>... classes) {
+			// Sort the classes by name, alphabetically
+			TreeMap<String, Class<?>> m = new TreeMap<>();
+			if (classes != null) {
+				for (Class<?> c : classes) {
+					if (c != null) {
+						m.put(c.getCanonicalName(), c);
+					}
+				}
+			}
+			this.classes = m.values().toArray(ArrayUtils.EMPTY_CLASS_ARRAY);
+		}
+
+		@Override
+		public int hashCode() {
+			return Tools.hashTool(this, null, Arrays.hashCode(this.classes));
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (!Tools.baseEquals(this, obj)) { return false; }
+			JAXBContextConfig other = JAXBContextConfig.class.cast(obj);
+			if (!Arrays.equals(this.classes, other.classes)) { return false; }
+			return true;
+		}
+	}
+
+	private static final LazySupplier<SchemaFactory> SCHEMA_FACTORY = new LazySupplier<>(
+		() -> SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI));
+	private static final ConcurrentMap<URL, Schema> SCHEMATA = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<JAXBContextConfig, JAXBContext> JAXB_CONTEXTS = new ConcurrentHashMap<>();
+
 	// private static final Logger LOG = Logger.getLogger(XmlTools.class);
 
 	/**
@@ -73,7 +120,51 @@ public class XmlTools {
 	 * @throws JAXBException
 	 */
 	public static JAXBContext getContext(Class<?>... targetClasses) throws JAXBException {
-		return JAXBContext.newInstance(targetClasses);
+		final JAXBContextConfig cfg = new JAXBContextConfig(targetClasses);
+		ConcurrentInitializer<JAXBContext> initializer = () -> {
+			try {
+				return JAXBContext.newInstance(cfg.classes);
+			} catch (JAXBException e) {
+				throw new ConcurrentException(e);
+			}
+		};
+		try {
+			return ConcurrentUtils.createIfAbsent(XmlTools.JAXB_CONTEXTS, cfg, initializer);
+		} catch (ConcurrentException e) {
+			if (JAXBException.class.isInstance(e.getCause())) { throw JAXBException.class.cast(e.getCause()); }
+			throw new RuntimeException(
+				String.format("Failed to obtain a JAXBContext for the class array %s", Arrays.toString(cfg.classes)),
+				e.getCause());
+		}
+	}
+
+	/**
+	 * Loads a {@link Schema} instance from the given URL Classpath resource name rules apply (i.e.
+	 * package names, etc).
+	 *
+	 * @param schemaUrl
+	 * @return the loaded {@link Schema} instance
+	 * @throws JAXBException
+	 */
+	public static Schema loadSchema(URL schemaUrl) throws JAXBException {
+		Objects.requireNonNull(schemaUrl, "Must provide a non-null Schema URL");
+		// Now, load up the schema that will be used for validation
+		Schema schema = null;
+		if (schemaUrl != null) {
+			try {
+				ConcurrentInitializer<Schema> initializer = () -> {
+					try {
+						return XmlTools.SCHEMA_FACTORY.get().newSchema(schemaUrl);
+					} catch (SAXException e) {
+						throw new ConcurrentException(e);
+					}
+				};
+				schema = ConcurrentUtils.createIfAbsent(XmlTools.SCHEMATA, schemaUrl, initializer);
+			} catch (ConcurrentException e) {
+				throw new JAXBException(String.format("Failed to load the schema from [%s]", schemaUrl), e.getCause());
+			}
+		}
+		return schema;
 	}
 
 	/**
@@ -85,26 +176,32 @@ public class XmlTools {
 	 * @throws JAXBException
 	 */
 	public static Schema loadSchema(String schemaName) throws JAXBException {
+		return XmlTools.loadSchema(null, schemaName);
+	}
+
+	/**
+	 * Loads a {@link Schema} instance from the classpath resource name {@code schemaName}.
+	 * Classpath resource name rules apply (i.e. package names, etc).
+	 *
+	 * @param schemaName
+	 * @return the loaded {@link Schema} instance
+	 * @throws JAXBException
+	 */
+	public static Schema loadSchema(ClassLoader cl, String schemaName) throws JAXBException {
 		// Now, load up the schema that will be used for validation
-		final Schema schema;
-		if (schemaName != null) {
-			/*
-			XmlTools.LOG.debug("Loading schema [{}]", schemaName);
-			*/
-			final URL schemaUrl = Thread.currentThread().getContextClassLoader().getResource(schemaName);
-			if (schemaUrl == null) {
-				throw new JAXBException(String.format("Failed to load the schema from '%s'", schemaName));
-			}
-			try {
-				SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-				schema = sf.newSchema(schemaUrl);
-			} catch (SAXException e) {
-				throw new JAXBException(String.format("Failed to load the schema '%s'", schemaName), e);
-			}
-		} else {
-			schema = null;
+		if (schemaName == null) { return null; }
+
+		/*
+		XmlTools.LOG.debug("Loading schema [{}]", schemaName);
+		*/
+		if (cl == null) {
+			cl = Thread.currentThread().getContextClassLoader();
 		}
-		return schema;
+		final URL schemaUrl = cl.getResource(schemaName);
+		if (schemaUrl == null) {
+			throw new JAXBException(String.format("Failed to load the schema from '%s'", schemaName));
+		}
+		return XmlTools.loadSchema(schemaUrl);
 	}
 
 	/**
