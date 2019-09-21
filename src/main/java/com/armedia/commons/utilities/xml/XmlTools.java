@@ -55,12 +55,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
 import org.apache.commons.lang3.concurrent.ConcurrentUtils;
-import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
-import org.apache.commons.pool2.KeyedObjectPool;
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.xml.sax.SAXException;
 
 import com.armedia.commons.utilities.Tools;
@@ -109,76 +103,10 @@ public class XmlTools {
 		}
 	}
 
-	private static class MarshallerConfig extends JAXBContextConfig {
-		protected final ClassLoader cl;
-		protected final URL schemaUrl;
-		protected final Schema schema;
-
-		public MarshallerConfig(String schemaName, Class<?>... classes) throws JAXBException {
-			this(null, schemaName, classes);
-		}
-
-		public MarshallerConfig(ClassLoader cl, String schemaName, Class<?>... classes) throws JAXBException {
-			super(classes);
-			this.cl = Tools.coalesce(cl, Thread.currentThread().getContextClassLoader());
-			if (schemaName != null) {
-				this.schemaUrl = this.cl.getResource(schemaName);
-				if (this.schemaUrl != null) {
-					this.schema = XmlTools.loadSchema(this.schemaUrl);
-				} else {
-					this.schema = null;
-				}
-			} else {
-				this.schemaUrl = null;
-				this.schema = null;
-			}
-		}
-
-		@Override
-		public int hashCode() {
-			return Tools.hashTool(this, super.hashCode(), this.schemaUrl);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!Tools.baseEquals(this, obj)) { return false; }
-			MarshallerConfig other = MarshallerConfig.class.cast(obj);
-			if (this.cl != other.cl) { return false; }
-			if (!Tools.equals(this.schemaUrl, other.schemaUrl)) { return false; }
-			return true;
-		}
-	}
-
-	private static class PooledMarshallerFactory extends BaseKeyedPooledObjectFactory<MarshallerConfig, Marshaller> {
-		@Override
-		public PooledObject<Marshaller> wrap(Marshaller marshaller) {
-			return new DefaultPooledObject<>(marshaller);
-		}
-
-		@Override
-		public Marshaller create(MarshallerConfig config) throws Exception {
-			Marshaller m = XmlTools.getContext(config.classes).createMarshaller();
-			if (config.schema != null) {
-				m.setSchema(config.schema);
-			}
-			m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			return m;
-		}
-	}
-
 	private static final LazySupplier<SchemaFactory> SCHEMA_FACTORY = new LazySupplier<>(
 		() -> SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI));
 	private static final ConcurrentMap<URL, Schema> SCHEMATA = new ConcurrentHashMap<>();
 	private static final ConcurrentMap<JAXBContextConfig, JAXBContext> JAXB_CONTEXTS = new ConcurrentHashMap<>();
-	private static final KeyedObjectPool<MarshallerConfig, Marshaller> MARSHALLERS;
-
-	static {
-		GenericObjectPoolConfig<MarshallerConfig> marshallerConfig = new GenericObjectPoolConfig<>();
-		marshallerConfig.setMinIdle(0);
-		marshallerConfig.setBlockWhenExhausted(false);
-		MARSHALLERS = new GenericKeyedObjectPool<>(new PooledMarshallerFactory());
-	}
 
 	// private static final Logger LOG = Logger.getLogger(XmlTools.class);
 
