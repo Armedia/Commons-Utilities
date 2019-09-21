@@ -57,7 +57,6 @@ public class XmlToolsTest {
 		Assertions.assertSame(XmlTools.getContext(), XmlTools.getContext());
 		Assertions.assertSame(XmlTools.getContext(), XmlTools.getContext(origClasses));
 		Assertions.assertSame(XmlTools.getContext(), XmlTools.getContext((Class<?>) null));
-
 	}
 
 	@Test
