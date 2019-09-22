@@ -122,8 +122,8 @@ public class XmlTools {
 	 * @throws JAXBException
 	 */
 	public static JAXBContext getContext(Class<?>... targetClasses) throws JAXBException {
-		final JAXBContextConfig cfg = new JAXBContextConfig(targetClasses);
-		return ConcurrentTools.createIfAbsent(XmlTools.JAXB_CONTEXTS, cfg, (c) -> JAXBContext.newInstance(c.classes));
+		return ConcurrentTools.createIfAbsent(XmlTools.JAXB_CONTEXTS, new JAXBContextConfig(targetClasses),
+			(c) -> JAXBContext.newInstance(c.classes));
 	}
 
 	/**
