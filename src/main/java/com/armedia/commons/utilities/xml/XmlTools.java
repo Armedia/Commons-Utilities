@@ -52,12 +52,10 @@ import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.concurrent.ConcurrentException;
-import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
-import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.xml.sax.SAXException;
 
 import com.armedia.commons.utilities.Tools;
+import com.armedia.commons.utilities.concurrent.ConcurrentTools;
 import com.armedia.commons.utilities.function.LazySupplier;
 
 /**
@@ -125,21 +123,7 @@ public class XmlTools {
 	 */
 	public static JAXBContext getContext(Class<?>... targetClasses) throws JAXBException {
 		final JAXBContextConfig cfg = new JAXBContextConfig(targetClasses);
-		ConcurrentInitializer<JAXBContext> initializer = () -> {
-			try {
-				return JAXBContext.newInstance(cfg.classes);
-			} catch (JAXBException e) {
-				throw new ConcurrentException(e);
-			}
-		};
-		try {
-			return ConcurrentUtils.createIfAbsent(XmlTools.JAXB_CONTEXTS, cfg, initializer);
-		} catch (ConcurrentException e) {
-			if (JAXBException.class.isInstance(e.getCause())) { throw JAXBException.class.cast(e.getCause()); }
-			throw new RuntimeException(
-				String.format("Failed to obtain a JAXBContext for the class array %s", Arrays.toString(cfg.classes)),
-				e.getCause());
-		}
+		return ConcurrentTools.createIfAbsent(XmlTools.JAXB_CONTEXTS, cfg, (c) -> JAXBContext.newInstance(c.classes));
 	}
 
 	/**
@@ -193,15 +177,9 @@ public class XmlTools {
 		Schema schema = null;
 		if (schemaUrl != null) {
 			try {
-				ConcurrentInitializer<Schema> initializer = () -> {
-					try {
-						return XmlTools.SCHEMA_FACTORY.get().newSchema(schemaUrl);
-					} catch (SAXException e) {
-						throw new ConcurrentException(e);
-					}
-				};
-				schema = ConcurrentUtils.createIfAbsent(XmlTools.SCHEMATA, schemaUrl, initializer);
-			} catch (ConcurrentException e) {
+				schema = ConcurrentTools.createIfAbsent(XmlTools.SCHEMATA, schemaUrl,
+					XmlTools.SCHEMA_FACTORY.get()::newSchema);
+			} catch (SAXException e) {
 				throw new JAXBException(String.format("Failed to load the schema from [%s]", schemaUrl), e.getCause());
 			}
 		}

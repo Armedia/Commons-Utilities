@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.concurrent.ConcurrentUtils;
+import com.armedia.commons.utilities.concurrent.ConcurrentTools;
 
 /**
  *
@@ -110,7 +110,11 @@ public final class LockDispenser<K, C> {
 			"Must provide a non-null ReferenceBuilder instance");
 	}
 
+	private LockBox newBox(final K key) {
+		return new LockBox(key);
+	}
+
 	public C getLock(final K key) {
-		return ConcurrentUtils.createIfAbsentUnchecked(this.locks, key, () -> new LockBox(key)).get();
+		return ConcurrentTools.createIfAbsent(this.locks, key, this::newBox).get();
 	}
 }
