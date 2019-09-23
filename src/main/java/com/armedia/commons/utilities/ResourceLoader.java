@@ -76,6 +76,10 @@ public class ResourceLoader {
 	}
 
 	public static URL getResource(URI uri) throws ResourceLoaderException {
+		return ResourceLoader.getResource(null, uri);
+	}
+
+	public static URL getResource(ClassLoader cl, URI uri) throws ResourceLoaderException {
 		if (uri == null) { return null; }
 
 		URI source = uri;
@@ -105,27 +109,47 @@ public class ResourceLoader {
 
 		// Eliminate all leading slashes
 		resource = resource.replaceAll("^/+", "");
-		return Thread.currentThread().getContextClassLoader().getResource(resource);
+		if (cl == null) {
+			cl = Thread.currentThread().getContextClassLoader();
+		}
+		return cl.getResource(resource);
 	}
 
 	public static URL getResource(String uriStr) throws ResourceLoaderException {
+		return ResourceLoader.getResource(null, uriStr);
+	}
+
+	public static URL getResource(ClassLoader cl, String uriStr) throws ResourceLoaderException {
 		if (StringUtils.isEmpty(uriStr)) { return null; }
 		try {
-			return ResourceLoader.getResource(new URI(uriStr));
+			return ResourceLoader.getResource(cl, new URI(uriStr));
 		} catch (URISyntaxException e) {
 			throw new ResourceLoaderException(String.format("The given URI [%s] is not in valid syntax", uriStr), e);
 		}
 	}
 
 	public static InputStream getResourceAsStream(URI uri) throws ResourceLoaderException, IOException {
-		return ResourceLoader.getResource(uri).openStream();
+		return ResourceLoader.getResourceAsStream(null, uri);
+	}
+
+	public static InputStream getResourceAsStream(ClassLoader cl, URI uri) throws ResourceLoaderException, IOException {
+		return ResourceLoader.getResource(cl, uri).openStream();
 	}
 
 	public static URL getResourceOrFile(String uriOrPath) throws ResourceLoaderException {
-		return ResourceLoader.getResourceOrFile(uriOrPath, null);
+		return ResourceLoader.getResourceOrFile(null, uriOrPath, null);
+	}
+
+	public static URL getResourceOrFile(ClassLoader cl, String uriOrPath) throws ResourceLoaderException {
+		return ResourceLoader.getResourceOrFile(cl, uriOrPath, null);
 	}
 
 	public static URL getResourceOrFile(String uriOrPath, String relativeTo) throws ResourceLoaderException {
+		return ResourceLoader.getResourceOrFile(null, uriOrPath, relativeTo);
+	}
+
+	public static URL getResourceOrFile(ClassLoader cl, String uriOrPath, String relativeTo)
+		throws ResourceLoaderException {
 		// First: is it a file? If it's a file, let's use that first
 		try {
 			Path b = null;
@@ -173,7 +197,7 @@ public class ResourceLoader {
 				sourceUri = new URI(uriOrPath);
 			}
 
-			URL resource = ResourceLoader.getResource(sourceUri);
+			URL resource = ResourceLoader.getResource(cl, sourceUri);
 			if (resource == null) { return null; }
 			if (StringUtils.equals("file", resource.getProtocol())) {
 				// Local file... treat it as such...
@@ -189,12 +213,22 @@ public class ResourceLoader {
 	}
 
 	public static InputStream getResourceOrFileAsStream(String uriOrPath) throws ResourceLoaderException, IOException {
-		return ResourceLoader.getResourceOrFileAsStream(uriOrPath, null);
+		return ResourceLoader.getResourceOrFileAsStream(null, uriOrPath, null);
+	}
+
+	public static InputStream getResourceOrFileAsStream(ClassLoader cl, String uriOrPath)
+		throws ResourceLoaderException, IOException {
+		return ResourceLoader.getResourceOrFileAsStream(cl, uriOrPath, null);
 	}
 
 	public static InputStream getResourceOrFileAsStream(String uriOrPath, String relativeTo)
 		throws ResourceLoaderException, IOException {
-		URL url = ResourceLoader.getResourceOrFile(uriOrPath, relativeTo);
+		return ResourceLoader.getResourceOrFileAsStream(null, uriOrPath, relativeTo);
+	}
+
+	public static InputStream getResourceOrFileAsStream(ClassLoader cl, String uriOrPath, String relativeTo)
+		throws ResourceLoaderException, IOException {
+		URL url = ResourceLoader.getResourceOrFile(cl, uriOrPath, relativeTo);
 		return (url != null ? url.openStream() : null);
 	}
 }
