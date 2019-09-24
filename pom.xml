@@ -5,7 +5,7 @@
 	<name>Armedia Commons Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>1.0.5</version>
+	<version>1.0.6</version>
 	<description>A set of utility classes for general use</description>
 	<packaging>bundle</packaging>
 	<inceptionYear>2013</inceptionYear>
