@@ -33,6 +33,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;
@@ -75,6 +76,10 @@ public class ResourceLoader {
 	}
 
 	public static URL getResource(URI uri) throws ResourceLoaderException {
+		return ResourceLoader.getResource(null, uri);
+	}
+
+	public static URL getResource(ClassLoader cl, URI uri) throws ResourceLoaderException {
 		if (uri == null) { return null; }
 
 		URI source = uri;
@@ -104,27 +109,71 @@ public class ResourceLoader {
 
 		// Eliminate all leading slashes
 		resource = resource.replaceAll("^/+", "");
-		return Thread.currentThread().getContextClassLoader().getResource(resource);
+		if (cl == null) {
+			cl = Thread.currentThread().getContextClassLoader();
+		}
+		return cl.getResource(resource);
 	}
 
 	public static URL getResource(String uriStr) throws ResourceLoaderException {
+		return ResourceLoader.getResource(null, uriStr);
+	}
+
+	public static URL getResource(ClassLoader cl, String uriStr) throws ResourceLoaderException {
 		if (StringUtils.isEmpty(uriStr)) { return null; }
 		try {
-			return ResourceLoader.getResource(new URI(uriStr));
+			return ResourceLoader.getResource(cl, new URI(uriStr));
 		} catch (URISyntaxException e) {
 			throw new ResourceLoaderException(String.format("The given URI [%s] is not in valid syntax", uriStr), e);
 		}
 	}
 
 	public static InputStream getResourceAsStream(URI uri) throws ResourceLoaderException, IOException {
-		return ResourceLoader.getResource(uri).openStream();
+		return ResourceLoader.getResourceAsStream(null, uri);
+	}
+
+	public static InputStream getResourceAsStream(ClassLoader cl, URI uri) throws ResourceLoaderException, IOException {
+		return ResourceLoader.getResource(cl, uri).openStream();
 	}
 
 	public static URL getResourceOrFile(String uriOrPath) throws ResourceLoaderException {
-		return ResourceLoader.getResourceOrFile(uriOrPath, null);
+		return ResourceLoader.getResourceOrFile(null, uriOrPath, null);
+	}
+
+	public static URL getResourceOrFile(ClassLoader cl, String uriOrPath) throws ResourceLoaderException {
+		return ResourceLoader.getResourceOrFile(cl, uriOrPath, null);
 	}
 
 	public static URL getResourceOrFile(String uriOrPath, String relativeTo) throws ResourceLoaderException {
+		return ResourceLoader.getResourceOrFile(null, uriOrPath, relativeTo);
+	}
+
+	public static URL getResourceOrFile(ClassLoader cl, String uriOrPath, String relativeTo)
+		throws ResourceLoaderException {
+		// First: is it a file? If it's a file, let's use that first
+		try {
+			Path b = null;
+			if (!StringUtils.isEmpty(relativeTo)) {
+				b = Paths.get(relativeTo);
+			}
+			Path p = null;
+			if (b != null) {
+				p = b.resolve(uriOrPath);
+			} else {
+				p = Paths.get(uriOrPath);
+			}
+
+			try {
+				p = p.toRealPath();
+			} catch (IOException e) {
+				throw new ResourceLoaderException(String.format("Failed to convert the path [%s] to its real path", p),
+					e);
+			}
+			if (Files.isRegularFile(p)) { return p.toUri().toURL(); }
+		} catch (Exception e) {
+			// If there was an exception, then it's not a regular file...
+		}
+
 		URI baseUri = null;
 		if (!StringUtils.isEmpty(relativeTo)) {
 			try {
@@ -148,54 +197,38 @@ public class ResourceLoader {
 				sourceUri = new URI(uriOrPath);
 			}
 
-			try {
-				URL resource = ResourceLoader.getResource(sourceUri);
-				if (resource != null) {
-					if (StringUtils.equals("file", resource.getProtocol())) {
-						// Local file... treat it as such...
-						return new File(resource.getPath()).toURI().toURL();
-					} else {
-						// Not a local file, use the URI
-						return resource;
-					}
-				}
-			} catch (MalformedURLException | ResourceLoaderException e) {
-				// Not a valid resource syntax... must be a path!
+			URL resource = ResourceLoader.getResource(cl, sourceUri);
+			if (resource == null) { return null; }
+			if (StringUtils.equals("file", resource.getProtocol())) {
+				// Local file... treat it as such...
+				return new File(resource.getPath()).toURI().toURL();
 			}
-		} catch (URISyntaxException e) {
-			// Not a URI... must be a path
-		}
-
-		// It's a local file... if the current source is another local file,
-		// and the given path isn't absolute, take its path to be relative to that one
-		try {
-			Path b = null;
-			if (!StringUtils.isEmpty(relativeTo)) {
-				b = Paths.get(relativeTo);
-			}
-			Path p = null;
-			if (b != null) {
-				p = b.resolve(uriOrPath);
-			} else {
-				p = Paths.get(uriOrPath);
-			}
-			File f = p.toAbsolutePath().normalize().toFile();
-			if (!f.exists() || !f.isFile()) { return null; }
-			return f.toURI().toURL();
+			// Not a local file, use the URI
+			return resource;
 		} catch (Exception e) {
-			// Not a URI nor a path!! KABOOM!
+			// Not a URI either...
 			throw new ResourceLoaderException(
 				String.format("The string [%s] is neither a valid path nor a valid URI", uriOrPath), e);
 		}
 	}
 
 	public static InputStream getResourceOrFileAsStream(String uriOrPath) throws ResourceLoaderException, IOException {
-		return ResourceLoader.getResourceOrFileAsStream(uriOrPath, null);
+		return ResourceLoader.getResourceOrFileAsStream(null, uriOrPath, null);
+	}
+
+	public static InputStream getResourceOrFileAsStream(ClassLoader cl, String uriOrPath)
+		throws ResourceLoaderException, IOException {
+		return ResourceLoader.getResourceOrFileAsStream(cl, uriOrPath, null);
 	}
 
 	public static InputStream getResourceOrFileAsStream(String uriOrPath, String relativeTo)
 		throws ResourceLoaderException, IOException {
-		URL url = ResourceLoader.getResourceOrFile(uriOrPath, relativeTo);
+		return ResourceLoader.getResourceOrFileAsStream(null, uriOrPath, relativeTo);
+	}
+
+	public static InputStream getResourceOrFileAsStream(ClassLoader cl, String uriOrPath, String relativeTo)
+		throws ResourceLoaderException, IOException {
+		URL url = ResourceLoader.getResourceOrFile(cl, uriOrPath, relativeTo);
 		return (url != null ? url.openStream() : null);
 	}
 }
