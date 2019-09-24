@@ -56,7 +56,6 @@ import org.xml.sax.SAXException;
 
 import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.concurrent.ConcurrentTools;
-import com.armedia.commons.utilities.function.LazySupplier;
 
 /**
  * This class provides some utility methods for JAXB bindings to facilitate the loading and storing
@@ -105,8 +104,6 @@ public class XmlTools {
 		}
 	}
 
-	private static final LazySupplier<SchemaFactory> SCHEMA_FACTORY = new LazySupplier<>(
-		() -> SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI));
 	private static final ConcurrentMap<URL, Schema> SCHEMATA = new ConcurrentHashMap<>();
 	private static final ConcurrentMap<JAXBContextConfig, JAXBContext> JAXB_CONTEXTS = new ConcurrentHashMap<>();
 
@@ -178,7 +175,7 @@ public class XmlTools {
 		if (schemaUrl != null) {
 			try {
 				schema = ConcurrentTools.createIfAbsent(XmlTools.SCHEMATA, schemaUrl,
-					XmlTools.SCHEMA_FACTORY.get()::newSchema);
+					SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)::newSchema);
 			} catch (SAXException e) {
 				throw new JAXBException(String.format("Failed to load the schema from [%s]", schemaUrl), e.getCause());
 			}
