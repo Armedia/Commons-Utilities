@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -89,6 +90,8 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	private final Collection<Thread> threads = new ArrayList<>();
 	private final Set<Long> blocked = new HashSet<>();
 
+	private CountDownLatch startupLatch = null;
+
 	private final class Task<EX extends Throwable> implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
 
@@ -111,11 +114,13 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 			try {
 				state = this.logic.initialize();
 			} catch (Throwable t) {
+				PooledWorkers.this.startupLatch.countDown();
 				workerThreadExited("Failed to initialize the worker state", null, castException(t));
 				return;
 			}
 			PooledWorkers.this.activeCounter.incrementAndGet();
 			try {
+				boolean first = true;
 				while (!Thread.interrupted() && !PooledWorkers.this.aborted.get()) {
 					if (this.log.isDebugEnabled()) {
 						this.log.trace("Polling the queue...");
@@ -125,6 +130,10 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 						final Thread thread = Thread.currentThread();
 						try {
 							PooledWorkers.this.blocked.add(thread.getId());
+							if (first) {
+								first = false;
+								PooledWorkers.this.startupLatch.countDown();
+							}
 							item = PooledWorkers.this.workQueue.take();
 						} catch (InterruptedException e) {
 							thread.interrupt();
@@ -135,6 +144,10 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 							PooledWorkers.this.blocked.remove(thread.getId());
 						}
 					} else {
+						if (first) {
+							first = false;
+							PooledWorkers.this.startupLatch.countDown();
+						}
 						item = PooledWorkers.this.workQueue.poll();
 						if (item == null) {
 							workerThreadExited("Queue empty - worker exiting the work polling loop", state, null);
@@ -363,6 +376,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 			}
 			this.executor = new ThreadPoolExecutor(this.threadCount, this.threadCount, 30, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<Runnable>(), threadFactory);
+			this.startupLatch = new CountDownLatch(threadCount);
 			for (int i = 0; i < this.threadCount; i++) {
 				this.futures.add(this.executor.submit(task));
 			}
@@ -418,13 +432,22 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 				try {
 					// We're done, we must wait until all workers are waiting
 					this.log.debug("Waiting for {} workers to finish processing", this.threadCount);
-					// First, wake any blocked threads
+
+					// First, wait for threads to finish starting up
+					try {
+						this.startupLatch.await();
+					} catch (InterruptedException e) {
+						this.log.debug("Interrupted while waiting for all threads to start up");
+					}
+
+					// Now, wake any blocked threads
 					for (Thread t : this.threads) {
 						if (this.blocked.contains(t.getId())) {
 							switch (t.getState()) {
 								case TIMED_WAITING:
 								case WAITING:
 									t.interrupt();
+									this.log.debug("Interrupted thread [{}] ({})", t.getName(), t.getId());
 									break;
 								default:
 									// Do nothing - it will exit on its own
