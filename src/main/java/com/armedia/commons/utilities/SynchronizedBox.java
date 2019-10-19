@@ -29,8 +29,14 @@ package com.armedia.commons.utilities;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
+import java.util.function.Function;
 import java.util.function.Predicate;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 import com.armedia.commons.utilities.concurrent.MutexAutoLock;
@@ -129,13 +135,80 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 *
 	 * @return the previous value
 	 */
-	public V set(final V newValue) {
-		return shareLockedUpgradable(() -> this.value, (oldValue) -> (oldValue != newValue), (oldValue) -> {
-			this.value = newValue;
-			this.lastChange = Instant.now();
-			this.changed.signal();
-			return oldValue;
-		});
+	public V setAndGet(final V newValue) {
+		return recompute((oldValue) -> (oldValue != newValue), (v) -> newValue).getLeft();
+	}
+
+	/**
+	 * <p>
+	 * Set the value to {@code newValue} if and only if the old value matches the given
+	 * {@link Predicate#test(Object) predicate}, and return {@code true} if the value was modified,
+	 * {@code false} otherwise
+	 * </p>
+	 *
+	 * @return {@code true} if the new value was set, {@code false} otherwise
+	 */
+	public boolean setIfMatches(Predicate<V> predicate, final V newValue) {
+		return recompute(predicate, (v) -> newValue).getMiddle();
+	}
+
+	/**
+	 * <p>
+	 * Calculate the new value based on the given {@link Function function}, and return a
+	 * {@link Pair} that describes whether the value was {@link Pair#getLeft() recomputed}, and
+	 * {@link Pair#getRight() the new value computed}.
+	 * </p>
+	 *
+	 * @return the new value
+	 */
+	public V recompute(final Function<V, V> f) {
+		return recomputeIfMatches((v) -> true, f);
+	}
+
+	/**
+	 * <p>
+	 * Calculate the new value based on the given {@link Function function}, but only if its current
+	 * value matches the given {@link Predicate predicate}.
+	 * </p>
+	 *
+	 * @return the new value
+	 */
+	public V recomputeIfMatches(Predicate<V> predicate, final Function<V, V> f) {
+		return recompute(predicate, f).getRight();
+	}
+
+	/**
+	 * <p>
+	 * Does the actual work for the {@link #recompute(Function)},
+	 * {@link #recomputeIfMatches(Predicate, Function)}, {@link #setAndGet(Object)} and
+	 * {@link #setIfMatches(Predicate, Object)}, returning a triple whose components are:
+	 * <ul>
+	 * <li>{@link Triple#getLeft() Left}: the old value</li>
+	 * <li>{@link Triple#getMiddle() Middle}: a flag indicating whether the value was recomputed or
+	 * not</li>
+	 * <li>{@link Triple#getRight() Right}: the new value</li>
+	 * </ul>
+	 *
+	 * @param predicate
+	 * @param f
+	 * @return a Triple as described above
+	 */
+	protected Triple<V, Boolean, V> recompute(Predicate<V> predicate, final Function<V, V> f) {
+		Objects.requireNonNull(f, "Must provide a function to compute the new value with");
+		final AtomicReference<V> old = new AtomicReference<>(null);
+		final AtomicBoolean recomputed = new AtomicBoolean(false);
+		final V v = shareLockedUpgradable(() -> this.value,
+			Objects.requireNonNull(predicate, "Must provide a predicate to test the current value with"),
+			(oldValue) -> {
+				old.set(oldValue);
+				final V newValue = f.apply(oldValue);
+				this.value = newValue;
+				this.lastChange = Instant.now();
+				this.changed.signal();
+				recomputed.set(true);
+				return newValue;
+			});
+		return Triple.of(old.get(), recomputed.get(), v);
 	}
 
 	/**
@@ -147,10 +220,11 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 *
 	 * @param predicate
 	 *            the predicate to use for checking if the wait is over
+	 * @return the new value
 	 * @throws InterruptedException
 	 */
-	public void waitUntilMatches(final Predicate<V> predicate) throws InterruptedException {
-		waitUntilMatches(predicate, 0, TimeUnit.SECONDS);
+	public V waitUntilMatches(final Predicate<V> predicate) throws InterruptedException {
+		return waitUntilMatches(predicate, 0, TimeUnit.SECONDS);
 	}
 
 	/**
@@ -166,16 +240,22 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 *            the number of {@link TimeUnit TimeUnits} to wait for
 	 * @param timeUnit
 	 *            the {@link TimeUnit} for the wait timeout
+	 * @return the new value
 	 * @throws InterruptedException
 	 */
-	public void waitUntilMatches(final Predicate<V> predicate, long timeout, TimeUnit timeUnit)
+	public V waitUntilMatches(final Predicate<V> predicate, long timeout, TimeUnit timeUnit)
 		throws InterruptedException {
 		Objects.requireNonNull(predicate, "Must provide a predicate to check the value with");
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
 		try (MutexAutoLock lock = autoMutexLock()) {
-			while (!predicate.test(this.value)) {
+			V v = null;
+			while (true) {
+				v = this.value;
+				if (predicate.test(v)) {
+					break;
+				}
 				if (timeout > 0) {
 					this.changed.await(timeout, timeUnit);
 				} else {
@@ -184,6 +264,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 			}
 			// Cascade the signal for anyone else waiting...
 			this.changed.signal();
+			return v;
 		}
 	}
 
@@ -193,7 +274,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 * {@link #waitUntilChanged(long, TimeUnit) waitForChange(0, TimeUnit.SECONDS)}.
 	 * </p>
 	 *
-	 * @return the new value after the detected change.
+	 * @return the new value after the detected change
 	 * @throws InterruptedException
 	 */
 	public V waitUntilChanged() throws InterruptedException {

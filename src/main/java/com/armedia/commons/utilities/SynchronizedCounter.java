@@ -29,7 +29,16 @@ package com.armedia.commons.utilities;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
+import java.util.function.Function;
+import java.util.function.LongPredicate;
+import java.util.function.LongUnaryOperator;
+import java.util.function.Predicate;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 import com.armedia.commons.utilities.concurrent.MutexAutoLock;
@@ -127,18 +136,85 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 
 	/**
 	 * <p>
-	 * Set the value's value to the new {@code value}, and return its previous value
+	 * Set the value to {@code newValue}, and return the previous value
 	 * </p>
 	 *
-	 * @return the value's previous value
+	 * @return the previous value
 	 */
-	public long set(final long newValue) {
-		return shareLockedUpgradable(() -> this.value, (oldValue) -> (oldValue != newValue), (oldValue) -> {
+	public long setAndGet(final long newValue) {
+		return recompute((oldValue) -> (oldValue != newValue), (v) -> newValue).getLeft();
+	}
+
+	/**
+	 * <p>
+	 * Set the value to {@code newValue} if and only if the old value matches the given
+	 * {@link LongPredicate#test(long) predicate}, and return {@code true} if the value was
+	 * modified, {@code false} otherwise
+	 * </p>
+	 *
+	 * @return {@code true} if the new value was set, {@code false} otherwise
+	 */
+	public boolean setIfMatches(LongPredicate predicate, final long newValue) {
+		return recompute(predicate, (v) -> newValue).getMiddle();
+	}
+
+	/**
+	 * <p>
+	 * Calculate the new value based on the given {@link Function function}, and return a
+	 * {@link Pair} that describes whether the value was {@link Pair#getLeft() recomputed}, and
+	 * {@link Pair#getRight() the new value computed}.
+	 * </p>
+	 *
+	 * @return the new value
+	 */
+	public long recompute(final LongUnaryOperator f) {
+		return recomputeIfMatches((v) -> true, f);
+	}
+
+	/**
+	 * <p>
+	 * Calculate the new value based on the given {@link Function function}, but only if its current
+	 * value matches the given {@link LongPredicate predicate}.
+	 * </p>
+	 *
+	 * @return the new value
+	 */
+	public long recomputeIfMatches(LongPredicate predicate, final LongUnaryOperator f) {
+		return recompute(predicate, f).getRight();
+	}
+
+	/**
+	 * <p>
+	 * Does the actual work for the {@link #recompute(LongUnaryOperator)},
+	 * {@link #recomputeIfMatches(LongPredicate, LongUnaryOperator)}, {@link #setAndGet(long)} and
+	 * {@link #setIfMatches(LongPredicate, long)}, returning a triple whose components are:
+	 * <ul>
+	 * <li>{@link Triple#getLeft() Left}: the old value</li>
+	 * <li>{@link Triple#getMiddle() Middle}: a flag indicating whether the value was recomputed or
+	 * not</li>
+	 * <li>{@link Triple#getRight() Right}: the new value</li>
+	 * </ul>
+	 *
+	 * @param predicate
+	 * @param f
+	 * @return a Triple as described above
+	 */
+	protected Triple<Long, Boolean, Long> recompute(LongPredicate predicate, final LongUnaryOperator f) {
+		Objects.requireNonNull(f, "Must provide a function to compute the new value with");
+		Objects.requireNonNull(predicate, "Must provide a predicate to test the current value with");
+		final AtomicReference<Long> old = new AtomicReference<>(null);
+		final AtomicBoolean recomputed = new AtomicBoolean(false);
+		final Predicate<Long> p = (v) -> predicate.test(v);
+		final Long v = shareLockedUpgradable(() -> this.value, p, (oldValue) -> {
+			old.set(oldValue);
+			final long newValue = f.applyAsLong(oldValue.longValue());
 			this.value = newValue;
 			this.lastChange = Instant.now();
 			this.changed.signal();
-			return oldValue;
+			recomputed.set(true);
+			return newValue;
 		});
+		return Triple.of(old.get(), recomputed.get(), v);
 	}
 
 	/**
