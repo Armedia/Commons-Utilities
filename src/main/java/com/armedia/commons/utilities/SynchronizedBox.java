@@ -227,7 +227,11 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 * @throws InterruptedException
 	 */
 	public V waitUntilMatches(final Predicate<V> predicate) throws InterruptedException {
-		return waitUntilMatches(predicate, 0, TimeUnit.SECONDS);
+		try {
+			return waitUntilMatches(predicate, 0, TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			throw new RuntimeException("Unexpected timeout - should have waited forever", e);
+		}
 	}
 
 	/**
@@ -247,7 +251,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 * @throws InterruptedException
 	 */
 	public V waitUntilMatches(final Predicate<V> predicate, long timeout, TimeUnit timeUnit)
-		throws InterruptedException {
+		throws InterruptedException, TimeoutException {
 		Objects.requireNonNull(predicate, "Must provide a predicate to check the value with");
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
@@ -260,7 +264,10 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 					break;
 				}
 				if (timeout > 0) {
-					this.changed.await(timeout, timeUnit);
+					if (!this.changed.await(timeout, timeUnit)) {
+						throw new TimeoutException(
+							String.format("Timed out waiting %d %s for the value to change", timeout, timeUnit));
+					}
 				} else {
 					this.changed.await();
 				}
