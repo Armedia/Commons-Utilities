@@ -29,6 +29,7 @@ package com.armedia.commons.utilities;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
@@ -57,6 +58,7 @@ import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 public final class SynchronizedCounter extends BaseShareableLockable {
 	private final Condition changed;
 	private final Instant created;
+	private long changes = 0;
 	private Instant lastChange = null;
 	private volatile long value = 0;
 
@@ -120,7 +122,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 *         otherwise
 	 */
 	public boolean isChangedSinceCreation() {
-		return shareLocked(() -> (!this.created.equals(this.lastChange)));
+		return shareLocked(() -> ((this.changes != 0) || !this.created.equals(this.lastChange)));
 	}
 
 	/**
@@ -210,6 +212,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 			final long newValue = f.applyAsLong(oldValue.longValue());
 			this.value = newValue;
 			this.lastChange = Instant.now();
+			this.changes++;
 			this.changed.signal();
 			recomputed.set(true);
 			return newValue;
@@ -227,12 +230,13 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 *            the amount to add to the value.
 	 * @return the new value after applying the delta
 	 */
-	public long add(long delta) {
+	public long addAndGet(long delta) {
 		try (MutexAutoLock lock = autoMutexLock()) {
 			long ret = (this.value += delta);
 			if (delta != 0) {
 				// Only trigger the change if there actually was a change
 				this.lastChange = Instant.now();
+				this.changes++;
 				this.changed.signal();
 			}
 			return ret;
@@ -241,37 +245,38 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 
 	/**
 	 * <p>
-	 * Subtract the given delta from the value. Identical to invoking {@link #add(long) add(-delta)}
+	 * Subtract the given delta from the value. Identical to invoking {@link #addAndGet(long)
+	 * add(-delta)}
 	 * </p>
 	 *
 	 * @param delta
 	 *            the amount to subtract from the value
 	 * @return the new value after applying the delta.
 	 */
-	public long subtract(long delta) {
-		return add(-delta);
+	public long subtractAndGet(long delta) {
+		return addAndGet(-delta);
 	}
 
 	/**
 	 * <p>
-	 * Add one to the value. Identical to invoking {@link #add(long) add(1)}
+	 * Add one to the value. Identical to invoking {@link #addAndGet(long) add(1)}
 	 * </p>
 	 *
 	 * @return the new value after applying the change.
 	 */
-	public long increment() {
-		return add(1);
+	public long incrementAndGet() {
+		return addAndGet(1);
 	}
 
 	/**
 	 * <p>
-	 * Subtract one from the value. Identical to invoking {@link #add(long) subtract(1)}
+	 * Subtract one from the value. Identical to invoking {@link #addAndGet(long) subtract(1)}
 	 * </p>
 	 *
 	 * @return the new value after applying the change.
 	 */
-	public long decrement() {
-		return subtract(1);
+	public long decrementAndGet() {
+		return subtractAndGet(1);
 	}
 
 	/**
@@ -303,20 +308,24 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 *            the {@link TimeUnit} for the wait timeout
 	 * @throws InterruptedException
 	 */
-	public void waitUntilValue(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
+	public boolean waitUntilValue(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
 		try (MutexAutoLock lock = autoMutexLock()) {
+			boolean success = true;
 			while (value != this.value) {
 				if (timeout > 0) {
-					this.changed.await(timeout, timeUnit);
+					if (!this.changed.await(timeout, timeUnit)) {
+						success = false;
+					}
 				} else {
 					this.changed.await();
 				}
 			}
 			// Cascade the signal for anyone else waiting...
 			this.changed.signal();
+			return success;
 		}
 	}
 
@@ -330,7 +339,11 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @throws InterruptedException
 	 */
 	public long waitUntilChanged() throws InterruptedException {
-		return waitUntilChanged(0, TimeUnit.SECONDS);
+		try {
+			return waitUntilChanged(0, TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			throw new RuntimeException("Unexpected timeout - should have waited forever", e);
+		}
 	}
 
 	/**
@@ -346,14 +359,18 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 *            the {@link TimeUnit} for the wait timeout
 	 * @return the new value after the detected change.
 	 * @throws InterruptedException
+	 * @throws TimeoutException
 	 */
-	public long waitUntilChanged(long timeout, TimeUnit timeUnit) throws InterruptedException {
+	public long waitUntilChanged(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
 		try (MutexAutoLock lock = autoMutexLock()) {
 			if (timeout > 0) {
-				this.changed.await(timeout, timeUnit);
+				if (!this.changed.await(timeout, timeUnit)) {
+					throw new TimeoutException(
+						String.format("Timed out waiting %d %s for the value to change", timeout, timeUnit));
+				}
 			} else {
 				this.changed.await();
 			}
@@ -362,26 +379,6 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 			this.changed.signal();
 			return ret;
 		}
-	}
-
-	/**
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the given number of changes are counted. If
-	 * {@code count} is less than or equal to 0, it will return immediately without blocking, with
-	 * the current value of the counter.
-	 * </p>
-	 *
-	 * @param count
-	 * @return the value of the counter at the last change counted
-	 * @throws InterruptedException
-	 */
-	public long waitUntilChangeCount(int count) throws InterruptedException {
-		if (count <= 0) { return get(); }
-		long ret = 0;
-		for (int i = 0; i < count; i++) {
-			ret = waitUntilChanged();
-		}
-		return ret;
 	}
 
 	@Override

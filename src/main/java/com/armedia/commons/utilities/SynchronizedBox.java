@@ -29,6 +29,7 @@ package com.armedia.commons.utilities;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
@@ -53,6 +54,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 
 	private final Condition changed;
 	private final Instant created;
+	private long changes = 0;
 	private Instant lastChange = null;
 	private volatile V value = null;
 
@@ -114,7 +116,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 *         otherwise
 	 */
 	public boolean isChangedSinceCreation() {
-		return shareLocked(() -> (!this.created.equals(this.lastChange)));
+		return shareLocked(() -> ((this.changes != 0) || !this.created.equals(this.lastChange)));
 	}
 
 	/**
@@ -204,6 +206,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 				final V newValue = f.apply(oldValue);
 				this.value = newValue;
 				this.lastChange = Instant.now();
+				this.changes++;
 				this.changed.signal();
 				recomputed.set(true);
 				return newValue;
@@ -278,7 +281,11 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 * @throws InterruptedException
 	 */
 	public V waitUntilChanged() throws InterruptedException {
-		return waitUntilChanged(0, TimeUnit.SECONDS);
+		try {
+			return waitUntilChanged(0, TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			throw new RuntimeException("Unexpected timeout - should have waited forever", e);
+		}
 	}
 
 	/**
@@ -294,14 +301,18 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 *            the {@link TimeUnit} for the wait timeout
 	 * @return the new value after the detected change.
 	 * @throws InterruptedException
+	 * @throws TimeoutException
 	 */
-	public V waitUntilChanged(long timeout, TimeUnit timeUnit) throws InterruptedException {
+	public V waitUntilChanged(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
 		try (MutexAutoLock lock = autoMutexLock()) {
 			if (timeout > 0) {
-				this.changed.await(timeout, timeUnit);
+				if (!this.changed.await(timeout, timeUnit)) {
+					throw new TimeoutException(
+						String.format("Timed out waiting %d %s for the value to change", timeout, timeUnit));
+				}
 			} else {
 				this.changed.await();
 			}
@@ -312,26 +323,6 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 				this.changed.signal();
 			}
 		}
-	}
-
-	/**
-	 * <p>
-	 * Blocks (using {@link Object#wait()}) until the given number of changes are counted. If
-	 * {@code count} is less than or equal to 0, it will return immediately without blocking, with
-	 * the current value of the counter.
-	 * </p>
-	 *
-	 * @param count
-	 * @return the value of the counter at the last change counted
-	 * @throws InterruptedException
-	 */
-	public V waitUntilChangeCount(int count) throws InterruptedException {
-		if (count <= 0) { return get(); }
-		V ret = null;
-		for (int i = 0; i < count; i++) {
-			ret = waitUntilChanged();
-		}
-		return ret;
 	}
 
 	@Override
