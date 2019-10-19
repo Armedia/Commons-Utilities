@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
+import java.util.function.Predicate;
 
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 import com.armedia.commons.utilities.concurrent.MutexAutoLock;
@@ -41,24 +42,22 @@ import com.armedia.commons.utilities.concurrent.MutexAutoLock;
  * {@link BaseShareableLockable} for maximum performance and concurrency. It also tracks the value
  * for the last time the value was changed, in nanoseconds.
  * </p>
- *
- *
- *
  */
-public final class SynchronizedCounter extends BaseShareableLockable {
+public final class SynchronizedBox<V> extends BaseShareableLockable {
+
 	private final Condition changed;
 	private final Instant created;
 	private Instant lastChange = null;
-	private volatile long value = 0;
+	private volatile V value = null;
 
 	/**
 	 * <p>
 	 * Create a new value with the starting value of 0. Identical to invoking
-	 * {@link #SynchronizedCounter(long) new SynchronizedCounter(0)}.
+	 * {@link #SynchronizedBox(Object) new SynchronizedBox(null)}.
 	 * </p>
 	 */
-	public SynchronizedCounter() {
-		this(0);
+	public SynchronizedBox() {
+		this(null);
 	}
 
 	/**
@@ -69,7 +68,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @param start
 	 *            the starting value for the value.
 	 */
-	public SynchronizedCounter(long start) {
+	public SynchronizedBox(V start) {
 		this.value = start;
 		this.created = Instant.now();
 		this.lastChange = this.created;
@@ -78,10 +77,9 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 
 	/**
 	 * <p>
-	 * Returns the time at which the object was created, in nanoseconds (as returned by
-	 * {@link System#nanoTime()}).
+	 * Returns the {@link Instant} at which the object was created.
 	 *
-	 * @return the time at which the object was created, in nanoseconds
+	 * @return the Instant at which the object was created, in nanoseconds
 	 */
 	public Instant getCreated() {
 		return this.created;
@@ -89,11 +87,10 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 
 	/**
 	 * <p>
-	 * Returns the time at which the object was last changed, in nanoseconds (as returned by
-	 * {@link System#nanoTime()}).
+	 * Returns the {@link Instant} at which the object was last changed.
 	 * </p>
 	 *
-	 * @return the time at which the object was last changed, in nanoseconds
+	 * @return the Instant at which the object was last changed, in nanoseconds
 	 */
 	public Instant getLastChanged() {
 		return shareLocked(() -> this.lastChange);
@@ -102,9 +99,9 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	/**
 	 * <p>
 	 * Returns {@code true} if the object's value has changed since its creation, {@code false}
-	 * otherwise. This doesn't take into account instances where the value's value has been re-set
-	 * to its original value after the fact. This only reflects if the value's value has varied in
-	 * any way since its creation.
+	 * otherwise. This doesn't take into account instances where the value has been re-set to its
+	 * original value after the fact. This only reflects if the value has varied in any way since
+	 * its creation.
 	 * </p>
 	 *
 	 * @return {@code true} if the object's value has changed since its creation, {@code false}
@@ -116,23 +113,23 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 
 	/**
 	 * <p>
-	 * Return the value's current value
+	 * Return the current value
 	 * </p>
 	 *
-	 * @return the value's current value
+	 * @return the current value
 	 */
-	public long get() {
+	public V get() {
 		return shareLocked(() -> this.value);
 	}
 
 	/**
 	 * <p>
-	 * Set the value's value to the new {@code value}, and return its previous value
+	 * Set the value to {@code newValue}, and return the previous value
 	 * </p>
 	 *
-	 * @return the value's previous value
+	 * @return the previous value
 	 */
-	public long set(final long newValue) {
+	public V set(final V newValue) {
 		return shareLockedUpgradable(() -> this.value, (stored) -> (stored == newValue), (stored) -> {
 			this.value = newValue;
 			this.lastChange = Instant.now();
@@ -143,96 +140,42 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 
 	/**
 	 * <p>
-	 * Add the given {@code delta} to the current value. If the delta is 0, no change detected via
-	 * {@link #waitUntilChanged()} or {@link #waitUntilValue(long)}.
+	 * Wait until the given {@code predicate} evaluates to {@code true} using the box's value.
+	 * Identical to invoking {@link #waitUntilMatches(Predicate, long, TimeUnit)
+	 * waitUntil(predicate, 0, TimeUnit.SECONDS)}.
 	 * </p>
 	 *
-	 * @param delta
-	 *            the amount to add to the value.
-	 * @return the new value after applying the delta
-	 */
-	public long add(long delta) {
-		try (MutexAutoLock lock = autoMutexLock()) {
-			long ret = (this.value += delta);
-			if (delta != 0) {
-				// Only trigger the change if there actually was a change
-				this.lastChange = Instant.now();
-				this.changed.signal();
-			}
-			return ret;
-		}
-	}
-
-	/**
-	 * <p>
-	 * Subtract the given delta from the value. Identical to invoking {@link #add(long) add(-delta)}
-	 * </p>
-	 *
-	 * @param delta
-	 *            the amount to subtract from the value
-	 * @return the new value after applying the delta.
-	 */
-	public long subtract(long delta) {
-		return add(-delta);
-	}
-
-	/**
-	 * <p>
-	 * Add one to the value. Identical to invoking {@link #add(long) add(1)}
-	 * </p>
-	 *
-	 * @return the new value after applying the change.
-	 */
-	public long increment() {
-		return add(1);
-	}
-
-	/**
-	 * <p>
-	 * Subtract one from the value. Identical to invoking {@link #add(long) subtract(1)}
-	 * </p>
-	 *
-	 * @return the new value after applying the change.
-	 */
-	public long decrement() {
-		return subtract(1);
-	}
-
-	/**
-	 * <p>
-	 * Wait until the value's value matches the given {@code value}. Identical to invoking
-	 * {@link #waitUntilValue(long, long, TimeUnit) waitUntil(value, 0, TimeUnit.SECONDS)}.
-	 * </p>
-	 *
-	 * @param value
-	 *            the value to wait for
+	 * @param predicate
+	 *            the predicate to use for checking if the wait is over
 	 * @throws InterruptedException
 	 */
-	public void waitUntilValue(final long value) throws InterruptedException {
-		waitUntilValue(value, 0, TimeUnit.SECONDS);
+	public void waitUntilMatches(final Predicate<V> predicate) throws InterruptedException {
+		waitUntilMatches(predicate, 0, TimeUnit.SECONDS);
 	}
 
 	/**
 	 * <p>
-	 * Wait until the value's value matches the given {@code value}, for up to the given timeout
-	 * value. If the value of {@code timeout} is less than or equal to {@code 0}, then this method
-	 * waits forever regardless of the value of {@code timeUnit}.
+	 * Wait until the given {@code predicate} evaluates to {@code true} using the box's value, for
+	 * up to the given timeout value. If the value of {@code timeout} is less than or equal to
+	 * {@code 0}, then this method waits forever regardless of the value of {@code timeUnit}.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to wait for
+	 * @param predicate
+	 *            the predicate to use for checking if the wait is over
 	 * @param timeout
 	 *            the number of {@link TimeUnit TimeUnits} to wait for
 	 * @param timeUnit
 	 *            the {@link TimeUnit} for the wait timeout
 	 * @throws InterruptedException
 	 */
-	public void waitUntilValue(final long value, long timeout, TimeUnit timeUnit) throws InterruptedException {
+	public void waitUntilMatches(final Predicate<V> predicate, long timeout, TimeUnit timeUnit)
+		throws InterruptedException {
+		Objects.requireNonNull(predicate, "Must provide a predicate to check the value with");
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
 		try (MutexAutoLock lock = autoMutexLock()) {
-			while (value != this.value) {
+			while (!predicate.test(this.value)) {
 				if (timeout > 0) {
 					this.changed.await(timeout, timeUnit);
 				} else {
@@ -253,7 +196,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @return the new value after the detected change.
 	 * @throws InterruptedException
 	 */
-	public long waitUntilChanged() throws InterruptedException {
+	public V waitUntilChanged() throws InterruptedException {
 		return waitUntilChanged(0, TimeUnit.SECONDS);
 	}
 
@@ -271,7 +214,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @return the new value after the detected change.
 	 * @throws InterruptedException
 	 */
-	public long waitUntilChanged(long timeout, TimeUnit timeUnit) throws InterruptedException {
+	public V waitUntilChanged(long timeout, TimeUnit timeUnit) throws InterruptedException {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
@@ -281,10 +224,12 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 			} else {
 				this.changed.await();
 			}
-			final long ret = this.value;
-			// Cascade the signal for anyone else waiting...
-			this.changed.signal();
-			return ret;
+			try {
+				return this.value;
+			} finally {
+				// Cascade the signal for anyone else waiting...
+				this.changed.signal();
+			}
 		}
 	}
 
@@ -299,9 +244,9 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @return the value of the counter at the last change counted
 	 * @throws InterruptedException
 	 */
-	public long waitUntilChangeCount(int count) throws InterruptedException {
+	public V waitUntilChangeCount(int count) throws InterruptedException {
 		if (count <= 0) { return get(); }
-		long ret = 0;
+		V ret = null;
 		for (int i = 0; i < count; i++) {
 			ret = waitUntilChanged();
 		}
@@ -310,7 +255,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 
 	@Override
 	public String toString() {
-		return String.format("SynchronizedCounter [created=%s, lastChange=%s, value=%s]", this.created, this.lastChange,
+		return String.format("SynchronizedBox [created=%s, lastChange=%s, value=%s]", this.created, this.lastChange,
 			this.value);
 	}
 }
