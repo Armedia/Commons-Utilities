@@ -130,11 +130,11 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 	 * @return the previous value
 	 */
 	public V set(final V newValue) {
-		return shareLockedUpgradable(() -> this.value, (stored) -> (stored == newValue), (stored) -> {
+		return shareLockedUpgradable(() -> this.value, (oldValue) -> (oldValue != newValue), (oldValue) -> {
 			this.value = newValue;
 			this.lastChange = Instant.now();
 			this.changed.signal();
-			return stored;
+			return oldValue;
 		});
 	}
 

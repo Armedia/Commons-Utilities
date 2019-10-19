@@ -133,11 +133,11 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @return the value's previous value
 	 */
 	public long set(final long newValue) {
-		return shareLockedUpgradable(() -> this.value, (stored) -> (stored == newValue), (stored) -> {
+		return shareLockedUpgradable(() -> this.value, (oldValue) -> (oldValue != newValue), (oldValue) -> {
 			this.value = newValue;
 			this.lastChange = Instant.now();
 			this.changed.signal();
-			return stored;
+			return oldValue;
 		});
 	}
 
