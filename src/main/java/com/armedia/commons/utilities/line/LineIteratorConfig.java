@@ -232,7 +232,7 @@ public final class LineIteratorConfig implements Serializable, Cloneable {
 		LineIteratorConfig other = LineIteratorConfig.class.cast(obj);
 		if (this.trim != other.trim) { return false; }
 		if (this.maxDepth != other.maxDepth) { return false; }
-		if (!Tools.equals(this.features, other.features)) { return false; }
+		if (!Objects.equals(this.features, other.features)) { return false; }
 		return true;
 	}
 

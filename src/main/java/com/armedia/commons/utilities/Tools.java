@@ -820,7 +820,9 @@ public class Tools {
 	 * @return {@code true} if {@code a} and {@code b} are either both {@code null}, refer to the
 	 *         same object reference ({@code a == b}), or are equal as per the invocation of
 	 *         {@code a.equals(b)}
+	 * @deprecated use {@link Objects#equals(Object, Object)} instead
 	 */
+	@Deprecated
 	public static boolean equals(Object a, Object b) {
 		if (a == b) { return true; }
 		if ((a == null) || (b == null)) { return false; }
@@ -2163,7 +2165,7 @@ public class Tools {
 		Set<E> ret = EnumSet.noneOf(enumClass);
 		if ((values == null) || values.isEmpty()) { return ret; }
 		for (String str : values) {
-			if ((all != null) && Tools.equals(all, str)) { return EnumSet.allOf(enumClass); }
+			if ((all != null) && Objects.equals(all, str)) { return EnumSet.allOf(enumClass); }
 			try {
 				ret.add(Enum.valueOf(enumClass, str));
 			} catch (IllegalArgumentException e) {

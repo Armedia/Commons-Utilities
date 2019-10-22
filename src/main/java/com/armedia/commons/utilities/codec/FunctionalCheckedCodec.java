@@ -29,7 +29,6 @@ package com.armedia.commons.utilities.codec;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.function.CheckedFunction;
 
 public class FunctionalCheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception>
@@ -65,7 +64,7 @@ public class FunctionalCheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception
 		this.nullValue = nullValue;
 		Predicate<VALUE> predValue = Objects::isNull;
 		if (nullValueCheck == null) {
-			nullValueCheck = (e) -> Tools.equals(e, this.nullValue);
+			nullValueCheck = (e) -> Objects.equals(e, this.nullValue);
 		}
 		predValue = predValue.or(nullValueCheck);
 		if (!predValue.test(nullValue)) {
@@ -77,7 +76,7 @@ public class FunctionalCheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception
 		this.nullEncoding = nullEncoding;
 		Predicate<ENCODING> predEncoding = Objects::isNull;
 		if (nullEncodingCheck == null) {
-			nullEncodingCheck = (e) -> Tools.equals(e, this.nullEncoding);
+			nullEncodingCheck = (e) -> Objects.equals(e, this.nullEncoding);
 		}
 		predEncoding = predEncoding.or(nullEncodingCheck);
 		if (!predEncoding.test(nullEncoding)) {

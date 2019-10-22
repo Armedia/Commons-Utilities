@@ -149,7 +149,7 @@ public class EnumCodec<E extends Enum<E>> implements Codec<E, String> {
 	@Override
 	public boolean isNullEncoding(String e) {
 		if (e == null) { return true; }
-		BiFunction<String, String, Boolean> comparer = Tools::equals;
+		BiFunction<String, String, Boolean> comparer = Objects::equals;
 		if (this.caseInsensitiveMap != null) {
 			comparer = StringUtils::equalsIgnoreCase;
 		}

@@ -30,6 +30,8 @@
 
 package com.armedia.commons.utilities;
 
+import java.util.Objects;
+
 /**
  *
  *
@@ -59,7 +61,7 @@ public class ValueSynchronizer<V extends Object> {
 
 	public synchronized V wait(boolean equals, V v) throws InterruptedException {
 		boolean waited = false;
-		while (equals == Tools.equals(this.v, v)) {
+		while (equals == Objects.equals(this.v, v)) {
 			waited = true;
 			wait();
 		}

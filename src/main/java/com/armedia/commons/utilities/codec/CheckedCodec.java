@@ -26,7 +26,7 @@
  *******************************************************************************/
 package com.armedia.commons.utilities.codec;
 
-import com.armedia.commons.utilities.Tools;
+import java.util.Objects;
 
 public interface CheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception> {
 
@@ -34,7 +34,7 @@ public interface CheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception> {
 
 	public default boolean isNullValue(VALUE v) {
 		VALUE n = getNullValue();
-		return ((v == null) || (n == v) || Tools.equals(n, v));
+		return ((v == null) || (n == v) || Objects.equals(n, v));
 	}
 
 	public default VALUE getNullValue() {
@@ -45,7 +45,7 @@ public interface CheckedCodec<VALUE, ENCODING, EXCEPTION extends Exception> {
 
 	public default boolean isNullEncoding(ENCODING e) {
 		ENCODING n = getNullEncoding();
-		return ((e == null) || (n == e) || Tools.equals(n, e));
+		return ((e == null) || (n == e) || Objects.equals(n, e));
 	}
 
 	public default ENCODING getNullEncoding() {
