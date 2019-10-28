@@ -86,27 +86,27 @@ public class TraceableReentrantLock extends ReentrantLock implements Traceable {
 
 	@Override
 	public void lock() {
-		invoke(super::lock, "lock");
+		trace(super::lock, "lock");
 	}
 
 	@Override
 	public void lockInterruptibly() throws InterruptedException {
-		invoke(super::lockInterruptibly, "lockInterruptibly");
+		trace(super::lockInterruptibly, "lockInterruptibly");
 	}
 
 	@Override
 	public boolean tryLock() {
-		return invoke(() -> super.tryLock(), "tryLock");
+		return trace(() -> super.tryLock(), "tryLock");
 	}
 
 	@Override
 	public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-		return invoke(() -> super.tryLock(time, unit), "tryLock", time, unit);
+		return trace(() -> super.tryLock(time, unit), "tryLock", time, unit);
 	}
 
 	@Override
 	public void unlock() {
-		invoke(super::unlock, "unlock");
+		trace(super::unlock, "unlock");
 	}
 
 	@Override

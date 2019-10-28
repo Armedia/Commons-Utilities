@@ -57,14 +57,14 @@ public interface Traceable {
 		return MessageFormatter.arrayFormat(format, args).getMessage();
 	}
 
-	public default <E extends Throwable> void invoke(CheckedRunnable<E> r, String method, Object... args) throws E {
-		invoke(() -> {
+	public default <E extends Throwable> void trace(CheckedRunnable<E> r, String method, Object... args) throws E {
+		trace(() -> {
 			r.runChecked();
 			return null;
 		}, method, args);
 	}
 
-	public default <V, E extends Throwable> V invoke(CheckedSupplier<V, E> s, String method, Object... args) throws E {
+	public default <V, E extends Throwable> V trace(CheckedSupplier<V, E> s, String method, Object... args) throws E {
 		final String argStr = Traceable.formatArgs(args);
 		final Logger log = getLog();
 		log.trace("{}.{}({})", getName(), method, argStr);

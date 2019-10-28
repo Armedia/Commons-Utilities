@@ -77,36 +77,36 @@ public class TraceableCondition implements Condition, Serializable, Traceable {
 
 	@Override
 	public void await() throws InterruptedException {
-		invoke(() -> this.condition.await(), "await");
+		trace(() -> this.condition.await(), "await");
 	}
 
 	@Override
 	public void awaitUninterruptibly() {
-		invoke(this.condition::awaitUninterruptibly, "awaitUninterruptibly");
+		trace(this.condition::awaitUninterruptibly, "awaitUninterruptibly");
 	}
 
 	@Override
 	public long awaitNanos(long nanosTimeout) throws InterruptedException {
-		return invoke(() -> this.condition.awaitNanos(nanosTimeout), "awaitNanos", nanosTimeout);
+		return trace(() -> this.condition.awaitNanos(nanosTimeout), "awaitNanos", nanosTimeout);
 	}
 
 	@Override
 	public boolean await(long time, TimeUnit unit) throws InterruptedException {
-		return invoke(() -> this.condition.await(time, unit), "await", time, unit);
+		return trace(() -> this.condition.await(time, unit), "await", time, unit);
 	}
 
 	@Override
 	public boolean awaitUntil(Date deadline) throws InterruptedException {
-		return invoke(() -> this.condition.awaitUntil(deadline), "awaitUntil", deadline);
+		return trace(() -> this.condition.awaitUntil(deadline), "awaitUntil", deadline);
 	}
 
 	@Override
 	public void signal() {
-		invoke(this.condition::signal, "signal");
+		trace(this.condition::signal, "signal");
 	}
 
 	@Override
 	public void signalAll() {
-		invoke(this.condition::signalAll, "signalAll");
+		trace(this.condition::signalAll, "signalAll");
 	}
 }
