@@ -64,10 +64,10 @@ public class ShareableSpliterator<E> extends BaseShareableLockable implements Sp
 
 	@Override
 	public Spliterator<E> trySplit() {
-		return shareLocked(() -> {
+		try (SharedAutoLock lock = autoSharedLock()) {
 			Spliterator<E> it = this.spliterator.trySplit();
 			return (it != null ? new ShareableSpliterator<>(this, it) : null);
-		});
+		}
 	}
 
 	@Override
