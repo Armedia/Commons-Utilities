@@ -204,4 +204,40 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 			return V;
 		});
 	}
+
+	@Override
+	public VALUE compute(KEY key, BiFunction<? super KEY, ? super VALUE, ? extends VALUE> remappingFunction) {
+		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
+		try (SharedAutoLock shared = autoSharedLock()) {
+			VALUE oldValue = get(key);
+			VALUE newValue = remappingFunction.apply(key, oldValue);
+			if (newValue == null) {
+				try (MutexAutoLock mutex = shared.upgrade()) {
+					if ((oldValue != null) || containsKey(key)) {
+						remove(key);
+					}
+				}
+			} else {
+				put(key, newValue);
+			}
+			return newValue;
+		}
+	}
+
+	@Override
+	public VALUE merge(KEY key, VALUE value,
+		BiFunction<? super VALUE, ? super VALUE, ? extends VALUE> remappingFunction) {
+		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
+		Objects.requireNonNull(value, "Must provide a non-null value");
+		try (SharedAutoLock shared = autoSharedLock()) {
+			VALUE oldValue = get(key);
+			VALUE newValue = (oldValue == null ? value : remappingFunction.apply(oldValue, value));
+			if (newValue == null) {
+				remove(key);
+			} else {
+				put(key, newValue);
+			}
+			return newValue;
+		}
+	}
 }
