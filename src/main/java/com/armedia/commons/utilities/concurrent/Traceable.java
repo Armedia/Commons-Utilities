@@ -27,6 +27,9 @@
 package com.armedia.commons.utilities.concurrent;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.helpers.MessageFormatter;
@@ -44,13 +47,15 @@ public interface Traceable {
 
 	public static String formatArgs(Object... args) {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < args.length; i++) {
-			if (i > 0) {
+		boolean first = true;
+		for (Object o : args) {
+			if (!first) {
 				sb.append(", ");
 			}
-			sb.append("{}");
+			sb.append(Objects.toString(o));
+			first = false;
 		}
-		return Traceable.format(sb.toString(), args);
+		return sb.toString();
 	}
 
 	public static String format(String format, Object... args) {
@@ -67,15 +72,18 @@ public interface Traceable {
 	public default <V, E extends Throwable> V trace(CheckedSupplier<V, E> s, String method, Object... args) throws E {
 		final String argStr = Traceable.formatArgs(args);
 		final Logger log = getLog();
-		log.trace("{}.{}({})", getName(), method, argStr);
+		final Instant start = Instant.now();
 		boolean ok = false;
 		V ret = null;
+		log.trace("{}.{}({})", getName(), method, argStr);
 		try {
 			ret = s.getChecked();
 			ok = true;
 			return ret;
 		} finally {
-			log.trace("{}.{}({}) {} (returning {})", getName(), method, argStr, ok ? "completed" : "FAILED", ret);
+			final Duration d = Duration.between(start, Instant.now());
+			log.trace("{}.{}({}) {} (returning {}, duration {})", getName(), method, argStr,
+				ok ? "completed" : "FAILED", ret, d);
 		}
 	}
 }
