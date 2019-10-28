@@ -34,10 +34,19 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.armedia.commons.utilities.Tools;
 
 public class ShareableCollection<ELEMENT> extends BaseShareableLockable implements Collection<ELEMENT> {
+
+	private static final Object[] NO_ELEMENTS = {};
+
+	@SuppressWarnings("unchecked")
+	protected static final <ELEMENT> ELEMENT[] noElements() {
+		return (ELEMENT[]) ShareableCollection.NO_ELEMENTS;
+	}
 
 	private final Collection<ELEMENT> c;
 
@@ -185,5 +194,19 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 	@Override
 	public Spliterator<ELEMENT> spliterator() {
 		return shareLocked(() -> new ShareableSpliterator<>(this, this.c.spliterator()));
+	}
+
+	@Override
+	public Stream<ELEMENT> stream() {
+		final Lock readLock = acquireSharedLock();
+		Stream<ELEMENT> stream = StreamSupport.stream(Collection.super.spliterator(), false);
+		return stream.onClose(readLock::unlock);
+	}
+
+	@Override
+	public Stream<ELEMENT> parallelStream() {
+		final Lock readLock = acquireSharedLock();
+		Stream<ELEMENT> stream = StreamSupport.stream(Collection.super.spliterator(), true);
+		return stream.onClose(readLock::unlock);
 	}
 }
