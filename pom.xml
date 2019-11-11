@@ -5,9 +5,9 @@
 	<name>Armedia Commons Utilities</name>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>1.0.9</version>
+	<version>1.0.10</version>
 	<description>A set of utility classes for general use</description>
-	<packaging>bundle</packaging>
+	<packaging>jar</packaging>
 	<inceptionYear>2013</inceptionYear>
 
 	<licenses>
@@ -255,11 +255,6 @@
 						</archive>
 					</configuration>
 				</plugin>
-				<plugin>
-					<groupId>org.apache.felix</groupId>
-					<artifactId>maven-bundle-plugin</artifactId>
-					<version>4.1.0</version>
-				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
@@ -368,23 +363,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-Category></Bundle-Category>
-						<Bundle-Symbolic-Name>${project.groupId}.${project.artifactId}</Bundle-Symbolic-Name>
-						<!--
-						<Export-Package>*</Export-Package>
-						<Bundle-Activator>com.armedia.util.Activator</Bundle-Activator>
-						-->
-					</instructions>
-					<remoteOBR>${project.osgi.repoName}</remoteOBR>
-					<prefixUrl>${project.osgi.repoUrl}</prefixUrl>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

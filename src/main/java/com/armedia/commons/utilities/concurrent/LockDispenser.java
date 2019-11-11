@@ -24,7 +24,7 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.concurrent;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -34,8 +34,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
-
-import com.armedia.commons.utilities.concurrent.ConcurrentTools;
 
 /**
  *
@@ -67,8 +65,16 @@ public final class LockDispenser<K, C> {
 		return new LockDispenser<>((k) -> new ReentrantLock());
 	}
 
+	public static <K> LockDispenser<K, MutexLockable> mutexLockable() {
+		return new LockDispenser<>((k) -> new BaseMutexLockable());
+	}
+
 	public static <K> LockDispenser<K, ReentrantReadWriteLock> reentrantReadWriteLock() {
 		return new LockDispenser<>((k) -> new ReentrantReadWriteLock());
+	}
+
+	public static <K> LockDispenser<K, ShareableLockable> shareableLockable() {
+		return new LockDispenser<>((k) -> new BaseShareableLockable());
 	}
 
 	private class LockBox {

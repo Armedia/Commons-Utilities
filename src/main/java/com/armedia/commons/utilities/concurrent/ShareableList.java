@@ -26,11 +26,14 @@
  *******************************************************************************/
 package com.armedia.commons.utilities.concurrent;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.function.UnaryOperator;
 
 public class ShareableList<ELEMENT> extends ShareableCollection<ELEMENT> implements List<ELEMENT> {
 
@@ -99,5 +102,30 @@ public class ShareableList<ELEMENT> extends ShareableCollection<ELEMENT> impleme
 	@Override
 	public List<ELEMENT> subList(int fromIndex, int toIndex) {
 		return shareLocked(() -> new ShareableList<>(this, this.list.subList(fromIndex, toIndex)));
+	}
+
+	@Override
+	public void replaceAll(UnaryOperator<ELEMENT> operator) {
+		Objects.requireNonNull(operator, "Must provide a non-null operator");
+		try (MutexAutoLock lock = autoMutexLock()) {
+			final ListIterator<ELEMENT> li = listIterator();
+			while (li.hasNext()) {
+				li.set(operator.apply(li.next()));
+			}
+		}
+	}
+
+	@Override
+	public void sort(Comparator<? super ELEMENT> c) {
+		Objects.requireNonNull(c, "Must provide a non-null comparator");
+		try (MutexAutoLock lock = autoMutexLock()) {
+			ELEMENT[] a = toArray(ShareableCollection.noElements());
+			Arrays.sort(a, c);
+			ListIterator<ELEMENT> i = listIterator();
+			for (ELEMENT e : a) {
+				i.next();
+				i.set(e);
+			}
+		}
 	}
 }
