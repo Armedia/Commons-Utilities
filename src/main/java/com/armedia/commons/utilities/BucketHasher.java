@@ -1,3 +1,29 @@
+/*******************************************************************************
+ * #%L
+ * Armedia Commons Utilities
+ * %%
+ * Copyright (C) 2013 - 2019 Armedia, LLC
+ * %%
+ * This file is part of the Caliente software.
+ *
+ * If the software was purchased under a paid Caliente license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Caliente is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Caliente is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ *******************************************************************************/
 package com.armedia.commons.utilities;
 
 import java.io.IOException;
@@ -38,20 +64,86 @@ import com.armedia.commons.utilities.function.CheckedConsumer;
  * </p>
  * <p>
  * The optional {@code seed} value can be used to further alter the hash computation, and can be any
- * number between {@code 0} and {@code 4,294,967,295}. Any other value will result in an
+ * number between {@code 0} and {@code 4,294,967,295} (inclusive). Any other value will result in an
  * {@link IllegalArgumentException} being raised. If the seed value is {@code 0}, then no additional
  * seed computations will be performed.
  * </p>
  */
 public class BucketHasher {
 
+	/**
+	 * <p>
+	 * The minimuim acceptable maximum bucket value
+	 * </p>
+	 */
 	public static final long MIN_BUCKET = 0x00000000L;
+
+	/**
+	 * <p>
+	 * The maximum acceptable maximum bucket value
+	 * </p>
+	 */
 	public static final long MAX_BUCKET = 0xFFFFFFFFL;
+
+	/**
+	 * <p>
+	 * The default maximum bucket value if none is available via parameters
+	 * </p>
+	 */
 	public static final long DEF_BUCKET = BucketHasher.MAX_BUCKET;
 
+	/**
+	 * <p>
+	 * The minimum acceptable seed value
+	 * </p>
+	 */
 	public static final long MIN_SEED = 0x00000000L;
+
+	/**
+	 * <p>
+	 * The maximum acceptable seed value
+	 * </p>
+	 */
 	public static final long MAX_SEED = 0xFFFFFFFFL;
+
+	/**
+	 * <p>
+	 * The default seed value if none is available via parameters
+	 * </p>
+	 */
 	public static final long DEF_SEED = BucketHasher.MIN_SEED;
+
+	/**
+	 * <p>
+	 * Return a sanitized, guaranteed-valid value for the {@code seed} parameter, where any value
+	 * less than {@link #MIN_SEED} ({@code 0L}) is folded to {@link #MIN_SEED}, and any value above
+	 * {@link #MAX_SEED} is folded to {@link #MAX_SEED}. Any other value within the normal limits
+	 * (as per the {@link BucketHasher class documentation}) is returned as-is.
+	 * </p>
+	 *
+	 * @param seed
+	 *            the prospective value
+	 * @return the sanitized value
+	 */
+	public static long sanitizeSeed(long seed) {
+		return Tools.ensureBetween(BucketHasher.MIN_SEED, seed, BucketHasher.MAX_SEED);
+	}
+
+	/**
+	 * <p>
+	 * Return a sanitized, guaranteed-valid value for the {@code maxBucket} parameter, where any
+	 * value less than {@link #MIN_BUCKET} ({@code 0L}) is folded to {@link #MIN_BUCKET}, and any
+	 * value above {@link #MAX_BUCKET} is folded to {@link #MAX_BUCKET}. Any other value within the
+	 * normal limits (as per the {@link BucketHasher class documentation}) is returned as-is.
+	 * </p>
+	 *
+	 * @param bucket
+	 *            the prospective value
+	 * @return the sanitized value
+	 */
+	public static long sanitizeBucket(long bucket) {
+		return Tools.ensureBetween(BucketHasher.MIN_BUCKET, bucket, BucketHasher.MAX_BUCKET);
+	}
 
 	/**
 	 * <p>
@@ -402,7 +494,7 @@ public class BucketHasher {
 				}
 			};
 		}
-		return BucketHasher.calculate(updater, maxBucketNumber, seed);
+		return BucketHasher.hash(updater, maxBucketNumber, seed);
 	}
 
 	/**
@@ -556,7 +648,7 @@ public class BucketHasher {
 		if (value != null) {
 			updater = (md) -> DigestUtils.updateDigest(md, value);
 		}
-		return BucketHasher.calculate(updater, maxBucketNumber, seed);
+		return BucketHasher.hash(updater, maxBucketNumber, seed);
 	}
 
 	/**
@@ -627,9 +719,23 @@ public class BucketHasher {
 		if (value != null) {
 			updater = (md) -> DigestUtils.updateDigest(md, value);
 		}
-		return BucketHasher.calculate(updater, maxBucketNumber, seed);
+		return BucketHasher.hash(updater, maxBucketNumber, seed);
 	}
 
+	/**
+	 * <p>
+	 * Verifies that the given value is within the given limits, or explodes loudly otherwise.
+	 * </p>
+	 *
+	 * @param name
+	 *            the name of the value (for the exception message)
+	 * @param value
+	 *            the value to validate
+	 * @param min
+	 *            the lower limit
+	 * @param max
+	 *            the upper limit
+	 */
 	private static void validateValue(String name, long value, long min, long max) {
 		if ((value < min) || (value > max)) {
 			throw new IllegalArgumentException(
@@ -637,7 +743,19 @@ public class BucketHasher {
 		}
 	}
 
-	private static <E extends Throwable> long calculate(CheckedConsumer<MessageDigest, E> updater, long maxBucketNumber,
+	/**
+	 * <p>
+	 * Implements the actual hash calculation.
+	 * </p>
+	 *
+	 * @param <E>
+	 * @param updater
+	 * @param maxBucketNumber
+	 * @param seed
+	 * @return
+	 * @throws E
+	 */
+	private static <E extends Throwable> long hash(CheckedConsumer<MessageDigest, E> updater, long maxBucketNumber,
 		long seed) throws E {
 
 		// Parameter sanity
