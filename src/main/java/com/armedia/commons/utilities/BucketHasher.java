@@ -34,9 +34,7 @@ import com.armedia.commons.utilities.function.CheckedConsumer;
  * (obviously) there can only be one bucket. The maximum value for {@code maxBucketNumber} is
  * {@code 4,294,967,295} (hex {@code 0xFFFFFFFFL}), which is also used as a default when no bucket
  * count value is available as a parameter. If the bucket count given is less than {@code 0}, or
- * greater than the maximum value, then an {@link IllegalArgumentException} will be raised. If the
- * bucket count given is greater than the maximum bucket count of {@code 4,294,967,295}, this
- * maximum value will be used instead.
+ * greater than the maximum value, then an {@link IllegalArgumentException} will be raised.
  * </p>
  * <p>
  * The optional {@code seed} value can be used to further alter the hash computation, and can be any
