@@ -22,7 +22,7 @@ import com.armedia.commons.utilities.function.CheckedConsumer;
  * <p>
  * This class provides methods to calculate a hash value that is guaranteed to be between {@code 0}
  * and the given {@code bucketCount} (inclusive), or {@code -1} if the value to calculate the hash
- * for results in a {@code null}-value. All methods work in basically the same way: they conver the
+ * for results in a {@code null}-value. All methods work in basically the same way: they convert the
  * given {@code value} parameter into a "byte stream" (an {@link InputStream}, a {@link ByteBuffer},
  * or a {@code byte[]}), as this is necessary to feed the underlying {@link MessageDigest} instance.
  * The hash is calculated using SHA1 as the hashing algorithm.
