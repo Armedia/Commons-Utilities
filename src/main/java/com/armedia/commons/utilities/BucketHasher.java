@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -21,25 +22,27 @@ import com.armedia.commons.utilities.function.CheckedConsumer;
 /**
  * <p>
  * This class provides methods to calculate a hash value that is guaranteed to be between {@code 0}
- * and the given {@code bucketCount} (inclusive), or {@code -1} if the value to calculate the hash
- * for results in a {@code null}-value. All methods work in basically the same way: they convert the
- * given {@code value} parameter into a "byte stream" (an {@link InputStream}, a {@link ByteBuffer},
- * or a {@code byte[]}), as this is necessary to feed the underlying {@link MessageDigest} instance.
- * The hash is calculated using SHA1 as the hashing algorithm.
+ * and the given {@code maxBucketNumber} (inclusive), or {@code -1} if the value to calculate the
+ * hash from results in a {@code null}-value. All methods work in basically the same way: they
+ * convert the given {@code value} parameter into a "byte stream" (an {@link InputStream}, a
+ * {@link ByteBuffer}, or a {@code byte[]}), as this is necessary to feed the underlying
+ * {@link MessageDigest} instance. The hash is calculated using SHA1 as the hashing algorithm.
  * </p>
  * <p>
- * The optional {@code bucketCount} value determines the maximum value returned. If this is
+ * The optional {@code maxBucketNumber} value determines the maximum value returned. If this is
  * {@code 0}, the constant value 0 will be returned without performing any computation because
- * (obviously) there can only be one bucket. The maximum value for {@code bucketCount} is
+ * (obviously) there can only be one bucket. The maximum value for {@code maxBucketNumber} is
  * {@code 4,294,967,295} (hex {@code 0xFFFFFFFFL}), which is also used as a default when no bucket
- * count value is available as a parameter. If the bucket count given is less than {@code 0}, then
- * an {@link IllegalArgumentException} will be raised. If the bucket count given is greater than the
- * maximum bucket count of {@code 4,294,967,295}, this maximum value will be used instead.
+ * count value is available as a parameter. If the bucket count given is less than {@code 0}, or
+ * greater than the maximum value, then an {@link IllegalArgumentException} will be raised. If the
+ * bucket count given is greater than the maximum bucket count of {@code 4,294,967,295}, this
+ * maximum value will be used instead.
  * </p>
  * <p>
- * The optional {@code seed} value can be used to further alter the hash computation, but only the
- * lower 32 bits of the seed will be used (i.e. values between {@code 0} and {@code 4,294,967,295}).
- * If the seed value is {@code 0}, then no seed computation will be performed.
+ * The optional {@code seed} value can be used to further alter the hash computation, and can be any
+ * number between {@code 0} and {@code 4,294,967,295}. Any other value will result in an
+ * {@link IllegalArgumentException} being raised. If the seed value is {@code 0}, then no additional
+ * seed computations will be performed.
  * </p>
  */
 public class BucketHasher {
@@ -51,7 +54,6 @@ public class BucketHasher {
 	public static final long MIN_SEED = 0x00000000L;
 	public static final long MAX_SEED = 0xFFFFFFFFL;
 	public static final long DEF_SEED = BucketHasher.MIN_SEED;
-	private static final long SEED_MASK = 0xFFFFFFFFL;
 
 	/**
 	 * <p>
@@ -71,8 +73,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Byte value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Byte value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -82,12 +84,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Byte value, long bucketCount, long seed) {
+	public static long hash(Byte value, long maxBucketNumber, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
 			converter = (buf) -> buf.put(value.byteValue());
 		}
-		return BucketHasher.calculate(converter, 4, bucketCount, seed);
+		return BucketHasher.calculate(converter, 4, maxBucketNumber, seed);
 	}
 
 	/**
@@ -108,8 +110,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Short value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Short value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -119,12 +121,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Short value, long bucketCount, long seed) {
+	public static long hash(Short value, long maxBucketNumber, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
 			converter = (buf) -> buf.putShort(value.shortValue());
 		}
-		return BucketHasher.calculate(converter, 2, bucketCount, seed);
+		return BucketHasher.calculate(converter, 2, maxBucketNumber, seed);
 	}
 
 	/**
@@ -145,8 +147,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Integer value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Integer value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -156,12 +158,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Integer value, long bucketCount, long seed) {
+	public static long hash(Integer value, long maxBucketNumber, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
 			converter = (buf) -> buf.putInt(value.intValue());
 		}
-		return BucketHasher.calculate(converter, 4, bucketCount, seed);
+		return BucketHasher.calculate(converter, 4, maxBucketNumber, seed);
 	}
 
 	/**
@@ -182,8 +184,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Long value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Long value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -193,12 +195,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Long value, long bucketCount, long seed) {
+	public static long hash(Long value, long maxBucketNumber, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
 			converter = (buf) -> buf.putLong(value.longValue());
 		}
-		return BucketHasher.calculate(converter, 4, bucketCount, seed);
+		return BucketHasher.calculate(converter, 8, maxBucketNumber, seed);
 	}
 
 	/**
@@ -219,8 +221,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(BigInteger value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(BigInteger value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -230,9 +232,9 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(BigInteger value, long bucketCount, long seed) {
+	public static long hash(BigInteger value, long maxBucketNumber, long seed) {
 		if (value == null) { return -1; }
-		return BucketHasher.hash(value::toByteArray, bucketCount, seed);
+		return BucketHasher.hash(value::toByteArray, maxBucketNumber, seed);
 	}
 
 	/**
@@ -253,8 +255,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Float value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Float value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -264,12 +266,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Float value, long bucketCount, long seed) {
+	public static long hash(Float value, long maxBucketNumber, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
 			converter = (buf) -> buf.putFloat(value.floatValue());
 		}
-		return BucketHasher.calculate(converter, 4, bucketCount, seed);
+		return BucketHasher.calculate(converter, 4, maxBucketNumber, seed);
 	}
 
 	/**
@@ -290,8 +292,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Double value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Double value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -301,12 +303,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Double value, long bucketCount, long seed) {
+	public static long hash(Double value, long maxBucketNumber, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
 			converter = (buf) -> buf.putDouble(value.doubleValue());
 		}
-		return BucketHasher.calculate(converter, 4, bucketCount, seed);
+		return BucketHasher.calculate(converter, 8, maxBucketNumber, seed);
 	}
 
 	/**
@@ -327,8 +329,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(BigDecimal value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(BigDecimal value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -338,9 +340,9 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(BigDecimal value, long bucketCount, long seed) {
+	public static long hash(BigDecimal value, long maxBucketNumber, long seed) {
 		if (value == null) { return -1; }
-		return BucketHasher.hash(value.unscaledValue(), bucketCount, seed);
+		return BucketHasher.hash(value.unscaledValue(), maxBucketNumber, seed);
 	}
 
 	/**
@@ -350,12 +352,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	private static long calculate(Consumer<ByteBuffer> converter, int bytes, long bucketCount, long seed) {
+	private static long calculate(Consumer<ByteBuffer> converter, int bytes, long maxBucketNumber, long seed) {
 		if (converter == null) { return -1; }
 		ByteBuffer buf = ByteBuffer.allocate(bytes);
 		converter.accept(buf);
 		buf.flip();
-		return BucketHasher.hash(buf, bucketCount, seed);
+		return BucketHasher.hash(buf, maxBucketNumber, seed);
 	}
 
 	/**
@@ -376,8 +378,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Serializable value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Serializable value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -387,7 +389,7 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Serializable value, long bucketCount, long seed) {
+	public static long hash(Serializable value, long maxBucketNumber, long seed) {
 		CheckedConsumer<MessageDigest, RuntimeException> updater = null;
 		if (value != null) {
 			updater = (md) -> {
@@ -402,12 +404,14 @@ public class BucketHasher {
 				}
 			};
 		}
-		return BucketHasher.calculate(updater, bucketCount, seed);
+		return BucketHasher.calculate(updater, maxBucketNumber, seed);
 	}
 
 	/**
 	 * <p>
-	 * See the {@link BucketHasher class documentation} for details.
+	 * See the {@link BucketHasher class documentation} for details. The bytes from the string are
+	 * obtained by invoking {@link String#getBytes(java.nio.charset.Charset)} with
+	 * {@link StandardCharsets#UTF_8}.
 	 * </p>
 	 *
 	 * @see BucketHasher
@@ -418,28 +422,32 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * See the {@link BucketHasher class documentation} for details.
+	 * See the {@link BucketHasher class documentation} for details. The bytes from the string are
+	 * obtained by invoking {@link String#getBytes(java.nio.charset.Charset)} with
+	 * {@link StandardCharsets#UTF_8}.
 	 * </p>
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(String value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(String value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
 	 * <p>
-	 * See the {@link BucketHasher class documentation} for details.
+	 * See the {@link BucketHasher class documentation} for details. The bytes from the string are
+	 * obtained by invoking {@link String#getBytes(java.nio.charset.Charset)} with
+	 * {@link StandardCharsets#UTF_8}.
 	 * </p>
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(String value, long bucketCount, long seed) {
+	public static long hash(String value, long maxBucketNumber, long seed) {
 		ByteBuffer buf = null;
 		if (value != null) {
-			buf = ByteBuffer.wrap(value.getBytes());
+			buf = ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8));
 		}
-		return BucketHasher.hash(buf, bucketCount, seed);
+		return BucketHasher.hash(buf, maxBucketNumber, seed);
 	}
 
 	/**
@@ -460,8 +468,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(byte[] value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(byte[] value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -471,12 +479,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(byte[] value, long bucketCount, long seed) {
+	public static long hash(byte[] value, long maxBucketNumber, long seed) {
 		ByteBuffer buf = null;
 		if (value != null) {
 			buf = ByteBuffer.wrap(value);
 		}
-		return BucketHasher.hash(buf, bucketCount, seed);
+		return BucketHasher.hash(buf, maxBucketNumber, seed);
 	}
 
 	/**
@@ -497,8 +505,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Supplier<byte[]> value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(Supplier<byte[]> value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -508,12 +516,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(Supplier<byte[]> value, long bucketCount, long seed) {
+	public static long hash(Supplier<byte[]> value, long maxBucketNumber, long seed) {
 		byte[] data = null;
 		if (value != null) {
 			data = value.get();
 		}
-		return BucketHasher.hash(data, bucketCount, seed);
+		return BucketHasher.hash(data, maxBucketNumber, seed);
 	}
 
 	/**
@@ -534,8 +542,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(ByteBuffer value, long bucketCount) {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(ByteBuffer value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -545,12 +553,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(ByteBuffer value, long bucketCount, long seed) {
+	public static long hash(ByteBuffer value, long maxBucketNumber, long seed) {
 		CheckedConsumer<MessageDigest, RuntimeException> updater = null;
 		if (value != null) {
 			updater = (md) -> DigestUtils.updateDigest(md, value);
 		}
-		return BucketHasher.calculate(updater, bucketCount, seed);
+		return BucketHasher.calculate(updater, maxBucketNumber, seed);
 	}
 
 	/**
@@ -571,8 +579,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(ReadableByteChannel value, long bucketCount) throws IOException {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(ReadableByteChannel value, long maxBucketNumber) throws IOException {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -582,9 +590,9 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(ReadableByteChannel value, long bucketCount, long seed) throws IOException {
+	public static long hash(ReadableByteChannel value, long maxBucketNumber, long seed) throws IOException {
 		if (value == null) { return -1; }
-		return BucketHasher.hash(Channels.newInputStream(value), bucketCount, seed);
+		return BucketHasher.hash(Channels.newInputStream(value), maxBucketNumber, seed);
 	}
 
 	/**
@@ -605,8 +613,8 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(InputStream value, long bucketCount) throws IOException {
-		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
+	public static long hash(InputStream value, long maxBucketNumber) throws IOException {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
 	/**
@@ -616,25 +624,31 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(InputStream value, long bucketCount, long seed) throws IOException {
+	public static long hash(InputStream value, long maxBucketNumber, long seed) throws IOException {
 		CheckedConsumer<MessageDigest, IOException> updater = null;
 		if (value != null) {
 			updater = (md) -> DigestUtils.updateDigest(md, value);
 		}
-		return BucketHasher.calculate(updater, bucketCount, seed);
+		return BucketHasher.calculate(updater, maxBucketNumber, seed);
 	}
 
-	private static <E extends Throwable> long calculate(CheckedConsumer<MessageDigest, E> updater, long bucketCount,
+	private static void validateValue(String name, long value, long min, long max) {
+		if ((value < min) || (value > max)) {
+			throw new IllegalArgumentException(
+				String.format("The %s must be between %d and %d (%d was given)", name, min, max, value));
+		}
+	}
+
+	private static <E extends Throwable> long calculate(CheckedConsumer<MessageDigest, E> updater, long maxBucketNumber,
 		long seed) throws E {
+
+		// Parameter sanity
+		BucketHasher.validateValue("maximum bucket", maxBucketNumber, BucketHasher.MIN_BUCKET, BucketHasher.MAX_BUCKET);
+		BucketHasher.validateValue("seed", seed, BucketHasher.MIN_SEED, BucketHasher.MAX_SEED);
+
+		// Now proceed to the calculation, applying any shortcuts as appropriate
 		if (updater == null) { return -1; }
-
-		// Sanitize the bucketCount value
-		if (bucketCount < 0) { throw new IllegalArgumentException("The bucket count may not be a negative number"); }
-		bucketCount = Tools.ensureBetween(BucketHasher.MIN_BUCKET, bucketCount, BucketHasher.MAX_BUCKET);
-		if (bucketCount == 0) { return 0; }
-
-		// Sanitize the seed value
-		seed &= BucketHasher.SEED_MASK;
+		if (maxBucketNumber == 0) { return 0; }
 
 		// First things first: consume the primary data
 		MessageDigest md = DigestUtils.getSha1Digest();
@@ -651,10 +665,10 @@ public class BucketHasher {
 
 		// Finally, compute the actual bucket
 		byte[] digest = md.digest();
+		// long bucket = BucketHasher.readLong(digest, 0);
 		ByteBuffer buf = ByteBuffer.wrap(digest);
-
 		long bucket = buf.getLong();
 		// Strip the signum, and ensure the value is within our bucket range
-		return ((bucket & Long.MAX_VALUE) % bucketCount);
+		return ((bucket & Long.MAX_VALUE) % (maxBucketNumber + 1));
 	}
 }
