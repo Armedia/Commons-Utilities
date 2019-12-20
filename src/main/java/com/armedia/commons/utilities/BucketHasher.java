@@ -18,26 +18,70 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 import com.armedia.commons.utilities.function.CheckedConsumer;
 
+/**
+ * <p>
+ * This class provides methods to calculate a hash value that is guaranteed to be between {@code 0}
+ * and the given {@code bucketCount} (inclusive), or {@code -1} if the value to calculate the hash
+ * for results in a {@code null}-value. All methods work in basically the same way: they conver the
+ * given {@code value} parameter into a "byte stream" (an {@link InputStream}, a {@link ByteBuffer},
+ * or a {@code byte[]}), as this is necessary to feed the underlying {@link MessageDigest} instance.
+ * The hash is calculated using SHA1 as the hashing algorithm.
+ * </p>
+ * <p>
+ * The optional {@code bucketCount} value determines the maximum value returned. If this is
+ * {@code 0}, the constant value 0 will be returned without performing any computation because
+ * (obviously) there can only be one bucket. The maximum value for {@code bucketCount} is
+ * {@code 4,294,967,295} (hex {@code 0xFFFFFFFFL}), which is also used as a default when no bucket
+ * count value is available as a parameter. If the bucket count given is less than {@code 0}, then
+ * an {@link IllegalArgumentException} will be raised. If the bucket count given is greater than the
+ * maximum bucket count of {@code 4,294,967,295}, this maximum value will be used instead.
+ * </p>
+ * <p>
+ * The optional {@code seed} value can be used to further alter the hash computation, but only the
+ * lower 32 bits of the seed will be used (i.e. values between {@code 0} and {@code 4,294,967,295}).
+ * If the seed value is {@code 0}, then no seed computation will be performed.
+ * </p>
+ */
 public class BucketHasher {
 
 	public static final long MIN_BUCKET = 0x00000000L;
 	public static final long MAX_BUCKET = 0xFFFFFFFFL;
 	public static final long DEF_BUCKET = BucketHasher.MAX_BUCKET;
-	private static final long BUCKET_MASK = 0xFFFFFFFFL;
 
 	public static final long MIN_SEED = 0x00000000L;
 	public static final long MAX_SEED = 0xFFFFFFFFL;
 	public static final long DEF_SEED = BucketHasher.MIN_SEED;
 	private static final long SEED_MASK = 0xFFFFFFFFL;
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Byte value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Byte value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Byte value, long bucketCount, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
@@ -46,14 +90,35 @@ public class BucketHasher {
 		return BucketHasher.calculate(converter, 4, bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Short value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Short value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Short value, long bucketCount, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
@@ -62,14 +127,35 @@ public class BucketHasher {
 		return BucketHasher.calculate(converter, 2, bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Integer value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Integer value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Integer value, long bucketCount, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
@@ -78,14 +164,35 @@ public class BucketHasher {
 		return BucketHasher.calculate(converter, 4, bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Long value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Long value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Long value, long bucketCount, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
@@ -94,27 +201,69 @@ public class BucketHasher {
 		return BucketHasher.calculate(converter, 4, bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(BigInteger value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(BigInteger value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(BigInteger value, long bucketCount, long seed) {
 		if (value == null) { return -1; }
 		return BucketHasher.hash(value::toByteArray, bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Float value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Float value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Float value, long bucketCount, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
@@ -123,14 +272,35 @@ public class BucketHasher {
 		return BucketHasher.calculate(converter, 4, bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Double value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Double value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Double value, long bucketCount, long seed) {
 		Consumer<ByteBuffer> converter = null;
 		if (value != null) {
@@ -139,19 +309,47 @@ public class BucketHasher {
 		return BucketHasher.calculate(converter, 4, bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(BigDecimal value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(BigDecimal value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(BigDecimal value, long bucketCount, long seed) {
 		if (value == null) { return -1; }
 		return BucketHasher.hash(value.unscaledValue(), bucketCount, seed);
 	}
 
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	private static long calculate(Consumer<ByteBuffer> converter, int bytes, long bucketCount, long seed) {
 		if (converter == null) { return -1; }
 		ByteBuffer buf = ByteBuffer.allocate(bytes);
@@ -162,16 +360,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code 4294967295L}
-	 * (hex {@code 0xFFFFFFFFL}, inclusive), or {@code -1L} if the given value is {@code null}.
-	 * </p>
-	 * <p>
-	 * The given value is serialized, and its hash is computed against the serialized bytes.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(Serializable value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
@@ -179,20 +371,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL).
-	 * </p>
-	 * <p>
-	 * The given value is serialized, and its hash is computed against the serialized bytes.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(Serializable value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
@@ -200,24 +382,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL). The {@code seed} value can be
-	 * used to further alter the hash computation, and only the lower 32 bits of the seed will be
-	 * used (i.e. values between 0 and 4294967295).
-	 * </p>
-	 * <p>
-	 * The given value is serialized, and its hash is computed against the serialized bytes.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @param seed
-	 *            a seed value to further influence the computed hash
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(Serializable value, long bucketCount, long seed) {
 		CheckedConsumer<MessageDigest, RuntimeException> updater = null;
@@ -239,17 +407,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code 4294967295L}
-	 * (hex {@code 0xFFFFFFFFL}, inclusive), or {@code -1L} if the given value is {@code null}.
-	 * </p>
-	 * <p>
-	 * The given {@link String} converted to a byte array using {@link String#getBytes()}, and the
-	 * hash is calculated against the resulting byte array.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(String value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
@@ -257,21 +418,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL).
-	 * </p>
-	 * <p>
-	 * The given {@link String} converted to a byte array using {@link String#getBytes()}, and the
-	 * hash is calculated against the resulting byte array.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(String value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
@@ -279,25 +429,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL). The {@code seed} value can be
-	 * used to further alter the hash computation, and only the lower 32 bits of the seed will be
-	 * used (i.e. values between 0 and 4294967295).
-	 * </p>
-	 * <p>
-	 * The given {@link String} converted to a byte array using {@link String#getBytes()}, and the
-	 * hash is calculated against the resulting byte array.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @param seed
-	 *            a seed value to further influence the computed hash
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(String value, long bucketCount, long seed) {
 		ByteBuffer buf = null;
@@ -309,13 +444,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code 4294967295L}
-	 * (hex {@code 0xFFFFFFFFL}, inclusive), or {@code -1L} if the given value is {@code null}.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(byte[] value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
@@ -323,17 +455,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(byte[] value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
@@ -341,21 +466,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL). The {@code seed} value can be
-	 * used to further alter the hash computation, and only the lower 32 bits of the seed will be
-	 * used (i.e. values between 0 and 4294967295).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @param seed
-	 *            a seed value to further influence the computed hash
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(byte[] value, long bucketCount, long seed) {
 		ByteBuffer buf = null;
@@ -367,14 +481,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code 4294967295L}
-	 * (hex {@code 0xFFFFFFFFL}, inclusive), or {@code -1L} if the given value is {@code null} or
-	 * its supplied value (via {@link Supplier#get()}) is {@code null}.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(Supplier<byte[]> value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
@@ -382,18 +492,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null} or its supplied value (via
-	 * {@link Supplier#get()}) is {@code null}. If {@code bucketCount} is 0, the constant value 0
-	 * will be returned without any calculation being performed. The maximum value for
-	 * {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(Supplier<byte[]> value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
@@ -401,22 +503,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null} or its supplied value (via
-	 * {@link Supplier#get()}) is {@code null}. If {@code bucketCount} is 0, the constant value 0
-	 * will be returned without any calculation being performed. The maximum value for
-	 * {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL). The {@code seed} value can be used to
-	 * further alter the hash computation, and only the lower 32 bits of the seed will be used (i.e.
-	 * values between 0 and 4294967295).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the {@link Supplier} from where the hash data will be pulled
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @param seed
-	 *            a seed value to further influence the computed hash
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(Supplier<byte[]> value, long bucketCount, long seed) {
 		byte[] data = null;
@@ -428,13 +518,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code 4294967295L}
-	 * (hex {@code 0xFFFFFFFFL}, inclusive), or {@code -1L} if the given value is {@code null}.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(ByteBuffer value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
@@ -442,17 +529,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(ByteBuffer value, long bucketCount) {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
@@ -460,21 +540,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL). The {@code seed} value can be
-	 * used to further alter the hash computation, and only the lower 32 bits of the seed will be
-	 * used (i.e. values between 0 and 4294967295).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @param seed
-	 *            a seed value to further influence the computed hash
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
+	 * @see BucketHasher
 	 */
 	public static long hash(ByteBuffer value, long bucketCount, long seed) {
 		CheckedConsumer<MessageDigest, RuntimeException> updater = null;
@@ -486,15 +555,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code 4294967295L}
-	 * (hex {@code 0xFFFFFFFFL}, inclusive), or {@code -1L} if the given value is {@code null}.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
-	 * @throws IOException
-	 *             if an I/O error occurrs reading from the given stream
+	 * @see BucketHasher
 	 */
 	public static long hash(ReadableByteChannel value) throws IOException {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
@@ -502,19 +566,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
-	 * @throws IOException
-	 *             if an I/O error occurrs reading from the given stream
+	 * @see BucketHasher
 	 */
 	public static long hash(ReadableByteChannel value, long bucketCount) throws IOException {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
@@ -522,23 +577,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL). The {@code seed} value can be
-	 * used to further alter the hash computation, and only the lower 32 bits of the seed will be
-	 * used (i.e. values between 0 and 4294967295).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @param seed
-	 *            a seed value to further influence the computed hash
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
-	 * @throws IOException
-	 *             if an I/O error occurrs reading from the given stream
+	 * @see BucketHasher
 	 */
 	public static long hash(ReadableByteChannel value, long bucketCount, long seed) throws IOException {
 		if (value == null) { return -1; }
@@ -547,15 +589,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code 4294967295L}
-	 * (hex {@code 0xFFFFFFFFL}, inclusive), or {@code -1L} if the given value is {@code null}.
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
-	 * @throws IOException
-	 *             if an I/O error occurrs reading from the given stream
+	 * @see BucketHasher
 	 */
 	public static long hash(InputStream value) throws IOException {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
@@ -563,19 +600,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
-	 * @throws IOException
-	 *             if an I/O error occurrs reading from the given stream
+	 * @see BucketHasher
 	 */
 	public static long hash(InputStream value, long bucketCount) throws IOException {
 		return BucketHasher.hash(value, bucketCount, BucketHasher.DEF_SEED);
@@ -583,23 +611,10 @@ public class BucketHasher {
 
 	/**
 	 * <p>
-	 * Calculates a hash value that is guaranteed to be between {@code 0L} and {@code bucketCount}
-	 * (inclusive), or {@code -1L} if the given value is {@code null}. If {@code bucketCount} is 0,
-	 * the constant value 0 will be returned without any calculation being performed. The maximum
-	 * value for {@code bucketCount} is 4294967295 (hex 0xFFFFFFFFL). The {@code seed} value can be
-	 * used to further alter the hash computation, and only the lower 32 bits of the seed will be
-	 * used (i.e. values between 0 and 4294967295).
+	 * See the {@link BucketHasher class documentation} for details.
 	 * </p>
 	 *
-	 * @param value
-	 *            the value to calculate the hash for
-	 * @param bucketCount
-	 *            the (inclusive) upper bound for the 0-based index that will be returned
-	 * @param seed
-	 *            a seed value to further influence the computed hash
-	 * @return a hash value that is guaranteed to be between 0 and {@code bucketCount} (inclusive)
-	 * @throws IOException
-	 *             if an I/O error occurrs reading from the given stream
+	 * @see BucketHasher
 	 */
 	public static long hash(InputStream value, long bucketCount, long seed) throws IOException {
 		CheckedConsumer<MessageDigest, IOException> updater = null;
@@ -609,31 +624,23 @@ public class BucketHasher {
 		return BucketHasher.calculate(updater, bucketCount, seed);
 	}
 
-	/**
-	 * Implements the hash() calculation
-	 *
-	 * @param <E>
-	 * @param updater
-	 * @param bucketCount
-	 * @param seed
-	 * @return
-	 * @throws E
-	 */
 	private static <E extends Throwable> long calculate(CheckedConsumer<MessageDigest, E> updater, long bucketCount,
 		long seed) throws E {
 		if (updater == null) { return -1; }
 
-		// Ensure both bucketCount and seed values meet the required criteria
-		bucketCount &= BucketHasher.BUCKET_MASK;
-		seed &= BucketHasher.SEED_MASK;
-
+		// Sanitize the bucketCount value
+		if (bucketCount < 0) { throw new IllegalArgumentException("The bucket count may not be a negative number"); }
+		bucketCount = Tools.ensureBetween(BucketHasher.MIN_BUCKET, bucketCount, BucketHasher.MAX_BUCKET);
 		if (bucketCount == 0) { return 0; }
 
-		// First things first: consume the data
+		// Sanitize the seed value
+		seed &= BucketHasher.SEED_MASK;
+
+		// First things first: consume the primary data
 		MessageDigest md = DigestUtils.getSha1Digest();
 		updater.acceptChecked(md);
 
-		// Next, Apply the seed
+		// Next, apply the seed if any was given
 		if (seed != 0L) {
 			int shift = 24;
 			for (int i = 0; i < 4; i++) {
