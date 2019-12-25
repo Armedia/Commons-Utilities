@@ -42,7 +42,7 @@ public class BucketHasherTest {
 	@Test
 	public void testHash() throws IOException {
 		final byte[] nullB = null;
-		final String nullStr = null;
+		final CharSequence nullStr = null;
 		final ByteBuffer nullBuffer = null;
 		final InputStream nullIn = null;
 
@@ -60,7 +60,7 @@ public class BucketHasherTest {
 		Assertions.assertEquals(-1L, BucketHasher.hash(nullIn, 0, 0));
 
 		byte[] b = new byte[4];
-		String str = "";
+		CharSequence str = "";
 		ByteBuffer buf = ByteBuffer.allocate(4);
 		InputStream in = new ByteArrayInputStream(b);
 
@@ -90,16 +90,16 @@ public class BucketHasherTest {
 		Assertions.assertEquals(2441322222L, BucketHasher.hash(1, BucketHasher.DEF_BUCKET, 10L));
 		Assertions.assertEquals(3501171530L, BucketHasher.hash(1, BucketHasher.DEF_BUCKET, BucketHasher.MAX_SEED));
 
-		Collection<Triple<String, Long, Class<Throwable>>> c = new LinkedList<>();
+		Collection<Triple<CharSequence, Long, Class<Throwable>>> c = new LinkedList<>();
 		c.add(Triple.of("010203", 2665938722L, null));
 		c.add(Triple.of("abc", 1191608682L, null));
-		for (Triple<String, Long, Class<Throwable>> r : c) {
+		for (Triple<CharSequence, Long, Class<Throwable>> r : c) {
 			Class<Throwable> t = r.getRight();
 			if (t != null) {
 				Assertions.assertThrows(t, () -> BucketHasher.hash(r.getLeft()));
 				continue;
 			} else {
-				Assertions.assertEquals(r.getMiddle(), BucketHasher.hash(r.getLeft()), r.getLeft());
+				Assertions.assertEquals(r.getMiddle(), BucketHasher.hash(r.getLeft()), r.getLeft().toString());
 			}
 		}
 		b = new byte[3];
@@ -107,7 +107,6 @@ public class BucketHasherTest {
 		b[1] = 2;
 		b[2] = 3;
 		Assertions.assertEquals(2562861693L, BucketHasher.hash(b));
-
 	}
 
 }

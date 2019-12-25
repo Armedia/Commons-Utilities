@@ -524,7 +524,7 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(String value) {
+	public static long hash(CharSequence value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
 
@@ -537,7 +537,7 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(String value, long maxBucketNumber) {
+	public static long hash(CharSequence value, long maxBucketNumber) {
 		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
 	}
 
@@ -550,10 +550,10 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	public static long hash(String value, long maxBucketNumber, long seed) {
+	public static long hash(CharSequence value, long maxBucketNumber, long seed) {
 		ByteBuffer buf = null;
 		if (value != null) {
-			buf = ByteBuffer.wrap(value.getBytes(StandardCharsets.UTF_8));
+			buf = StandardCharsets.UTF_8.encode(CharBuffer.wrap(value));
 		}
 		return BucketHasher.hash(buf, maxBucketNumber, seed);
 	}
