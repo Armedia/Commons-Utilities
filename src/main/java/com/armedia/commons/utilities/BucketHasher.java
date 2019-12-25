@@ -34,11 +34,13 @@ import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -52,7 +54,8 @@ import com.armedia.commons.utilities.function.CheckedConsumer;
  * hash from results in a {@code null}-value. All methods work in basically the same way: they
  * convert the given {@code value} parameter into a "byte stream" (an {@link InputStream}, a
  * {@link ByteBuffer}, or a {@code byte[]}), as this is necessary to feed the underlying
- * {@link MessageDigest} instance. The hash is calculated using SHA1 as the hashing algorithm.
+ * {@link MessageDigest} instance. The hash is calculated using SHA1 as the hashing algorithm
+ * applied to the generated {@code byte[]}.
  * </p>
  * <p>
  * The optional {@code maxBucketNumber} value determines the maximum value returned. If this is
@@ -60,13 +63,16 @@ import com.armedia.commons.utilities.function.CheckedConsumer;
  * (obviously) there can only be one bucket. The maximum value for {@code maxBucketNumber} is
  * {@code 4,294,967,295} (hex {@code 0xFFFFFFFFL}), which is also used as a default when no bucket
  * count value is available as a parameter. If the bucket count given is less than {@code 0}, or
- * greater than the maximum value, then an {@link IllegalArgumentException} will be raised.
+ * greater than the maximum value, then an {@link IllegalArgumentException} will be raised. For the
+ * methods taht accept a {@link Boolean} parameter, the {@code maxBucketNumber} parameter will be
+ * folded to either {@code 0} or {@code 1}.
  * </p>
  * <p>
  * The optional {@code seed} value can be used to further alter the hash computation, and can be any
  * number between {@code 0} and {@code 4,294,967,295} (inclusive). Any other value will result in an
  * {@link IllegalArgumentException} being raised. If the seed value is {@code 0}, then no additional
- * seed computations will be performed.
+ * seed computations will be performed. For the methods taht accept a {@link Boolean} parameter, the
+ * seed will always be {@code 0}.
  * </p>
  */
 public class BucketHasher {
@@ -152,6 +158,40 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
+	public static long hash(Boolean value) {
+		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
+	}
+
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
+	public static long hash(Boolean value, long maxBucketNumber) {
+		return BucketHasher.hash(value, maxBucketNumber, BucketHasher.DEF_SEED);
+	}
+
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
+	public static long hash(Boolean value, long maxBucketNumber, long seed) {
+		if (value == null) { return -1; }
+		return ((maxBucketNumber == 0) || !value ? 0 : 1);
+	}
+
+	/**
+	 * <p>
+	 * See the {@link BucketHasher class documentation} for details.
+	 * </p>
+	 *
+	 * @see BucketHasher
+	 */
 	public static long hash(Byte value) {
 		return BucketHasher.hash(value, BucketHasher.DEF_BUCKET, BucketHasher.DEF_SEED);
 	}
@@ -175,11 +215,7 @@ public class BucketHasher {
 	 * @see BucketHasher
 	 */
 	public static long hash(Byte value, long maxBucketNumber, long seed) {
-		Consumer<ByteBuffer> converter = null;
-		if (value != null) {
-			converter = (buf) -> buf.put(value.byteValue());
-		}
-		return BucketHasher.calculate(converter, 4, maxBucketNumber, seed);
+		return BucketHasher.calculate(ByteBuffer::put, Number::byteValue, value, maxBucketNumber, seed);
 	}
 
 	/**
@@ -212,11 +248,7 @@ public class BucketHasher {
 	 * @see BucketHasher
 	 */
 	public static long hash(Short value, long maxBucketNumber, long seed) {
-		Consumer<ByteBuffer> converter = null;
-		if (value != null) {
-			converter = (buf) -> buf.putShort(value.shortValue());
-		}
-		return BucketHasher.calculate(converter, 2, maxBucketNumber, seed);
+		return BucketHasher.calculate(ByteBuffer::putShort, Number::shortValue, value, maxBucketNumber, seed);
 	}
 
 	/**
@@ -249,11 +281,7 @@ public class BucketHasher {
 	 * @see BucketHasher
 	 */
 	public static long hash(Integer value, long maxBucketNumber, long seed) {
-		Consumer<ByteBuffer> converter = null;
-		if (value != null) {
-			converter = (buf) -> buf.putInt(value.intValue());
-		}
-		return BucketHasher.calculate(converter, 4, maxBucketNumber, seed);
+		return BucketHasher.calculate(ByteBuffer::putInt, Number::intValue, value, maxBucketNumber, seed);
 	}
 
 	/**
@@ -286,11 +314,7 @@ public class BucketHasher {
 	 * @see BucketHasher
 	 */
 	public static long hash(Long value, long maxBucketNumber, long seed) {
-		Consumer<ByteBuffer> converter = null;
-		if (value != null) {
-			converter = (buf) -> buf.putLong(value.longValue());
-		}
-		return BucketHasher.calculate(converter, 8, maxBucketNumber, seed);
+		return BucketHasher.calculate(ByteBuffer::putLong, Number::longValue, value, maxBucketNumber, seed);
 	}
 
 	/**
@@ -357,11 +381,7 @@ public class BucketHasher {
 	 * @see BucketHasher
 	 */
 	public static long hash(Float value, long maxBucketNumber, long seed) {
-		Consumer<ByteBuffer> converter = null;
-		if (value != null) {
-			converter = (buf) -> buf.putFloat(value.floatValue());
-		}
-		return BucketHasher.calculate(converter, 4, maxBucketNumber, seed);
+		return BucketHasher.calculate(ByteBuffer::putFloat, Number::floatValue, value, maxBucketNumber, seed);
 	}
 
 	/**
@@ -394,11 +414,7 @@ public class BucketHasher {
 	 * @see BucketHasher
 	 */
 	public static long hash(Double value, long maxBucketNumber, long seed) {
-		Consumer<ByteBuffer> converter = null;
-		if (value != null) {
-			converter = (buf) -> buf.putDouble(value.doubleValue());
-		}
-		return BucketHasher.calculate(converter, 8, maxBucketNumber, seed);
+		return BucketHasher.calculate(ByteBuffer::putDouble, Number::doubleValue, value, maxBucketNumber, seed);
 	}
 
 	/**
@@ -442,10 +458,12 @@ public class BucketHasher {
 	 *
 	 * @see BucketHasher
 	 */
-	private static long calculate(Consumer<ByteBuffer> converter, int bytes, long maxBucketNumber, long seed) {
-		if (converter == null) { return -1; }
-		ByteBuffer buf = ByteBuffer.allocate(bytes);
-		converter.accept(buf);
+	private static <N extends Number> long calculate(BiConsumer<ByteBuffer, N> consumer, Function<Number, N> producer,
+		Number value, long maxBucketNumber, long seed) {
+		if ((consumer == null) || (producer == null) || (value == null)) { return -1; }
+		// The largest primitive is 8 bytes long, so let's use that
+		ByteBuffer buf = ByteBuffer.allocate(8);
+		consumer.accept(buf, producer.apply(value));
 		buf.flip();
 		return BucketHasher.hash(buf, maxBucketNumber, seed);
 	}
