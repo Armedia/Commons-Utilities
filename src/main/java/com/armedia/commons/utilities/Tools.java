@@ -39,6 +39,7 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2189,6 +2190,19 @@ public class Tools {
 			f = f.getAbsoluteFile();
 		}
 		return f;
+	}
+
+	public static Path canonicalize(Path p) {
+		if (p == null) { return null; }
+		p = p.normalize();
+		try {
+			p = p.toRealPath();
+		} catch (IOException e) {
+			// Do nothing...
+		} finally {
+			p = p.toAbsolutePath();
+		}
+		return p;
 	}
 
 	public static final char DEFAULT_SEPARATOR = ',';
