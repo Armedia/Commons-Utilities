@@ -27,6 +27,7 @@
 package com.armedia.commons.utilities;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
@@ -36,32 +37,45 @@ public class CloseableIteratorWrapperTest {
 
 	@Test
 	public void testConstructors() {
-		Iterator<Object> it = EasyMock.createStrictMock(Iterator.class);
-		Runnable r = EasyMock.createStrictMock(Runnable.class);
+		final Iterator<Object> it = EasyMock.createStrictMock(Iterator.class);
+		final Runnable r = EasyMock.createStrictMock(Runnable.class);
+		final Stream<Object> s = EasyMock.createStrictMock(Stream.class);
+		final Stream<Object> nullStream = null;
+		final Iterator<Object> nullIt = null;
 
-		Assertions.assertThrows(NullPointerException.class, () -> new CloseableIteratorWrapper<>(null));
+		Assertions.assertThrows(NullPointerException.class, () -> new CloseableIteratorWrapper<>(nullIt));
+		Assertions.assertThrows(NullPointerException.class, () -> new CloseableIteratorWrapper<>(nullStream));
 		Assertions.assertThrows(NullPointerException.class, () -> new CloseableIteratorWrapper<>(null, null));
 		Assertions.assertThrows(NullPointerException.class, () -> new CloseableIteratorWrapper<>(null, r));
 
-		EasyMock.reset(it, r);
-		EasyMock.replay(it, r);
+		EasyMock.reset(it, r, s);
+		EasyMock.replay(it, r, s);
 		try (CloseableIterator<Object> o = new CloseableIteratorWrapper<>(it)) {
 		}
-		EasyMock.verify(it, r);
+		EasyMock.verify(it, r, s);
 
-		EasyMock.reset(it, r);
-		EasyMock.replay(it, r);
+		EasyMock.reset(it, r, s);
+		EasyMock.expect(s.iterator()).andReturn(it).once();
+		s.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(it, r, s);
+		try (CloseableIterator<Object> o = new CloseableIteratorWrapper<>(s)) {
+		}
+		EasyMock.verify(it, r, s);
+
+		EasyMock.reset(it, r, s);
+		EasyMock.replay(it, r, s);
 		try (CloseableIterator<Object> o = new CloseableIteratorWrapper<>(it, null)) {
 		}
-		EasyMock.verify(it, r);
+		EasyMock.verify(it, r, s);
 
-		EasyMock.reset(it, r);
+		EasyMock.reset(it, r, s);
 		r.run();
 		EasyMock.expectLastCall().once();
-		EasyMock.replay(it, r);
+		EasyMock.replay(it, r, s);
 		try (CloseableIterator<Object> o = new CloseableIteratorWrapper<>(it, r)) {
 		}
-		EasyMock.verify(it, r);
+		EasyMock.verify(it, r, s);
 	}
 
 	@Test

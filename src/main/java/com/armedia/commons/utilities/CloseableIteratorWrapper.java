@@ -28,6 +28,7 @@ package com.armedia.commons.utilities;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class CloseableIteratorWrapper<E> extends CloseableIterator<E> {
 
@@ -44,6 +45,10 @@ public final class CloseableIteratorWrapper<E> extends CloseableIterator<E> {
 	public CloseableIteratorWrapper(Iterator<E> it, Runnable closer) {
 		this.it = Objects.requireNonNull(it, "Must provide a non-null iterator");
 		this.closer = Tools.coalesce(closer, CloseableIteratorWrapper.NOOP);
+	}
+
+	public CloseableIteratorWrapper(Stream<E> it) {
+		this(Objects.requireNonNull(it, "Must provide a non-null Stream").iterator(), it::close);
 	}
 
 	@Override
