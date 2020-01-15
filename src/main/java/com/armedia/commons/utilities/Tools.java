@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2020 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -62,10 +62,10 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringTokenizer;
 
@@ -2238,28 +2238,69 @@ public class Tools {
 		return values;
 	}
 
-	public static final Iterator<String> splitEscapedIterator(char separator, String value) {
+	public static final Iterator<String> splitEscapedIterator(final char separator, final String value) {
 		if (value == null) { return null; }
 		return new CloseableIterator<String>() {
-			final Pattern splitter = Pattern.compile(String.format("(?<!\\\\)\\Q%s\\E", separator));
-			final Matcher matcher = this.splitter.matcher(value);
-			private int previous = 0;
-			private final String replacer = String.format("\\\\\\Q%s\\E", separator);
-			private final String replacement = String.valueOf(separator);
+			private final StringBuilder buf = new StringBuilder(value.length());
+			private final int max = value.length();
+			private int pos = 0;
+			private boolean completed = false;
+
+			private CloseableIterator<String>.Result getBufferValue() {
+				if (this.buf.length() == 0) { return found(StringUtils.EMPTY); }
+				return found(this.buf.toString());
+			}
 
 			@Override
 			protected CloseableIterator<String>.Result findNext() throws Exception {
-				if (this.matcher.find()) {
-					String current = value.substring(this.previous, this.matcher.start());
-					this.previous = this.matcher.end();
-					return found(current.replaceAll(this.replacer, this.replacement));
+				if (this.completed) { return null; }
+				Character prev = null;
+				boolean store = true;
+				this.buf.setLength(0);
+				while (this.pos < value.length()) {
+					final char current = value.charAt(this.pos);
+					store = true;
+
+					// Is this an escape character?
+					if (current == '\\') {
+						// Special case: the separator is the backslash
+						if (separator == '\\') {
+							// We need to look ahead one
+							final int nextPos = (this.pos + 1);
+							this.pos++;
+							if (nextPos < this.max) {
+								final char next = value.charAt(nextPos);
+								if (next == '\\') {
+									this.buf.append(current);
+									prev = current;
+									this.pos++;
+									continue;
+								}
+							}
+							return getBufferValue();
+						} else if ((prev == null) || ('\\' != prev.charValue())) {
+							prev = current;
+							store = false;
+						}
+					} else if (current == separator) {
+						// If the separator is not escaped, we return what
+						// we've found so far
+						if ((prev == null) || ('\\' != prev.charValue())) {
+							// return what we have so far, and advance the
+							// pointer past the separator
+							this.pos++;
+							return getBufferValue();
+						}
+					}
+
+					if (store) {
+						this.buf.append(current);
+					}
+					prev = current;
+					this.pos++;
 				}
-				if (this.previous <= value.length()) {
-					String current = value.substring(this.previous);
-					this.previous = value.length() + 1;
-					return found(current.replaceAll(this.replacer, this.replacement));
-				}
-				return null;
+				this.completed = true;
+				return getBufferValue();
 			}
 
 			@Override
@@ -2287,7 +2328,7 @@ public class Tools {
 		if (values == null) { return null; }
 		if (!values.hasNext()) { return ""; }
 		String replacer = String.format("\\Q%s\\E", separator);
-		String replacement = String.format("\\\\%s", separator);
+		String replacement = (separator != '\\' ? String.format("\\\\%s", separator) : "\\\\\\\\");
 
 		String str = values.next();
 		if (!values.hasNext()) { return str; }
