@@ -2334,7 +2334,7 @@ public class Tools {
 		if (!values.hasNext()) { return str; }
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(str.replaceAll(replacer, replacement));
+		sb.append(str.replaceAll("\\\\", "\\\\\\\\").replaceAll(replacer, replacement));
 
 		Consumer<String> consumer = (s) -> sb.append(separator);
 		values
