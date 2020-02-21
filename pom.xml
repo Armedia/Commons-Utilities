@@ -1,12 +1,13 @@
+<?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>Armedia Commons Utilities</name>
+	<description>A set of utility classes for general use</description>
 	<groupId>com.armedia.commons</groupId>
 	<artifactId>utilities</artifactId>
-	<version>1.0.14</version>
-	<description>A set of utility classes for general use</description>
+	<version>1.0.15</version>
 	<packaging>jar</packaging>
 	<inceptionYear>2013</inceptionYear>
 
@@ -45,9 +46,20 @@
 	<properties>
 		<maven.min-version>3.2.2</maven.min-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.build.target>11</project.build.target>
-		<project.osgi.repoName>NONE</project.osgi.repoName>
-		<project.osgi.repoUrl>file:///${user.home}/OSGi/releases</project.osgi.repoUrl>
+		<project.build.target>1.8</project.build.target>
+
+		<caliente-license.version>1.0.1</caliente-license.version>
+
+		<commons-io.version>2.6</commons-io.version>
+		<commons-lang3.version>3.8.1</commons-lang3.version>
+		<commons-codec.version>1.11</commons-codec.version>
+		<commons-text.version>1.6</commons-text.version>
+		<slf4j.version>1.7.27</slf4j.version>
+		<junit.version>5.5.2</junit.version>
+		<easymock.version>4.0.2</easymock.version>
+		<logback.version>1.2.3</logback.version>
+
+		<build.number>-SNAPSHOT-${scmBranch}-${buildNumber}</build.number>
 	</properties>
 
 	<distributionManagement>
@@ -84,31 +96,31 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.6</version>
+			<version>${commons-io.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.8.1</version>
+			<version>${commons-lang3.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.11</version>
+			<version>${commons-codec.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.6</version>
+			<version>${commons-text.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.25</version>
+			<version>${slf4j.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -126,19 +138,19 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<version>5.5.2</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.easymock</groupId>
 			<artifactId>easymock</artifactId>
-			<version>4.0.2</version>
+			<version>${easymock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
+			<version>${logback.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -150,6 +162,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>${project.artifactId}-${project.version}${build.number}</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -181,7 +194,7 @@
 						<dependency>
 							<groupId>com.armedia.caliente</groupId>
 							<artifactId>license-headers</artifactId>
-							<version>1.0.1</version>
+							<version>${caliente-license.version}</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -366,4 +379,41 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<properties>
+				<build.number></build.number>
+			</properties>
+		</profile>
+		<profile>
+			<id>beta</id>
+			<properties>
+				<build.number>-beta-${betaNumber}</build.number>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-enforcer-plugin</artifactId>
+						<version>1.4.1</version>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>${maven.min-version}</version>
+								</requireMavenVersion>
+								<requireProperty>
+									<property>betaNumber</property>
+									<message>Must provide a valid betaNumber property (-DbetaNumber=...) for this build</message>
+									<regex>^[0-9]*[1-9]0?$</regex>
+									<regexMessage>The beta number [${betaNumber}] is not composed of all digits, or is not a valid number (it may not be all-zeros, but may have leading zeros)</regexMessage>
+								</requireProperty>
+							</rules>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
