@@ -39,6 +39,7 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2181,22 +2182,24 @@ public class Tools {
 	}
 
 	public static File canonicalize(File f) {
+		return Tools.canonicalize(f, true);
+	}
+
+	public static File canonicalize(File f, boolean followLinks) {
 		if (f == null) { return null; }
-		try {
-			f = f.getCanonicalFile();
-		} catch (IOException e) {
-			// Do nothing...
-		} finally {
-			f = f.getAbsoluteFile();
-		}
-		return f;
+		Path p = Tools.canonicalize(f.toPath(), followLinks);
+		return (p == null ? null : p.toFile());
 	}
 
 	public static Path canonicalize(Path p) {
+		return Tools.canonicalize(p, true);
+	}
+
+	public static Path canonicalize(Path p, boolean followLinks) {
 		if (p == null) { return null; }
 		p = p.normalize();
 		try {
-			p = p.toRealPath();
+			p = (followLinks ? p.toRealPath() : p.toRealPath(LinkOption.NOFOLLOW_LINKS));
 		} catch (IOException e) {
 			// Do nothing...
 		} finally {
