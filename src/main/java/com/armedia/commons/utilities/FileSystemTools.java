@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2020 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -62,7 +62,6 @@ public class FileSystemTools {
 					String.format("User %s failed to create the cache directory '%s'", user, f.getAbsolutePath()));
 			}
 		}
-		f = f.getCanonicalFile();
 		if (!f.isDirectory()) {
 			throw new IOException(String.format("Path '%s' is not a directory", f.getAbsolutePath()));
 		}
@@ -77,12 +76,6 @@ public class FileSystemTools {
 
 	public static File getSystemTemp() {
 		String t = System.getProperty("java.io.tmpdir");
-		if (t == null) { return null; }
-		final File f = new File(t);
-		try {
-			return f.getCanonicalFile();
-		} catch (IOException e) {
-			return f.getAbsoluteFile();
-		}
+		return (t == null ? null : Tools.canonicalize(new File(t)));
 	}
 }
