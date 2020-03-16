@@ -2207,14 +2207,19 @@ public class Tools {
 
 	public static Path toRealPath(Path p, boolean followLinks) {
 		if (p == null) { return null; }
+		boolean normalize = false;
 		try {
 			p = p.toRealPath((followLinks ? Tools.FOLLOW_LINKS : Tools.NOFOLLOW_LINKS));
 		} catch (IOException e) {
 			// Ignore...
+			normalize = true;
 		} finally {
+			if (normalize) {
+				p = p.normalize();
+			}
 			p = p.toAbsolutePath();
 		}
-		return p.normalize();
+		return p;
 	}
 
 	public static Path canonicalize(Path p) {
