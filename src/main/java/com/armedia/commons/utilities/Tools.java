@@ -41,6 +41,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -438,6 +439,8 @@ public class Tools {
 	}
 
 	public static final String NL = String.format("%n");
+
+	public static final Path CWD = Tools.toRealPath(Paths.get(System.getProperty("user.dir")));
 
 	public static Boolean toBoolean(Object o) {
 		if (o == null) { return null; }
@@ -2182,13 +2185,40 @@ public class Tools {
 	}
 
 	public static File canonicalize(File f) {
-		return Tools.canonicalize(f, true);
+		if (f == null) { return null; }
+		try {
+			f = f.getCanonicalFile();
+		} catch (IOException e) {
+			f = f.toPath().normalize().toFile();
+		} finally {
+			f = f.getAbsoluteFile();
+		}
+		return f;
 	}
 
-	public static File canonicalize(File f, boolean followLinks) {
-		if (f == null) { return null; }
-		Path p = Tools.canonicalize(f.toPath(), followLinks);
-		return (p == null ? null : p.toFile());
+	public static Path getCWD() {
+		return Paths.get(".").normalize().toAbsolutePath();
+	}
+
+	private static final LinkOption[] FOLLOW_LINKS = {};
+	private static final LinkOption[] NOFOLLOW_LINKS = {
+		LinkOption.NOFOLLOW_LINKS
+	};
+
+	public static Path toRealPath(Path p) {
+		return Tools.toRealPath(p, true);
+	}
+
+	public static Path toRealPath(Path p, boolean followLinks) {
+		if (p == null) { return null; }
+		try {
+			p = p.toRealPath((followLinks ? Tools.FOLLOW_LINKS : Tools.NOFOLLOW_LINKS));
+		} catch (IOException e) {
+			// Ignore...
+		} finally {
+			p = p.toAbsolutePath();
+		}
+		return p.normalize();
 	}
 
 	public static Path canonicalize(Path p) {
@@ -2197,15 +2227,7 @@ public class Tools {
 
 	public static Path canonicalize(Path p, boolean followLinks) {
 		if (p == null) { return null; }
-		p = p.normalize();
-		try {
-			p = (followLinks ? p.toRealPath() : p.toRealPath(LinkOption.NOFOLLOW_LINKS));
-		} catch (IOException e) {
-			// Do nothing...
-		} finally {
-			p = p.toAbsolutePath();
-		}
-		return p;
+		return Tools.toRealPath(p, followLinks);
 	}
 
 	public static final char DEFAULT_SEPARATOR = ',';
