@@ -2196,11 +2196,6 @@ public class Tools {
 		return f;
 	}
 
-	private static final LinkOption[] FOLLOW_LINKS = {};
-	private static final LinkOption[] NOFOLLOW_LINKS = {
-		LinkOption.NOFOLLOW_LINKS
-	};
-
 	public static Path canonicalize(Path p) {
 		return Tools.canonicalize(p, true);
 	}
@@ -2208,7 +2203,7 @@ public class Tools {
 	public static Path canonicalize(Path p, boolean followLinks) {
 		if (p == null) { return null; }
 		try {
-			p = p.toRealPath((followLinks ? Tools.FOLLOW_LINKS : Tools.NOFOLLOW_LINKS));
+			p = (followLinks ? p.toRealPath() : p.toRealPath(LinkOption.NOFOLLOW_LINKS));
 		} catch (IOException e) {
 			// Ignore...
 			p = p.normalize();
