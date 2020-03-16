@@ -39,7 +39,9 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -437,6 +439,8 @@ public class Tools {
 	}
 
 	public static final String NL = String.format("%n");
+
+	public static final Path CWD = Tools.canonicalize(Paths.get(System.getProperty("user.dir")));
 
 	public static Boolean toBoolean(Object o) {
 		if (o == null) { return null; }
@@ -2185,7 +2189,7 @@ public class Tools {
 		try {
 			f = f.getCanonicalFile();
 		} catch (IOException e) {
-			// Do nothing...
+			f = f.toPath().normalize().toFile();
 		} finally {
 			f = f.getAbsoluteFile();
 		}
@@ -2193,12 +2197,16 @@ public class Tools {
 	}
 
 	public static Path canonicalize(Path p) {
+		return Tools.canonicalize(p, true);
+	}
+
+	public static Path canonicalize(Path p, boolean followLinks) {
 		if (p == null) { return null; }
-		p = p.normalize();
 		try {
-			p = p.toRealPath();
+			p = (followLinks ? p.toRealPath() : p.toRealPath(LinkOption.NOFOLLOW_LINKS));
 		} catch (IOException e) {
-			// Do nothing...
+			// Ignore...
+			p = p.normalize();
 		} finally {
 			p = p.toAbsolutePath();
 		}
