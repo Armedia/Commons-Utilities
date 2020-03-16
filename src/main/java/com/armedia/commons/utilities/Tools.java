@@ -440,7 +440,7 @@ public class Tools {
 
 	public static final String NL = String.format("%n");
 
-	public static final Path CWD = Tools.toRealPath(Paths.get(System.getProperty("user.dir")));
+	public static final Path CWD = Tools.canonicalize(Paths.get(System.getProperty("user.dir")));
 
 	public static Boolean toBoolean(Object o) {
 		if (o == null) { return null; }
@@ -2201,11 +2201,11 @@ public class Tools {
 		LinkOption.NOFOLLOW_LINKS
 	};
 
-	public static Path toRealPath(Path p) {
-		return Tools.toRealPath(p, true);
+	public static Path canonicalize(Path p) {
+		return Tools.canonicalize(p, true);
 	}
 
-	public static Path toRealPath(Path p, boolean followLinks) {
+	public static Path canonicalize(Path p, boolean followLinks) {
 		if (p == null) { return null; }
 		try {
 			p = p.toRealPath((followLinks ? Tools.FOLLOW_LINKS : Tools.NOFOLLOW_LINKS));
@@ -2216,15 +2216,6 @@ public class Tools {
 			p = p.toAbsolutePath();
 		}
 		return p;
-	}
-
-	public static Path canonicalize(Path p) {
-		return Tools.canonicalize(p, true);
-	}
-
-	public static Path canonicalize(Path p, boolean followLinks) {
-		if (p == null) { return null; }
-		return Tools.toRealPath(p, followLinks);
 	}
 
 	public static final char DEFAULT_SEPARATOR = ',';
