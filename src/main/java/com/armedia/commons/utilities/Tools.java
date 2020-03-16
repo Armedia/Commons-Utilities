@@ -2196,10 +2196,6 @@ public class Tools {
 		return f;
 	}
 
-	public static Path getCWD() {
-		return Paths.get(".").normalize().toAbsolutePath();
-	}
-
 	private static final LinkOption[] FOLLOW_LINKS = {};
 	private static final LinkOption[] NOFOLLOW_LINKS = {
 		LinkOption.NOFOLLOW_LINKS
