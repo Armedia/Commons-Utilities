@@ -54,24 +54,24 @@ public class FileSystemTools {
 
 	public static File ensureDirectory(final File path) throws IOException {
 		if (path == null) { throw new IllegalArgumentException("No path given"); }
-		final String user = Tools.coalesce(System.getProperty("user.name"), "<unknown>");
+		final String user = Tools.coalesce(System.getProperty("user.name"), "the current user");
 		File f = path.getAbsoluteFile();
 		if (!f.exists()) {
 			if (!f.mkdirs()) {
 				throw new IOException(
-					String.format("User %s failed to create the cache directory '%s'", user, f.getAbsolutePath()));
+					String.format("Failed to create the directory [%s] as %s", f.getAbsolutePath(), user));
 			}
 		}
 		if (!f.isDirectory()) {
-			throw new IOException(String.format("Path '%s' is not a directory", f.getAbsolutePath()));
+			throw new IOException(String.format("Path [%s] is not a directory", f.getAbsolutePath()));
 		}
 		if (!f.canRead()) {
-			throw new IOException(String.format("Directory '%s' is not readable by %s", f.getAbsolutePath(), user));
+			throw new IOException(String.format("Directory [%s] is not readable by %s", f.getAbsolutePath(), user));
 		}
 		if (!f.canWrite()) {
-			throw new IOException(String.format("Directory '%s' is not writable by %s", f.getAbsolutePath(), user));
+			throw new IOException(String.format("Directory [%s] is not writable by %s", f.getAbsolutePath(), user));
 		}
-		return f.getAbsoluteFile();
+		return f;
 	}
 
 	public static File getSystemTemp() {
