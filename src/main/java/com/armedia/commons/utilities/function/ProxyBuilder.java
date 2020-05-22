@@ -42,12 +42,12 @@ public final class ProxyBuilder {
 
 	@FunctionalInterface
 	public static interface ArgumentProcessor {
-		public Object[] processArguments(Method method, Object[] args);
+		public Object[] processArguments(Object target, Method method, Object[] args);
 	}
 
 	@FunctionalInterface
 	public static interface ArgumentProcessorSelector {
-		public ArgumentProcessor selectArgumentProcessor(Method m, Object[] args);
+		public ArgumentProcessor selectArgumentProcessor(Method method, Object[] args);
 	}
 
 	@FunctionalInterface
@@ -67,17 +67,17 @@ public final class ProxyBuilder {
 
 	@FunctionalInterface
 	public static interface ResultProcessorSelector {
-		public ResultProcessor selectResultProcessor(Method method, Object[] args, Object result, Throwable thrown);
+		public ResultProcessor selectResultProcessor(Method method, Object[] args);
 	}
 
 	@FunctionalInterface
 	public static interface ExceptionHandler {
-		public Object handleException(Object o, Method m, Object[] a, Throwable t) throws Throwable;
+		public Object handleException(Object target, Method method, Object[] args, Throwable thrown) throws Throwable;
 	}
 
 	@FunctionalInterface
 	public static interface ExceptionHandlerSelector {
-		public ExceptionHandler selectExceptionHandler(Throwable thrown, Method method, Object[] args);
+		public ExceptionHandler selectExceptionHandler(Method method, Object[] args);
 	}
 
 	@FunctionalInterface
@@ -218,7 +218,7 @@ public final class ProxyBuilder {
 			if (this.argumentProcessorSelector != null) {
 				ArgumentProcessor argumentProcessor = this.argumentProcessorSelector.selectArgumentProcessor(method,
 					args);
-				if (argumentProcessor != null) { return argumentProcessor.processArguments(method, args); }
+				if (argumentProcessor != null) { return argumentProcessor.processArguments(this.target, method, args); }
 			}
 			return args;
 		}
@@ -233,19 +233,15 @@ public final class ProxyBuilder {
 
 		private Object processResult(Object result, Method method, Object[] args, Throwable thrown) {
 			if (this.resultProcessorSelector != null) {
-				ResultProcessor resultProcessor = this.resultProcessorSelector.selectResultProcessor(method, args,
-					result, thrown);
-				if (resultProcessor != null) {
-					return resultProcessor.processResult(method, args, resultProcessor, thrown);
-				}
+				ResultProcessor resultProcessor = this.resultProcessorSelector.selectResultProcessor(method, args);
+				if (resultProcessor != null) { return resultProcessor.processResult(method, args, result, thrown); }
 			}
 			return result;
 		}
 
 		private Object handleException(Throwable thrown, Method method, Object[] args) throws Throwable {
 			if (this.exceptionHandlerSelector != null) {
-				ExceptionHandler exceptionHandler = this.exceptionHandlerSelector.selectExceptionHandler(thrown, method,
-					args);
+				ExceptionHandler exceptionHandler = this.exceptionHandlerSelector.selectExceptionHandler(method, args);
 				if (exceptionHandler != null) {
 					return exceptionHandler.handleException(this.target, method, args, thrown);
 				}
