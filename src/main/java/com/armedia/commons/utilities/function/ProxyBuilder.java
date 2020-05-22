@@ -38,7 +38,6 @@ import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 import com.armedia.commons.utilities.concurrent.SharedAutoLock;
 
 public final class ProxyBuilder {
-
 	private static final Class<?>[] NO_CLASSES = {};
 
 	@FunctionalInterface
@@ -53,7 +52,7 @@ public final class ProxyBuilder {
 
 	@FunctionalInterface
 	public static interface MethodSubstitute {
-		public Object invoke(Object target, Object[] args) throws Throwable;
+		public Object invoke(Object target, Method method, Object[] args) throws Throwable;
 	}
 
 	@FunctionalInterface
@@ -188,6 +187,14 @@ public final class ProxyBuilder {
 		return proxy;
 	}
 
+	public static boolean isIntercepted(Object o) {
+		if ((o != null) && Proxy.isProxyClass(o.getClass())) {
+			Object handler = Proxy.getInvocationHandler(o);
+			if (handler.getClass() == Interceptor.class) { return true; }
+		}
+		return false;
+	}
+
 	private static final class Interceptor implements InvocationHandler {
 		private final Object target;
 		private final ArgumentProcessorSelector argumentProcessorSelector;
@@ -219,7 +226,7 @@ public final class ProxyBuilder {
 		private Object substituteMethod(Method method, Object[] args) throws Throwable {
 			if (this.methodSubstituteSelector != null) {
 				MethodSubstitute methodSubstitute = this.methodSubstituteSelector.selectMethodSubstitute(method, args);
-				if (methodSubstitute != null) { return methodSubstitute.invoke(this.target, args); }
+				if (methodSubstitute != null) { return methodSubstitute.invoke(this.target, method, args); }
 			}
 			return method.invoke(this.target, args);
 		}
