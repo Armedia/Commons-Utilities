@@ -162,11 +162,11 @@ public final class ProxyBuilder {
 		return this.lock.shareLocked(() -> this.finallyProcessor);
 	}
 
-	public Object proxy(Object target) {
+	public <T> T proxy(T target) {
 		return proxy(null, target);
 	}
 
-	public Object proxy(ClassLoader classLoader, Object target) {
+	public <T> T proxy(ClassLoader classLoader, T target) {
 		Interceptor interceptor = null;
 		try (SharedAutoLock shared = this.lock.autoSharedLock()) {
 			interceptor = new Interceptor( //
@@ -181,8 +181,11 @@ public final class ProxyBuilder {
 		if (classLoader == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
 		}
+
 		List<Class<?>> interfaces = ClassUtils.getAllInterfaces(target.getClass());
-		return Proxy.newProxyInstance(classLoader, interfaces.toArray(ProxyBuilder.NO_CLASSES), interceptor);
+		@SuppressWarnings("unchecked")
+		T proxy = (T) Proxy.newProxyInstance(classLoader, interfaces.toArray(ProxyBuilder.NO_CLASSES), interceptor);
+		return proxy;
 	}
 
 	private static final class Interceptor implements InvocationHandler {
