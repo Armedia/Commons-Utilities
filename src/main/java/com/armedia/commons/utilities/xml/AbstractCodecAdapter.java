@@ -26,15 +26,27 @@
  *******************************************************************************/
 package com.armedia.commons.utilities.xml;
 
-import com.armedia.commons.utilities.codec.EnumCodec;
+import java.util.Objects;
 
-public abstract class AbstractEnumAdapter<E extends Enum<E>> extends AbstractCodecAdapter<String, E, RuntimeException> {
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-	public AbstractEnumAdapter(Class<E> enumClass) {
-		this(new EnumCodec<>(enumClass));
+import com.armedia.commons.utilities.codec.CheckedCodec;
+
+public abstract class AbstractCodecAdapter<JAXB, POJO, EX extends Exception> extends XmlAdapter<JAXB, POJO> {
+
+	private final CheckedCodec<POJO, JAXB, EX> codec;
+
+	public AbstractCodecAdapter(CheckedCodec<POJO, JAXB, EX> codec) {
+		this.codec = Objects.requireNonNull(codec, "Must provide a Codec to use");
 	}
 
-	public AbstractEnumAdapter(EnumCodec<E> codec) {
-		super(codec);
+	@Override
+	public final POJO unmarshal(JAXB xml) throws EX {
+		return this.codec.decode(xml);
+	}
+
+	@Override
+	public final JAXB marshal(POJO pojo) throws EX {
+		return this.codec.encode(pojo);
 	}
 }

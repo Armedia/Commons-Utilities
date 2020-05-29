@@ -26,15 +26,14 @@
  *******************************************************************************/
 package com.armedia.commons.utilities.xml;
 
-import com.armedia.commons.utilities.codec.EnumCodec;
+import java.util.Map;
 
-public abstract class AbstractEnumAdapter<E extends Enum<E>> extends AbstractCodecAdapter<String, E, RuntimeException> {
+import com.armedia.commons.utilities.codec.CheckedCodec;
 
-	public AbstractEnumAdapter(Class<E> enumClass) {
-		this(new EnumCodec<>(enumClass));
-	}
+public abstract class AbstractMapAdapter<T, K, V, EX extends Exception> extends AbstractCodecAdapter<T, Map<K, V>, EX> {
 
-	public AbstractEnumAdapter(EnumCodec<E> codec) {
+	public AbstractMapAdapter(CheckedCodec<Map<K, V>, T, EX> codec) {
 		super(codec);
 	}
+
 }
