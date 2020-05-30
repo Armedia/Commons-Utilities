@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2020 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -34,16 +34,12 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.armedia.commons.utilities.Tools;
-import com.armedia.commons.utilities.concurrent.BaseMutexLockable;
-import com.armedia.commons.utilities.concurrent.MutexAutoLock;
-import com.armedia.commons.utilities.concurrent.MutexLockable;
 
 public class SpyWriter extends FilterWriter {
 
 	private static final Consumer<Writer> NOOP = (o) -> {
 	};
 
-	private final MutexLockable lock = new BaseMutexLockable();
 	private final Consumer<CharBuffer> spy;
 	private final Consumer<Writer> closer;
 
@@ -60,9 +56,7 @@ public class SpyWriter extends FilterWriter {
 	}
 
 	private void assertOpen() throws IOException {
-		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
-			if (this.closed) { throw new IOException("This stream is already closed"); }
-		}
+		if (this.closed) { throw new IOException("This stream is already closed"); }
 	}
 
 	@Override
@@ -85,61 +79,51 @@ public class SpyWriter extends FilterWriter {
 
 	@Override
 	public void write(int c) throws IOException {
-		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
-			assertOpen();
-			char[] buf = new char[1];
-			buf[0] = (char) c;
-			write(buf, 0, buf.length);
-		}
+		assertOpen();
+		char[] buf = new char[1];
+		buf[0] = (char) c;
+		write(buf, 0, buf.length);
 	}
 
 	@Override
 	public void write(char[] b) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
-		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
-			assertOpen();
-			write(b, 0, b.length);
-		}
+		assertOpen();
+		write(b, 0, b.length);
 	}
 
 	@Override
 	public void write(char[] b, int off, int len) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
-		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
-			assertOpen();
-			final CharBuffer buf = CharBuffer.wrap(b).asReadOnlyBuffer();
-			super.write(b, off, len);
-			try {
-				this.spy.accept(buf);
-			} catch (Throwable t) {
-				// Do nothing... ignore the problem
-			}
+		assertOpen();
+		final CharBuffer buf = CharBuffer.wrap(b).asReadOnlyBuffer();
+		super.write(b, off, len);
+		try {
+			this.spy.accept(buf);
+		} catch (Throwable t) {
+			// Do nothing... ignore the problem
 		}
 	}
 
 	@Override
 	public void write(String str, int off, int len) throws IOException {
 		Objects.requireNonNull(str, "Must provide the data to write out");
-		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
-			super.write(str, off, len);
-			try {
-				this.spy.accept(CharBuffer.wrap(str).asReadOnlyBuffer());
-			} catch (Throwable t) {
-				// Do nothing... ignore the problem
-			}
+		super.write(str, off, len);
+		try {
+			this.spy.accept(CharBuffer.wrap(str).asReadOnlyBuffer());
+		} catch (Throwable t) {
+			// Do nothing... ignore the problem
 		}
 	}
 
 	@Override
 	public void close() throws IOException {
-		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
-			assertOpen();
-			try {
-				this.closer.accept(this.out);
-				super.close();
-			} finally {
-				this.closed = true;
-			}
+		assertOpen();
+		try {
+			this.closer.accept(this.out);
+			super.close();
+		} finally {
+			this.closed = true;
 		}
 	}
 }
