@@ -24,7 +24,7 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +37,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.armedia.commons.utilities.GoodService;
 
 /**
  *
@@ -55,7 +57,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer()}
+	 * Test method for {@link com.armedia.commons.utilities.io.BinaryMemoryBuffer#BinaryMemoryBuffer()}
 	 * .
 	 */
 	@Test
@@ -68,7 +70,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.BinaryMemoryBuffer#BinaryMemoryBuffer(int)}.
+	 * {@link com.armedia.commons.utilities.io.BinaryMemoryBuffer#BinaryMemoryBuffer(int)}.
 	 */
 	@Test
 	public void testByteBufferInt() {
@@ -88,7 +90,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(int)}.
+	 * Test method for {@link com.armedia.commons.utilities.io.BinaryMemoryBuffer#write(int)}.
 	 */
 	@Test
 	public void testWriteInt() throws IOException {
@@ -102,7 +104,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(byte[])}.
+	 * Test method for {@link com.armedia.commons.utilities.io.BinaryMemoryBuffer#write(byte[])}.
 	 *
 	 * @throws IOException
 	 */
@@ -120,7 +122,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.BinaryMemoryBuffer#write(byte[], int, int)}.
+	 * {@link com.armedia.commons.utilities.io.BinaryMemoryBuffer#write(byte[], int, int)}.
 	 *
 	 * @throws IOException
 	 */
@@ -218,7 +220,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.BinaryMemoryBuffer#close()}.
+	 * Test method for {@link com.armedia.commons.utilities.io.BinaryMemoryBuffer#close()}.
 	 */
 	@Test
 	public void testClose() throws IOException {

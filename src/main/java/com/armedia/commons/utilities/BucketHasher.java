@@ -46,6 +46,7 @@ import java.util.function.Supplier;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import com.armedia.commons.utilities.function.CheckedConsumer;
+import com.armedia.commons.utilities.io.BinaryMemoryBuffer;
 
 /**
  * <p>

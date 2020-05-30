@@ -24,21 +24,21 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
-public class ReadableByteChannelWrapper extends ChannelWrapper<ReadableByteChannel> implements ReadableByteChannel {
+public class WritableByteChannelWrapper extends ChannelWrapper<WritableByteChannel> implements WritableByteChannel {
 
-	public ReadableByteChannelWrapper(ReadableByteChannel wrapped) {
+	public WritableByteChannelWrapper(WritableByteChannel wrapped) {
 		super(wrapped);
 	}
 
 	@Override
-	public int read(ByteBuffer dst) throws IOException {
-		return this.wrapped.read(dst);
+	public int write(ByteBuffer src) throws IOException {
+		return this.wrapped.write(src);
 	}
 
 }

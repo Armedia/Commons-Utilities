@@ -1,4 +1,4 @@
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.util.Arrays;
 import java.util.Collection;

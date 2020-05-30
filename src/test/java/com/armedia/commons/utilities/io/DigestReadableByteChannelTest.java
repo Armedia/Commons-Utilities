@@ -24,13 +24,13 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -41,14 +41,14 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.binary.StringUtils;
-import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DigestWritableByteChannelTest {
+public class DigestReadableByteChannelTest {
 
 	private static final String NULL_STRING = null;
 	private static final MessageDigest NULL_DIGEST = null;
@@ -62,45 +62,49 @@ public class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	public void testDigestWritableByteChannel() throws Exception {
+	public void testDigestReadableByteChannel() throws Exception {
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestWritableByteChannel(null, DigestWritableByteChannelTest.NULL_STRING));
+			() -> new DigestReadableByteChannel(null, DigestReadableByteChannelTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestWritableByteChannel(null, DigestWritableByteChannelTest.NULL_DIGEST));
-		Assertions.assertThrows(NullPointerException.class, () -> new DigestWritableByteChannel(null, ""));
-		Assertions.assertThrows(NullPointerException.class, () -> new DigestWritableByteChannel(null, ""));
+			() -> new DigestReadableByteChannel(null, DigestReadableByteChannelTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestReadableByteChannel(null, ""));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestReadableByteChannel(null, ""));
 
-		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
+		ReadableByteChannel rbc = EasyMock.createMock(ReadableByteChannel.class);
+		rbc.close();
+		EasyMock.expectLastCall().anyTimes();
+		EasyMock.replay(rbc);
 
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.NULL_STRING));
+			() -> new DigestReadableByteChannel(rbc, DigestReadableByteChannelTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.NULL_DIGEST));
+			() -> new DigestReadableByteChannel(rbc, DigestReadableByteChannelTest.NULL_DIGEST));
 
-		Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestWritableByteChannel(wbc, ""));
-		try (WritableByteChannel c = new DigestWritableByteChannel(wbc,
-			DigestWritableByteChannelTest.SHA256.getAlgorithm())) {
-
+		Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestReadableByteChannel(rbc, ""));
+		try (ReadableByteChannel c = new DigestReadableByteChannel(rbc,
+			DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
 		}
-		try (WritableByteChannel c = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256)) {
+		try (ReadableByteChannel c = new DigestReadableByteChannel(rbc, DigestReadableByteChannelTest.SHA256)) {
 		}
+		EasyMock.verify(rbc);
 	}
 
 	@Test
 	public void testGetDigest() throws Exception {
-		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
-		try (DigestWritableByteChannel c = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256)) {
-			Assertions.assertSame(DigestWritableByteChannelTest.SHA256, c.getDigest());
+		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
+		try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256)) {
+			Assertions.assertSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
 		}
-		try (DigestWritableByteChannel c = new DigestWritableByteChannel(wbc,
-			DigestWritableByteChannelTest.SHA256.getAlgorithm())) {
-			Assertions.assertNotSame(DigestWritableByteChannelTest.SHA256, c.getDigest());
+		try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc,
+			DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
+			Assertions.assertNotSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
 		}
 	}
 
 	@Test
 	public void testCollectHash() throws Exception {
 		final List<Pair<byte[], byte[]>> data = new ArrayList<>();
+
 		for (Provider p : Security.getProviders()) {
 			for (Service s : p.getServices()) {
 				if (StringUtils.equals(MessageDigest.class.getSimpleName(), s.getType())) {
@@ -116,12 +120,13 @@ public class DigestWritableByteChannelTest {
 
 					int pos = 0;
 					for (Pair<byte[], byte[]> d : data) {
-						try (DigestWritableByteChannel wbc = new DigestWritableByteChannel(
-							Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM), algorithm)) {
-							wbc.write(ByteBuffer.wrap(d.getLeft()));
+						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(
+							Channels.newChannel(new ByteArrayInputStream(d.getLeft())), algorithm)) {
+							ByteBuffer buf = ByteBuffer.allocate(d.getLeft().length);
+							rbc.read(buf);
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
-							Pair<Long, byte[]> actual = wbc.collectHash();
+							Pair<Long, byte[]> actual = rbc.collectHash();
 							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
@@ -153,13 +158,14 @@ public class DigestWritableByteChannelTest {
 
 					int pos = 0;
 					for (Pair<byte[], byte[]> d : data) {
-						try (DigestWritableByteChannel wbc = new DigestWritableByteChannel(
-							Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM), algorithm)) {
-							wbc.write(ByteBuffer.wrap(d.getLeft()));
+						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(
+							Channels.newChannel(new ByteArrayInputStream(d.getLeft())), algorithm)) {
+							ByteBuffer buf = ByteBuffer.allocate(d.getRight().length);
+							rbc.read(buf);
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
-							wbc.resetHash();
-							Pair<Long, byte[]> actual = wbc.collectHash();
+							rbc.resetHash();
+							Pair<Long, byte[]> actual = rbc.collectHash();
 							String actualHex = Hex.encodeHexString(actual.getRight());
 							Assertions.assertEquals(expectedHex, actualHex,
 								String.format("Failed on item # %d (algo = %s)", ++pos, algorithm));
@@ -173,21 +179,29 @@ public class DigestWritableByteChannelTest {
 	}
 
 	@Test
-	public void testWrite() throws Exception {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (final WritableByteChannel channel = new DigestWritableByteChannel(Channels.newChannel(baos),
-			DigestWritableByteChannelTest.SHA256)) {
-			byte[] c = RandomStringUtils.random(1000).getBytes();
-			channel.write(ByteBuffer.wrap(c));
-			Assertions.assertArrayEquals(c, baos.toByteArray());
+	public void testRead() throws Exception {
+		byte[] c = RandomStringUtils.random(1000).getBytes();
+		try (final ReadableByteChannel channel = new DigestReadableByteChannel(
+			Channels.newChannel(new ByteArrayInputStream(c)), DigestReadableByteChannelTest.SHA256)) {
+			ByteBuffer buf = ByteBuffer.allocate(c.length);
+			channel.read(buf);
+			Assertions.assertArrayEquals(c, buf.array());
+		}
+		byte[] none = new byte[0];
+		try (final ReadableByteChannel channel = new DigestReadableByteChannel(
+			Channels.newChannel(new ByteArrayInputStream(none)), DigestReadableByteChannelTest.SHA256)) {
+			ByteBuffer buf = ByteBuffer.allocate(c.length);
+			Assertions.assertEquals(0, buf.position());
+			channel.read(buf);
+			Assertions.assertEquals(0, buf.position());
 		}
 	}
 
 	@Test
 	public void testIsOpen() throws Exception {
-		WritableByteChannel wbc = Channels.newChannel(NullOutputStream.NULL_OUTPUT_STREAM);
-		DigestWritableByteChannel C = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256);
-		try (DigestWritableByteChannel c = C) {
+		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
+		DigestReadableByteChannel C = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256);
+		try (DigestReadableByteChannel c = C) {
 			Assertions.assertTrue(c.isOpen());
 		}
 		Assertions.assertFalse(C.isOpen());
@@ -195,11 +209,11 @@ public class DigestWritableByteChannelTest {
 
 	@Test
 	public void testClose() throws IOException {
-		WritableByteChannel wbc = EasyMock.createMock(WritableByteChannel.class);
+		ReadableByteChannel wbc = EasyMock.createMock(ReadableByteChannel.class);
 		wbc.close();
 		EasyMock.expectLastCall().once();
 		EasyMock.replay(wbc);
-		DigestWritableByteChannel c = new DigestWritableByteChannel(wbc, DigestWritableByteChannelTest.SHA256);
+		DigestReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256);
 		c.close();
 		EasyMock.verify(wbc);
 	}

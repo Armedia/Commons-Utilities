@@ -24,7 +24,7 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.armedia.commons.utilities.TextMemoryBuffer.TextMemoryBufferReader;
+import com.armedia.commons.utilities.io.TextMemoryBuffer.TextMemoryBufferReader;
 
 /**
  *
@@ -93,7 +93,7 @@ public class TextMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#TextMemoryBuffer()}.
+	 * Test method for {@link com.armedia.commons.utilities.io.TextMemoryBuffer#TextMemoryBuffer()}.
 	 */
 	@Test
 	public void testCharBuffer() {
@@ -104,7 +104,7 @@ public class TextMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#TextMemoryBuffer(int)}.
+	 * Test method for {@link com.armedia.commons.utilities.io.TextMemoryBuffer#TextMemoryBuffer(int)}.
 	 */
 	@Test
 	public void testCharBufferInt() {
@@ -124,7 +124,7 @@ public class TextMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#write(int)}.
+	 * Test method for {@link com.armedia.commons.utilities.io.TextMemoryBuffer#write(int)}.
 	 */
 	@Test
 	public void testWrite() throws IOException {
@@ -138,7 +138,7 @@ public class TextMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#write(char[])}.
+	 * Test method for {@link com.armedia.commons.utilities.io.TextMemoryBuffer#write(char[])}.
 	 *
 	 * @throws IOException
 	 */
@@ -156,7 +156,7 @@ public class TextMemoryBufferTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.TextMemoryBuffer#write(char[], int, int)}.
+	 * {@link com.armedia.commons.utilities.io.TextMemoryBuffer#write(char[], int, int)}.
 	 *
 	 * @throws IOException
 	 */
@@ -205,7 +205,7 @@ public class TextMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#write(CharSequence)}.
+	 * Test method for {@link com.armedia.commons.utilities.io.TextMemoryBuffer#write(CharSequence)}.
 	 *
 	 * @throws IOException
 	 */
@@ -225,7 +225,7 @@ public class TextMemoryBufferTest {
 
 	/**
 	 * Test method for
-	 * {@link com.armedia.commons.utilities.TextMemoryBuffer#write(CharSequence, int, int)}.
+	 * {@link com.armedia.commons.utilities.io.TextMemoryBuffer#write(CharSequence, int, int)}.
 	 *
 	 * @throws IOException
 	 */
@@ -321,7 +321,7 @@ public class TextMemoryBufferTest {
 	}
 
 	/**
-	 * Test method for {@link com.armedia.commons.utilities.TextMemoryBuffer#close()}.
+	 * Test method for {@link com.armedia.commons.utilities.io.TextMemoryBuffer#close()}.
 	 */
 	@Test
 	public void testClose() throws IOException {

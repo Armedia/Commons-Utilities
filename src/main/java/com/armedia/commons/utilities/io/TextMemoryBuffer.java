@@ -24,7 +24,7 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import com.armedia.commons.utilities.Tools;
 
 /**
  *

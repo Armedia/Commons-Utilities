@@ -24,38 +24,39 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
-import java.io.FilterOutputStream;
+import java.io.FilterWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import java.io.Writer;
+import java.nio.CharBuffer;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.concurrent.BaseMutexLockable;
 import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 import com.armedia.commons.utilities.concurrent.MutexLockable;
 
-public class SpyOutputStream extends FilterOutputStream {
+public class SpyWriter extends FilterWriter {
 
-	private static final Consumer<OutputStream> NOOP = (o) -> {
+	private static final Consumer<Writer> NOOP = (o) -> {
 	};
 
 	private final MutexLockable lock = new BaseMutexLockable();
-	private final Consumer<ByteBuffer> spy;
-	private final Consumer<OutputStream> closer;
+	private final Consumer<CharBuffer> spy;
+	private final Consumer<Writer> closer;
 
 	private volatile boolean closed = false;
 
-	public SpyOutputStream(OutputStream out, Consumer<ByteBuffer> spy) {
+	public SpyWriter(Writer out, Consumer<CharBuffer> spy) {
 		this(out, spy, null);
 	}
 
-	public SpyOutputStream(OutputStream out, Consumer<ByteBuffer> spy, Consumer<OutputStream> closer) {
-		super(Objects.requireNonNull(out, "Must provide an OutputStream to spy on"));
+	public SpyWriter(Writer out, Consumer<CharBuffer> spy, Consumer<Writer> closer) {
+		super(Objects.requireNonNull(out, "Must provide an Writer to spy on"));
 		this.spy = Objects.requireNonNull(spy, "Must provide a consumer to spy with");
-		this.closer = Tools.coalesce(closer, SpyOutputStream.NOOP);
+		this.closer = Tools.coalesce(closer, SpyWriter.NOOP);
 	}
 
 	private void assertOpen() throws IOException {
@@ -65,17 +66,35 @@ public class SpyOutputStream extends FilterOutputStream {
 	}
 
 	@Override
+	public SpyWriter append(CharSequence csq) throws IOException {
+		super.append(csq);
+		return this;
+	}
+
+	@Override
+	public SpyWriter append(CharSequence csq, int start, int end) throws IOException {
+		super.append(csq, start, end);
+		return this;
+	}
+
+	@Override
+	public SpyWriter append(char c) throws IOException {
+		super.append(c);
+		return this;
+	}
+
+	@Override
 	public void write(int c) throws IOException {
 		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
-			byte[] buf = new byte[1];
-			buf[0] = (byte) c;
+			char[] buf = new char[1];
+			buf[0] = (char) c;
 			write(buf, 0, buf.length);
 		}
 	}
 
 	@Override
-	public void write(byte[] b) throws IOException {
+	public void write(char[] b) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
 		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
@@ -84,14 +103,27 @@ public class SpyOutputStream extends FilterOutputStream {
 	}
 
 	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
+	public void write(char[] b, int off, int len) throws IOException {
 		Objects.requireNonNull(b, "Must provide the data to write out");
 		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
 			assertOpen();
-			ByteBuffer buf = ByteBuffer.wrap(b.clone()).asReadOnlyBuffer();
+			final CharBuffer buf = CharBuffer.wrap(b).asReadOnlyBuffer();
 			super.write(b, off, len);
 			try {
 				this.spy.accept(buf);
+			} catch (Throwable t) {
+				// Do nothing... ignore the problem
+			}
+		}
+	}
+
+	@Override
+	public void write(String str, int off, int len) throws IOException {
+		Objects.requireNonNull(str, "Must provide the data to write out");
+		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
+			super.write(str, off, len);
+			try {
+				this.spy.accept(CharBuffer.wrap(str).asReadOnlyBuffer());
 			} catch (Throwable t) {
 				// Do nothing... ignore the problem
 			}
