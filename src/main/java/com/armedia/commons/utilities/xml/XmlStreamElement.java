@@ -66,6 +66,23 @@ public class XmlStreamElement implements AutoCloseable {
 		this.xml.writeStartElement(prefix, localName, namespaceURI);
 	}
 
+	public void newAttribute(String localName, String value) throws XMLStreamException {
+		this.xml.writeAttribute(localName, value);
+	}
+
+	public void newAttribute(String namespaceURI, String localName, String value) throws XMLStreamException {
+		this.xml.writeAttribute(namespaceURI, localName, value);
+	}
+
+	public void newAttribute(String prefix, String namespaceURI, String localName, String value)
+		throws XMLStreamException {
+		this.xml.writeAttribute(prefix, namespaceURI, localName, value);
+	}
+
+	public void newCDATA(String content) throws XMLStreamException {
+		this.xml.writeCData(content);
+	}
+
 	public XmlStreamElement newElement(String localName) throws XMLStreamException {
 		return new XmlStreamElement(this.xml, localName);
 	}
