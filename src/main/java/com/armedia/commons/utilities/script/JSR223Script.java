@@ -65,6 +65,7 @@ import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
 import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.function.CheckedConsumer;
 import com.armedia.commons.utilities.function.CheckedLazySupplier;
 import com.armedia.commons.utilities.function.CheckedSupplier;
@@ -102,6 +103,7 @@ public final class JSR223Script {
 
 		private String language = null;
 		private boolean allowCompilation = true;
+		private boolean precompile = true;
 		private Charset charset = null;
 		private Object source = null;
 
@@ -128,6 +130,15 @@ public final class JSR223Script {
 
 		public boolean allowCompilation() {
 			return this.allowCompilation;
+		}
+
+		public Builder precompile(boolean precompile) {
+			this.precompile = precompile;
+			return this;
+		}
+
+		public boolean precompile() {
+			return this.precompile;
 		}
 
 		public Builder charset(Charset charset) {
@@ -166,8 +177,17 @@ public final class JSR223Script {
 
 		public JSR223Script build() throws ScriptException, IOException {
 			Objects.requireNonNull(this.source, "Must provide a non-null source for the script");
-			return JSR223Script.getInstance(this.allowCompilation, JSR223Script.sanitize(this.language), this.source,
-				JSR223Script.sanitize(this.charset));
+			JSR223Script script = JSR223Script.getInstance(this.allowCompilation, JSR223Script.sanitize(this.language),
+				this.source, JSR223Script.sanitize(this.charset));
+			if (this.allowCompilation && this.precompile) {
+				try {
+					script.compile();
+				} catch (ScriptException | IOException e) {
+					script.dispose();
+					throw e;
+				}
+			}
+			return script;
 		}
 	}
 
@@ -212,12 +232,6 @@ public final class JSR223Script {
 		}
 	}
 
-	private static ScriptEngineFactory getFactory(String language) {
-		language = StringUtils.lowerCase(language);
-		if (StringUtils.isBlank(language)) { return null; }
-		return JSR223Script.SCRIPT_ENGINE_FACTORIES.get(language);
-	}
-
 	private static Charset sanitize(Charset charset) {
 		return (charset != null ? charset : JSR223Script.DEFAULT_CHARSET);
 	}
@@ -237,7 +251,7 @@ public final class JSR223Script {
 		}
 
 		if (Path.class.isInstance(source)) {
-			return Pair.of(new CacheKey(language, "@" + Path.class.cast(source).toRealPath().toUri()), null);
+			return Pair.of(new CacheKey(language, "@" + Tools.canonicalize(Path.class.cast(source)).toUri()), null);
 		}
 
 		if (InputStream.class.isInstance(source)) {
@@ -369,7 +383,7 @@ public final class JSR223Script {
 		this.allowCompilation = allowCompilation;
 		this.cacheKey = cacheKey;
 		this.language = language;
-		this.factory = JSR223Script.getFactory(this.language);
+		this.factory = JSR223Script.SCRIPT_ENGINE_FACTORIES.get(StringUtils.lowerCase(this.language));
 		if (this.factory == null) { throw new IllegalArgumentException("Unsupported language [" + language + "]"); }
 		this.engine = new LazySupplier<>(this.factory::getScriptEngine);
 		this.sourceCode = new CheckedLazySupplier<>(script);

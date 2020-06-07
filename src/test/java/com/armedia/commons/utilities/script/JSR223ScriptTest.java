@@ -78,28 +78,41 @@ public class JSR223ScriptTest {
 			data.add(String.format("Test-Script-%02d", i));
 		}
 		List<CacheKey> keys = new ArrayList<>(languages.size());
-		for (String k : languages.keySet()) {
-			for (String a : data) {
-				CacheKey keyA = JSR223Script.getCacheKey(k, a);
+		for (String langA : languages.keySet()) {
+			for (String scriptA : data) {
+				CacheKey keyA = JSR223Script.getCacheKey(langA, scriptA);
 				keys.add(keyA);
 				Assertions.assertFalse(keyA.equals(null));
-				Assertions.assertFalse(keyA.equals(a));
+				Assertions.assertFalse(keyA.equals(scriptA));
 				Assertions.assertTrue(keyA.equals(keyA));
 
-				for (String b : data) {
-					CacheKey keyB = JSR223Script.getCacheKey(k, b);
-					keys.add(keyB);
+				for (String langB : languages.keySet()) {
+					for (String scriptB : data) {
+						CacheKey keyB = JSR223Script.getCacheKey(langB, scriptB);
+						keys.add(keyB);
 
-					if (a == b) {
-						Assertions.assertEquals(keyA, keyB);
-						Assertions.assertEquals(keyB, keyA);
-						Assertions.assertEquals(keyA.hashCode(), keyB.hashCode());
-						Assertions.assertEquals(keyA.getHash(), keyB.getHash());
-					} else {
-						Assertions.assertNotEquals(keyA, keyB);
-						Assertions.assertNotEquals(keyB, keyA);
-						Assertions.assertNotEquals(keyA.hashCode(), keyB.hashCode());
-						Assertions.assertNotEquals(keyA.getHash(), keyB.getHash());
+						if ((scriptA == scriptB) && (langA == langB)) {
+							Assertions.assertEquals(keyA, keyB);
+							Assertions.assertEquals(keyB, keyA);
+							Assertions.assertEquals(keyA.hashCode(), keyB.hashCode());
+							Assertions.assertEquals(keyA.getLanguage(), keyB.getLanguage());
+							Assertions.assertEquals(keyA.getHash(), keyB.getHash());
+						} else {
+							Assertions.assertNotEquals(keyA, keyB);
+							Assertions.assertNotEquals(keyB, keyA);
+							Assertions.assertNotEquals(keyA.hashCode(), keyB.hashCode());
+
+							if (scriptA == scriptB) {
+								Assertions.assertNotEquals(keyA.getLanguage(), keyB.getLanguage());
+								Assertions.assertEquals(keyA.getHash(), keyB.getHash());
+							} else if (langA == langB) {
+								Assertions.assertEquals(keyA.getLanguage(), keyB.getLanguage());
+								Assertions.assertNotEquals(keyA.getHash(), keyB.getHash());
+							} else {
+								Assertions.assertNotEquals(keyA.getLanguage(), keyB.getLanguage());
+								Assertions.assertNotEquals(keyA.getHash(), keyB.getHash());
+							}
+						}
 					}
 				}
 			}
@@ -271,6 +284,7 @@ public class JSR223ScriptTest {
 		keys.removeIf(JSR223Script::purge);
 
 		// Try to trigger exceptions
+		builder.precompile(false);
 		for (String language : languages.keySet()) {
 			// Write the files
 			Files.write(scriptA, "1 + 1".getBytes(charset));
@@ -291,8 +305,22 @@ public class JSR223ScriptTest {
 			Files.delete(scriptA);
 			Files.delete(scriptB);
 
-			Assertions.assertThrows(IOException.class, () -> a.eval());
-			Assertions.assertThrows(IOException.class, () -> b.eval());
+			Assertions.assertThrows(IOException.class, a::eval);
+			Assertions.assertThrows(IOException.class, b::eval);
+		}
+
+		// Try to trigger exceptions
+		builder.precompile(true);
+		for (String language : languages.keySet()) {
+			// Write the files
+			Files.write(scriptA, "1 + 1".getBytes(charset));
+			Files.delete(scriptA);
+			Files.write(scriptB, "2 + 2".getBytes(charset));
+			Files.delete(scriptB);
+
+			Assertions.assertThrows(IOException.class, builder.language(language).source(scriptA)::build);
+
+			Assertions.assertThrows(IOException.class, builder.source(scriptB)::build);
 		}
 	}
 
@@ -418,6 +446,7 @@ public class JSR223ScriptTest {
 		}));
 
 		List<CacheKey> keys = new ArrayList<>(languages.size());
+		builder.precompile(false);
 		for (String language : languages.keySet()) {
 			JSR223Script s = builder //
 				.language(language) //
@@ -442,7 +471,7 @@ public class JSR223ScriptTest {
 			;
 			keys.add(c.getCacheKey());
 
-			Assertions.assertThrows(ScriptException.class, () -> c.eval());
+			Assertions.assertThrows(ScriptException.class, c::eval);
 
 			final IOException ioe = new IOException();
 			try {
@@ -462,6 +491,44 @@ public class JSR223ScriptTest {
 			} catch (IOException e) {
 				Assertions.assertSame(ioe, e);
 			}
+		}
+		keys.removeIf(JSR223Script::purge);
+		builder.precompile(true);
+		for (String language : languages.keySet()) {
+			JSR223Script s = builder //
+				.language(language) //
+				.source(sourceA) //
+				.build() //
+			;
+			keys.add(s.getCacheKey());
+
+			Assertions.assertEquals(Integer.valueOf(2), s.eval());
+
+			s = builder //
+				.source(scriptA) //
+				.build() //
+			;
+			keys.add(s.getCacheKey());
+
+			Assertions.assertEquals(Integer.valueOf(2), s.eval());
+
+			Assertions.assertThrows(ScriptException.class, builder.source(fail)::build);
+
+			final IOException ioe = new IOException();
+			builder //
+				.source(new Reader() {
+
+					@Override
+					public int read(char[] cbuf, int off, int len) throws IOException {
+						throw ioe;
+					}
+
+					@Override
+					public void close() throws IOException {
+					}
+
+				});
+			Assertions.assertThrows(IOException.class, builder::build);
 		}
 		keys.removeIf(JSR223Script::purge);
 	}
@@ -782,8 +849,9 @@ public class JSR223ScriptTest {
 	@Test
 	public void testBuilder() throws Exception {
 		JSR223Script s = null;
+		final String nullString = null;
 
-		final JSR223Script.Builder builder = new JSR223Script.Builder("jexl");
+		final JSR223Script.Builder builder = new JSR223Script.Builder();
 
 		Map<String, String> languages = JSR223Script.getLanguages();
 		for (String l : languages.keySet()) {
@@ -794,10 +862,16 @@ public class JSR223ScriptTest {
 			new JSR223Script.Builder(l);
 		}
 
+		for (int i = 0; i < 10; i++) {
+			String lang = "Bad Language # " + i + " :: " + UUID.randomUUID();
+			Assertions.assertThrows(ScriptException.class, builder.language(lang).source("1+1")::build);
+		}
+
 		builder.language("jexl");
+		builder.source(nullString);
 
 		// Ensure it explodes if there's no source set
-		Assertions.assertThrows(NullPointerException.class, () -> builder.build());
+		Assertions.assertThrows(NullPointerException.class, builder::build);
 
 		builder.charset(null);
 		Assertions.assertNull(builder.charset());
@@ -845,5 +919,109 @@ public class JSR223ScriptTest {
 		}
 
 		// Test the unhappiest path: bad language
+		final String failSource = "{ {][]],:] >> this is crap meant ? < to fail " + UUID.randomUUID().toString();
+		final Path failScript = Files.createTempFile("jsr223test.", ".tmp");
+		builder.charset(cs);
+		builder.allowCompilation(true);
+
+		Assertions.assertSame(builder, builder.precompile(true));
+		Assertions.assertEquals(true, builder.precompile());
+
+		Assertions.assertThrows(ScriptException.class, builder.source(failSource)::build);
+
+		FileUtils.write(failScript.toFile(), failSource, cs);
+		Assertions.assertThrows(ScriptException.class, builder.source(failScript)::build);
+		Assertions.assertThrows(ScriptException.class, builder.source(failScript.toFile())::build);
+
+		try (InputStream in = Files.newInputStream(failScript)) {
+			Assertions.assertThrows(ScriptException.class, builder.source(in)::build);
+		}
+
+		try (Reader r = Files.newBufferedReader(failScript, cs)) {
+			Assertions.assertThrows(ScriptException.class, builder.source(r)::build);
+		}
+
+		Files.delete(failScript);
+		Assertions.assertThrows(IOException.class, builder.source(failScript)::build);
+		Assertions.assertThrows(IOException.class, builder.source(failScript.toFile())::build);
+
+		try (InputStream in = new InputStream() {
+			@Override
+			public int read() throws IOException {
+				throw new IOException();
+			}
+		}) {
+			Assertions.assertThrows(IOException.class, builder.source(in)::build);
+		}
+
+		try (Reader r = new Reader() {
+			@Override
+			public int read(char[] cbuf, int off, int len) throws IOException {
+				throw new IOException();
+			}
+
+			@Override
+			public void close() {
+			}
+		}) {
+			Assertions.assertThrows(IOException.class, builder.source(r)::build);
+		}
+
+		Assertions.assertSame(builder, builder.precompile(false));
+		Assertions.assertEquals(false, builder.precompile());
+
+		s = builder.source(failSource).build();
+		Assertions.assertThrows(ScriptException.class, s::eval);
+		s.dispose();
+
+		FileUtils.write(failScript.toFile(), failSource, cs);
+
+		s = builder.source(failScript).build();
+		Assertions.assertThrows(ScriptException.class, s::eval);
+		s.dispose();
+
+		s = builder.source(failScript.toFile()).build();
+		Assertions.assertThrows(ScriptException.class, s::eval);
+		s.dispose();
+
+		try (InputStream in = Files.newInputStream(failScript)) {
+			s = builder.source(in).build();
+		}
+		Assertions.assertThrows(ScriptException.class, s::eval);
+		s.dispose();
+
+		try (Reader r = Files.newBufferedReader(failScript, cs)) {
+			s = builder.source(r).build();
+		}
+		Assertions.assertThrows(ScriptException.class, s::eval);
+		s.dispose();
+
+		Files.delete(failScript);
+		s = builder.source(failScript).build();
+		Assertions.assertThrows(IOException.class, s::eval);
+		s = builder.source(failScript.toFile()).build();
+		Assertions.assertThrows(IOException.class, s::eval);
+
+		try (InputStream in = new InputStream() {
+			@Override
+			public int read() throws IOException {
+				throw new IOException();
+			}
+		}) {
+			Assertions.assertThrows(IOException.class, builder.source(in)::build);
+		}
+
+		try (Reader r = new Reader() {
+			@Override
+			public int read(char[] cbuf, int off, int len) throws IOException {
+				throw new IOException();
+			}
+
+			@Override
+			public void close() {
+			}
+		}) {
+			Assertions.assertThrows(IOException.class, builder.source(r)::build);
+		}
 	}
 }
