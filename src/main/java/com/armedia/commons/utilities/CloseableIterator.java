@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2020 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -38,6 +38,8 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 		//
 		;
 	}
+
+	private boolean initialized = false;
 
 	private State state = State.WAITING;
 
@@ -66,6 +68,17 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 
 		// Either WAITING or FETCHED, we need to check to see if we have a next element
 		final Result result;
+		if (!this.initialized) {
+			try {
+				initialize();
+				this.initialized = true;
+			} catch (Exception e) {
+				// Uh-oh...something went wrong, we need to abort!
+				this.state = State.CLOSED;
+				throw new RuntimeException("Failed to initialize the iterator", e);
+			}
+		}
+
 		try {
 			result = findNext();
 		} catch (Exception e) {
@@ -89,6 +102,18 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 		if (!hasNext()) { throw new NoSuchElementException(); }
 		this.state = State.FETCHED;
 		return this.current;
+	}
+
+	/**
+	 * <p>
+	 * Perform any lazy initialization. If this method fails, the iterator will be marked as closed
+	 * and will be of no use.
+	 * </p>
+	 *
+	 * @throws Exception
+	 */
+	protected void initialize() throws Exception {
+
 	}
 
 	/**
