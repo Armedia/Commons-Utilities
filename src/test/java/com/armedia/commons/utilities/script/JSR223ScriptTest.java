@@ -1,6 +1,8 @@
 package com.armedia.commons.utilities.script;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +21,7 @@ import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.io.FileUtils;
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -748,5 +751,73 @@ public class JSR223ScriptTest {
 			Assertions.assertEquals(Integer.valueOf(2), s1.eval(nullContext));
 		}
 		keys.removeIf(JSR223Script::purge);
+	}
+
+	@Test
+	public void testBuilder() throws Exception {
+		JSR223Script s = null;
+
+		final JSR223Script.Builder builder = new JSR223Script.Builder("jexl");
+
+		Map<String, String> languages = JSR223Script.getLanguages();
+		for (String l : languages.keySet()) {
+			Assertions.assertSame(builder, builder.language(l));
+			Assertions.assertEquals(l, builder.language());
+
+			// Make sure the constructor works as well
+			new JSR223Script.Builder(l);
+		}
+
+		builder.language("jexl");
+
+		// Ensure it explodes if there's no source set
+		Assertions.assertThrows(NullPointerException.class, () -> builder.build());
+
+		builder.charset(null);
+		Assertions.assertNull(builder.charset());
+		for (Charset C : Charset.availableCharsets().values()) {
+			Assertions.assertSame(builder, builder.charset(C));
+			Assertions.assertSame(C, builder.charset());
+		}
+
+		Charset cs = StandardCharsets.UTF_16LE;
+		builder.charset(cs);
+		final Integer result = Integer.valueOf(2);
+		final String sourceA = "1 + 1";
+		final Path scriptA = Files.createTempFile("jsr223test.", ".tmp");
+		FileUtils.write(scriptA.toFile(), sourceA, cs);
+		for (int i = 0; i < 2; i++) {
+			final boolean allowCompilation = ((i % 2) == 0);
+
+			Assertions.assertSame(builder, builder.allowCompilation(allowCompilation));
+			Assertions.assertEquals(allowCompilation, builder.allowCompilation());
+
+			s = builder.source(sourceA).build();
+			Assertions.assertEquals(result, s.eval());
+			s.dispose();
+
+			s = builder.source(scriptA).build();
+			Assertions.assertEquals(result, s.eval());
+			s.dispose();
+
+			Assertions.assertSame(builder, builder.source((File) null));
+			s = builder.source(scriptA.toFile()).build();
+			Assertions.assertEquals(result, s.eval());
+			s.dispose();
+
+			try (InputStream in = Files.newInputStream(scriptA)) {
+				s = builder.source(in).build();
+			}
+			Assertions.assertEquals(result, s.eval());
+			s.dispose();
+
+			try (Reader r = Files.newBufferedReader(scriptA, cs)) {
+				s = builder.source(r).build();
+			}
+			Assertions.assertEquals(result, s.eval());
+			s.dispose();
+		}
+
+		// Test the unhappiest path: bad language
 	}
 }

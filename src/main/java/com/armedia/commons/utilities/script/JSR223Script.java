@@ -29,6 +29,7 @@ package com.armedia.commons.utilities.script;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -101,7 +102,7 @@ public final class JSR223Script {
 
 		private String language = null;
 		private boolean allowCompilation = true;
-		private Charset charset = JSR223Script.DEFAULT_CHARSET;
+		private Charset charset = null;
 		private Object source = null;
 
 		public Builder() {
@@ -130,7 +131,7 @@ public final class JSR223Script {
 		}
 
 		public Builder charset(Charset charset) {
-			this.charset = JSR223Script.sanitize(charset);
+			this.charset = charset;
 			return this;
 		}
 
@@ -173,10 +174,16 @@ public final class JSR223Script {
 	public static class CacheKey implements Serializable {
 		private static final long serialVersionUID = 1L;
 
+		private final String language;
 		private final String hash;
 
-		private CacheKey(String hash) {
+		private CacheKey(String language, String hash) {
+			this.language = language;
 			this.hash = hash;
+		}
+
+		public String getLanguage() {
+			return this.language;
 		}
 
 		public String getHash() {
@@ -185,7 +192,7 @@ public final class JSR223Script {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.hash);
+			return Objects.hash(this.language, this.hash);
 		}
 
 		@Override
@@ -194,13 +201,14 @@ public final class JSR223Script {
 			if (obj == null) { return false; }
 			if (getClass() != obj.getClass()) { return false; }
 			CacheKey other = CacheKey.class.cast(obj);
+			if (!StringUtils.equalsIgnoreCase(this.language, other.language)) { return false; }
 			if (!StringUtils.equalsIgnoreCase(this.hash, other.hash)) { return false; }
 			return true;
 		}
 
 		@Override
 		public String toString() {
-			return "CacheKey[" + this.hash + "]";
+			return "CacheKey[" + this.language + this.hash + "]";
 		}
 	}
 
@@ -222,19 +230,21 @@ public final class JSR223Script {
 		return language;
 	}
 
-	private static Pair<CacheKey, String> computeKey(String language, Object source)
+	private static Pair<CacheKey, String> computeKey(String language, Object source, Charset charset)
 		throws ScriptException, IOException {
-		language = JSR223Script.sanitize(language);
-
 		if (CharSequence.class.isInstance(source)) {
-			return Pair.of(new CacheKey(language + "#" + DigestUtils.sha256Hex(source.toString())), source.toString());
+			return Pair.of(new CacheKey(language, "#" + DigestUtils.sha256Hex(source.toString())), source.toString());
 		}
 
 		if (Path.class.isInstance(source)) {
-			return Pair.of(new CacheKey(language + "@" + Path.class.cast(source).toRealPath().toUri()), null);
+			return Pair.of(new CacheKey(language, "@" + Path.class.cast(source).toRealPath().toUri()), null);
 		}
 
-		return JSR223Script.computeKey(language, IOUtils.toString(Reader.class.cast(source)));
+		if (InputStream.class.isInstance(source)) {
+			source = new InputStreamReader(InputStream.class.cast(source), charset);
+		}
+
+		return JSR223Script.computeKey(language, IOUtils.toString(Reader.class.cast(source)), null);
 	}
 
 	public static Map<String, String> getLanguages() {
@@ -243,7 +253,7 @@ public final class JSR223Script {
 
 	public static CacheKey getCacheKey(String language, String script) throws ScriptException {
 		try {
-			return JSR223Script.computeKey(language, script).getKey();
+			return JSR223Script.computeKey(language, script, null).getKey();
 		} catch (IOException e) {
 			throw new UncheckedIOException("IOException caught while working in memory", e);
 		}
@@ -261,7 +271,7 @@ public final class JSR223Script {
 
 	private static JSR223Script getInstance(boolean allowCompilation, String language, Object source, Charset charset)
 		throws ScriptException, IOException {
-		final Pair<CacheKey, String> key = JSR223Script.computeKey(language, source);
+		final Pair<CacheKey, String> key = JSR223Script.computeKey(language, source, charset);
 
 		final ConcurrentInitializer<JSR223Script> initializer;
 		if (key.getValue() != null) {
@@ -273,6 +283,7 @@ public final class JSR223Script {
 			};
 		} else {
 			initializer = new ConcurrentInitializer<JSR223Script>() {
+
 				@Override
 				public JSR223Script get() {
 					return new JSR223Script(allowCompilation, key.getKey(), language, () -> {
