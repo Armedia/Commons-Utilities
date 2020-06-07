@@ -49,10 +49,12 @@ import java.util.function.Supplier;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -101,6 +103,9 @@ public final class JSR223Script {
 		private boolean allowCompilation = true;
 		private Charset charset = JSR223Script.DEFAULT_CHARSET;
 		private Object source = null;
+
+		public Builder() {
+		}
 
 		public Builder(String language) {
 			language(language);
@@ -244,10 +249,9 @@ public final class JSR223Script {
 		}
 	}
 
-	public static void purge(CacheKey cacheKey) {
-		if (cacheKey != null) {
-			JSR223Script.CACHE.remove(cacheKey);
-		}
+	public static boolean purge(CacheKey cacheKey) {
+		if (cacheKey != null) { return (JSR223Script.CACHE.remove(cacheKey) != null); }
+		return false;
 	}
 
 	public static JSR223Script getInstance(CacheKey cacheKey) {
@@ -345,6 +349,11 @@ public final class JSR223Script {
 			return get();
 		}
 
+		public boolean isSupportedBy(JSR223Script script) {
+			if (script == null) { return false; }
+			return (this.engine == script.engine.get());
+		}
+
 		@Override
 		public Bindings get() {
 			return this.bindings;
@@ -375,8 +384,8 @@ public final class JSR223Script {
 		return this.language;
 	}
 
-	public void compile() throws ScriptException, IOException {
-		getCompiledScript();
+	public boolean compile() throws ScriptException, IOException {
+		return (getCompiledScript() != null);
 	}
 
 	private CompiledScript getCompiledScript() throws ScriptException, IOException {
@@ -415,11 +424,11 @@ public final class JSR223Script {
 	public Object eval(ScriptBindings bindings) throws ScriptException, IOException {
 		if (bindings == null) {
 			bindings = newBindings();
-		} else if (bindings.engine != this.engine.get()) {
+		} else if (!supports(bindings)) {
 			throw new ScriptException(
 				"The given bindings did not come from this script's engine, and therefore can't be used with it");
 		}
-		return eval(bindings.bindings);
+		return eval(bindings.get());
 	}
 
 	public Object eval(Consumer<Bindings> initializer) throws ScriptException, IOException {
@@ -429,24 +438,41 @@ public final class JSR223Script {
 	public <EX extends Throwable> Object eval(CheckedConsumer<Bindings, EX> initializer)
 		throws ScriptException, IOException, EX {
 		final Bindings bindings = this.engine.get().createBindings();
-		initializer.acceptChecked(bindings);
+		if (initializer != null) {
+			initializer.acceptChecked(bindings);
+		}
 		return eval(bindings);
 	}
 
 	private Object eval(Bindings bindings) throws ScriptException, IOException {
 		ScriptEngine engine = this.engine.get();
-
 		final CompiledScript compiledScript = getCompiledScript();
 		if (compiledScript != null) { return compiledScript.eval(bindings); }
 
 		return engine.eval(this.sourceCode.getChecked(), bindings);
 	}
 
+	public Object eval(ScriptContext ctx) throws ScriptException, IOException {
+		ScriptEngine engine = this.engine.get();
+		if (ctx == null) {
+			ctx = new SimpleScriptContext();
+		}
+		final CompiledScript compiledScript = getCompiledScript();
+		if (compiledScript != null) { return compiledScript.eval(ctx); }
+
+		return engine.eval(this.sourceCode.getChecked(), ctx);
+	}
+
+	public boolean supports(ScriptBindings bindings) {
+		if (bindings == null) { return false; }
+		return (this.engine.get() == bindings.engine);
+	}
+
 	public CacheKey getCacheKey() {
 		return this.cacheKey;
 	}
 
-	public void dispose() {
-		JSR223Script.purge(this.cacheKey);
+	public boolean dispose() {
+		return JSR223Script.purge(this.cacheKey);
 	}
 }

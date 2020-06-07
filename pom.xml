@@ -53,6 +53,7 @@
 		<commons-codec.version>1.11</commons-codec.version>
 		<commons-text.version>1.6</commons-text.version>
 		<slf4j.version>1.7.27</slf4j.version>
+		<jexl.version>3.1</jexl.version>
 		<junit.version>5.5.2</junit.version>
 		<easymock.version>4.0.2</easymock.version>
 		<logback.version>1.2.3</logback.version>
@@ -114,6 +115,12 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j.version}</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-jexl3</artifactId>
+			<version>${jexl.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
