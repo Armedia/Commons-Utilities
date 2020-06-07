@@ -428,7 +428,7 @@ public final class JSR223Script {
 			throw new ScriptException(
 				"The given bindings did not come from this script's engine, and therefore can't be used with it");
 		}
-		return eval(bindings.get());
+		return eval(bindings.getBindings());
 	}
 
 	public Object eval(Consumer<Bindings> initializer) throws ScriptException, IOException {
