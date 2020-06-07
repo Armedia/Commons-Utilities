@@ -28,43 +28,57 @@ package com.armedia.commons.utilities;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.armedia.commons.utilities.function.CheckedRunnable;
+import com.armedia.commons.utilities.function.CheckedSupplier;
+import com.armedia.commons.utilities.function.CheckedTools;
 
 public final class CloseableIteratorWrapper<E> extends CloseableIterator<E> {
 
-	private final CheckedRunnable<? extends Exception> initializer;
-	private final Runnable closer;
-	private final Iterator<E> it;
-
-	public CloseableIteratorWrapper(Iterator<E> it) {
-		this(it, null, null);
+	private static <E> Supplier<Iterator<E>> wrap(Iterator<E> it) {
+		Objects.requireNonNull(it, "Must provide a non-null Iterator");
+		return () -> it;
 	}
 
-	public <EX extends Exception> CloseableIteratorWrapper(Iterator<E> it, CheckedRunnable<EX> initializer) {
-		this(it, initializer, null);
+	private final CheckedSupplier<Iterator<E>, ? extends Exception> initializer;
+	private final Runnable closer;
+	private Iterator<E> it = null;
+
+	public CloseableIteratorWrapper(Iterator<E> it) {
+		this(it, null);
 	}
 
 	public CloseableIteratorWrapper(Iterator<E> it, Runnable closer) {
-		this(it, null, closer);
+		this(CloseableIteratorWrapper.wrap(it), closer);
 	}
 
-	public <EX extends Exception> CloseableIteratorWrapper(Iterator<E> it, CheckedRunnable<EX> initializer,
+	public CloseableIteratorWrapper(Supplier<Iterator<E>> initializer) {
+		this(initializer, null);
+	}
+
+	public CloseableIteratorWrapper(Supplier<Iterator<E>> initializer, Runnable closer) {
+		this(CheckedTools.check(initializer), closer);
+	}
+
+	public CloseableIteratorWrapper(Stream<E> stream) {
+		this(Objects.requireNonNull(stream, "Must provide a non-null Stream")::iterator, stream::close);
+	}
+
+	public <EX extends Exception> CloseableIteratorWrapper(CheckedSupplier<Iterator<E>, EX> initializer) {
+		this(initializer, null);
+	}
+
+	public <EX extends Exception> CloseableIteratorWrapper(CheckedSupplier<Iterator<E>, EX> initializer,
 		Runnable closer) {
-		this.it = Objects.requireNonNull(it, "Must provide a non-null iterator");
+		this.initializer = Objects.requireNonNull(initializer, "Must provide a non-null iterator");
 		this.closer = closer;
-		this.initializer = initializer;
-	}
-
-	public CloseableIteratorWrapper(Stream<E> it) {
-		this(Objects.requireNonNull(it, "Must provide a non-null Stream").iterator(), it::close);
 	}
 
 	@Override
 	protected void initialize() throws Exception {
-		if (this.initializer != null) {
-			this.initializer.runChecked();
+		if (this.it == null) {
+			this.it = this.initializer.getChecked();
 		}
 	}
 
