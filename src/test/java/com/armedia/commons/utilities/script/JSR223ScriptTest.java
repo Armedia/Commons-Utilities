@@ -111,6 +111,8 @@ public class JSR223ScriptTest {
 
 		String script = "1 + 1";
 
+		Assertions.assertFalse(JSR223Script.purge(null));
+
 		for (String language : languages.keySet()) {
 			JSR223Script s1 = builder //
 				.language(language) //
@@ -201,11 +203,11 @@ public class JSR223ScriptTest {
 		Charset charset = StandardCharsets.UTF_8;
 		builder.charset(charset);
 		final Path scriptA = Files.createTempFile("jsr223test.", ".tmp");
-		Files.write(scriptA, "1 + 1".getBytes(charset));
 		final Path scriptB = Files.createTempFile("jsr223test.", ".tmp");
+		Files.write(scriptA, "1 + 1".getBytes(charset));
 		Files.write(scriptB, "2 + 2".getBytes(charset));
 
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+		Runnable onExit = () -> {
 			try {
 				Files.delete(scriptA);
 			} catch (IOException e) {
@@ -216,7 +218,8 @@ public class JSR223ScriptTest {
 			} catch (IOException e) {
 				// DO nothing...
 			}
-		}));
+		};
+		Runtime.getRuntime().addShutdownHook(new Thread(onExit));
 
 		List<CacheKey> keys = new ArrayList<>(languages.size());
 		for (String language : languages.keySet()) {
@@ -237,6 +240,31 @@ public class JSR223ScriptTest {
 			Assertions.assertNotSame(b, JSR223Script.getInstance(a.getCacheKey()));
 		}
 		keys.removeIf(JSR223Script::purge);
+
+		// Try to trigger exceptions
+		for (String language : languages.keySet()) {
+			// Write the files
+			Files.write(scriptA, "1 + 1".getBytes(charset));
+			Files.write(scriptB, "2 + 2".getBytes(charset));
+
+			JSR223Script a = builder //
+				.language(language) //
+				.source(scriptA).build() //
+			;
+			keys.add(a.getCacheKey());
+
+			JSR223Script b = builder //
+				.source(scriptB).build() //
+			;
+			keys.add(b.getCacheKey());
+
+			// Delete the files
+			Files.delete(scriptA);
+			Files.delete(scriptB);
+
+			Assertions.assertThrows(IOException.class, () -> a.eval());
+			Assertions.assertThrows(IOException.class, () -> b.eval());
+		}
 	}
 
 	@Test

@@ -250,8 +250,8 @@ public final class JSR223Script {
 	}
 
 	public static boolean purge(CacheKey cacheKey) {
-		if (cacheKey != null) { return (JSR223Script.CACHE.remove(cacheKey) != null); }
-		return false;
+		if (cacheKey == null) { return false; }
+		return (JSR223Script.CACHE.remove(cacheKey) != null);
 	}
 
 	public static JSR223Script getInstance(CacheKey cacheKey) {
@@ -267,14 +267,14 @@ public final class JSR223Script {
 		if (key.getValue() != null) {
 			initializer = new ConcurrentInitializer<JSR223Script>() {
 				@Override
-				public JSR223Script get() throws ConcurrentException {
+				public JSR223Script get() {
 					return new JSR223Script(allowCompilation, key.getKey(), language, key::getValue);
 				}
 			};
 		} else {
 			initializer = new ConcurrentInitializer<JSR223Script>() {
 				@Override
-				public JSR223Script get() throws ConcurrentException {
+				public JSR223Script get() {
 					return new JSR223Script(allowCompilation, key.getKey(), language, () -> {
 						try (Reader r = Files.newBufferedReader(Path.class.cast(source), charset)) {
 							return IOUtils.toString(r);
@@ -307,25 +307,9 @@ public final class JSR223Script {
 			if (IOException.class.isInstance(thrown)) {
 				this.ioException = IOException.class.cast(thrown);
 				this.scriptException = null;
-			} else if (ScriptException.class.isInstance(thrown)) {
+			} else {
 				this.ioException = null;
 				this.scriptException = ScriptException.class.cast(thrown);
-			} else if (UncheckedIOException.class.isInstance(thrown)) {
-				Throwable cause = thrown.getCause();
-				if (ScriptException.class.isInstance(cause)) {
-					this.scriptException = ScriptException.class.cast(cause);
-					this.ioException = null;
-				} else {
-					if (IOException.class.isInstance(cause)) {
-						this.ioException = IOException.class.cast(cause);
-					} else {
-						this.ioException = new IOException("Unexpected exception", cause);
-					}
-					this.scriptException = null;
-				}
-			} else {
-				throw new IllegalArgumentException(
-					"Unsupported exception type " + thrown.getClass().getCanonicalName());
 			}
 		}
 
