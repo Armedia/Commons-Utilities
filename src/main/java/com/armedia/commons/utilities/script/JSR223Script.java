@@ -29,11 +29,11 @@ package com.armedia.commons.utilities.script;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -64,11 +64,13 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.armedia.commons.utilities.function.CheckedConsumer;
 import com.armedia.commons.utilities.function.CheckedLazySupplier;
+import com.armedia.commons.utilities.function.CheckedSupplier;
 import com.armedia.commons.utilities.function.CheckedTools;
 import com.armedia.commons.utilities.function.LazySupplier;
 
 public final class JSR223Script {
 
+	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final Map<String, String> LANGUAGES;
 	private static final Map<String, ScriptEngineFactory> SCRIPT_ENGINE_FACTORIES;
 	static {
@@ -96,66 +98,70 @@ public final class JSR223Script {
 	public static class Builder {
 
 		private String language = null;
-		private Object source = null;
-		private Charset charset = null;
 		private boolean allowCompilation = true;
+		private Charset charset = JSR223Script.DEFAULT_CHARSET;
+		private Object source = null;
 
-		public Builder withLanguage(String language) {
+		public Builder(String language) {
+			language(language);
+		}
+
+		public Builder language(String language) {
 			this.language = language;
 			return this;
 		}
 
-		public Builder withAllowCompilation(boolean allowCompilation) {
+		public String language() {
+			return this.language;
+		}
+
+		public Builder allowCompilation(boolean allowCompilation) {
 			this.allowCompilation = allowCompilation;
 			return this;
 		}
 
-		public Builder withSource(String script) {
-			this.source = script;
-			return this;
+		public boolean allowCompilation() {
+			return this.allowCompilation;
 		}
 
-		public Builder withSource(Reader source) {
-			this.source = source;
-			return this;
-		}
-
-		public Builder withSource(InputStream source, Charset charset) {
-			this.source = source;
+		public Builder charset(Charset charset) {
 			this.charset = JSR223Script.sanitize(charset);
 			return this;
 		}
 
-		public Builder withSource(Path source) {
-			this.source = source;
+		public Charset charset() {
+			return this.charset;
+		}
+
+		public Builder source(CharSequence script) {
+			this.source = script;
 			return this;
 		}
 
-		public Builder withSource(File source) {
-			this.source = source;
+		public Builder source(File file) {
+			this.source = (file != null ? file.toPath() : null);
+			return this;
+		}
+
+		public Builder source(Path path) {
+			this.source = path;
+			return this;
+		}
+
+		public Builder source(InputStream in) {
+			this.source = in;
+			return this;
+		}
+
+		public Builder source(Reader r) {
+			this.source = r;
 			return this;
 		}
 
 		public JSR223Script build() throws ScriptException, IOException {
-			this.language = JSR223Script.sanitize(this.language);
 			Objects.requireNonNull(this.source, "Must provide a non-null source for the script");
-			if (String.class.isInstance(this.source)) {
-				return JSR223Script.getInstance(this.allowCompilation, this.language, this.source.toString());
-			}
-			if (InputStreamReader.class.isInstance(this.source)) {
-				this.charset = JSR223Script.sanitize(this.charset);
-				this.source = new InputStreamReader(InputStream.class.cast(this.source), this.charset);
-			}
-			if (Reader.class.isInstance(this.source)) {
-				return JSR223Script.getInstance(this.allowCompilation, this.language, Reader.class.cast(this.source));
-			}
-
-			this.charset = JSR223Script.sanitize(this.charset);
-			if (File.class.isInstance(this.source)) {
-				this.source = File.class.cast(this.source).toPath();
-			}
-			return JSR223Script.getInstance(this.allowCompilation, this.language, Path.class.cast(this.source),
-				this.charset);
+			return JSR223Script.getInstance(this.allowCompilation, JSR223Script.sanitize(this.language), this.source,
+				JSR223Script.sanitize(this.charset));
 		}
 	}
 
@@ -200,7 +206,7 @@ public final class JSR223Script {
 	}
 
 	private static Charset sanitize(Charset charset) {
-		return (charset != null ? charset : Charset.defaultCharset());
+		return (charset != null ? charset : JSR223Script.DEFAULT_CHARSET);
 	}
 
 	private static String sanitize(String language) throws ScriptException {
@@ -214,19 +220,16 @@ public final class JSR223Script {
 	private static Pair<CacheKey, String> computeKey(String language, Object source)
 		throws ScriptException, IOException {
 		language = JSR223Script.sanitize(language);
-		if (String.class.isInstance(source)) {
+
+		if (CharSequence.class.isInstance(source)) {
 			return Pair.of(new CacheKey(language + "#" + DigestUtils.sha256Hex(source.toString())), source.toString());
 		}
+
 		if (Path.class.isInstance(source)) {
 			return Pair.of(new CacheKey(language + "@" + Path.class.cast(source).toRealPath().toUri()), null);
 		}
 
-		// Must be a reader, recurse after reading the contents
-		Reader r = Reader.class.cast(source);
-		String contents = IOUtils.toString(r);
-		// We've read the contents, so recurse with the string
-		Pair<CacheKey, String> p = JSR223Script.computeKey(language, contents);
-		return Pair.of(p.getKey(), contents);
+		return JSR223Script.computeKey(language, IOUtils.toString(Reader.class.cast(source)));
 	}
 
 	public static Map<String, String> getLanguages() {
@@ -252,56 +255,33 @@ public final class JSR223Script {
 		return JSR223Script.CACHE.get(cacheKey);
 	}
 
-	private static JSR223Script getInstance(boolean allowCompilation, String language, final String script)
-		throws ScriptException {
-		final Pair<CacheKey, String> key;
-		try {
-			key = JSR223Script.computeKey(language, script);
-		} catch (IOException e) {
-			throw new RuntimeException("Unexpected IOException reading from memory", e);
-		}
-
-		try {
-			return ConcurrentUtils.createIfAbsent(JSR223Script.CACHE, key.getKey(),
-				new ConcurrentInitializer<JSR223Script>() {
-					@Override
-					public JSR223Script get() throws ConcurrentException {
-						return new JSR223Script(allowCompilation, key.getKey(), language, key.getValue());
-					}
-				});
-		} catch (ConcurrentException e) {
-			throw new RuntimeException("Unexpected exception working in memory", e);
-		}
-	}
-
-	private static JSR223Script getInstance(boolean allowCompilation, String language, final Reader r)
+	private static JSR223Script getInstance(boolean allowCompilation, String language, Object source, Charset charset)
 		throws ScriptException, IOException {
-		final Pair<CacheKey, String> key = JSR223Script.computeKey(language, r);
-		try {
-			return ConcurrentUtils.createIfAbsent(JSR223Script.CACHE, key.getKey(),
-				new ConcurrentInitializer<JSR223Script>() {
-					@Override
-					public JSR223Script get() throws ConcurrentException {
-						return new JSR223Script(allowCompilation, key.getKey(), language, key.getValue());
-					}
-				});
-		} catch (ConcurrentException e) {
-			// Nothing will have happened here, since computeKey() did all the I/O
-			throw new RuntimeException("Unexpected exception working in memory", e);
-		}
-	}
-
-	private static JSR223Script getInstance(boolean allowCompilation, String language, Path source,
-		final Charset charset) throws ScriptException, IOException {
 		final Pair<CacheKey, String> key = JSR223Script.computeKey(language, source);
+
+		final ConcurrentInitializer<JSR223Script> initializer;
+		if (key.getValue() != null) {
+			initializer = new ConcurrentInitializer<JSR223Script>() {
+				@Override
+				public JSR223Script get() throws ConcurrentException {
+					return new JSR223Script(allowCompilation, key.getKey(), language, key::getValue);
+				}
+			};
+		} else {
+			initializer = new ConcurrentInitializer<JSR223Script>() {
+				@Override
+				public JSR223Script get() throws ConcurrentException {
+					return new JSR223Script(allowCompilation, key.getKey(), language, () -> {
+						try (Reader r = Files.newBufferedReader(Path.class.cast(source), charset)) {
+							return IOUtils.toString(r);
+						}
+					});
+				}
+			};
+		}
+
 		try {
-			return ConcurrentUtils.createIfAbsent(JSR223Script.CACHE, key.getKey(),
-				new ConcurrentInitializer<JSR223Script>() {
-					@Override
-					public JSR223Script get() throws ConcurrentException {
-						return new JSR223Script(allowCompilation, key.getKey(), language, source, charset);
-					}
-				});
+			return ConcurrentUtils.createIfAbsent(JSR223Script.CACHE, key.getKey(), initializer);
 		} catch (ConcurrentException e) {
 			throw new RuntimeException("Unexpected exception working in memory", e);
 		}
@@ -380,27 +360,15 @@ public final class JSR223Script {
 
 	private volatile CompilationResult compilationResult = null;
 
-	private JSR223Script(boolean allowCompilation, CacheKey cacheKey, String language, final String script) {
+	private JSR223Script(boolean allowCompilation, CacheKey cacheKey, String language,
+		final CheckedSupplier<String, IOException> script) {
 		this.allowCompilation = allowCompilation;
 		this.cacheKey = cacheKey;
-		this.language = StringUtils.lowerCase(language);
-		this.factory = JSR223Script.getFactory(language);
-		this.engine = new LazySupplier<>(this.factory::getScriptEngine);
-		this.sourceCode = new CheckedLazySupplier<>(() -> script);
-	}
-
-	private JSR223Script(boolean allowCompilation, CacheKey cacheKey, String language, Path source, Charset charset) {
-		this.allowCompilation = allowCompilation;
-		this.cacheKey = cacheKey;
-		this.language = StringUtils.lowerCase(language);
-		this.factory = JSR223Script.getFactory(language);
-		this.engine = new LazySupplier<>(this.factory::getScriptEngine);
+		this.language = language;
+		this.factory = JSR223Script.getFactory(this.language);
 		if (this.factory == null) { throw new IllegalArgumentException("Unsupported language [" + language + "]"); }
-		this.sourceCode = new CheckedLazySupplier<>(() -> {
-			try (Reader r = Files.newBufferedReader(source, charset)) {
-				return IOUtils.toString(r);
-			}
-		});
+		this.engine = new LazySupplier<>(this.factory::getScriptEngine);
+		this.sourceCode = new CheckedLazySupplier<>(script);
 	}
 
 	public String getLanguage() {
@@ -408,10 +376,11 @@ public final class JSR223Script {
 	}
 
 	public void compile() throws ScriptException, IOException {
-		getCompiledScript(this.engine.get());
+		getCompiledScript();
 	}
 
-	private CompiledScript getCompiledScript(ScriptEngine engine) throws ScriptException, IOException {
+	private CompiledScript getCompiledScript() throws ScriptException, IOException {
+		ScriptEngine engine = this.engine.get();
 		if (!this.allowCompilation || !Compilable.class.isInstance(engine)) { return null; }
 
 		CompilationResult result = this.compilationResult;
@@ -420,11 +389,11 @@ public final class JSR223Script {
 				result = this.compilationResult;
 				if (result == null) {
 					try {
-						String source = this.sourceCode.get();
+						String source = this.sourceCode.getChecked();
 						CompiledScript compiled = Compilable.class.cast(engine).compile(source);
 						result = new CompilationResult(compiled);
 						this.compilationResult = result;
-					} catch (UncheckedIOException | ScriptException e) {
+					} catch (IOException | ScriptException e) {
 						result = new CompilationResult(e);
 						this.compilationResult = result;
 					}
@@ -440,12 +409,13 @@ public final class JSR223Script {
 	}
 
 	public Object eval() throws ScriptException, IOException {
-		return eval(Objects::nonNull);
+		return eval(newBindings());
 	}
 
 	public Object eval(ScriptBindings bindings) throws ScriptException, IOException {
-		if (bindings == null) { return eval(Objects::nonNull); }
-		if (bindings.engine != this.engine.get()) {
+		if (bindings == null) {
+			bindings = newBindings();
+		} else if (bindings.engine != this.engine.get()) {
 			throw new ScriptException(
 				"The given bindings did not come from this script's engine, and therefore can't be used with it");
 		}
@@ -458,9 +428,7 @@ public final class JSR223Script {
 
 	public <EX extends Throwable> Object eval(CheckedConsumer<Bindings, EX> initializer)
 		throws ScriptException, IOException, EX {
-		ScriptEngine engine = this.engine.get();
-
-		final Bindings bindings = engine.createBindings();
+		final Bindings bindings = this.engine.get().createBindings();
 		initializer.acceptChecked(bindings);
 		return eval(bindings);
 	}
@@ -468,10 +436,10 @@ public final class JSR223Script {
 	private Object eval(Bindings bindings) throws ScriptException, IOException {
 		ScriptEngine engine = this.engine.get();
 
-		final CompiledScript compiledScript = getCompiledScript(engine);
+		final CompiledScript compiledScript = getCompiledScript();
 		if (compiledScript != null) { return compiledScript.eval(bindings); }
 
-		return engine.eval(this.sourceCode.get(), bindings);
+		return engine.eval(this.sourceCode.getChecked(), bindings);
 	}
 
 	public CacheKey getCacheKey() {
