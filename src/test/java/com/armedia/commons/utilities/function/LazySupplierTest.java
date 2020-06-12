@@ -5,28 +5,27 @@
  * Copyright (C) 2013 - 2020 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
 package com.armedia.commons.utilities.function;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -46,8 +45,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import com.armedia.commons.utilities.Tools;
 
 public class LazySupplierTest {
 
@@ -190,7 +187,7 @@ public class LazySupplierTest {
 			supplier.get();
 			Assertions.fail("Did not raise an explicit exception");
 		} catch (Exception e) {
-			Assertions.assertSame(uuid, e.getCause().getMessage());
+			Assertions.assertSame(uuid, e.getMessage());
 		}
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
@@ -257,9 +254,10 @@ public class LazySupplierTest {
 	public void testFromSupplierSupplierOfT() {
 		final String uuid = UUID.randomUUID().toString();
 		final Supplier<String> uuidSupplier = () -> uuid;
+		final Supplier<String> nullSupplier = null;
 		LazySupplier<String> supplier = null;
 
-		supplier = LazySupplier.fromSupplier(uuidSupplier);
+		supplier = LazySupplier.from(uuidSupplier);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
@@ -267,7 +265,7 @@ public class LazySupplierTest {
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(null);
+		supplier = LazySupplier.from(nullSupplier);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
@@ -278,12 +276,13 @@ public class LazySupplierTest {
 
 	@Test
 	public void testFromSupplierSupplierOfTT() {
-		String uuid = UUID.randomUUID().toString();
-		String uuid2 = UUID.randomUUID().toString();
-		Supplier<String> uuidSupplier = () -> uuid2;
+		final String uuid = UUID.randomUUID().toString();
+		final String uuid2 = UUID.randomUUID().toString();
+		final Supplier<String> uuidSupplier = () -> uuid2;
+		final Supplier<String> nullSupplier = null;
 		LazySupplier<String> supplier = null;
 
-		supplier = LazySupplier.fromSupplier(null, null);
+		supplier = LazySupplier.from(nullSupplier, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
@@ -291,7 +290,7 @@ public class LazySupplierTest {
 		Assertions.assertTrue(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get(LazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(uuidSupplier, null);
+		supplier = LazySupplier.from(uuidSupplier, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());
@@ -299,7 +298,7 @@ public class LazySupplierTest {
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get(LazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(null, uuid);
+		supplier = LazySupplier.from(nullSupplier, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
@@ -307,7 +306,7 @@ public class LazySupplierTest {
 		Assertions.assertTrue(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get(LazySupplierTest.FAIL_SUPP));
 
-		supplier = LazySupplier.fromSupplier(uuidSupplier, uuid);
+		supplier = LazySupplier.from(uuidSupplier, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());
@@ -858,7 +857,7 @@ public class LazySupplierTest {
 			executor.awaitTermination(1, TimeUnit.MINUTES);
 		}
 	}
-
+	.getCause()
 	@Test
 	public void testAwaitUntil() throws Exception {
 		final CyclicBarrier barrier = new CyclicBarrier(2);
@@ -1164,187 +1163,6 @@ public class LazySupplierTest {
 			Assertions.assertSame(uuidA, initializer.get());
 			Assertions.assertSame(uuidA, initializer.get());
 			EasyMock.verify(supplier);
-		}
-	}
-
-	@Test
-	public void testFromInitializer() throws ConcurrentException {
-		ConcurrentInitializer<UUID> initializer = EasyMock.createStrictMock(ConcurrentInitializer.class);
-		LazySupplier<UUID> lazySupplier = null;
-
-		{
-			lazySupplier = LazySupplier.fromInitializer(null);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertNull(lazySupplier.get());
-		}
-
-		{
-			lazySupplier = LazySupplier.fromInitializer(null, null);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertNull(lazySupplier.get());
-		}
-
-		{
-			final UUID uuid = UUID.randomUUID();
-			lazySupplier = LazySupplier.fromInitializer(null, uuid);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertSame(uuid, lazySupplier.get());
-		}
-
-		{
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andReturn(null).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertNull(lazySupplier.get());
-			Assertions.assertNull(lazySupplier.get());
-			EasyMock.verify(initializer);
-		}
-
-		{
-			final UUID uuid = UUID.randomUUID();
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andReturn(uuid).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertSame(uuid, lazySupplier.get());
-			Assertions.assertSame(uuid, lazySupplier.get());
-			EasyMock.verify(initializer);
-		}
-
-		{
-			final IOException first = new IOException("first");
-			final IOException second = new IOException("second");
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(first)).once();
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(second)).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer);
-			Assertions.assertNotNull(lazySupplier);
-			try {
-				lazySupplier.get();
-				Assertions.fail("Did not cascade the raised exception");
-			} catch (RuntimeException e) {
-				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
-				Assertions.assertNotNull(ce);
-				Assertions.assertSame(first, ce.getCause());
-			}
-			try {
-				lazySupplier.get();
-				Assertions.fail("Did not cascade the raised exception");
-			} catch (RuntimeException e) {
-				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
-				Assertions.assertNotNull(ce);
-				Assertions.assertSame(second, ce.getCause());
-			}
-			EasyMock.verify(initializer);
-		}
-
-		{
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andReturn(null).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer, null);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertNull(lazySupplier.get());
-			Assertions.assertNull(lazySupplier.get());
-			EasyMock.verify(initializer);
-		}
-
-		{
-			final UUID uuid = UUID.randomUUID();
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andReturn(uuid).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer, null);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertSame(uuid, lazySupplier.get());
-			Assertions.assertSame(uuid, lazySupplier.get());
-			EasyMock.verify(initializer);
-		}
-
-		{
-			final IOException first = new IOException("first");
-			final IOException second = new IOException("second");
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(first)).once();
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(second)).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer, null);
-			Assertions.assertNotNull(lazySupplier);
-			try {
-				lazySupplier.get();
-				Assertions.fail("Did not cascade the raised exception");
-			} catch (RuntimeException e) {
-				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
-				Assertions.assertNotNull(ce);
-				Assertions.assertSame(first, ce.getCause());
-			}
-			try {
-				lazySupplier.get();
-				Assertions.fail("Did not cascade the raised exception");
-			} catch (RuntimeException e) {
-				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
-				Assertions.assertNotNull(ce);
-				Assertions.assertSame(second, ce.getCause());
-			}
-			EasyMock.verify(initializer);
-		}
-
-		{
-			final UUID uuid = UUID.randomUUID();
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andReturn(null).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer, uuid);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertNull(lazySupplier.get());
-			Assertions.assertNull(lazySupplier.get());
-			EasyMock.verify(initializer);
-		}
-
-		{
-			final UUID uuidA = UUID.randomUUID();
-			final UUID uuidB = UUID.randomUUID();
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andReturn(uuidA).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer, uuidB);
-			Assertions.assertNotNull(lazySupplier);
-			Assertions.assertSame(uuidA, lazySupplier.get());
-			Assertions.assertSame(uuidA, lazySupplier.get());
-			EasyMock.verify(initializer);
-		}
-
-		{
-			final UUID uuid = UUID.randomUUID();
-			final IOException first = new IOException("first");
-			final IOException second = new IOException("second");
-			EasyMock.reset(initializer);
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(first)).once();
-			EasyMock.expect(initializer.get()).andThrow(new ConcurrentException(second)).once();
-			EasyMock.replay(initializer);
-			lazySupplier = LazySupplier.fromInitializer(initializer, uuid);
-			Assertions.assertNotNull(lazySupplier);
-			try {
-				lazySupplier.get();
-				Assertions.fail("Did not cascade the raised exception");
-			} catch (RuntimeException e) {
-				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
-				Assertions.assertNotNull(ce);
-				Assertions.assertSame(first, ce.getCause());
-			}
-			try {
-				lazySupplier.get();
-				Assertions.fail("Did not cascade the raised exception");
-			} catch (RuntimeException e) {
-				ConcurrentException ce = Tools.cast(ConcurrentException.class, e.getCause());
-				Assertions.assertNotNull(ce);
-				Assertions.assertSame(second, ce.getCause());
-			}
-			EasyMock.verify(initializer);
 		}
 	}
 }

@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2020 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,10 +27,12 @@
 package com.armedia.commons.utilities.function;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
@@ -173,14 +175,32 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableL
 		return this.item;
 	}
 
-	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> fromSupplier(Supplier<T> defaultInitializer) {
-		return CheckedLazySupplier.fromSupplier(defaultInitializer, null);
+	public void reset() {
+		shareLockedUpgradable(() -> this.initialized, () -> {
+			this.item = null;
+			this.initialized = false;
+			this.condition.signal();
+		});
 	}
 
-	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> fromSupplier(Supplier<T> defaultInitializer,
+	public boolean applyIfSet(Consumer<T> consumer) {
+		Objects.requireNonNull(consumer, "Must provide a Consumer instance");
+		return shareLocked(() -> {
+			boolean initialized = this.initialized;
+			if (initialized) {
+				consumer.accept(this.item);
+			}
+			return initialized;
+		});
+	}
+
+	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> from(CheckedSupplier<T, EX> defaultInitializer) {
+		return CheckedLazySupplier.from(defaultInitializer, null);
+	}
+
+	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> from(CheckedSupplier<T, EX> defaultInitializer,
 		T defaultValue) {
-		return new CheckedLazySupplier<>((defaultInitializer != null ? () -> defaultInitializer.get() : null),
-			defaultValue);
+		return new CheckedLazySupplier<>(defaultInitializer, defaultValue);
 	}
 
 	public static <T> CheckedLazySupplier<T, ConcurrentException> fromInitializer(
