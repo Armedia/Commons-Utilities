@@ -857,7 +857,7 @@ public class LazySupplierTest {
 			executor.awaitTermination(1, TimeUnit.MINUTES);
 		}
 	}
-	.getCause()
+
 	@Test
 	public void testAwaitUntil() throws Exception {
 		final CyclicBarrier barrier = new CyclicBarrier(2);
