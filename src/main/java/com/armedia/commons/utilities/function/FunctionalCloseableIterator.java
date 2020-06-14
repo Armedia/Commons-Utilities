@@ -29,6 +29,7 @@ package com.armedia.commons.utilities.function;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.armedia.commons.utilities.CloseableIterator;
 
@@ -51,7 +52,7 @@ import com.armedia.commons.utilities.CloseableIterator;
 public class FunctionalCloseableIterator<E> extends CloseableIterator<E> {
 
 	public static class Builder<E> {
-		private CheckedRunnable<? extends Exception> initializer = null;
+		private CheckedSupplier<Boolean, ? extends Exception> initializer = null;
 		private final CheckedSupplier<E, ? extends Exception> seeker;
 		private Consumer<E> remover = null;
 		private CheckedRunnable<? extends Exception> closer = null;
@@ -60,12 +61,12 @@ public class FunctionalCloseableIterator<E> extends CloseableIterator<E> {
 			this.seeker = Objects.requireNonNull(seeker, "Must provide a seeker method");
 		}
 
-		public Builder<E> withInitializer(CheckedRunnable<? extends Exception> initializer) {
+		public Builder<E> withInitializer(CheckedSupplier<Boolean, ? extends Exception> initializer) {
 			this.initializer = initializer;
 			return this;
 		}
 
-		public Builder<E> withInitializer(Runnable initializer) {
+		public Builder<E> withInitializer(Supplier<Boolean> initializer) {
 			if (initializer == null) {
 				this.initializer = null;
 			} else {
@@ -74,7 +75,7 @@ public class FunctionalCloseableIterator<E> extends CloseableIterator<E> {
 			return this;
 		}
 
-		public CheckedRunnable<? extends Exception> initializer() {
+		public CheckedSupplier<Boolean, ? extends Exception> initializer() {
 			return this.initializer;
 		}
 
@@ -110,7 +111,7 @@ public class FunctionalCloseableIterator<E> extends CloseableIterator<E> {
 		}
 	}
 
-	private final CheckedRunnable<? extends Exception> initializer;
+	private final CheckedSupplier<Boolean, ? extends Exception> initializer;
 	private final CheckedSupplier<E, ? extends Exception> seeker;
 	private final Consumer<E> remover;
 	private final CheckedRunnable<? extends Exception> closer;
@@ -124,12 +125,12 @@ public class FunctionalCloseableIterator<E> extends CloseableIterator<E> {
 		this(null, seeker, null, closer);
 	}
 
-	public FunctionalCloseableIterator(CheckedRunnable<? extends Exception> initializer,
+	public FunctionalCloseableIterator(CheckedSupplier<Boolean, ? extends Exception> initializer,
 		CheckedSupplier<E, ? extends Exception> seeker, CheckedRunnable<? extends Exception> closer) {
 		this(initializer, seeker, null, closer);
 	}
 
-	public FunctionalCloseableIterator(CheckedRunnable<? extends Exception> initializer,
+	public FunctionalCloseableIterator(CheckedSupplier<Boolean, ? extends Exception> initializer,
 		CheckedSupplier<E, ? extends Exception> seeker, Consumer<E> remover,
 		CheckedRunnable<? extends Exception> closer) {
 		this.initializer = initializer;
@@ -139,10 +140,9 @@ public class FunctionalCloseableIterator<E> extends CloseableIterator<E> {
 	}
 
 	@Override
-	protected void initialize() throws Exception {
-		if (this.initializer != null) {
-			this.initializer.runChecked();
-		}
+	protected boolean initialize() throws Exception {
+		if (this.initializer != null) { return (this.initializer.getChecked() != Boolean.FALSE); }
+		return true;
 	}
 
 	@Override

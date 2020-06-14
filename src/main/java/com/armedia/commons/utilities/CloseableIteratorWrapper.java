@@ -76,10 +76,11 @@ public final class CloseableIteratorWrapper<E> extends CloseableIterator<E> {
 	}
 
 	@Override
-	protected void initialize() throws Exception {
+	protected boolean initialize() throws Exception {
 		if (this.it == null) {
 			this.it = this.initializer.getChecked();
 		}
+		return true;
 	}
 
 	@Override

@@ -70,7 +70,11 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 		final Result result;
 		if (!this.initialized) {
 			try {
-				initialize();
+				// If initialization fails, we mark as closed
+				if (!initialize()) {
+					this.state = State.CLOSED;
+					return false;
+				}
 				this.initialized = true;
 			} catch (Exception e) {
 				// Uh-oh...something went wrong, we need to abort!
@@ -106,14 +110,14 @@ public abstract class CloseableIterator<E> implements AutoCloseable, Iterator<E>
 
 	/**
 	 * <p>
-	 * Perform any lazy initialization. If this method fails, the iterator will be marked as closed
-	 * and will be of no use.
+	 * Perform any lazy initialization. If this method returns {@code false}, the iterator will be
+	 * marked as closed and will be of no use.
 	 * </p>
 	 *
 	 * @throws Exception
 	 */
-	protected void initialize() throws Exception {
-
+	protected boolean initialize() throws Exception {
+		return true;
 	}
 
 	/**
