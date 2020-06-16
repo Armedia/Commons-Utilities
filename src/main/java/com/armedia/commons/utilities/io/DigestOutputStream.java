@@ -24,7 +24,7 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -34,6 +34,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
+
+import com.armedia.commons.utilities.DigestHashCollector;
 
 public class DigestOutputStream extends FilterOutputStream implements DigestHashCollector {
 

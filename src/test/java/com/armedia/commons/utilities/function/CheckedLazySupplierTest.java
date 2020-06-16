@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2020 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -38,7 +38,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.ConcurrentInitializer;
@@ -355,10 +354,10 @@ public class CheckedLazySupplierTest {
 	@Test
 	public void testFromSupplierSupplierOfT() {
 		final String uuid = UUID.randomUUID().toString();
-		final Supplier<String> uuidSupplier = () -> uuid;
+		final CheckedSupplier<String, Exception> uuidSupplier = () -> uuid;
 		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = CheckedLazySupplier.fromSupplier(uuidSupplier);
+		supplier = CheckedLazySupplier.from(uuidSupplier);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
@@ -366,7 +365,7 @@ public class CheckedLazySupplierTest {
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = CheckedLazySupplier.fromSupplier(null);
+		supplier = CheckedLazySupplier.from(null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
@@ -379,10 +378,10 @@ public class CheckedLazySupplierTest {
 	public void testFromSupplierSupplierOfTT() {
 		String uuid = UUID.randomUUID().toString();
 		String uuid2 = UUID.randomUUID().toString();
-		Supplier<String> uuidSupplier = () -> uuid2;
+		CheckedSupplier<String, Exception> uuidSupplier = () -> uuid2;
 		CheckedLazySupplier<String, Exception> supplier = null;
 
-		supplier = CheckedLazySupplier.fromSupplier(null, null);
+		supplier = CheckedLazySupplier.from(null, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get());
@@ -390,7 +389,7 @@ public class CheckedLazySupplierTest {
 		Assertions.assertTrue(supplier.isDefaulted());
 		Assertions.assertNull(supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = CheckedLazySupplier.fromSupplier(uuidSupplier, null);
+		supplier = CheckedLazySupplier.from(uuidSupplier, null);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());
@@ -398,7 +397,7 @@ public class CheckedLazySupplierTest {
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = CheckedLazySupplier.fromSupplier(null, uuid);
+		supplier = CheckedLazySupplier.from(null, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get());
@@ -406,7 +405,7 @@ public class CheckedLazySupplierTest {
 		Assertions.assertTrue(supplier.isDefaulted());
 		Assertions.assertSame(uuid, supplier.get(CheckedLazySupplierTest.FAIL_SUPP));
 
-		supplier = CheckedLazySupplier.fromSupplier(uuidSupplier, uuid);
+		supplier = CheckedLazySupplier.from(uuidSupplier, uuid);
 		Assertions.assertFalse(supplier.isInitialized());
 		Assertions.assertFalse(supplier.isDefaulted());
 		Assertions.assertSame(uuid2, supplier.get());

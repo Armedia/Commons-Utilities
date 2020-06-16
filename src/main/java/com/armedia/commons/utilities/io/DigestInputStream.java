@@ -24,39 +24,37 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
-import com.armedia.commons.utilities.concurrent.MutexAutoLock;
+import com.armedia.commons.utilities.DigestHashCollector;
 
-public class DigestWritableByteChannel extends BaseShareableLockable
-	implements WritableByteChannel, DigestHashCollector {
+public class DigestInputStream extends FilterInputStream implements DigestHashCollector {
 
-	private final WritableByteChannel channel;
 	private final MessageDigest digest;
+	private final byte[] byteBuf = new byte[1];
 	private long length = 0;
 
-	public DigestWritableByteChannel(WritableByteChannel channel, String digest) throws NoSuchAlgorithmException {
+	public DigestInputStream(InputStream in, String digest) throws NoSuchAlgorithmException {
 		this( //
-			Objects.requireNonNull(channel, "Must provide a non-null WritableByteChannel instance"), //
+			Objects.requireNonNull(in, "Must provide a non-null InputStream to wrap around"), //
 			MessageDigest.getInstance( //
 				Objects.requireNonNull(digest, "Must provide a non-null digest name") //
 			) //
 		);
 	}
 
-	public DigestWritableByteChannel(WritableByteChannel channel, MessageDigest digest) {
-		this.channel = Objects.requireNonNull(channel, "Must provide a non-null WritableByteChannel instance");
-		this.digest = Objects.requireNonNull(digest, "Must provide a non-null MessageDigest instance");
+	public DigestInputStream(InputStream in, MessageDigest digest) {
+		super(Objects.requireNonNull(in, "Must provide a non-null InputStream to wrap around"));
+		this.digest = Objects.requireNonNull(digest, "Must provide a non-null digest instance");
 	}
 
 	@Override
@@ -66,39 +64,28 @@ public class DigestWritableByteChannel extends BaseShareableLockable
 
 	@Override
 	public Pair<Long, byte[]> collectHash() {
-		try (MutexAutoLock lock = autoMutexLock()) {
-			Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
-			this.length = 0;
-			return ret;
-		}
+		Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
+		this.length = 0;
+		return ret;
 	}
 
 	@Override
 	public void resetHash() {
-		try (MutexAutoLock lock = autoMutexLock()) {
-			this.digest.reset();
-			this.length = 0;
-		}
+		this.digest.reset();
+		this.length = 0;
 	}
 
 	@Override
-	public int write(ByteBuffer src) throws IOException {
-		try (MutexAutoLock lock = autoMutexLock()) {
-			ByteBuffer slice = src.slice();
-			int ret = this.channel.write(slice);
-			this.digest.update(src);
-			this.length += slice.capacity();
-			return ret;
-		}
+	public int read() throws IOException {
+		if (read(this.byteBuf) >= 0) { return this.byteBuf[0]; }
+		return -1;
 	}
 
 	@Override
-	public boolean isOpen() {
-		return shareLocked(this.channel::isOpen);
-	}
-
-	@Override
-	public void close() throws IOException {
-		mutexLocked(this.channel::close);
+	public int read(byte[] buf, int off, int len) throws IOException {
+		int read = super.read(buf, off, len);
+		this.digest.update(buf, off, len);
+		this.length += len;
+		return read;
 	}
 }

@@ -24,17 +24,37 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities.xml;
+package com.armedia.commons.utilities.io;
 
-import com.armedia.commons.utilities.codec.EnumCodec;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.ReadableByteChannel;
 
-public abstract class AbstractEnumAdapter<E extends Enum<E>> extends AbstractCodecAdapter<String, E, RuntimeException> {
+import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
+import com.armedia.commons.utilities.concurrent.MutexAutoLock;
 
-	public AbstractEnumAdapter(Class<E> enumClass) {
-		this(new EnumCodec<>(enumClass));
+public final class EmptyReadableByteChannel extends BaseShareableLockable implements ReadableByteChannel {
+
+	private boolean open = true;
+
+	@Override
+	public boolean isOpen() {
+		return shareLocked(() -> this.open);
 	}
 
-	public AbstractEnumAdapter(EnumCodec<E> codec) {
-		super(codec);
+	@Override
+	public void close() {
+		try (MutexAutoLock lock = autoMutexLock()) {
+			this.open = false;
+		}
+	}
+
+	@Override
+	public int read(ByteBuffer dst) throws IOException {
+		try (MutexAutoLock lock = autoMutexLock()) {
+			if (!isOpen()) { throw new ClosedChannelException(); }
+			return -1;
+		}
 	}
 }

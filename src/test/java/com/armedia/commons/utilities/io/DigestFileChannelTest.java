@@ -24,7 +24,7 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +52,7 @@ import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.armedia.commons.utilities.DigestFileChannel.DigestFileLock;
+import com.armedia.commons.utilities.io.DigestFileChannel.DigestFileLock;
 
 public class DigestFileChannelTest {
 

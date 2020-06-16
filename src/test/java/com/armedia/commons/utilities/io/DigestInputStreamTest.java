@@ -24,13 +24,12 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities;
+package com.armedia.commons.utilities.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -48,7 +47,7 @@ import org.easymock.EasyMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DigestReadableByteChannelTest {
+public class DigestInputStreamTest {
 
 	private static final String NULL_STRING = null;
 	private static final MessageDigest NULL_DIGEST = null;
@@ -62,42 +61,40 @@ public class DigestReadableByteChannelTest {
 	}
 
 	@Test
-	public void testDigestReadableByteChannel() throws Exception {
+	public void testDigestInputStream() throws Exception {
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestReadableByteChannel(null, DigestReadableByteChannelTest.NULL_STRING));
+			() -> new DigestInputStream(null, DigestInputStreamTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestReadableByteChannel(null, DigestReadableByteChannelTest.NULL_DIGEST));
-		Assertions.assertThrows(NullPointerException.class, () -> new DigestReadableByteChannel(null, ""));
-		Assertions.assertThrows(NullPointerException.class, () -> new DigestReadableByteChannel(null, ""));
+			() -> new DigestInputStream(null, DigestInputStreamTest.NULL_DIGEST));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestInputStream(null, ""));
+		Assertions.assertThrows(NullPointerException.class, () -> new DigestInputStream(null, ""));
 
-		ReadableByteChannel rbc = EasyMock.createMock(ReadableByteChannel.class);
+		InputStream rbc = EasyMock.createMock(InputStream.class);
 		rbc.close();
 		EasyMock.expectLastCall().anyTimes();
 		EasyMock.replay(rbc);
 
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestReadableByteChannel(rbc, DigestReadableByteChannelTest.NULL_STRING));
+			() -> new DigestInputStream(rbc, DigestInputStreamTest.NULL_STRING));
 		Assertions.assertThrows(NullPointerException.class,
-			() -> new DigestReadableByteChannel(rbc, DigestReadableByteChannelTest.NULL_DIGEST));
+			() -> new DigestInputStream(rbc, DigestInputStreamTest.NULL_DIGEST));
 
-		Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestReadableByteChannel(rbc, ""));
-		try (ReadableByteChannel c = new DigestReadableByteChannel(rbc,
-			DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
+		Assertions.assertThrows(NoSuchAlgorithmException.class, () -> new DigestInputStream(rbc, ""));
+		try (InputStream c = new DigestInputStream(rbc, DigestInputStreamTest.SHA256.getAlgorithm())) {
 		}
-		try (ReadableByteChannel c = new DigestReadableByteChannel(rbc, DigestReadableByteChannelTest.SHA256)) {
+		try (InputStream c = new DigestInputStream(rbc, DigestInputStreamTest.SHA256)) {
 		}
 		EasyMock.verify(rbc);
 	}
 
 	@Test
 	public void testGetDigest() throws Exception {
-		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
-		try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256)) {
-			Assertions.assertSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
+		InputStream wbc = new NullInputStream(0);
+		try (DigestInputStream c = new DigestInputStream(wbc, DigestInputStreamTest.SHA256)) {
+			Assertions.assertSame(DigestInputStreamTest.SHA256, c.getDigest());
 		}
-		try (DigestReadableByteChannel c = new DigestReadableByteChannel(wbc,
-			DigestReadableByteChannelTest.SHA256.getAlgorithm())) {
-			Assertions.assertNotSame(DigestReadableByteChannelTest.SHA256, c.getDigest());
+		try (DigestInputStream c = new DigestInputStream(wbc, DigestInputStreamTest.SHA256.getAlgorithm())) {
+			Assertions.assertNotSame(DigestInputStreamTest.SHA256, c.getDigest());
 		}
 	}
 
@@ -120,10 +117,10 @@ public class DigestReadableByteChannelTest {
 
 					int pos = 0;
 					for (Pair<byte[], byte[]> d : data) {
-						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(
-							Channels.newChannel(new ByteArrayInputStream(d.getLeft())), algorithm)) {
+						try (DigestInputStream rbc = new DigestInputStream(new ByteArrayInputStream(d.getLeft()),
+							algorithm)) {
 							ByteBuffer buf = ByteBuffer.allocate(d.getLeft().length);
-							rbc.read(buf);
+							rbc.read(buf.array());
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
 							Pair<Long, byte[]> actual = rbc.collectHash();
@@ -158,10 +155,10 @@ public class DigestReadableByteChannelTest {
 
 					int pos = 0;
 					for (Pair<byte[], byte[]> d : data) {
-						try (DigestReadableByteChannel rbc = new DigestReadableByteChannel(
-							Channels.newChannel(new ByteArrayInputStream(d.getLeft())), algorithm)) {
+						try (DigestInputStream rbc = new DigestInputStream(new ByteArrayInputStream(d.getLeft()),
+							algorithm)) {
 							ByteBuffer buf = ByteBuffer.allocate(d.getRight().length);
-							rbc.read(buf);
+							rbc.read(buf.array());
 							byte[] expected = d.getRight();
 							String expectedHex = Hex.encodeHexString(expected);
 							rbc.resetHash();
@@ -181,39 +178,38 @@ public class DigestReadableByteChannelTest {
 	@Test
 	public void testRead() throws Exception {
 		byte[] c = RandomStringUtils.random(1000).getBytes();
-		try (final ReadableByteChannel channel = new DigestReadableByteChannel(
-			Channels.newChannel(new ByteArrayInputStream(c)), DigestReadableByteChannelTest.SHA256)) {
+		try (final InputStream channel = new DigestInputStream(new ByteArrayInputStream(c),
+			DigestInputStreamTest.SHA256)) {
 			ByteBuffer buf = ByteBuffer.allocate(c.length);
-			channel.read(buf);
+			channel.read(buf.array());
 			Assertions.assertArrayEquals(c, buf.array());
 		}
+		try (final InputStream channel = new DigestInputStream(new ByteArrayInputStream(c),
+			DigestInputStreamTest.SHA256)) {
+			for (int i = 0; i < c.length; i++) {
+				int b = channel.read();
+				Assertions.assertNotEquals(-1, b);
+				Assertions.assertEquals(c[i], (byte) b);
+			}
+			Assertions.assertEquals(-1, channel.read());
+		}
 		byte[] none = new byte[0];
-		try (final ReadableByteChannel channel = new DigestReadableByteChannel(
-			Channels.newChannel(new ByteArrayInputStream(none)), DigestReadableByteChannelTest.SHA256)) {
+		try (final InputStream channel = new DigestInputStream(new ByteArrayInputStream(none),
+			DigestInputStreamTest.SHA256)) {
 			ByteBuffer buf = ByteBuffer.allocate(c.length);
 			Assertions.assertEquals(0, buf.position());
-			channel.read(buf);
+			channel.read(buf.array());
 			Assertions.assertEquals(0, buf.position());
 		}
-	}
-
-	@Test
-	public void testIsOpen() throws Exception {
-		ReadableByteChannel wbc = Channels.newChannel(new NullInputStream(0));
-		DigestReadableByteChannel C = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256);
-		try (DigestReadableByteChannel c = C) {
-			Assertions.assertTrue(c.isOpen());
-		}
-		Assertions.assertFalse(C.isOpen());
 	}
 
 	@Test
 	public void testClose() throws IOException {
-		ReadableByteChannel wbc = EasyMock.createMock(ReadableByteChannel.class);
+		InputStream wbc = EasyMock.createMock(InputStream.class);
 		wbc.close();
 		EasyMock.expectLastCall().once();
 		EasyMock.replay(wbc);
-		DigestReadableByteChannel c = new DigestReadableByteChannel(wbc, DigestReadableByteChannelTest.SHA256);
+		DigestInputStream c = new DigestInputStream(wbc, DigestInputStreamTest.SHA256);
 		c.close();
 		EasyMock.verify(wbc);
 	}

@@ -24,17 +24,31 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities.xml;
+package com.armedia.commons.utilities.io;
 
-import com.armedia.commons.utilities.codec.EnumCodec;
+import java.io.IOException;
+import java.nio.channels.Channel;
+import java.util.Objects;
 
-public abstract class AbstractEnumAdapter<E extends Enum<E>> extends AbstractCodecAdapter<String, E, RuntimeException> {
+public class ChannelWrapper<C extends Channel> implements Channel {
 
-	public AbstractEnumAdapter(Class<E> enumClass) {
-		this(new EnumCodec<>(enumClass));
+	protected final C wrapped;
+
+	public ChannelWrapper(C wrapped) {
+		this.wrapped = Objects.requireNonNull(wrapped);
 	}
 
-	public AbstractEnumAdapter(EnumCodec<E> codec) {
-		super(codec);
+	public C getWrapped() {
+		return this.wrapped;
+	}
+
+	@Override
+	public boolean isOpen() {
+		return this.wrapped.isOpen();
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.wrapped.close();
 	}
 }

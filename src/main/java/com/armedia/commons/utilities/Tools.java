@@ -1319,6 +1319,52 @@ public class Tools {
 	}
 
 	/**
+	 * Decodes the given string to a {@link BigInteger} value using
+	 * {@link BigInteger#BigInteger(String)}, but returns null if the string is null.
+	 *
+	 * @param str
+	 *
+	 */
+	public static BigInteger decodeBigInteger(String str) {
+		return Tools.decodeBigInteger(str, null);
+	}
+
+	/**
+	 * Decodes the given string to a {@link BigInteger} value using
+	 * {@link BigInteger#BigInteger(String, int)}, but returns null if the string is null.
+	 *
+	 * @param str
+	 *
+	 */
+	public static BigInteger decodeBigInteger(String str, int radix) {
+		return Tools.decodeBigInteger(str, radix, null);
+	}
+
+	/**
+	 * Decodes the given string to a {@link BigInteger} value using
+	 * {@link BigInteger#BigInteger(String)}, but returns the ifNull value if the string is null.
+	 *
+	 * @param str
+	 *
+	 */
+	public static BigInteger decodeBigInteger(String str, BigInteger ifNull) {
+		return Tools.decodeBigInteger(str, 10, ifNull);
+	}
+
+	/**
+	 * Decodes the given string to a {@link BigInteger} value using
+	 * {@link BigInteger#BigInteger(String, int)}, but returns the ifNull value if the string is
+	 * null.
+	 *
+	 * @param str
+	 *
+	 */
+	public static BigInteger decodeBigInteger(String str, int radix, BigInteger ifNull) {
+		if (str == null) { return ifNull; }
+		return new BigInteger(str, radix);
+	}
+
+	/**
 	 * Decodes the given string to a {@link Float} value using valueOf(), but returns null if the
 	 * string is null.
 	 *
@@ -1364,6 +1410,29 @@ public class Tools {
 	public static Double decodeDouble(String str, double ifNull) {
 		if (str == null) { return ifNull; }
 		return Double.valueOf(str);
+	}
+
+	/**
+	 * Decodes the given string to a {@link BigDecimal} value using
+	 * {@link BigDecimal#BigDecimal(String)}, but returns null if the string is null.
+	 *
+	 * @param str
+	 *
+	 */
+	public static BigDecimal decodeBigDecimal(String str) {
+		return Tools.decodeBigDecimal(str, null);
+	}
+
+	/**
+	 * Decodes the given string to a {@link BigDecimal} value using
+	 * {@link BigDecimal#BigDecimal(String)}, but returns the ifNull value if the string is null.
+	 *
+	 * @param str
+	 *
+	 */
+	public static BigDecimal decodeBigDecimal(String str, BigDecimal ifNull) {
+		if (str == null) { return ifNull; }
+		return new BigDecimal(str);
 	}
 
 	/**
