@@ -83,7 +83,7 @@ public class JSR223ScriptTest {
 				CacheKey keyA = JSR223Script.getCacheKey(langA, scriptA);
 				keys.add(keyA);
 				Assertions.assertFalse(keyA.equals(null));
-				Assertions.assertFalse(keyA.equals(scriptA));
+				Assertions.assertFalse(keyA.equals(new Object()));
 				Assertions.assertTrue(keyA.equals(keyA));
 
 				for (String langB : languages.keySet()) {
