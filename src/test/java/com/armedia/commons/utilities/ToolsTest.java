@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -1177,7 +1178,10 @@ public class ToolsTest {
 	public void testSplitter() {
 		String str = null;
 		List<String> expected = null;
+		List<String> escaped = null;
 		List<String> result = null;
+		Function<String, String> escaper = null;
+		Function<String, String> unescaper = null;
 
 		expected = null;
 		result = Tools.splitEscaped(null);
@@ -1199,65 +1203,121 @@ public class ToolsTest {
 
 		str = "a&b&c&d&&e&f\\&g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f&g");
+		escaped = Arrays.asList("a", "b", "c", "d", "", "e", "f\\&g");
 		result = Tools.splitEscaped('&', str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped('&', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped('&', Tools.joinEscaped('&', result)));
+		Assertions.assertEquals(expected.size(), escaped.size());
+		escaper = Tools.getSeparatorEscaper('&');
+		unescaper = Tools.getSeparatorUnescaper('&');
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = "a!b!c!d!!e!f\\!g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f!g");
+		escaped = Arrays.asList("a", "b", "c", "d", "", "e", "f\\!g");
 		result = Tools.splitEscaped('!', str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped('!', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped('!', Tools.joinEscaped('!', result)));
+		escaper = Tools.getSeparatorEscaper('!');
+		unescaper = Tools.getSeparatorUnescaper('!');
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = "a.b.c.d..e.f\\.g";
 		expected = Arrays.asList("a", "b", "c", "d", "", "e", "f.g");
+		escaped = Arrays.asList("a", "b", "c", "d", "", "e", "f\\.g");
 		result = Tools.splitEscaped('.', str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped('.', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped('.', Tools.joinEscaped('.', result)));
+		escaper = Tools.getSeparatorEscaper('.');
+		unescaper = Tools.getSeparatorUnescaper('.');
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = ",a,b,c,d,,e,f\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
+		escaped = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\,g", "");
 		result = Tools.splitEscaped(',', str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		escaper = Tools.getSeparatorEscaper(',');
+		unescaper = Tools.getSeparatorUnescaper(',');
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = ",a,b,c,d,,e,f\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f,g", "");
+		escaped = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\,g", "");
 		result = Tools.splitEscaped(str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = ",a,b,c,d,,e,f\\\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\,g", "");
+		escaped = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\,g", "");
 		result = Tools.splitEscaped(str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = ",a,b,c,d,,e,f\\\\\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\,g", "");
+		escaped = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\\\,g", "");
 		result = Tools.splitEscaped(str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped(result));
 		Assertions.assertEquals(expected, Tools.splitEscaped(Tools.joinEscaped(result)));
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = ",a,b,c,d,,e,f\\\\\\\\,g,";
 		expected = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\\\,g", "");
+		escaped = Arrays.asList("", "a", "b", "c", "d", "", "e", "f\\\\\\\\,g", "");
 		result = Tools.splitEscaped(str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped(',', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped(',', Tools.joinEscaped(',', result)));
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 
 		str = "\\a\\b\\c\\d\\\\\\\\e\\f\\\\\\\\\\g\\";
 		expected = Arrays.asList("", "a", "b", "c", "d\\\\e", "f\\\\", "g", "");
+		escaped = Arrays.asList("", "a", "b", "c", "d\\\\\\\\e", "f\\\\\\\\", "g", "");
 		result = Tools.splitEscaped('\\', str);
 		Assertions.assertEquals(expected, result);
 		Assertions.assertEquals(str, Tools.joinEscaped('\\', result));
 		Assertions.assertEquals(expected, Tools.splitEscaped('\\', Tools.joinEscaped('\\', result)));
+		escaper = Tools.getSeparatorEscaper('\\');
+		unescaper = Tools.getSeparatorUnescaper('\\');
+		for (int i = 0; i < expected.size(); i++) {
+			Assertions.assertEquals(escaped.get(i), escaper.apply(expected.get(i)));
+			Assertions.assertEquals(expected.get(i), unescaper.apply(escaped.get(i)));
+		}
 	}
 }

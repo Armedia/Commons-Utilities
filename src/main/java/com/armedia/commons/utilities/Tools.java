@@ -2284,6 +2284,29 @@ public class Tools {
 
 	public static final char DEFAULT_SEPARATOR = ',';
 
+	public static final Function<String, String> getSeparatorUnescaper(char separator) {
+		final String replacer = Pattern.quote(separator != '\\' ? String.format("\\%s", separator) : "\\\\");
+		final String replacement = (separator != '\\' ? String.valueOf(separator) : "\\\\");
+
+		return (str) -> {
+			if (str == null) { return null; }
+			if (StringUtils.isEmpty(str)) { return str; }
+			return str.replaceAll(replacer, replacement);
+		};
+	}
+
+	public static final Function<String, String> getSeparatorUnescaper() {
+		return Tools.getSeparatorUnescaper(Tools.DEFAULT_SEPARATOR);
+	}
+
+	public static final String unescape(char separator, String value) {
+		return Tools.getSeparatorUnescaper(separator).apply(value);
+	}
+
+	public static final String unescape(String value) {
+		return Tools.unescape(Tools.DEFAULT_SEPARATOR, value);
+	}
+
 	public static final List<String> splitEscaped(String value) {
 		return Tools.splitEscaped(Tools.DEFAULT_SEPARATOR, value);
 	}
@@ -2294,18 +2317,6 @@ public class Tools {
 
 	public static final Stream<String> splitEscapedStream(String value) {
 		return Tools.splitEscapedStream(Tools.DEFAULT_SEPARATOR, value);
-	}
-
-	public static final String joinEscaped(String... values) {
-		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
-	}
-
-	public static final String joinEscaped(Iterable<String> values) {
-		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
-	}
-
-	public static final String joinEscaped(Iterator<String> values) {
-		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
 	public static final List<String> splitEscaped(char separator, String value) {
@@ -2391,9 +2402,40 @@ public class Tools {
 		return StreamTools.of(Tools.splitEscapedIterator(separator, value));
 	}
 
+	public static final Function<String, String> getSeparatorEscaper(char separator) {
+		final String replacer = Pattern.quote(String.valueOf(separator));
+		final String replacement = (separator != '\\' ? String.format("\\\\%s", separator) : "\\\\\\\\");
+
+		return (str) -> {
+			if (str == null) { return null; }
+			if (StringUtils.isEmpty(str)) { return str; }
+			return str.replaceAll(replacer, replacement);
+		};
+	}
+
+	public static final Function<String, String> getSeparatorEscaper() {
+		return Tools.getSeparatorEscaper(Tools.DEFAULT_SEPARATOR);
+	}
+
+	public static final String escape(char separator, String str) {
+		return Tools.getSeparatorEscaper(separator).apply(str);
+	}
+
+	public static final String escape(String str) {
+		return Tools.escape(Tools.DEFAULT_SEPARATOR, str);
+	}
+
+	public static final String joinEscaped(String... values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
+	}
+
 	public static final String joinEscaped(char separator, String... values) {
 		if (values == null) { return null; }
 		return Tools.joinEscaped(separator, Arrays.asList(values));
+	}
+
+	public static final String joinEscaped(Iterable<String> values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
 	public static final String joinEscaped(char separator, Iterable<String> values) {
@@ -2401,21 +2443,24 @@ public class Tools {
 		return Tools.joinEscaped(separator, values.iterator());
 	}
 
+	public static final String joinEscaped(Iterator<String> values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
+	}
+
 	public static final String joinEscaped(char separator, Iterator<String> values) {
 		if (values == null) { return null; }
 		if (!values.hasNext()) { return ""; }
-		String replacer = String.format("\\Q%s\\E", separator);
-		String replacement = (separator != '\\' ? String.format("\\\\%s", separator) : "\\\\\\\\");
+
+		final Function<String, String> escaper = Tools.getSeparatorEscaper(separator);
 
 		String str = values.next();
-		if (!values.hasNext()) { return str; }
+		if (!values.hasNext()) { return escaper.apply(str); }
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(str.replaceAll("\\\\", "\\\\\\\\").replaceAll(replacer, replacement));
+		sb.append(escaper.apply(str));
 
 		Consumer<String> consumer = (s) -> sb.append(separator);
-		values
-			.forEachRemaining(consumer.andThen((s) -> sb.append(String.valueOf(s).replaceAll(replacer, replacement))));
+		values.forEachRemaining(consumer.andThen((s) -> sb.append(escaper.apply(s))));
 		return sb.toString();
 	}
 
