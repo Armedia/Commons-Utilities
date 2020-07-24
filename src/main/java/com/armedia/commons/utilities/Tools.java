@@ -2391,6 +2391,29 @@ public class Tools {
 		return StreamTools.of(Tools.splitEscapedIterator(separator, value));
 	}
 
+	public static final Function<String, String> getSeparatorEscaper(char separator) {
+		final String replacer = Pattern.quote(String.valueOf(separator));
+		final String replacement = (separator != '\\' ? String.format("\\\\%s", separator) : "\\\\\\\\");
+
+		return (str) -> {
+			if (str == null) { return null; }
+			if (StringUtils.isEmpty(str)) { return str; }
+			return str.replaceAll(replacer, replacement);
+		};
+	}
+
+	public static final Function<String, String> getSeparatorEscaper() {
+		return Tools.getSeparatorEscaper(Tools.DEFAULT_SEPARATOR);
+	}
+
+	public static final String escape(char separator, String str) {
+		return Tools.getSeparatorEscaper(separator).apply(str);
+	}
+
+	public static final String escape(String str) {
+		return Tools.escape(Tools.DEFAULT_SEPARATOR, str);
+	}
+
 	public static final String joinEscaped(char separator, String... values) {
 		if (values == null) { return null; }
 		return Tools.joinEscaped(separator, Arrays.asList(values));
@@ -2404,18 +2427,17 @@ public class Tools {
 	public static final String joinEscaped(char separator, Iterator<String> values) {
 		if (values == null) { return null; }
 		if (!values.hasNext()) { return ""; }
-		String replacer = String.format("\\Q%s\\E", separator);
-		String replacement = (separator != '\\' ? String.format("\\\\%s", separator) : "\\\\\\\\");
+
+		final Function<String, String> escaper = Tools.getSeparatorEscaper(separator);
 
 		String str = values.next();
-		if (!values.hasNext()) { return str; }
+		if (!values.hasNext()) { return escaper.apply(str); }
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(str.replaceAll("\\\\", "\\\\\\\\").replaceAll(replacer, replacement));
+		sb.append(escaper.apply(str));
 
 		Consumer<String> consumer = (s) -> sb.append(separator);
-		values
-			.forEachRemaining(consumer.andThen((s) -> sb.append(String.valueOf(s).replaceAll(replacer, replacement))));
+		values.forEachRemaining(consumer.andThen((s) -> sb.append(escaper.apply(s))));
 		return sb.toString();
 	}
 
