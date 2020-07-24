@@ -2284,6 +2284,29 @@ public class Tools {
 
 	public static final char DEFAULT_SEPARATOR = ',';
 
+	public static final Function<String, String> getSeparatorUnescaper(char separator) {
+		final String replacer = Pattern.quote(separator != '\\' ? String.format("\\%s", separator) : "\\\\");
+		final String replacement = (separator != '\\' ? String.valueOf(separator) : "\\\\");
+
+		return (str) -> {
+			if (str == null) { return null; }
+			if (StringUtils.isEmpty(str)) { return str; }
+			return str.replaceAll(replacer, replacement);
+		};
+	}
+
+	public static final Function<String, String> getSeparatorUnescaper() {
+		return Tools.getSeparatorUnescaper(Tools.DEFAULT_SEPARATOR);
+	}
+
+	public static final String unescape(char separator, String value) {
+		return Tools.getSeparatorUnescaper(separator).apply(value);
+	}
+
+	public static final String unescape(String value) {
+		return Tools.unescape(Tools.DEFAULT_SEPARATOR, value);
+	}
+
 	public static final List<String> splitEscaped(String value) {
 		return Tools.splitEscaped(Tools.DEFAULT_SEPARATOR, value);
 	}
@@ -2294,18 +2317,6 @@ public class Tools {
 
 	public static final Stream<String> splitEscapedStream(String value) {
 		return Tools.splitEscapedStream(Tools.DEFAULT_SEPARATOR, value);
-	}
-
-	public static final String joinEscaped(String... values) {
-		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
-	}
-
-	public static final String joinEscaped(Iterable<String> values) {
-		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
-	}
-
-	public static final String joinEscaped(Iterator<String> values) {
-		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
 	public static final List<String> splitEscaped(char separator, String value) {
@@ -2414,14 +2425,26 @@ public class Tools {
 		return Tools.escape(Tools.DEFAULT_SEPARATOR, str);
 	}
 
+	public static final String joinEscaped(String... values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
+	}
+
 	public static final String joinEscaped(char separator, String... values) {
 		if (values == null) { return null; }
 		return Tools.joinEscaped(separator, Arrays.asList(values));
 	}
 
+	public static final String joinEscaped(Iterable<String> values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
+	}
+
 	public static final String joinEscaped(char separator, Iterable<String> values) {
 		if (values == null) { return null; }
 		return Tools.joinEscaped(separator, values.iterator());
+	}
+
+	public static final String joinEscaped(Iterator<String> values) {
+		return Tools.joinEscaped(Tools.DEFAULT_SEPARATOR, values);
 	}
 
 	public static final String joinEscaped(char separator, Iterator<String> values) {
