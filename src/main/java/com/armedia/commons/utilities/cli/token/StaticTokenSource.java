@@ -24,33 +24,55 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-module com.armedia.commons.utilities {
-	exports com.armedia.commons.utilities;
-	exports com.armedia.commons.utilities.script;
-	exports com.armedia.commons.utilities.xml;
-	exports com.armedia.commons.utilities.io;
-	exports com.armedia.commons.utilities.line;
-	exports com.armedia.commons.utilities.function;
-	exports com.armedia.commons.utilities.concurrent;
-	exports com.armedia.commons.utilities.codec;
-	exports com.armedia.commons.utilities.cli;
-	exports com.armedia.commons.utilities.cli.classpath;
-	exports com.armedia.commons.utilities.cli.exception;
-	exports com.armedia.commons.utilities.cli.filter;
-	exports com.armedia.commons.utilities.cli.help;
-	exports com.armedia.commons.utilities.cli.launcher;
-	exports com.armedia.commons.utilities.cli.launcher.log;
-	exports com.armedia.commons.utilities.cli.token;
-	exports com.armedia.commons.utilities.cli.utils;
+package com.armedia.commons.utilities.cli.token;
 
-	requires static transitive java.xml;
-	requires static transitive java.xml.bind;
-	requires static transitive java.activation;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
-	requires org.apache.commons.codec;
-	requires org.apache.commons.io;
-	requires org.apache.commons.lang3;
-	requires org.apache.commons.text;
+import com.armedia.commons.utilities.Tools;
 
-	requires slf4j.api;
+public class StaticTokenSource implements TokenSource {
+
+	private static final AtomicLong counter = new AtomicLong(0);
+
+	private final String key;
+	private final List<String> tokens;
+
+	public StaticTokenSource() {
+		this(null, null);
+	}
+
+	public StaticTokenSource(String key) {
+		this(key, null);
+	}
+
+	public StaticTokenSource(Collection<String> tokens) {
+		this(null, tokens);
+	}
+
+	public StaticTokenSource(String key, Collection<String> tokens) {
+		if (key == null) {
+			key = String.format("(static-%016X)", StaticTokenSource.counter.getAndIncrement());
+		}
+		this.key = key;
+		this.tokens = Tools.freezeList(new ArrayList<>(tokens));
+	}
+
+	@Override
+	public List<String> getTokenStrings() throws IOException {
+		return this.tokens;
+	}
+
+	@Override
+	public String getKey() {
+		return this.key;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("StaticTokenSource [key=%s]", this.key);
+	}
 }

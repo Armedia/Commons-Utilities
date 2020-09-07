@@ -24,33 +24,33 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-module com.armedia.commons.utilities {
-	exports com.armedia.commons.utilities;
-	exports com.armedia.commons.utilities.script;
-	exports com.armedia.commons.utilities.xml;
-	exports com.armedia.commons.utilities.io;
-	exports com.armedia.commons.utilities.line;
-	exports com.armedia.commons.utilities.function;
-	exports com.armedia.commons.utilities.concurrent;
-	exports com.armedia.commons.utilities.codec;
-	exports com.armedia.commons.utilities.cli;
-	exports com.armedia.commons.utilities.cli.classpath;
-	exports com.armedia.commons.utilities.cli.exception;
-	exports com.armedia.commons.utilities.cli.filter;
-	exports com.armedia.commons.utilities.cli.help;
-	exports com.armedia.commons.utilities.cli.launcher;
-	exports com.armedia.commons.utilities.cli.launcher.log;
-	exports com.armedia.commons.utilities.cli.token;
-	exports com.armedia.commons.utilities.cli.utils;
+package com.armedia.commons.utilities.cli.filter;
 
-	requires static transitive java.xml;
-	requires static transitive java.xml.bind;
-	requires static transitive java.activation;
+public class IntegerValueFilter extends NumericValueFilter<Integer> {
 
-	requires org.apache.commons.codec;
-	requires org.apache.commons.io;
-	requires org.apache.commons.lang3;
-	requires org.apache.commons.text;
+	public IntegerValueFilter(Integer min) {
+		this(min, Integer.MAX_VALUE);
+	}
 
-	requires slf4j.api;
+	public IntegerValueFilter(Integer min, boolean minInclusive) {
+		this(min, minInclusive, Integer.MAX_VALUE, NumericValueFilter.DEFAULT_INCLUSIVE);
+	}
+
+	public IntegerValueFilter(Integer min, Integer max) {
+		this(min, NumericValueFilter.DEFAULT_INCLUSIVE, max, NumericValueFilter.DEFAULT_INCLUSIVE);
+	}
+
+	public IntegerValueFilter(Integer min, boolean minInclusive, Integer max, boolean maxInclusive) {
+		super("integer", min, minInclusive, max, maxInclusive);
+	}
+
+	@Override
+	public int compare(Integer a, Integer b) {
+		return a.compareTo(b);
+	}
+
+	@Override
+	protected Integer convert(String str) throws NumberFormatException {
+		return Integer.valueOf(str);
+	}
 }

@@ -24,33 +24,32 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-module com.armedia.commons.utilities {
-	exports com.armedia.commons.utilities;
-	exports com.armedia.commons.utilities.script;
-	exports com.armedia.commons.utilities.xml;
-	exports com.armedia.commons.utilities.io;
-	exports com.armedia.commons.utilities.line;
-	exports com.armedia.commons.utilities.function;
-	exports com.armedia.commons.utilities.concurrent;
-	exports com.armedia.commons.utilities.codec;
-	exports com.armedia.commons.utilities.cli;
-	exports com.armedia.commons.utilities.cli.classpath;
-	exports com.armedia.commons.utilities.cli.exception;
-	exports com.armedia.commons.utilities.cli.filter;
-	exports com.armedia.commons.utilities.cli.help;
-	exports com.armedia.commons.utilities.cli.launcher;
-	exports com.armedia.commons.utilities.cli.launcher.log;
-	exports com.armedia.commons.utilities.cli.token;
-	exports com.armedia.commons.utilities.cli.utils;
+package com.armedia.commons.utilities.cli.token;
 
-	requires static transitive java.xml;
-	requires static transitive java.xml.bind;
-	requires static transitive java.activation;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-	requires org.apache.commons.codec;
-	requires org.apache.commons.io;
-	requires org.apache.commons.lang3;
-	requires org.apache.commons.text;
+import com.armedia.commons.utilities.Tools;
 
-	requires slf4j.api;
+public class TokenSourceRecursionLoopException extends TokenLoaderException {
+	private static final long serialVersionUID = 1L;
+
+	private final TokenSource loopedSource;
+	private final List<String> sources;
+
+	public TokenSourceRecursionLoopException(TokenSource loopedSource, Collection<String> sources) {
+		super(String.format("Token source recursion loop: [%s] is already visited as per %s", loopedSource.getKey(),
+			sources));
+		this.loopedSource = loopedSource;
+		this.sources = Tools.freezeList(new ArrayList<>(sources));
+	}
+
+	public final TokenSource getLoopedURL() {
+		return this.loopedSource;
+	}
+
+	public final List<String> getSources() {
+		return this.sources;
+	}
 }

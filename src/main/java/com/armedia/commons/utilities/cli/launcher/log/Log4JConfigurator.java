@@ -24,33 +24,25 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-module com.armedia.commons.utilities {
-	exports com.armedia.commons.utilities;
-	exports com.armedia.commons.utilities.script;
-	exports com.armedia.commons.utilities.xml;
-	exports com.armedia.commons.utilities.io;
-	exports com.armedia.commons.utilities.line;
-	exports com.armedia.commons.utilities.function;
-	exports com.armedia.commons.utilities.concurrent;
-	exports com.armedia.commons.utilities.codec;
-	exports com.armedia.commons.utilities.cli;
-	exports com.armedia.commons.utilities.cli.classpath;
-	exports com.armedia.commons.utilities.cli.exception;
-	exports com.armedia.commons.utilities.cli.filter;
-	exports com.armedia.commons.utilities.cli.help;
-	exports com.armedia.commons.utilities.cli.launcher;
-	exports com.armedia.commons.utilities.cli.launcher.log;
-	exports com.armedia.commons.utilities.cli.token;
-	exports com.armedia.commons.utilities.cli.utils;
+package com.armedia.commons.utilities.cli.launcher.log;
 
-	requires static transitive java.xml;
-	requires static transitive java.xml.bind;
-	requires static transitive java.activation;
+import java.net.URL;
 
-	requires org.apache.commons.codec;
-	requires org.apache.commons.io;
-	requires org.apache.commons.lang3;
-	requires org.apache.commons.text;
+import org.apache.log4j.xml.DOMConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-	requires slf4j.api;
+class Log4JConfigurator extends LogConfigurator {
+
+	@Override
+	public Logger initialize() {
+		// First, find log4j-boot.xml
+		URL config = getClass().getResource("log4j.xml");
+		if (config == null) {
+			throw new RuntimeException("Failed to configure the boot log - no Log4J boot configuration was found");
+		}
+		DOMConfigurator.configure(config);
+		return LoggerFactory.getLogger(LogConfigurator.DEFAULT_LOG_NAME);
+	}
+
 }

@@ -24,33 +24,33 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-module com.armedia.commons.utilities {
-	exports com.armedia.commons.utilities;
-	exports com.armedia.commons.utilities.script;
-	exports com.armedia.commons.utilities.xml;
-	exports com.armedia.commons.utilities.io;
-	exports com.armedia.commons.utilities.line;
-	exports com.armedia.commons.utilities.function;
-	exports com.armedia.commons.utilities.concurrent;
-	exports com.armedia.commons.utilities.codec;
-	exports com.armedia.commons.utilities.cli;
-	exports com.armedia.commons.utilities.cli.classpath;
-	exports com.armedia.commons.utilities.cli.exception;
-	exports com.armedia.commons.utilities.cli.filter;
-	exports com.armedia.commons.utilities.cli.help;
-	exports com.armedia.commons.utilities.cli.launcher;
-	exports com.armedia.commons.utilities.cli.launcher.log;
-	exports com.armedia.commons.utilities.cli.token;
-	exports com.armedia.commons.utilities.cli.utils;
+package com.armedia.commons.utilities.cli.filter;
 
-	requires static transitive java.xml;
-	requires static transitive java.xml.bind;
-	requires static transitive java.activation;
+public class FloatValueFilter extends NumericValueFilter<Float> {
 
-	requires org.apache.commons.codec;
-	requires org.apache.commons.io;
-	requires org.apache.commons.lang3;
-	requires org.apache.commons.text;
+	public FloatValueFilter(Float min) {
+		this(min, Float.MAX_VALUE);
+	}
 
-	requires slf4j.api;
+	public FloatValueFilter(Float min, boolean minInclusive) {
+		this(min, minInclusive, Float.MAX_VALUE, NumericValueFilter.DEFAULT_INCLUSIVE);
+	}
+
+	public FloatValueFilter(Float min, Float max) {
+		this(min, NumericValueFilter.DEFAULT_INCLUSIVE, max, NumericValueFilter.DEFAULT_INCLUSIVE);
+	}
+
+	public FloatValueFilter(Float min, boolean minInclusive, Float max, boolean maxInclusive) {
+		super("float", min, minInclusive, max, maxInclusive);
+	}
+
+	@Override
+	public int compare(Float a, Float b) {
+		return a.compareTo(b);
+	}
+
+	@Override
+	protected Float convert(String str) throws NumberFormatException {
+		return Float.valueOf(str);
+	}
 }

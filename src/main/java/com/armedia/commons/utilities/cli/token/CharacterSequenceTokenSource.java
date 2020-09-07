@@ -24,33 +24,37 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-module com.armedia.commons.utilities {
-	exports com.armedia.commons.utilities;
-	exports com.armedia.commons.utilities.script;
-	exports com.armedia.commons.utilities.xml;
-	exports com.armedia.commons.utilities.io;
-	exports com.armedia.commons.utilities.line;
-	exports com.armedia.commons.utilities.function;
-	exports com.armedia.commons.utilities.concurrent;
-	exports com.armedia.commons.utilities.codec;
-	exports com.armedia.commons.utilities.cli;
-	exports com.armedia.commons.utilities.cli.classpath;
-	exports com.armedia.commons.utilities.cli.exception;
-	exports com.armedia.commons.utilities.cli.filter;
-	exports com.armedia.commons.utilities.cli.help;
-	exports com.armedia.commons.utilities.cli.launcher;
-	exports com.armedia.commons.utilities.cli.launcher.log;
-	exports com.armedia.commons.utilities.cli.token;
-	exports com.armedia.commons.utilities.cli.utils;
+package com.armedia.commons.utilities.cli.token;
 
-	requires static transitive java.xml;
-	requires static transitive java.xml.bind;
-	requires static transitive java.activation;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Objects;
 
-	requires org.apache.commons.codec;
-	requires org.apache.commons.io;
-	requires org.apache.commons.lang3;
-	requires org.apache.commons.text;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.input.CharSequenceReader;
 
-	requires slf4j.api;
+public class CharacterSequenceTokenSource extends ReaderTokenSource {
+
+	private final CharSequence characters;
+	private final String hash;
+
+	public CharacterSequenceTokenSource(CharSequence characters) {
+		this.characters = Objects.requireNonNull(characters, "Must provide a non-null character sequence");
+		this.hash = DigestUtils.sha256Hex(characters.toString());
+	}
+
+	@Override
+	public String getKey() {
+		return this.hash;
+	}
+
+	@Override
+	protected Reader openReader() throws IOException {
+		return new CharSequenceReader(this.characters);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("CharacterSequenceTokenSource [sequence=%s]", this.characters.toString());
+	}
 }
