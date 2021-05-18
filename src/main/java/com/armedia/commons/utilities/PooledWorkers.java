@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -62,8 +62,6 @@ import com.armedia.commons.utilities.concurrent.SharedAutoLock;
  * queue for immediate consumption, as well a blocking mode where the worker threads wait for work
  * to be submitted and execute it as it arrives.
  *
- *
- *
  * @param <STATE>
  *            The state class that will be produced by {@link PooledWorkersLogic#initialize()} and
  *            consumed by {@link PooledWorkersLogic#process(Object, Object)} and
@@ -82,15 +80,14 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	private final BlockingQueue<ITEM> workQueue;
 	private final List<Future<?>> futures;
 	private final AtomicInteger activeCounter;
-
 	private final AtomicBoolean aborted = new AtomicBoolean(false);
 	private final AtomicBoolean terminated = new AtomicBoolean(false);
-	private int threadCount = 0;
-	private ThreadPoolExecutor executor = null;
+	private final int threadCount;
+	private final ThreadPoolExecutor executor;
 	private final Collection<Thread> threads = new ArrayList<>();
 	private final Set<Long> blocked = new HashSet<>();
 
-	private CountDownLatch startupLatch = null;
+	private final CountDownLatch startupLatch;
 
 	private final class Task<EX extends Throwable> implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
@@ -178,14 +175,6 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	}
 
 	/**
-	 * Create an instance with "no" queue size limitations. Identical to invoking
-	 * {@link #PooledWorkers(int) new PooledWorkers(0)}.
-	 */
-	public PooledWorkers() {
-		this(0);
-	}
-
-	/**
 	 * Construct an instance that will accept a maximum of {@code backLog} items waiting for
 	 * processing in the queue, such that new invocations to {@link #addWorkItem(Object)},
 	 * {@link #addWorkItem(Object, long, TimeUnit)} or {@link #addWorkItemNonblock(Object)} will
@@ -194,10 +183,53 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 *
 	 * @param backlogSize
 	 */
-	public PooledWorkers(int backlogSize) {
+	protected <EX extends Throwable> PooledWorkers(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
+		String name, int backlogSize, Collection<? extends ITEM> items, boolean waitForWork) {
+		Objects.requireNonNull(logic,
+			"Must provide a valid PooledWorkersLogic instance with which to perform the work");
 		this.workQueue = (backlogSize <= 0 ? new LinkedBlockingQueue<>() : new ArrayBlockingQueue<>(backlogSize));
+		if ((items != null) && !items.isEmpty()) {
+			// TODO: What if the list of items exceeds the maximum backlog size?
+			this.workQueue.addAll(items);
+		}
 		this.futures = new LinkedList<>();
 		this.activeCounter = new AtomicInteger(0);
+
+		this.threadCount = Math.max(1, threadCount);
+		this.activeCounter.set(0);
+		this.futures.clear();
+		this.terminated.set(false);
+		this.threads.clear();
+		Task<EX> task = new Task<>(logic, waitForWork);
+		ThreadFactory threadFactory = Executors.defaultThreadFactory();
+		String finalName = StringUtils.strip(name);
+		final String threadNameFormat = String.format("%s-%%0%dd", finalName, String.valueOf(threadCount).length());
+		if (!StringUtils.isEmpty(finalName)) {
+			final ThreadGroup group = new ThreadGroup(String.format("Threads for PooledWorkers task [%s]", finalName));
+			threadFactory = new ThreadFactory() {
+				private final AtomicLong counter = new AtomicLong(0);
+
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread t = new Thread(group, r, String.format(threadNameFormat, this.counter.incrementAndGet()));
+					PooledWorkers.this.threads.add(t);
+					return t;
+				}
+			};
+		}
+		this.executor = new ThreadPoolExecutor(this.threadCount, this.threadCount, 30, TimeUnit.SECONDS,
+			new LinkedBlockingQueue<Runnable>(), threadFactory);
+		this.startupLatch = new CountDownLatch(threadCount);
+		for (int i = 0; i < this.threadCount; i++) {
+			this.futures.add(this.executor.submit(task));
+		}
+		this.executor.shutdown();
+	}
+
+	public boolean isProcessing() {
+		try (SharedAutoLock lock = autoSharedLock()) {
+			return (!this.terminated.get() && !this.aborted.get());
+		}
 	}
 
 	/**
@@ -302,87 +334,6 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 */
 	public final int getQueueCapacity() {
 		return shareLocked(this.workQueue::remainingCapacity);
-	}
-
-	/**
-	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
-	 */
-	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount) {
-		return start(logic, threadCount, null, true);
-	}
-
-	/**
-	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
-	 */
-	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
-		String name) {
-		return start(logic, threadCount, null, true);
-	}
-
-	/**
-	 * @see PooledWorkers#start(PooledWorkersLogic, int, String, boolean)
-	 */
-	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
-		boolean waitForWork) {
-		return start(logic, threadCount, null, waitForWork);
-	}
-
-	/**
-	 * <p>
-	 * Starts the work processing by this instance using a maximum of {@code threadCount} threads
-	 * (minimum is 1), naming the threads using {@code name} as a pattern, and causing the workers
-	 * to wait for work when the work queue empties as indicated by the {@code waitForWork}
-	 * parameter ({@code true} = wait, {@code false} = no wait). It returns {@code true} if the work
-	 * was started, or {@code false} if the work had already been started.
-	 * </p>
-	 *
-	 * @param logic
-	 * @param threadCount
-	 * @param name
-	 * @param waitForWork
-	 *            indicates whether worker threads should wait ({@code true}) for work to become
-	 *            available in the work queue, or not ({@code false})
-	 * @return {@code true} if the work was started, or {@code false} if the work had already been
-	 *         started.
-	 */
-	public final <EX extends Throwable> boolean start(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
-		String name, boolean waitForWork) {
-		Objects.requireNonNull(logic, "Must provide the logic that these workers will apply");
-		try (MutexAutoLock lock = autoMutexLock()) {
-			if (this.executor != null) { return false; }
-			this.threadCount = Math.max(1, threadCount);
-			this.activeCounter.set(0);
-			this.futures.clear();
-			this.terminated.set(false);
-			this.threads.clear();
-			Task<EX> task = new Task<>(logic, waitForWork);
-			ThreadFactory threadFactory = Executors.defaultThreadFactory();
-			String finalName = StringUtils.strip(name);
-			final String threadNameFormat = String.format("%s-%%0%dd", finalName, String.valueOf(threadCount).length());
-			if (!StringUtils.isEmpty(finalName)) {
-				final ThreadGroup group = new ThreadGroup(
-					String.format("Threads for PooledWorkers task [%s]", finalName));
-				threadFactory = new ThreadFactory() {
-					private final AtomicLong counter = new AtomicLong(0);
-
-					@Override
-					public Thread newThread(Runnable r) {
-						Thread t = new Thread(group, r,
-							String.format(threadNameFormat, this.counter.incrementAndGet()));
-						PooledWorkers.this.threads.add(t);
-						return t;
-					}
-				};
-			}
-			this.executor = new ThreadPoolExecutor(this.threadCount, this.threadCount, 30, TimeUnit.SECONDS,
-				new LinkedBlockingQueue<Runnable>(), threadFactory);
-			this.startupLatch = new CountDownLatch(threadCount);
-			for (int i = 0; i < this.threadCount; i++) {
-				this.futures.add(this.executor.submit(task));
-			}
-			this.executor.shutdown();
-			return true;
-		}
 	}
 
 	/**
@@ -491,23 +442,18 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 				}
 				return remaining;
 			} finally {
-				try {
-					this.executor.shutdownNow();
-					int pending = this.activeCounter.get();
-					if (pending > 0) {
-						try {
-							this.log.debug(
-								"Waiting an additional 60 seconds for worker termination as a contingency ({} pending workers)",
-								pending);
-							this.executor.awaitTermination(1, TimeUnit.MINUTES);
-						} catch (InterruptedException e) {
-							this.log.warn("Interrupted while waiting for immediate executor termination", e);
-							Thread.currentThread().interrupt();
-						}
+				this.executor.shutdownNow();
+				int pending = this.activeCounter.get();
+				if (pending > 0) {
+					try {
+						this.log.debug(
+							"Waiting an additional 60 seconds for worker termination as a contingency ({} pending workers)",
+							pending);
+						this.executor.awaitTermination(1, TimeUnit.MINUTES);
+					} catch (InterruptedException e) {
+						this.log.warn("Interrupted while waiting for immediate executor termination", e);
+						Thread.currentThread().interrupt();
 					}
-				} finally {
-					this.executor = null;
-					this.threadCount = 0;
 				}
 			}
 		}
@@ -571,5 +517,217 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 */
 	public final List<ITEM> waitForCompletion(long maxWait, TimeUnit timeUnit) {
 		return mutexLocked(() -> shutdown(false, maxWait, timeUnit));
+	}
+
+	/**
+	 * <p>
+	 * This class is used in lieu of a large number of constructors because it allows for greater
+	 * flexibility when specifying the available parameters.
+	 * </p>
+	 *
+	 * @author diego
+	 *
+	 * @param <STATE>
+	 * @param <ITEM>
+	 * @param <EX>
+	 */
+	public static class Builder<STATE, ITEM, EX extends Throwable> extends BaseShareableLockable {
+		private PooledWorkersLogic<STATE, ITEM, EX> logic = null;
+		private int threads = 1;
+		private String name = null;
+		private int backlogLimit = 0;
+		private Collection<? extends ITEM> items = null;
+		private boolean waitForWork = true;
+
+		/**
+		 * <p>
+		 * Set the {@link PooledWorkersLogic} that will be used for processing the submitted work
+		 * </p>
+		 *
+		 * @param logic
+		 * @return this instance
+		 */
+		public Builder<STATE, ITEM, EX> logic(PooledWorkersLogic<STATE, ITEM, EX> logic) {
+			try (MutexAutoLock lock = autoMutexLock()) {
+				this.logic = logic;
+			}
+			return this;
+		}
+
+		/**
+		 * <p>
+		 * Returns the {@link PooledWorkersLogic} instance that has been configured for this
+		 * instance
+		 * </p>
+		 *
+		 * @return the {@link PooledWorkersLogic} instance that has been configured for this
+		 *         instance
+		 */
+		public PooledWorkersLogic<STATE, ITEM, EX> logic() {
+			try (SharedAutoLock lock = autoSharedLock()) {
+				return this.logic;
+			}
+		}
+
+		/**
+		 * <p>
+		 * Set the number of threads that will be used for processing the submitted work. Any values
+		 * less than or equal to 0 will be rounded up to 1.
+		 * </p>
+		 *
+		 * @param threads
+		 * @return this instance
+		 */
+		public Builder<STATE, ITEM, EX> threads(int threads) {
+			try (MutexAutoLock lock = autoMutexLock()) {
+				this.threads = Math.max(1, threads);
+			}
+			return this;
+		}
+
+		/**
+		 * <p>
+		 * Returns the number of threads that will be used for processing the submitted work.
+		 * </p>
+		 *
+		 * @return the number of threads that will be used for processing the submitted work.
+		 */
+		public int threads() {
+			try (SharedAutoLock lock = autoSharedLock()) {
+				return this.threads;
+			}
+		}
+
+		/**
+		 * <p>
+		 * Sets the name that will be used when naming worker threads.
+		 * </p>
+		 *
+		 * @param name
+		 * @return this instance
+		 */
+		public Builder<STATE, ITEM, EX> name(String name) {
+			try (MutexAutoLock lock = autoMutexLock()) {
+				this.name = name;
+			}
+			return this;
+		}
+
+		/**
+		 * <p>
+		 * Returns the name that will be used when naming worker threads.
+		 * </p>
+		 *
+		 * @return the name that will be used when naming worker threads.
+		 */
+		public String name() {
+			try (SharedAutoLock lock = autoSharedLock()) {
+				return this.name;
+			}
+		}
+
+		/**
+		 * <p>
+		 * Sets the maximum number of items that can be submitted for processing without blocking.
+		 * </p>
+		 *
+		 * @param backlogLimit
+		 * @return this instance
+		 */
+		public Builder<STATE, ITEM, EX> backlogLimit(int backlogLimit) {
+			try (MutexAutoLock lock = autoMutexLock()) {
+				this.backlogLimit = Math.max(0, backlogLimit);
+			}
+			return this;
+		}
+
+		/**
+		 * <p>
+		 * Returns the maximum number of items that can be submitted for processing without
+		 * blocking.
+		 * </p>
+		 *
+		 * @return the maximum number of items that can be submitted for processing without
+		 *         blocking.
+		 */
+		public int backlogLimit() {
+			try (SharedAutoLock lock = autoSharedLock()) {
+				return this.backlogLimit;
+			}
+		}
+
+		/**
+		 * <p>
+		 * Sets the work items that should be processed immediately upon startup, regardless of
+		 * whether additional work should be accepted or not.
+		 * </p>
+		 *
+		 * @param items
+		 * @return this instance
+		 */
+		public Builder<STATE, ITEM, EX> items(Collection<? extends ITEM> items) {
+			try (MutexAutoLock lock = autoMutexLock()) {
+				this.items = items;
+			}
+			return this;
+		}
+
+		/**
+		 * <p>
+		 * Returns the work items that should be processed immediately upon startup.
+		 * </p>
+		 *
+		 * @return the work items that should be processed immediately upon startup.
+		 */
+		public Collection<? extends ITEM> items() {
+			try (SharedAutoLock lock = autoSharedLock()) {
+				return this.items;
+			}
+		}
+
+		/**
+		 * <p>
+		 * Set whether this instance should wait for additional work after processing pre-submitted
+		 * work items (if any), or not.
+		 * </p>
+		 *
+		 * @param waitForWork
+		 * @return this instance
+		 */
+		public Builder<STATE, ITEM, EX> waitForWork(boolean waitForWork) {
+			try (MutexAutoLock lock = autoMutexLock()) {
+				this.waitForWork = waitForWork;
+			}
+			return this;
+		}
+
+		/**
+		 * <p>
+		 * Returns whether this instance should wait for additional work after processing
+		 * pre-submitted work items (if any), or not
+		 * </p>
+		 *
+		 * @return {@code true} if this instance should wait for additional work after processing
+		 *         pre-submitted work items (if any), {@code false} otherwise.
+		 */
+		public boolean waitForWork() {
+			try (SharedAutoLock lock = autoSharedLock()) {
+				return this.waitForWork;
+			}
+		}
+
+		/**
+		 * <p>
+		 * Starts the work processing by this instance as per the configured parameters using the
+		 * other methods.
+		 * </p>
+		 *
+		 * @return a started {@link PooledWorkers} instance that's already running and processing
+		 *         any pending work, possibly waiting for more work if configured to do so.
+		 */
+		public PooledWorkers<STATE, ITEM> start() {
+			return new PooledWorkers<>(this.logic, this.threads, this.name, this.backlogLimit, this.items,
+				this.waitForWork);
+		}
 	}
 }
