@@ -121,7 +121,7 @@ public class KeyGenerator extends BaseShareableLockable implements Supplier<Stri
 	}
 
 	public KeyGenerator setCacheCount(final int cacheCount) {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			this.cacheCount = Tools.ensureBetween(KeyGenerator.CACHE_COUNT_MIN, cacheCount,
 				KeyGenerator.CACHE_COUNT_MAX);
 			return this;

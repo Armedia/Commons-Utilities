@@ -60,7 +60,7 @@ public class LineScanner extends BaseShareableLockable {
 	}
 
 	public final Collection<LineSourceFactory> getSourceFactories() {
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			Collection<LineSourceFactory> ret = new ArrayList<>(this.factories.values());
 			ret.addAll(LineScanner.DEFAULT_FACTORIES.values()); // Append the defaults
 			return ret;
@@ -81,7 +81,7 @@ public class LineScanner extends BaseShareableLockable {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			factories.stream().filter(Objects::nonNull).forEach(f -> this.factories.put(System.identityHashCode(f), f));
 			return this;
 		}
@@ -101,7 +101,7 @@ public class LineScanner extends BaseShareableLockable {
 		if ((factories == null) || factories.isEmpty()) { return this; }
 		// Add the factories, avoiding duplicates... we need to do it sequentially
 		// because we need to preserve the order in which factories are added
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			factories.stream().filter(Objects::nonNull)
 				.forEach(f -> this.factories.remove(System.identityHashCode(f), f));
 			return this;

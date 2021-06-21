@@ -227,7 +227,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	}
 
 	public boolean isProcessing() {
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			return (!this.terminated.get() && !this.aborted.get());
 		}
 	}
@@ -311,7 +311,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 * @return all remaining work items from the queue
 	 */
 	public final List<ITEM> clearWorkItems() {
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			List<ITEM> ret = new ArrayList<>();
 			this.workQueue.drainTo(ret);
 			return ret;
@@ -359,7 +359,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	}
 
 	private List<ITEM> shutdown(boolean abort, long maxWait, TimeUnit timeUnit) {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			if (this.executor == null) { return null; }
 			long actualMaxWait = maxWait;
 			TimeUnit actualTimeUnit = timeUnit;
@@ -548,7 +548,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return this instance
 		 */
 		public Builder<STATE, ITEM, EX> logic(PooledWorkersLogic<STATE, ITEM, EX> logic) {
-			try (MutexAutoLock lock = autoMutexLock()) {
+			try (MutexAutoLock lock = mutexAutoLock()) {
 				this.logic = logic;
 			}
 			return this;
@@ -564,7 +564,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 *         instance
 		 */
 		public PooledWorkersLogic<STATE, ITEM, EX> logic() {
-			try (SharedAutoLock lock = autoSharedLock()) {
+			try (SharedAutoLock lock = sharedAutoLock()) {
 				return this.logic;
 			}
 		}
@@ -579,7 +579,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return this instance
 		 */
 		public Builder<STATE, ITEM, EX> threads(int threads) {
-			try (MutexAutoLock lock = autoMutexLock()) {
+			try (MutexAutoLock lock = mutexAutoLock()) {
 				this.threads = Math.max(1, threads);
 			}
 			return this;
@@ -593,7 +593,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return the number of threads that will be used for processing the submitted work.
 		 */
 		public int threads() {
-			try (SharedAutoLock lock = autoSharedLock()) {
+			try (SharedAutoLock lock = sharedAutoLock()) {
 				return this.threads;
 			}
 		}
@@ -607,7 +607,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return this instance
 		 */
 		public Builder<STATE, ITEM, EX> name(String name) {
-			try (MutexAutoLock lock = autoMutexLock()) {
+			try (MutexAutoLock lock = mutexAutoLock()) {
 				this.name = name;
 			}
 			return this;
@@ -621,7 +621,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return the name that will be used when naming worker threads.
 		 */
 		public String name() {
-			try (SharedAutoLock lock = autoSharedLock()) {
+			try (SharedAutoLock lock = sharedAutoLock()) {
 				return this.name;
 			}
 		}
@@ -635,7 +635,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return this instance
 		 */
 		public Builder<STATE, ITEM, EX> backlogLimit(int backlogLimit) {
-			try (MutexAutoLock lock = autoMutexLock()) {
+			try (MutexAutoLock lock = mutexAutoLock()) {
 				this.backlogLimit = Math.max(0, backlogLimit);
 			}
 			return this;
@@ -651,7 +651,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 *         blocking.
 		 */
 		public int backlogLimit() {
-			try (SharedAutoLock lock = autoSharedLock()) {
+			try (SharedAutoLock lock = sharedAutoLock()) {
 				return this.backlogLimit;
 			}
 		}
@@ -666,7 +666,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return this instance
 		 */
 		public Builder<STATE, ITEM, EX> items(Collection<? extends ITEM> items) {
-			try (MutexAutoLock lock = autoMutexLock()) {
+			try (MutexAutoLock lock = mutexAutoLock()) {
 				this.items = items;
 			}
 			return this;
@@ -680,7 +680,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return the work items that should be processed immediately upon startup.
 		 */
 		public Collection<? extends ITEM> items() {
-			try (SharedAutoLock lock = autoSharedLock()) {
+			try (SharedAutoLock lock = sharedAutoLock()) {
 				return this.items;
 			}
 		}
@@ -695,7 +695,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 * @return this instance
 		 */
 		public Builder<STATE, ITEM, EX> waitForWork(boolean waitForWork) {
-			try (MutexAutoLock lock = autoMutexLock()) {
+			try (MutexAutoLock lock = mutexAutoLock()) {
 				this.waitForWork = waitForWork;
 			}
 			return this;
@@ -711,7 +711,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		 *         pre-submitted work items (if any), {@code false} otherwise.
 		 */
 		public boolean waitForWork() {
-			try (SharedAutoLock lock = autoSharedLock()) {
+			try (SharedAutoLock lock = sharedAutoLock()) {
 				return this.waitForWork;
 			}
 		}

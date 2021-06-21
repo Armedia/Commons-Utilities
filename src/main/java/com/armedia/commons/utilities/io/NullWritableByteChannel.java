@@ -45,14 +45,14 @@ public final class NullWritableByteChannel extends BaseShareableLockable impleme
 
 	@Override
 	public void close() {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			this.open = false;
 		}
 	}
 
 	@Override
 	public int write(ByteBuffer dst) throws IOException {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			if (!isOpen()) { throw new ClosedChannelException(); }
 			// Advance the buffer...
 			int remaining = dst.remaining();

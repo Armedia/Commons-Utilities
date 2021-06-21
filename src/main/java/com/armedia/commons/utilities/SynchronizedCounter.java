@@ -231,7 +231,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 	 * @return the new value after applying the delta
 	 */
 	public long addAndGet(long delta) {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			long ret = (this.value += delta);
 			if (delta != 0) {
 				// Only trigger the change if there actually was a change
@@ -312,7 +312,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			boolean success = true;
 			while (value != this.value) {
 				if (timeout > 0) {
@@ -365,7 +365,7 @@ public final class SynchronizedCounter extends BaseShareableLockable {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			if (timeout > 0) {
 				if (!this.changed.await(timeout, timeUnit)) {
 					throw new TimeoutException(

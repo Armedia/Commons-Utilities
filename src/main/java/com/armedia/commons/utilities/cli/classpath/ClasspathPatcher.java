@@ -165,7 +165,7 @@ public abstract class ClasspathPatcher {
 	}
 
 	public static final boolean discoverPatches(boolean verbose) {
-		try (MutexAutoLock lock = ClasspathPatcher.LOCK.autoMutexLock()) {
+		try (MutexAutoLock lock = ClasspathPatcher.LOCK.mutexAutoLock()) {
 			Set<URL> patches = new LinkedHashSet<>();
 			PluggableServiceLocator<ClasspathPatcher> patchers = new PluggableServiceLocator<>(ClasspathPatcher.class);
 			patchers.setHideErrors(false);

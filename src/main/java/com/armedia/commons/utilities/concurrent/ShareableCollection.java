@@ -149,7 +149,7 @@ public class ShareableCollection<ELEMENT> extends BaseShareableLockable implemen
 		if (o == this) { return true; }
 		final Collection<?> other = Tools.cast(Collection.class, o);
 		if (other == null) { return false; }
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			if (this.c.size() != other.size()) { return false; }
 			return this.c.equals(other);
 		}

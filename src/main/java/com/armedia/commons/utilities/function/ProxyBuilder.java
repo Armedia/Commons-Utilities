@@ -107,7 +107,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withArgumentProcessorSelector(ArgumentProcessorSelector argumentProcessorSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.argumentProcessorSelector = argumentProcessorSelector;
 		}
 		return this;
@@ -118,7 +118,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withMethodSubstituteSelector(MethodSubstituteSelector methodSubstituteSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.methodSubstituteSelector = methodSubstituteSelector;
 		}
 		return this;
@@ -129,7 +129,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withResultProcessorSelector(ResultProcessorSelector resultProcessorSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.resultProcessorSelector = resultProcessorSelector;
 		}
 		return this;
@@ -140,7 +140,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withExceptionHandlerSelector(ExceptionHandlerSelector exceptionHandlerSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.exceptionHandlerSelector = exceptionHandlerSelector;
 		}
 		return this;
@@ -151,7 +151,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withFinallyProcessor(FinallyProcessor finallyProcessor) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.finallyProcessor = finallyProcessor;
 		}
 		return this;
@@ -167,7 +167,7 @@ public final class ProxyBuilder {
 
 	public <T> T proxy(ClassLoader classLoader, T target) {
 		Interceptor interceptor = null;
-		try (SharedAutoLock shared = this.lock.autoSharedLock()) {
+		try (SharedAutoLock shared = this.lock.sharedAutoLock()) {
 			interceptor = new Interceptor( //
 				target, //
 				this.argumentProcessorSelector, //

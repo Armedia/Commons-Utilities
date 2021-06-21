@@ -256,7 +256,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			V v = null;
 			while (true) {
 				v = this.value;
@@ -314,7 +314,7 @@ public final class SynchronizedBox<V> extends BaseShareableLockable {
 		if (timeout > 0) {
 			Objects.requireNonNull(timeUnit, "Must provide a TimeUnit for the waiting period");
 		}
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			if (timeout > 0) {
 				if (!this.changed.await(timeout, timeUnit)) {
 					throw new TimeoutException(

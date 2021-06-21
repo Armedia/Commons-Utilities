@@ -58,7 +58,7 @@ public class ReadableByteBufferChannel extends BaseShareableLockable implements 
 
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
-		try (MutexAutoLock mutex = autoMutexLock()) {
+		try (MutexAutoLock mutex = mutexAutoLock()) {
 			if (!this.open) { throw new ClosedChannelException(); }
 			if (!this.data.hasRemaining()) { return -1; }
 

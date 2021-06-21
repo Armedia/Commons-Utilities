@@ -102,7 +102,7 @@ public abstract class CodecBuilder<VALUE, ENCODING, EXCEPTION extends Exception,
 	}
 
 	public final <C extends CODEC> C build() {
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			return newCodec();
 		}
 	}

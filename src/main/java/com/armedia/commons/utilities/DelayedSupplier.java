@@ -92,7 +92,7 @@ public class DelayedSupplier<T> extends BaseShareableLockable implements Consume
 	 * </p>
 	 */
 	public final void clear() {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			this.set = false;
 			this.value = null;
 		}
@@ -132,7 +132,7 @@ public class DelayedSupplier<T> extends BaseShareableLockable implements Consume
 	 *             if the value is already set
 	 */
 	public final void set(T t) {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			if (this.set) { throw new IllegalStateException("The value has already been submitted"); }
 			this.set = true;
 			this.value = t;
@@ -174,7 +174,7 @@ public class DelayedSupplier<T> extends BaseShareableLockable implements Consume
 	 *             if the specified time interval has detectably elapsed, but no value has been set
 	 */
 	public final T get(long amount, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
-		try (SharedAutoLock shared = autoSharedLock()) {
+		try (SharedAutoLock shared = sharedAutoLock()) {
 			if (!this.set) {
 				try (MutexAutoLock lock = shared.upgrade()) {
 					if (!this.set) {

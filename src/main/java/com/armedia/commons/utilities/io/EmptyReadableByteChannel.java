@@ -45,14 +45,14 @@ public final class EmptyReadableByteChannel extends BaseShareableLockable implem
 
 	@Override
 	public void close() {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			this.open = false;
 		}
 	}
 
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			if (!isOpen()) { throw new ClosedChannelException(); }
 			return -1;
 		}

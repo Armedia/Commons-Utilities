@@ -117,7 +117,7 @@ public class BoundedReadableByteChannel extends ReadableByteChannelWrapper {
 	 */
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
-		try (MutexAutoLock lock = this.lock.autoMutexLock()) {
+		try (MutexAutoLock lock = this.lock.mutexAutoLock()) {
 			ByteBuffer tgt = dst;
 			int wanted = dst.remaining();
 			if (this.remaining <= 0) { return -1; }

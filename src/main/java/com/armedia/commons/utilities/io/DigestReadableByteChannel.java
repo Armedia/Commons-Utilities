@@ -68,7 +68,7 @@ public class DigestReadableByteChannel extends BaseShareableLockable
 
 	@Override
 	public Pair<Long, byte[]> collectHash() {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			Pair<Long, byte[]> ret = Pair.of(this.length, this.digest.digest());
 			this.length = 0;
 			return ret;
@@ -77,7 +77,7 @@ public class DigestReadableByteChannel extends BaseShareableLockable
 
 	@Override
 	public void resetHash() {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			this.digest.reset();
 			this.length = 0;
 		}
@@ -85,7 +85,7 @@ public class DigestReadableByteChannel extends BaseShareableLockable
 
 	@Override
 	public int read(final ByteBuffer dst) throws IOException {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			final ByteBuffer dupe = dst.duplicate();
 			final int read = this.channel.read(dst);
 			if (read > 0) {

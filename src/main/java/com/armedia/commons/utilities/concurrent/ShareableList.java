@@ -107,7 +107,7 @@ public class ShareableList<ELEMENT> extends ShareableCollection<ELEMENT> impleme
 	@Override
 	public void replaceAll(UnaryOperator<ELEMENT> operator) {
 		Objects.requireNonNull(operator, "Must provide a non-null operator");
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			final ListIterator<ELEMENT> li = listIterator();
 			while (li.hasNext()) {
 				li.set(operator.apply(li.next()));
@@ -118,7 +118,7 @@ public class ShareableList<ELEMENT> extends ShareableCollection<ELEMENT> impleme
 	@Override
 	public void sort(Comparator<? super ELEMENT> c) {
 		Objects.requireNonNull(c, "Must provide a non-null comparator");
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			ELEMENT[] a = toArray(ShareableCollection.noElements());
 			Arrays.sort(a, c);
 			ListIterator<ELEMENT> i = listIterator();

@@ -164,7 +164,7 @@ public interface ShareableLockable extends MutexLockable {
 	 *
 	 * @return the (held) write lock
 	 */
-	public default SharedAutoLock autoSharedLock() {
+	public default SharedAutoLock sharedAutoLock() {
 		return new SharedAutoLock(this);
 	}
 
@@ -196,7 +196,7 @@ public interface ShareableLockable extends MutexLockable {
 	 */
 	public default <E, EX extends Throwable> E shareLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		try (SharedAutoLock l = autoSharedLock()) {
+		try (SharedAutoLock l = sharedAutoLock()) {
 			return operation.getChecked();
 		}
 	}
@@ -397,7 +397,7 @@ public interface ShareableLockable extends MutexLockable {
 			checker = () -> null;
 		}
 
-		try (SharedAutoLock s = autoSharedLock()) {
+		try (SharedAutoLock s = sharedAutoLock()) {
 			E e = checker.getChecked();
 			if (decision.testChecked(e)) {
 				try (MutexAutoLock m = s.upgrade()) {

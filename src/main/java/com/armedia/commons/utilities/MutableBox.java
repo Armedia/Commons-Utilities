@@ -63,7 +63,7 @@ public final class MutableBox<V> extends BaseShareableLockable implements Suppli
 
 	public void recompute(Function<V, V> computer) {
 		Objects.requireNonNull(computer, "Must provide a computation function");
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			set(computer.apply(get()));
 		}
 	}
