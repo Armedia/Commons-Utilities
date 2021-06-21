@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2020 Armedia, LLC
+ * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -79,7 +79,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final long increment(T type, R result) {
 		if (type == null) { throw new IllegalArgumentException("Unsupported null object type"); }
 		if (result == null) { throw new IllegalArgumentException("Must provide a valid result to count for"); }
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			AtomicLong counter = getLiveCounters(type).get(result);
 			final long ret = counter.incrementAndGet();
 			this.cummulative.get(result).incrementAndGet();
@@ -94,7 +94,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final Map<R, Long> getCounters(T type) {
 		Map<R, Long> ret = new EnumMap<>(this.rClass);
 		Map<R, AtomicLong> m = getLiveCounters(type);
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				ret.put(e.getKey(), e.getValue().get());
 			}
@@ -104,7 +104,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 
 	public final Map<T, Map<R, Long>> getCounters() {
 		Map<T, Map<R, Long>> ret = new EnumMap<>(this.tClass);
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			for (T t : this.counters.keySet()) {
 				ret.put(t, getCounters(t));
 			}
@@ -119,7 +119,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	public final Map<R, Long> reset(T type) {
 		Map<R, Long> ret = new EnumMap<>(this.rClass);
 		Map<R, AtomicLong> m = getLiveCounters(type);
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			for (Map.Entry<R, AtomicLong> e : m.entrySet()) {
 				final R r = e.getKey();
 				final long val = e.getValue().getAndSet(0);
@@ -132,7 +132,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 
 	public final Map<T, Map<R, Long>> reset() {
 		Map<T, Map<R, Long>> ret = new EnumMap<>(this.tClass);
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			for (T t : this.tClass.getEnumConstants()) {
 				ret.put(t, reset(t));
 			}
@@ -153,7 +153,7 @@ public class EnumeratedCounter<T extends Enum<T>, R extends Enum<R>> extends Bas
 	}
 
 	public final String generateFullReport(int indentlevel) {
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			StringBuilder buf = new StringBuilder();
 			for (T type : this.tClass.getEnumConstants()) {
 				if (buf.length() > 0) {

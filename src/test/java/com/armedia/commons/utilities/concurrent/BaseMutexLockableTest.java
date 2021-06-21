@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2020 Armedia, LLC
+ * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -123,7 +123,7 @@ public class BaseMutexLockableTest {
 		Assertions.assertFalse(lock.isLocked());
 		Assertions.assertFalse(lock.isHeldByCurrentThread());
 
-		try (MutexAutoLock auto = rwl.autoMutexLock()) {
+		try (MutexAutoLock auto = rwl.mutexAutoLock()) {
 			Assertions.assertTrue(lock.isLocked());
 			Assertions.assertTrue(lock.isHeldByCurrentThread());
 		}
@@ -136,7 +136,7 @@ public class BaseMutexLockableTest {
 		Assertions.assertFalse(lock.isHeldByCurrentThread());
 		List<MutexAutoLock> autoLocks = new LinkedList<>();
 		for (int i = 1; i <= 10; i++) {
-			MutexAutoLock l = rwl.autoMutexLock();
+			MutexAutoLock l = rwl.mutexAutoLock();
 			Assertions.assertNotNull(l, String.format("Failed to acquire the writing lock on attempt # %d", i));
 			Assertions.assertTrue(lock.isHeldByCurrentThread());
 			autoLocks.add(l);
@@ -169,7 +169,7 @@ public class BaseMutexLockableTest {
 		Assertions.assertFalse(lock.isHeldByCurrentThread());
 		Assertions.assertThrows(Throwable.class, () -> c.await());
 
-		try (MutexAutoLock auto = rwl.autoMutexLock()) {
+		try (MutexAutoLock auto = rwl.mutexAutoLock()) {
 			Assertions.assertTrue(lock.isLocked());
 			Assertions.assertTrue(lock.isHeldByCurrentThread());
 			Assertions.assertFalse(c.await(100, TimeUnit.MILLISECONDS));

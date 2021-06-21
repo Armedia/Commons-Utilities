@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2020 Armedia, LLC
+ * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -128,7 +128,7 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 		if (o == this) { return true; }
 		Map<?, ?> other = Tools.cast(Map.class, o);
 		if (other == null) { return false; }
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			if (this.map.size() != other.size()) { return false; }
 			return this.map.equals(other);
 		}
@@ -208,7 +208,7 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 	@Override
 	public VALUE compute(KEY key, BiFunction<? super KEY, ? super VALUE, ? extends VALUE> remappingFunction) {
 		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
-		try (SharedAutoLock shared = autoSharedLock()) {
+		try (SharedAutoLock shared = sharedAutoLock()) {
 			VALUE oldValue = get(key);
 			VALUE newValue = remappingFunction.apply(key, oldValue);
 			if (newValue == null) {
@@ -229,7 +229,7 @@ public class ShareableMap<KEY, VALUE> extends BaseShareableLockable implements M
 		BiFunction<? super VALUE, ? super VALUE, ? extends VALUE> remappingFunction) {
 		Objects.requireNonNull(remappingFunction, "Must provide a non-null remapping function");
 		Objects.requireNonNull(value, "Must provide a non-null value");
-		try (SharedAutoLock shared = autoSharedLock()) {
+		try (SharedAutoLock shared = sharedAutoLock()) {
 			VALUE oldValue = get(key);
 			VALUE newValue = (oldValue == null ? value : remappingFunction.apply(oldValue, value));
 			if (newValue == null) {

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * #%L
- * Armedia Caliente
+ * Armedia Commons Utilities
  * %%
  * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
@@ -24,31 +24,10 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities.cli.token;
+package com.armedia.commons.utilities.concurrent;
 
-import com.armedia.commons.utilities.cli.exception.CommandLineException;
+public interface UpgradeableLock {
 
-public class TokenLoaderException extends CommandLineException {
-	private static final long serialVersionUID = 1L;
+	public MutexAutoLock upgrade();
 
-	public TokenLoaderException() {
-		super();
-	}
-
-	public TokenLoaderException(String message, Throwable cause, boolean enableSuppression,
-		boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public TokenLoaderException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public TokenLoaderException(String message) {
-		super(message);
-	}
-
-	public TokenLoaderException(Throwable cause) {
-		super(cause);
-	}
 }

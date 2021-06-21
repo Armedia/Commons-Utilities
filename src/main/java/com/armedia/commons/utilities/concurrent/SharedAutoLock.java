@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2020 Armedia, LLC
+ * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -29,7 +29,7 @@ package com.armedia.commons.utilities.concurrent;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 
-public final class SharedAutoLock implements AutoCloseable {
+public final class SharedAutoLock implements UpgradeableLock, AutoCloseable {
 
 	private final ShareableLockable source;
 	private final Lock lock;
@@ -47,6 +47,7 @@ public final class SharedAutoLock implements AutoCloseable {
 		};
 	}
 
+	@Override
 	public MutexAutoLock upgrade() {
 		// We can't upgrade if we don't hold the lock
 		if (!this.locked) { throw new IllegalStateException("Can't upgrade if we don't currently hold the lock"); }

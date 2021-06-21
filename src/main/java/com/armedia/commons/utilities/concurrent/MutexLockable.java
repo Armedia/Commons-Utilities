@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2020 Armedia, LLC
+ * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -107,7 +107,7 @@ public interface MutexLockable {
 	 *
 	 * @return the held mutex lock, wrapped inside an {@link MutexAutoLock}
 	 */
-	public default MutexAutoLock autoMutexLock() {
+	public default MutexAutoLock mutexAutoLock() {
 		return new MutexAutoLock(this);
 	}
 
@@ -139,7 +139,7 @@ public interface MutexLockable {
 	 */
 	public default <E, EX extends Throwable> E mutexLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
-		try (MutexAutoLock lock = autoMutexLock()) {
+		try (MutexAutoLock lock = mutexAutoLock()) {
 			return operation.getChecked();
 		}
 	}

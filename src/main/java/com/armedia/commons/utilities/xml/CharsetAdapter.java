@@ -24,31 +24,24 @@
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  *******************************************************************************/
-package com.armedia.commons.utilities.cli.token;
+package com.armedia.commons.utilities.xml;
 
-import com.armedia.commons.utilities.cli.exception.CommandLineException;
+import java.nio.charset.Charset;
 
-public class TokenLoaderException extends CommandLineException {
-	private static final long serialVersionUID = 1L;
+import com.armedia.commons.utilities.codec.CheckedCodec;
+import com.armedia.commons.utilities.codec.FunctionalCodec;
 
-	public TokenLoaderException() {
-		super();
+public class CharsetAdapter extends AbstractCodecAdapter<String, Charset, RuntimeException> {
+
+	public static CheckedCodec<Charset, String, RuntimeException> CODEC;
+	static {
+		FunctionalCodec.Builder<Charset, String> builder = new FunctionalCodec.Builder<>();
+		builder.setEncoder(Charset::name);
+		builder.setDecoder(Charset::forName);
+		CharsetAdapter.CODEC = builder.build();
 	}
 
-	public TokenLoaderException(String message, Throwable cause, boolean enableSuppression,
-		boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
-	public TokenLoaderException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public TokenLoaderException(String message) {
-		super(message);
-	}
-
-	public TokenLoaderException(Throwable cause) {
-		super(cause);
+	public CharsetAdapter() {
+		super(CharsetAdapter.CODEC);
 	}
 }

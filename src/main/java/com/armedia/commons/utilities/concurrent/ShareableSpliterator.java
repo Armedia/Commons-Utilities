@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2020 Armedia, LLC
+ * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -64,7 +64,7 @@ public class ShareableSpliterator<E> extends BaseShareableLockable implements Sp
 
 	@Override
 	public Spliterator<E> trySplit() {
-		try (SharedAutoLock lock = autoSharedLock()) {
+		try (SharedAutoLock lock = sharedAutoLock()) {
 			Spliterator<E> it = this.spliterator.trySplit();
 			return (it != null ? new ShareableSpliterator<>(this, it) : null);
 		}

@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2020 Armedia, LLC
+ * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- *
+ * 
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- *
+ * 
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -107,7 +107,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withArgumentProcessorSelector(ArgumentProcessorSelector argumentProcessorSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.argumentProcessorSelector = argumentProcessorSelector;
 		}
 		return this;
@@ -118,7 +118,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withMethodSubstituteSelector(MethodSubstituteSelector methodSubstituteSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.methodSubstituteSelector = methodSubstituteSelector;
 		}
 		return this;
@@ -129,7 +129,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withResultProcessorSelector(ResultProcessorSelector resultProcessorSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.resultProcessorSelector = resultProcessorSelector;
 		}
 		return this;
@@ -140,7 +140,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withExceptionHandlerSelector(ExceptionHandlerSelector exceptionHandlerSelector) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.exceptionHandlerSelector = exceptionHandlerSelector;
 		}
 		return this;
@@ -151,7 +151,7 @@ public final class ProxyBuilder {
 	}
 
 	public ProxyBuilder withFinallyProcessor(FinallyProcessor finallyProcessor) {
-		try (MutexAutoLock mutex = this.lock.autoMutexLock()) {
+		try (MutexAutoLock mutex = this.lock.mutexAutoLock()) {
 			this.finallyProcessor = finallyProcessor;
 		}
 		return this;
@@ -167,7 +167,7 @@ public final class ProxyBuilder {
 
 	public <T> T proxy(ClassLoader classLoader, T target) {
 		Interceptor interceptor = null;
-		try (SharedAutoLock shared = this.lock.autoSharedLock()) {
+		try (SharedAutoLock shared = this.lock.sharedAutoLock()) {
 			interceptor = new Interceptor( //
 				target, //
 				this.argumentProcessorSelector, //
