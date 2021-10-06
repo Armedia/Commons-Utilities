@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- *
+ * 
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- *
+ * 
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,6 +28,7 @@ package com.armedia.commons.utilities.cli.classpath;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
@@ -59,27 +60,28 @@ public abstract class ClasspathPatcher {
 	 * </p>
 	 */
 	private static final class CPCL extends URLClassLoader {
-		private CPCL(URL[] urls) {
-			super(urls);
-		}
-
-		private CPCL(URL[] urls, ClassLoader parent) {
-			super(urls, parent);
-		}
-
-		private CPCL(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
+		public CPCL(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
 			super(urls, parent, factory);
 		}
 
+		public CPCL(URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+		}
+
+		public CPCL(URL[] urls) {
+			super(urls);
+		}
+
 		@Override
-		public void addURL(URL url) {
+		protected void addURL(URL url) {
 			super.addURL(url);
 		}
 	}
 
 	private static final Logger LOG = LoggerFactory.getLogger(ClasspathPatcher.class);
 	private static final URL[] NO_URLS = {};
-	private static volatile CPCL CL = null;
+	private static final URL NULL_URL = null;
+	private static volatile ClassLoader CL = null;
 	private static volatile Consumer<URL> ADD_URL = null;
 	private static final Set<String> ADDED = new LinkedHashSet<>();
 	private static final ShareableLockable LOCK = new BaseShareableLockable();
@@ -94,11 +96,68 @@ public abstract class ClasspathPatcher {
 	}
 
 	private static ClassLoader initCl(ClassLoader oldCl) {
-		ClassLoader parentCl = Thread.currentThread().getContextClassLoader();
-		ClasspathPatcher.CL = new CPCL(ClasspathPatcher.NO_URLS, parentCl);
-		ClasspathPatcher.ADD_URL = ClasspathPatcher.CL::addURL;
-		Thread.currentThread().setContextClassLoader(ClasspathPatcher.CL);
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		URLClassLoader ucl = Tools.cast(URLClassLoader.class, cl);
+		ClasspathPatcher.ADD_URL = ClasspathPatcher.getConsumer(ucl);
+		if (ClasspathPatcher.ADD_URL == null) {
+			final CPCL newCl = new CPCL(ClasspathPatcher.NO_URLS, cl);
+			ucl = newCl;
+			Thread.currentThread().setContextClassLoader(newCl);
+			ClasspathPatcher.ADD_URL = newCl::addURL;
+		}
+		ClasspathPatcher.CL = ucl;
 		return ClasspathPatcher.CL;
+	}
+
+	private static Method findMethodRecursively(Class<?> c, String name, Class<?>... parameterTypes) {
+		while (c != null) {
+			try {
+				return c.getDeclaredMethod(name, parameterTypes);
+			} catch (NoSuchMethodException e) {
+				// That's ok...the parent might succeed
+			} catch (SecurityException e) {
+				return null;
+			}
+			c = c.getSuperclass();
+		}
+		return null;
+	}
+
+	private static Consumer<URL> getConsumer(final URLClassLoader ucl) {
+		if (ucl == null) { return null; }
+		Class<? extends ClassLoader> clclass = ucl.getClass();
+		try {
+			Method method = ClasspathPatcher.findMethodRecursively(clclass, "addURL", URL.class);
+			if (method == null) { return null; }
+
+			try {
+				method.setAccessible(true);
+			} catch (SecurityException e) {
+				// Ok ... we couldn't disable the checks... let's try calling it anyway
+			}
+			// If this invocation succeeds, we can safely return a consumer. If it fails,
+			// then this method is not accessible to us...
+			method.invoke(ucl, ClasspathPatcher.NULL_URL);
+			final ClassLoader newCl = ucl;
+			Consumer<URL> consumer = (url) -> {
+				try {
+					method.invoke(newCl, url);
+				} catch (Exception e) {
+					if (ClasspathPatcher.LOG.isDebugEnabled()) {
+						ClasspathPatcher.LOG.error("Failed to add the URL [{}] to the classpath", url, e);
+					}
+				}
+			};
+			// This tells us if the method is reachable or not...
+			consumer.accept(null);
+			return consumer;
+		} catch (Throwable t) {
+			if (ClasspathPatcher.LOG.isDebugEnabled()) {
+				ClasspathPatcher.LOG.warn("Failed to introspect the addURL() method from {}",
+					clclass.getCanonicalName());
+			}
+			return null;
+		}
 	}
 
 	public static final boolean discoverPatches() {
