@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,10 +28,15 @@ package com.armedia.commons.utilities.cli.launcher;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +48,10 @@ import com.armedia.commons.utilities.cli.OptionParser;
 import com.armedia.commons.utilities.cli.OptionScheme;
 import com.armedia.commons.utilities.cli.OptionSchemeExtensionSupport;
 import com.armedia.commons.utilities.cli.OptionValues;
-import com.armedia.commons.utilities.cli.classpath.ClasspathPatcher;
 import com.armedia.commons.utilities.cli.exception.CommandLineSyntaxException;
 import com.armedia.commons.utilities.cli.exception.HelpRequestedException;
 import com.armedia.commons.utilities.cli.help.HelpRenderer;
+import com.armedia.commons.utilities.function.CheckedFunction;
 
 public abstract class AbstractEntrypoint {
 
@@ -58,6 +63,7 @@ public abstract class AbstractEntrypoint {
 		.setDescription("Display this help message") //
 	;
 
+	private static final URL[] URLS = {};
 	private static final String[] NO_ARGS = {};
 
 	protected Logger log = Main.BOOT_LOG;
@@ -136,7 +142,7 @@ public abstract class AbstractEntrypoint {
 			args = AbstractEntrypoint.NO_ARGS;
 		}
 
-		OptionParseResult result = null;
+		final OptionParseResult result;
 		try {
 			result = parseArguments(helpOption, optionScheme, args);
 		} catch (HelpRequestedException e) {
@@ -160,69 +166,82 @@ public abstract class AbstractEntrypoint {
 
 		Collection<? extends LaunchClasspathHelper> classpathHelpers = getClasspathHelpers(result.getOptionValues(),
 			result.getCommand(), result.getCommandValues(), result.getPositionals());
-		if (classpathHelpers == null) {
-			Collections.emptyList();
-		}
-
+		final Set<URL> classpathPatches = new LinkedHashSet<>();
 		for (LaunchClasspathHelper helper : classpathHelpers) {
-			final Collection<URL> extraPatches = helper.getClasspathPatchesPre(result.getOptionValues());
+			final Collection<URL> extraPatches = helper.getClasspathPatches(result.getOptionValues());
 			if ((extraPatches != null) && !extraPatches.isEmpty()) {
 				for (URL u : extraPatches) {
 					if (u != null) {
-						try {
-							ClasspathPatcher.addToClassPath(u);
-						} catch (Exception e) {
-							this.log.error("Failed to apply the a-priori classpath patch [{}]", u, e);
-							return -1;
-						}
+						classpathPatches.add(u);
 					}
 				}
 			}
 		}
 
-		ClasspathPatcher.discoverPatches(false);
+		final CheckedFunction<OptionParseResult, Integer, Exception> entryPoint = getEntrypoint();
 
-		for (LaunchClasspathHelper helper : classpathHelpers) {
-			final Collection<URL> extraPatches = helper.getClasspathPatchesPost(result.getOptionValues());
-			if ((extraPatches != null) && !extraPatches.isEmpty()) {
-				for (URL u : extraPatches) {
-					if (u != null) {
-						try {
-							ClasspathPatcher.addToClassPath(u);
-						} catch (Exception e) {
-							this.log.error("Failed to apply the a-posteriori classpath patch [{}]", u, e);
-							return -1;
-						}
-					}
-				}
+		final AtomicInteger ret = new AtomicInteger(0);
+		final Thread mainThread = Thread.currentThread();
+		final Runnable runner = () -> {
+			// We have a complete command line, and the final classpath. Let's initialize
+			// the logging.
+			if (initLogging(result.getOptionValues(), result.getCommand(), result.getCommandValues(),
+				result.getPositionals())) {
+				// Retrieve the logger post-initialization...if nothing was initialized, we stick to
+				// the
+				// same log
+				this.log = LoggerFactory.getLogger(getClass());
+				this.console = LoggerFactory.getLogger("console");
 			}
+
+			// The logging is initialized, we can make use of it now.
+			showBanner(this.console);
+			for (URL url : classpathPatches) {
+				this.console.info("Classpath addition: [{}]", url);
+			}
+
+			try {
+				Integer r = entryPoint.applyChecked(result);
+				if (r == null) {
+					r = NumberUtils.INTEGER_ZERO;
+				}
+				showFooter(this.console, r);
+				ret.set(r.intValue());
+			} catch (Exception e) {
+				showError(this.console, e);
+				ret.set(1);
+			}
+		};
+
+		// Check to see if we need to patch the classpath
+		final ClassLoader cl = newClassLoader(mainThread.getContextClassLoader(), classpathPatches);
+		if (cl != null) {
+			// Classpath needs patching, so apply it...
+			final Thread newThread = new Thread(mainThread.getThreadGroup(), runner,
+				mainThread.getName() + "-entrypoint");
+			newThread.setDaemon(mainThread.isDaemon());
+
+			if (cl != null) {
+				newThread.setContextClassLoader(cl);
+			}
+			newThread.start();
+			try {
+				newThread.join();
+			} catch (InterruptedException e) {
+				this.log.warn("Interrupted while waiting for the {} thread", newThread.getName());
+				return 1;
+			}
+		} else {
+			// No classpath modifications, so don't mess around with a subthread
+			runner.run();
 		}
 
-		// We have a complete command line, and the final classpath. Let's initialize
-		// the logging.
-		if (initLogging(result.getOptionValues(), result.getCommand(), result.getCommandValues(),
-			result.getPositionals())) {
-			// Retrieve the logger post-initialization...if nothing was initialized, we stick to the
-			// same log
-			this.log = LoggerFactory.getLogger(getClass());
-			this.console = LoggerFactory.getLogger("console");
-		}
+		return ret.get();
+	}
 
-		// The logging is initialized, we can make use of it now.
-		showBanner(this.console);
-		for (String s : ClasspathPatcher.getAdditions()) {
-			this.console.info("Classpath addition: [{}]", s);
-		}
-
-		try {
-			int ret = execute(result.getOptionValues(), result.getCommand(), result.getCommandValues(),
-				result.getPositionals());
-			showFooter(this.console, ret);
-			return ret;
-		} catch (Exception e) {
-			showError(this.console, e);
-			return 1;
-		}
+	private ClassLoader newClassLoader(ClassLoader parent, Set<URL> extraPaths) {
+		if ((extraPaths == null) || extraPaths.isEmpty()) { return null; }
+		return new URLClassLoader(extraPaths.toArray(AbstractEntrypoint.URLS), parent);
 	}
 
 	protected void showBanner(Logger log) {
@@ -237,6 +256,5 @@ public abstract class AbstractEntrypoint {
 		log.error("Exception caught", e);
 	}
 
-	protected abstract int execute(OptionValues baseValues, String command, OptionValues commandValues,
-		Collection<String> positionals) throws Exception;
+	protected abstract CheckedFunction<OptionParseResult, Integer, Exception> getEntrypoint();
 }
