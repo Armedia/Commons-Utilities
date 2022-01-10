@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2021 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -33,15 +33,9 @@ import java.util.List;
 import org.slf4j.Logger;
 
 import com.armedia.commons.utilities.PluggableServiceLocator;
-import com.armedia.commons.utilities.cli.classpath.ClasspathPatcher;
 import com.armedia.commons.utilities.cli.launcher.log.LogConfigurator;
 
 public final class Main {
-
-	static {
-		// Make sure this is called as early as possible
-		ClasspathPatcher.init();
-	}
 
 	private Main() {
 		// So we can't instantiate
@@ -51,8 +45,7 @@ public final class Main {
 
 	public static final void main(String... args) {
 		// First things first, find the first launcher
-		ClassLoader cl = ClasspathPatcher.init();
-		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class, cl);
+		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class);
 		final List<Throwable> exceptions = new ArrayList<>();
 		loader.setHideErrors(false);
 		loader.setErrorListener((c, e) -> exceptions.add(e));
