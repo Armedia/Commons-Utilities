@@ -28,12 +28,14 @@ package com.armedia.commons.utilities.cli.launcher;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class DynamicClassLoader extends URLClassLoader {
@@ -44,11 +46,19 @@ public class DynamicClassLoader extends URLClassLoader {
 	}
 
 	public DynamicClassLoader(URL[] urls) {
-		super(DynamicClassLoader.sanitize(urls));
+		this(DynamicClassLoader.NO_URLS, null);
+	}
+
+	public DynamicClassLoader(ClassLoader parent) {
+		this(DynamicClassLoader.NO_URLS, parent);
 	}
 
 	public DynamicClassLoader(URL[] urls, ClassLoader parent) {
 		super(DynamicClassLoader.sanitize(urls), parent);
+	}
+
+	public DynamicClassLoader(ClassLoader parent, URLStreamHandlerFactory factory) {
+		this(DynamicClassLoader.NO_URLS, parent, factory);
 	}
 
 	public DynamicClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
@@ -90,11 +100,29 @@ public class DynamicClassLoader extends URLClassLoader {
 		super.addURL(url);
 	}
 
-	public static DynamicClassLoader find() {
+	private static Method findMethod(ClassLoader cl) {
+		try {
+			return cl.getClass().getMethod("addURL", URL.class);
+		} catch (NoSuchMethodException e) {
+			return null;
+		}
+	}
+
+	private static Consumer<URL> findConsumer() {
 		ClassLoader prev = null;
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		while (cl != null) {
-			if (DynamicClassLoader.class.isInstance(cl)) { return DynamicClassLoader.class.cast(cl); }
+			Method m = DynamicClassLoader.findMethod(cl);
+			if (m != null) {
+				final ClassLoader tgt = cl;
+				return (url) -> {
+					try {
+						m.invoke(tgt, url);
+					} catch (Exception e) {
+						throw new RuntimeException("Failed to add the URL [" + url + "]", e);
+					}
+				};
+			}
 			prev = cl;
 			cl = cl.getParent();
 			if (prev == cl) {
@@ -106,9 +134,9 @@ public class DynamicClassLoader extends URLClassLoader {
 
 	public static boolean update(Stream<URL> urls) {
 		if (urls == null) { return false; }
-		DynamicClassLoader loader = DynamicClassLoader.find();
-		if (loader == null) { return false; }
-		urls.filter(Objects::nonNull).forEach(loader::addURL);
+		Consumer<URL> consumer = DynamicClassLoader.findConsumer();
+		if (consumer == null) { return false; }
+		urls.filter(Objects::nonNull).forEach(consumer);
 		return true;
 	}
 

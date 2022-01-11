@@ -248,7 +248,7 @@ public abstract class AbstractEntrypoint {
 		}
 	}
 
-	static int run(String... args) {
+	public static int run(String... args) {
 		// First things first, find the first launcher
 		final AbstractEntrypoint entrypoint = AbstractEntrypoint.findFirstEntrypoint();
 		final int result;

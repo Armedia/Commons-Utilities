@@ -27,6 +27,8 @@
 package com.armedia.commons.utilities.cli.launcher;
 
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -63,11 +65,24 @@ public final class Main {
 	public static final void main(String... args) {
 		final AtomicInteger result = new AtomicInteger(0);
 		final Thread main = Thread.currentThread();
-		final ClassLoader mainCl = main.getContextClassLoader();
-		final ClassLoader entryCl = new DynamicClassLoader(null, mainCl);
-		main.setContextClassLoader(entryCl);
+
+		URL[] urls = null;
+		try {
+			final Class<?> c = Class.forName(Main.AEP, false, main.getContextClassLoader());
+			CodeSource src = c.getProtectionDomain().getCodeSource();
+			urls = new URL[] {
+				src.getLocation()
+			};
+		} catch (ClassNotFoundException e) {
+			Main.BOOT_LOG.error("Failed to locate a required class: {}", Main.AEP, e);
+			System.exit(1);
+		}
+
+		final ClassLoader childCl = new DynamicClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
+		main.setContextClassLoader(childCl);
+
 		final Thread entry = new Thread(main.getThreadGroup(), () -> Main.run(result, args), "entrypoint");
-		entry.setContextClassLoader(entryCl);
+		entry.setContextClassLoader(childCl);
 		entry.start();
 		try {
 			entry.join();
