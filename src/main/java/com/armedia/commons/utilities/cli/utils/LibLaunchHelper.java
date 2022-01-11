@@ -70,8 +70,8 @@ public final class LibLaunchHelper extends Options implements LaunchClasspathHel
 		return StringUtils.endsWith(name, ".zip") || StringUtils.endsWith(name, ".jar");
 	};
 
-	public static final String DEFAULT_LIB = "caliente.lib";
-	public static final String LIB_ENV_VAR = "CALIENTE_LIB";
+	public static final String DEFAULT_LIB = "java.lib";
+	public static final String LIB_ENV_VAR = "JAVA_LIB";
 
 	private final String defaultLib;
 	private final String envVarName;
