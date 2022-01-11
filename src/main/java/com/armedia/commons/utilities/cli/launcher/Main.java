@@ -26,16 +26,16 @@
  *******************************************************************************/
 package com.armedia.commons.utilities.cli.launcher;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 
-import com.armedia.commons.utilities.PluggableServiceLocator;
 import com.armedia.commons.utilities.cli.launcher.log.LogConfigurator;
 
 public final class Main {
+
+	private static final String AEP = "com.armedia.commons.utilities.cli.launcher.AbstractEntrypoint";
 
 	private Main() {
 		// So we can't instantiate
@@ -43,51 +43,39 @@ public final class Main {
 
 	public static final Logger BOOT_LOG = LogConfigurator.getBootLogger();
 
-	private static final AbstractEntrypoint findFirstEntrypoint() {
-		// First things first, find the first launcher
-		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class);
-
-		final List<Throwable> exceptions = new ArrayList<>();
-		loader.setHideErrors(false);
-		loader.setErrorListener((c, e) -> exceptions.add(e));
-
-		Iterator<AbstractEntrypoint> it = loader.getAll();
-		if (it.hasNext()) {
-			AbstractEntrypoint entrypoint = it.next();
-			Main.BOOT_LOG.debug("Using entrypoint for {} (of type {})", entrypoint.getName(),
-				entrypoint.getClass().getCanonicalName());
-			it.forEachRemaining((e) -> Main.BOOT_LOG.debug("*** IGNORING entrypoint for {} (of type {})", e.getName(),
-				e.getClass().getCanonicalName()));
-			return entrypoint;
-		} else {
-			Main.BOOT_LOG.error("No viable entrypoints were found");
-			if (!exceptions.isEmpty()) {
-				Main.BOOT_LOG.error("{} possible entrypoints were found, but failed to load:", exceptions.size());
-				exceptions.forEach((e) -> Main.BOOT_LOG.error("Failed Entrypoint", e));
+	private static void run(AtomicInteger result, String... args) {
+		result.set(1);
+		try {
+			Class<?> k = Class.forName(Main.AEP, true, Thread.currentThread().getContextClassLoader());
+			Method m = k.getDeclaredMethod("run", String[].class);
+			Object r = m.invoke(null, new Object[] {
+				args
+			});
+			if ((r != null) && Integer.class.isInstance(r)) {
+				result.set(Integer.class.cast(r).intValue());
 			}
-			return null;
+		} catch (Exception e) {
+			// Something went wrong ...
+			Main.BOOT_LOG.error("Failed to execute the EntryPoint", e);
 		}
 	}
 
 	public static final void main(String... args) {
-		// First things first, find the first launcher
-		final AbstractEntrypoint entrypoint = Main.findFirstEntrypoint();
-		final int result;
-		if (entrypoint != null) {
-			int ret = 0;
-			try {
-				ret = entrypoint.execute(args);
-			} catch (Throwable t) {
-				Main.BOOT_LOG.error("Failed to launch {} from the entrypoint class {}", entrypoint.getName(),
-					entrypoint.getClass().getCanonicalName(), t);
-				ret = 1;
-			}
-			result = ret;
-		} else {
-			// KABOOM! No launcher found!
-			result = 1;
+		final AtomicInteger result = new AtomicInteger(0);
+		final Thread main = Thread.currentThread();
+		final ClassLoader mainCl = main.getContextClassLoader();
+		final ClassLoader entryCl = new DynamicClassLoader(null, mainCl);
+		main.setContextClassLoader(entryCl);
+		final Thread entry = new Thread(main.getThreadGroup(), () -> Main.run(result, args), "entrypoint");
+		entry.setContextClassLoader(entryCl);
+		entry.start();
+		try {
+			entry.join();
+		} catch (InterruptedException e) {
+			Main.BOOT_LOG.warn("Interrupted while waiting for the {} thread", entry.getName());
+			result.set(1);
 		}
-		Main.BOOT_LOG.debug("Exiting with result = {}", result);
-		System.exit(result);
+
+		System.exit(result.get());
 	}
 }
