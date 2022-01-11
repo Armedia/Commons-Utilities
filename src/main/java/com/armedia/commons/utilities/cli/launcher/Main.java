@@ -43,21 +43,37 @@ public final class Main {
 
 	public static final Logger BOOT_LOG = LogConfigurator.getBootLogger();
 
-	public static final void main(String... args) {
+	private static final AbstractEntrypoint findFirstEntrypoint() {
 		// First things first, find the first launcher
 		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class);
+
 		final List<Throwable> exceptions = new ArrayList<>();
 		loader.setHideErrors(false);
 		loader.setErrorListener((c, e) -> exceptions.add(e));
 
 		Iterator<AbstractEntrypoint> it = loader.getAll();
-		final int result;
 		if (it.hasNext()) {
 			AbstractEntrypoint entrypoint = it.next();
 			Main.BOOT_LOG.debug("Using entrypoint for {} (of type {})", entrypoint.getName(),
 				entrypoint.getClass().getCanonicalName());
 			it.forEachRemaining((e) -> Main.BOOT_LOG.debug("*** IGNORING entrypoint for {} (of type {})", e.getName(),
 				e.getClass().getCanonicalName()));
+			return entrypoint;
+		} else {
+			Main.BOOT_LOG.error("No viable entrypoints were found");
+			if (!exceptions.isEmpty()) {
+				Main.BOOT_LOG.error("{} possible entrypoints were found, but failed to load:", exceptions.size());
+				exceptions.forEach((e) -> Main.BOOT_LOG.error("Failed Entrypoint", e));
+			}
+			return null;
+		}
+	}
+
+	public static final void main(String... args) {
+		// First things first, find the first launcher
+		final AbstractEntrypoint entrypoint = Main.findFirstEntrypoint();
+		final int result;
+		if (entrypoint != null) {
 			int ret = 0;
 			try {
 				ret = entrypoint.execute(args);
@@ -70,11 +86,6 @@ public final class Main {
 		} else {
 			// KABOOM! No launcher found!
 			result = 1;
-			Main.BOOT_LOG.error("No viable entrypoints were found");
-			if (!exceptions.isEmpty()) {
-				Main.BOOT_LOG.error("{} possible entrypoints were found, but failed to load:", exceptions.size());
-				exceptions.forEach((e) -> Main.BOOT_LOG.error("Failed Entrypoint", e));
-			}
 		}
 		Main.BOOT_LOG.debug("Exiting with result = {}", result);
 		System.exit(result);
