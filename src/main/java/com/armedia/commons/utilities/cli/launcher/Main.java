@@ -29,7 +29,6 @@ package com.armedia.commons.utilities.cli.launcher;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.CodeSource;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 
@@ -45,27 +44,23 @@ public final class Main {
 
 	public static final Logger BOOT_LOG = LogConfigurator.getBootLogger();
 
-	private static void run(AtomicInteger result, String... args) {
-		result.set(1);
+	private static int run(String... args) {
 		try {
 			Class<?> k = Class.forName(Main.AEP, true, Thread.currentThread().getContextClassLoader());
 			Method m = k.getDeclaredMethod("run", String[].class);
 			Object r = m.invoke(null, new Object[] {
 				args
 			});
-			if ((r != null) && Integer.class.isInstance(r)) {
-				result.set(Integer.class.cast(r).intValue());
-			}
+			if ((r != null) && Integer.class.isInstance(r)) { return Integer.class.cast(r).intValue(); }
 		} catch (Exception e) {
 			// Something went wrong ...
 			Main.BOOT_LOG.error("Failed to execute the EntryPoint", e);
 		}
+		return 1;
 	}
 
-	public static final void main(String... args) {
-		final AtomicInteger result = new AtomicInteger(0);
+	private static ClassLoader buildClassLoader() {
 		final Thread main = Thread.currentThread();
-
 		URL[] urls = null;
 		try {
 			final Class<?> c = Class.forName(Main.AEP, false, main.getContextClassLoader());
@@ -78,19 +73,11 @@ public final class Main {
 			System.exit(1);
 		}
 
-		final ClassLoader childCl = new DynamicClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
-		main.setContextClassLoader(childCl);
+		return new DynamicClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
+	}
 
-		final Thread entry = new Thread(main.getThreadGroup(), () -> Main.run(result, args), "entrypoint");
-		entry.setContextClassLoader(childCl);
-		entry.start();
-		try {
-			entry.join();
-		} catch (InterruptedException e) {
-			Main.BOOT_LOG.warn("Interrupted while waiting for the {} thread", entry.getName());
-			result.set(1);
-		}
-
-		System.exit(result.get());
+	public static final void main(String... args) {
+		Thread.currentThread().setContextClassLoader(Main.buildClassLoader());
+		System.exit(Main.run(args));
 	}
 }
