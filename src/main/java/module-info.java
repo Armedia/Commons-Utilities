@@ -27,7 +27,6 @@ module com.armedia.commons.utilities {
 	exports com.armedia.commons.utilities.concurrent;
 	exports com.armedia.commons.utilities.codec;
 	exports com.armedia.commons.utilities.cli;
-	exports com.armedia.commons.utilities.cli.classpath;
 	exports com.armedia.commons.utilities.cli.exception;
 	exports com.armedia.commons.utilities.cli.filter;
 	exports com.armedia.commons.utilities.cli.help;

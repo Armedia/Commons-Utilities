@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2021 Armedia, LLC
+ * Copyright (C) 2013 - 2022 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  *
@@ -28,18 +28,19 @@ package com.armedia.commons.utilities.cli.launcher;
 
 import java.io.File;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.armedia.commons.utilities.PluggableServiceLocator;
 import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.cli.Option;
 import com.armedia.commons.utilities.cli.OptionImpl;
@@ -51,7 +52,6 @@ import com.armedia.commons.utilities.cli.OptionValues;
 import com.armedia.commons.utilities.cli.exception.CommandLineSyntaxException;
 import com.armedia.commons.utilities.cli.exception.HelpRequestedException;
 import com.armedia.commons.utilities.cli.help.HelpRenderer;
-import com.armedia.commons.utilities.function.CheckedFunction;
 
 public abstract class AbstractEntrypoint {
 
@@ -63,11 +63,11 @@ public abstract class AbstractEntrypoint {
 		.setDescription("Display this help message") //
 	;
 
-	private static final URL[] URLS = {};
 	private static final String[] NO_ARGS = {};
+	private static final Logger BOOT_LOG = Main.BOOT_LOG;
 
-	protected Logger log = Main.BOOT_LOG;
-	protected Logger console = Main.BOOT_LOG;
+	protected Logger log = AbstractEntrypoint.BOOT_LOG;
+	protected Logger console = AbstractEntrypoint.BOOT_LOG;
 
 	protected final File userDir;
 	protected final File homeDir;
@@ -178,70 +178,33 @@ public abstract class AbstractEntrypoint {
 			}
 		}
 
-		final CheckedFunction<OptionParseResult, Integer, Exception> entryPoint = getEntrypoint();
+		DynamicClassLoader.update(classpathPatches);
 
-		final AtomicInteger ret = new AtomicInteger(0);
-		final Thread mainThread = Thread.currentThread();
-		final Runnable runner = () -> {
-			// We have a complete command line, and the final classpath. Let's initialize
-			// the logging.
-			if (initLogging(result.getOptionValues(), result.getCommand(), result.getCommandValues(),
-				result.getPositionals())) {
-				// Retrieve the logger post-initialization...if nothing was initialized, we stick to
-				// the
-				// same log
-				this.log = LoggerFactory.getLogger(getClass());
-				this.console = LoggerFactory.getLogger("console");
-			}
-
-			// The logging is initialized, we can make use of it now.
-			showBanner(this.console);
-			for (URL url : classpathPatches) {
-				this.console.info("Classpath addition: [{}]", url);
-			}
-
-			try {
-				Integer r = entryPoint.applyChecked(result);
-				if (r == null) {
-					r = NumberUtils.INTEGER_ZERO;
-				}
-				showFooter(this.console, r);
-				ret.set(r.intValue());
-			} catch (Exception e) {
-				showError(this.console, e);
-				ret.set(1);
-			}
-		};
-
-		// Check to see if we need to patch the classpath
-		final ClassLoader cl = newClassLoader(mainThread.getContextClassLoader(), classpathPatches);
-		if (cl != null) {
-			// Classpath needs patching, so apply it...
-			final Thread newThread = new Thread(mainThread.getThreadGroup(), runner,
-				mainThread.getName() + "-entrypoint");
-			newThread.setDaemon(mainThread.isDaemon());
-
-			if (cl != null) {
-				newThread.setContextClassLoader(cl);
-			}
-			newThread.start();
-			try {
-				newThread.join();
-			} catch (InterruptedException e) {
-				this.log.warn("Interrupted while waiting for the {} thread", newThread.getName());
-				return 1;
-			}
-		} else {
-			// No classpath modifications, so don't mess around with a subthread
-			runner.run();
+		// We have a complete command line, and the final classpath. Let's initialize
+		// the logging.
+		if (initLogging(result.getOptionValues(), result.getCommand(), result.getCommandValues(),
+			result.getPositionals())) {
+			// Retrieve the logger post-initialization...if nothing was initialized, we stick to
+			// the
+			// same log
+			this.log = LoggerFactory.getLogger(getClass());
+			this.console = LoggerFactory.getLogger("console");
 		}
 
-		return ret.get();
-	}
+		// The logging is initialized, we can make use of it now.
+		showBanner(this.console);
+		for (URL url : classpathPatches) {
+			this.console.info("Classpath addition: [{}]", url);
+		}
 
-	private ClassLoader newClassLoader(ClassLoader parent, Set<URL> extraPaths) {
-		if ((extraPaths == null) || extraPaths.isEmpty()) { return null; }
-		return new URLClassLoader(extraPaths.toArray(AbstractEntrypoint.URLS), parent);
+		try {
+			int r = execute(result);
+			showFooter(this.console, r);
+			return r;
+		} catch (Exception e) {
+			showError(this.console, e);
+			return 1;
+		}
 	}
 
 	protected void showBanner(Logger log) {
@@ -256,5 +219,54 @@ public abstract class AbstractEntrypoint {
 		log.error("Exception caught", e);
 	}
 
-	protected abstract CheckedFunction<OptionParseResult, Integer, Exception> getEntrypoint();
+	protected abstract int execute(OptionParseResult result) throws Exception;
+
+	private static final AbstractEntrypoint findFirstEntrypoint() {
+		// First things first, find the first launcher
+		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class);
+
+		final List<Throwable> exceptions = new ArrayList<>();
+		loader.setHideErrors(false);
+		loader.setErrorListener((c, e) -> exceptions.add(e));
+
+		Iterator<AbstractEntrypoint> it = loader.getAll();
+		if (it.hasNext()) {
+			AbstractEntrypoint entrypoint = it.next();
+			AbstractEntrypoint.BOOT_LOG.debug("Using entrypoint for {} (of type {})", entrypoint.getName(),
+				entrypoint.getClass().getCanonicalName());
+			it.forEachRemaining((e) -> AbstractEntrypoint.BOOT_LOG.debug("*** IGNORING entrypoint for {} (of type {})",
+				e.getName(), e.getClass().getCanonicalName()));
+			return entrypoint;
+		} else {
+			AbstractEntrypoint.BOOT_LOG.error("No viable entrypoints were found");
+			if (!exceptions.isEmpty()) {
+				AbstractEntrypoint.BOOT_LOG.error("{} possible entrypoints were found, but failed to load:",
+					exceptions.size());
+				exceptions.forEach((e) -> AbstractEntrypoint.BOOT_LOG.error("Failed Entrypoint", e));
+			}
+			return null;
+		}
+	}
+
+	public static int run(String... args) {
+		// First things first, find the first launcher
+		final AbstractEntrypoint entrypoint = AbstractEntrypoint.findFirstEntrypoint();
+		final int result;
+		if (entrypoint != null) {
+			int ret = 0;
+			try {
+				ret = entrypoint.execute(args);
+			} catch (Throwable t) {
+				AbstractEntrypoint.BOOT_LOG.error("Failed to launch {} from the entrypoint class {}",
+					entrypoint.getName(), entrypoint.getClass().getCanonicalName(), t);
+				ret = 1;
+			}
+			result = ret;
+		} else {
+			// KABOOM! No launcher found!
+			result = 1;
+		}
+		AbstractEntrypoint.BOOT_LOG.debug("Exiting with result = {}", result);
+		return result;
+	}
 }

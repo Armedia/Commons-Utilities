@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2021 Armedia, LLC
+ * Copyright (C) 2013 - 2022 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  *
@@ -26,16 +26,17 @@
  *******************************************************************************/
 package com.armedia.commons.utilities.cli.launcher;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.security.CodeSource;
 
 import org.slf4j.Logger;
 
-import com.armedia.commons.utilities.PluggableServiceLocator;
 import com.armedia.commons.utilities.cli.launcher.log.LogConfigurator;
 
 public final class Main {
+
+	private static final String AEP = "com.armedia.commons.utilities.cli.launcher.AbstractEntrypoint";
 
 	private Main() {
 		// So we can't instantiate
@@ -43,40 +44,40 @@ public final class Main {
 
 	public static final Logger BOOT_LOG = LogConfigurator.getBootLogger();
 
-	public static final void main(String... args) {
-		// First things first, find the first launcher
-		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class);
-		final List<Throwable> exceptions = new ArrayList<>();
-		loader.setHideErrors(false);
-		loader.setErrorListener((c, e) -> exceptions.add(e));
-
-		Iterator<AbstractEntrypoint> it = loader.getAll();
-		final int result;
-		if (it.hasNext()) {
-			AbstractEntrypoint entrypoint = it.next();
-			Main.BOOT_LOG.debug("Using entrypoint for {} (of type {})", entrypoint.getName(),
-				entrypoint.getClass().getCanonicalName());
-			it.forEachRemaining((e) -> Main.BOOT_LOG.debug("*** IGNORING entrypoint for {} (of type {})", e.getName(),
-				e.getClass().getCanonicalName()));
-			int ret = 0;
-			try {
-				ret = entrypoint.execute(args);
-			} catch (Throwable t) {
-				Main.BOOT_LOG.error("Failed to launch {} from the entrypoint class {}", entrypoint.getName(),
-					entrypoint.getClass().getCanonicalName(), t);
-				ret = 1;
-			}
-			result = ret;
-		} else {
-			// KABOOM! No launcher found!
-			result = 1;
-			Main.BOOT_LOG.error("No viable entrypoints were found");
-			if (!exceptions.isEmpty()) {
-				Main.BOOT_LOG.error("{} possible entrypoints were found, but failed to load:", exceptions.size());
-				exceptions.forEach((e) -> Main.BOOT_LOG.error("Failed Entrypoint", e));
-			}
+	private static int run(String... args) {
+		try {
+			Class<?> k = Class.forName(Main.AEP, true, Thread.currentThread().getContextClassLoader());
+			Method m = k.getDeclaredMethod("run", String[].class);
+			Object r = m.invoke(null, new Object[] {
+				args
+			});
+			if ((r != null) && Integer.class.isInstance(r)) { return Integer.class.cast(r).intValue(); }
+		} catch (Exception e) {
+			// Something went wrong ...
+			Main.BOOT_LOG.error("Failed to execute the EntryPoint", e);
 		}
-		Main.BOOT_LOG.debug("Exiting with result = {}", result);
-		System.exit(result);
+		return 1;
+	}
+
+	private static ClassLoader buildClassLoader() {
+		final Thread main = Thread.currentThread();
+		URL[] urls = null;
+		try {
+			final Class<?> c = Class.forName(Main.AEP, false, main.getContextClassLoader());
+			CodeSource src = c.getProtectionDomain().getCodeSource();
+			urls = new URL[] {
+				src.getLocation()
+			};
+		} catch (ClassNotFoundException e) {
+			Main.BOOT_LOG.error("Failed to locate a required class: {}", Main.AEP, e);
+			System.exit(1);
+		}
+
+		return new DynamicClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
+	}
+
+	public static final void main(String... args) {
+		Thread.currentThread().setContextClassLoader(Main.buildClassLoader());
+		System.exit(Main.run(args));
 	}
 }
