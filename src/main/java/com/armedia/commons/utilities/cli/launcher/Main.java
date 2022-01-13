@@ -29,6 +29,7 @@ package com.armedia.commons.utilities.cli.launcher;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.CodeSource;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 
@@ -36,7 +37,8 @@ import com.armedia.commons.utilities.cli.launcher.log.LogConfigurator;
 
 public final class Main {
 
-	private static final String AEP = "com.armedia.commons.utilities.cli.launcher.AbstractEntrypoint";
+	private static final String ENTRY_POINT = "com.armedia.commons.utilities.cli.launcher.AbstractEntrypoint";
+	private static final String LOGGER = "org.slf4j.Logger";
 
 	private Main() {
 		// So we can't instantiate
@@ -46,7 +48,7 @@ public final class Main {
 
 	private static int run(String... args) {
 		try {
-			Class<?> k = Class.forName(Main.AEP, true, Thread.currentThread().getContextClassLoader());
+			Class<?> k = Class.forName(Main.ENTRY_POINT, true, Thread.currentThread().getContextClassLoader());
 			Method m = k.getDeclaredMethod("run", String[].class);
 			Object r = m.invoke(null, new Object[] {
 				args
@@ -61,23 +63,33 @@ public final class Main {
 
 	private static ClassLoader buildClassLoader() {
 		final Thread main = Thread.currentThread();
-		URL[] urls = null;
 		try {
-			final Class<?> c = Class.forName(Main.AEP, false, main.getContextClassLoader());
-			CodeSource src = c.getProtectionDomain().getCodeSource();
-			urls = new URL[] {
-				src.getLocation()
-			};
-		} catch (ClassNotFoundException e) {
-			Main.BOOT_LOG.error("Failed to locate a required class: {}", Main.AEP, e);
-			System.exit(1);
-		}
+			Class<?> entryPoint = Class.forName(Main.ENTRY_POINT, false, main.getContextClassLoader());
+			CodeSource entryPointSrc = entryPoint.getProtectionDomain().getCodeSource();
+			Class<?> logger = Class.forName(Main.LOGGER, false, main.getContextClassLoader());
+			CodeSource loggerSrc = logger.getProtectionDomain().getCodeSource();
 
-		return new DynamicClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
+			// If both code sources are the same, we're either in an exploded
+			// directory, or a "superjar" containing all classes. Otherwise, we're
+			// using an exploded folder with separate JARs and we shouldn't mess with
+			// the classloader
+			if (!Objects.equals(entryPointSrc.getLocation(), loggerSrc.getLocation())) { return null; }
+
+			final URL[] urls = {
+				entryPointSrc.getLocation()
+			};
+			return new DynamicClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
+		} catch (ClassNotFoundException e) {
+			Main.BOOT_LOG.error("Failed to locate a required class: {}", Main.ENTRY_POINT, e);
+			return null;
+		}
 	}
 
 	public static final void main(String... args) {
-		Thread.currentThread().setContextClassLoader(Main.buildClassLoader());
+		ClassLoader cl = Main.buildClassLoader();
+		if (cl != null) {
+			Thread.currentThread().setContextClassLoader(cl);
+		}
 		System.exit(Main.run(args));
 	}
 }
