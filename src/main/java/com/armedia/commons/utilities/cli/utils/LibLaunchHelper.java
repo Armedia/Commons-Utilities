@@ -152,13 +152,13 @@ public final class LibLaunchHelper extends Options implements LaunchClasspathHel
 	}
 
 	@Override
-	public Collection<URL> getClasspathPatches(OptionValues cli) {
+	public Collection<URL> getClasspathPatches(OptionValues baseValues, OptionValues commandValues) {
 		List<URL> ret = new ArrayList<>();
 		String currentPath = null;
 		try {
 			// If the lib path is explicitly set, use only it
-			if (cli.isPresent(LibLaunchHelper.LIB)) {
-				for (String path : cli.getStrings(LibLaunchHelper.LIB)) {
+			if (baseValues.isPresent(LibLaunchHelper.LIB)) {
+				for (String path : baseValues.getStrings(LibLaunchHelper.LIB)) {
 					collectEntries(currentPath = path, ret);
 				}
 				return ret;
