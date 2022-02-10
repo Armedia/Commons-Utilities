@@ -26,6 +26,7 @@
  *******************************************************************************/
 package com.armedia.commons.utilities;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -73,8 +74,7 @@ import com.armedia.commons.utilities.concurrent.SharedAutoLock;
  *
  */
 public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
-	protected static final long DEFAULT_MAX_WAIT = 5;
-	protected static final TimeUnit DEFAULT_MAX_WAIT_UNIT = TimeUnit.MINUTES;
+	protected static final Duration DEFAULT_MAX_WAIT = Duration.ofMinutes(5);
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -178,9 +178,9 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	/**
 	 * Construct an instance that will accept a maximum of {@code backLog} items waiting for
 	 * processing in the queue, such that new invocations to {@link #addWorkItem(Object)},
-	 * {@link #addWorkItem(Object, long, TimeUnit)} or {@link #addWorkItemNonblock(Object)} will
-	 * either block or fail accordingly if the queue is full. If {@code backlogSize <= 0} then the
-	 * queue will have "no" capacity limit (in reality, a limit of {@link Integer#MAX_VALUE} items).
+	 * {@link #addWorkItem(Object, Duration)} or {@link #addWorkItemNonblock(Object)} will either
+	 * block or fail accordingly if the queue is full. If {@code backlogSize <= 0} then the queue
+	 * will have "no" capacity limit (in reality, a limit of {@link Integer#MAX_VALUE} items).
 	 *
 	 * @param backlogSize
 	 */
@@ -285,9 +285,14 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 * @throws NullPointerException
 	 *             if {@code item} is {@code null}
 	 */
-	public final boolean addWorkItem(ITEM item, long count, TimeUnit timeUnit) throws InterruptedException {
+	public final boolean addWorkItem(ITEM item, Duration maxWait) throws InterruptedException {
 		if (item == null) { throw new NullPointerException("Must provide a non-null work item"); }
-		return shareLocked(() -> this.workQueue.offer(item, count, timeUnit));
+		long millis = 0;
+		if ((maxWait != null) && !maxWait.isZero() && !maxWait.isNegative()) {
+			millis = maxWait.toMillis();
+		}
+		final long finalMillis = millis;
+		return shareLocked(() -> this.workQueue.offer(item, finalMillis, TimeUnit.MILLISECONDS));
 	}
 
 	/**
@@ -344,36 +349,16 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 *
 	 * @return the default maximum wait unit count configured for this instance
 	 */
-	public long getDefaultMaxWait() {
+	public Duration getDefaultMaxWait() {
 		return PooledWorkers.DEFAULT_MAX_WAIT;
 	}
 
-	/**
-	 * Returns the default maximum wait unit configured for this instance. The default
-	 * implementation simply returns {@link #DEFAULT_MAX_WAIT_UNIT}. Subclasses should override this
-	 * method to provide their own custom values.
-	 *
-	 * @return the default maximum wait unit configured for this instance
-	 */
-	public TimeUnit getDefaultMaxWaitUnit() {
-		return PooledWorkers.DEFAULT_MAX_WAIT_UNIT;
-	}
-
-	private List<ITEM> shutdown(boolean abort, long maxWait, TimeUnit timeUnit) {
+	private List<ITEM> shutdown(boolean abort, Duration maxWait) {
 		try (MutexAutoLock lock = mutexAutoLock()) {
 			if (this.executor == null) { return null; }
-			long actualMaxWait = maxWait;
-			TimeUnit actualTimeUnit = timeUnit;
-			if ((actualMaxWait <= 0) || (actualTimeUnit == null)) {
-				actualMaxWait = getDefaultMaxWait();
-				if (actualMaxWait <= 0) {
-					actualMaxWait = PooledWorkers.DEFAULT_MAX_WAIT;
-				}
-				actualTimeUnit = getDefaultMaxWaitUnit();
-				if (actualTimeUnit == null) {
-					actualMaxWait = PooledWorkers.DEFAULT_MAX_WAIT;
-					actualTimeUnit = PooledWorkers.DEFAULT_MAX_WAIT_UNIT;
-				}
+			Duration actualMaxWait = Tools.coalesce(maxWait, PooledWorkers.DEFAULT_MAX_WAIT);
+			if (actualMaxWait.isNegative() || actualMaxWait.isZero()) {
+				actualMaxWait = PooledWorkers.DEFAULT_MAX_WAIT;
 			}
 			try {
 				this.aborted.set(abort);
@@ -432,10 +417,10 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 				// minutes
 				int pending = this.activeCounter.get();
 				if (pending > 0) {
-					this.log.debug("Waiting for pending workers to terminate (maximum {} {}, {} pending workers)",
-						actualMaxWait, actualTimeUnit.name().toLowerCase(), pending);
+					this.log.debug("Waiting for pending workers to terminate (maximum {}, {} pending workers)",
+						actualMaxWait, pending);
 					try {
-						this.executor.awaitTermination(actualMaxWait, actualTimeUnit);
+						this.executor.awaitTermination(actualMaxWait.toMillis(), TimeUnit.MILLISECONDS);
 					} catch (InterruptedException e) {
 						this.log.warn("Interrupted while waiting for normal executor termination", e);
 						Thread.currentThread().interrupt();
@@ -465,59 +450,55 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 * Disables the submission of new work to this instance, while also waiting cleanly for all
 	 * currently executing work items to be processed. It returns a list containing all pending work
 	 * that was not attempted. The maximum amount of time to wait is determined by
-	 * {@link #getDefaultMaxWait()} and {@link #getDefaultMaxWaitUnit()}.
+	 * {@link #getDefaultMaxWait()}.
 	 * </p>
 	 */
 	public final List<ITEM> abortExecution() {
-		return abortExecution(0, null);
+		return abortExecution(null);
 	}
 
 	/**
 	 * <p>
 	 * Disables the submission of new work to this instance, while also waiting cleanly for all
 	 * currently executing work items to be processed. It returns a list containing all pending work
-	 * that was not attempted. If the {@code maxWait} parameter is less than or equal to 0, or if
-	 * the {@code timeUnit} parameter is {@code null}, the values from {@link #getDefaultMaxWait()}
-	 * and {@link #getDefaultMaxWaitUnit()} will be used. If neither of those meets those criteria,
-	 * then the values from {@link #DEFAULT_MAX_WAIT} and {@link #DEFAULT_MAX_WAIT_UNIT} are used.
+	 * that was not attempted. If the {@code maxWait} parameter is null, zero, or negative (per
+	 * {@link Duration#isZero()} and {@link Duration#isNegative()}), the value from
+	 * {@link #getDefaultMaxWait()} will be used.
 	 * </p>
 	 *
 	 * @param maxWait
-	 * @param timeUnit
 	 */
-	public final List<ITEM> abortExecution(long maxWait, TimeUnit timeUnit) {
-		return mutexLocked(() -> shutdown(true, maxWait, timeUnit));
+	public final List<ITEM> abortExecution(Duration maxWait) {
+		return mutexLocked(() -> shutdown(true, maxWait));
 	}
 
 	/**
 	 * <p>
 	 * Disables the submission of new work to this instance, while also waiting cleanly for all
 	 * pending work to conclude. The maximum amount of time to wait is determined by
-	 * {@link #getDefaultMaxWait()} and {@link #getDefaultMaxWaitUnit()}.
+	 * {@link #getDefaultMaxWait()}.
 	 * </p>
 	 *
 	 * @return a list of items pending processing. Will never be {@code null}, but may be empty
 	 */
 	public List<ITEM> waitForCompletion() {
-		return waitForCompletion(0, null);
+		return waitForCompletion(null);
 	}
 
 	/**
 	 * <p>
 	 * Disables the submission of new work to this instance, while also waiting cleanly for all
 	 * pending work to conclude. The maximum amount of time to wait is determined by the given
-	 * parameters. If the {@code maxWait} parameter is less than or equal to 0, or if the
-	 * {@code timeUnit} parameter is {@code null}, the values from {@link #getDefaultMaxWait()} and
-	 * {@link #getDefaultMaxWaitUnit()} will be used. If neither of those meets those criteria, then
-	 * the values from {@link #DEFAULT_MAX_WAIT} and {@link #DEFAULT_MAX_WAIT_UNIT} are used.
+	 * parameter. If the {@code maxWait} parameter is null, zero, or negative (per
+	 * {@link Duration#isZero()} and {@link Duration#isNegative()}), the value from
+	 * {@link #getDefaultMaxWait()} will be used.
 	 * </p>
 	 *
 	 * @param maxWait
-	 * @param timeUnit
 	 * @return a list of items pending processing. Will never be {@code null}, but may be empty
 	 */
-	public final List<ITEM> waitForCompletion(long maxWait, TimeUnit timeUnit) {
-		return mutexLocked(() -> shutdown(false, maxWait, timeUnit));
+	public final List<ITEM> waitForCompletion(Duration maxWait) {
+		return mutexLocked(() -> shutdown(false, maxWait));
 	}
 
 	/**

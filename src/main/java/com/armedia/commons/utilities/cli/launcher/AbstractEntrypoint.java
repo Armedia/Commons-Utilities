@@ -168,7 +168,9 @@ public abstract class AbstractEntrypoint {
 			result.getCommand(), result.getCommandValues(), result.getPositionals());
 		final Set<URL> classpathPatches = new LinkedHashSet<>();
 		for (LaunchClasspathHelper helper : classpathHelpers) {
-			final Collection<URL> extraPatches = helper.getClasspathPatches(result.getOptionValues());
+			final Collection<URL> extraPatches = helper.getClasspathPatches(
+				Tools.coalesce(result.getOptionValues(), OptionValues.EMPTY),
+				Tools.coalesce(result.getCommandValues(), OptionValues.EMPTY));
 			if ((extraPatches != null) && !extraPatches.isEmpty()) {
 				for (URL u : extraPatches) {
 					if (u != null) {

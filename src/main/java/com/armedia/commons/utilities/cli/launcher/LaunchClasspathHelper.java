@@ -33,6 +33,10 @@ import com.armedia.commons.utilities.cli.OptionValues;
 
 public interface LaunchClasspathHelper {
 
-	public Collection<URL> getClasspathPatches(OptionValues values);
+	public default Collection<URL> getClasspathPatches(OptionValues values) {
+		return getClasspathPatches(values, null);
+	}
+
+	public Collection<URL> getClasspathPatches(OptionValues baseValues, OptionValues commandValues);
 
 }
