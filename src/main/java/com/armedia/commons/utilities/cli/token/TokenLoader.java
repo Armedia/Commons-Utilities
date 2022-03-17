@@ -301,7 +301,7 @@ public class TokenLoader implements Iterable<Token> {
 	private final Map<String, List<String>> globalCache = new ConcurrentHashMap<>();
 
 	private static final String TERMINATOR_FMT = "%1$s%1$s";
-	private static final String SHORT_FMT = "^%1$s(\\S+)$";
+	private static final String SHORT_FMT = "^%1$s([^\\s-]+)$";
 	private static final String LONG_FMT = "^%1$s%1$s(\\S{2,})$";
 
 	public static final Character DEFAULT_VALUE_SEPARATOR = ',';
