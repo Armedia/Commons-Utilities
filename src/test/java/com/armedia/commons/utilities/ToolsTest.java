@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2022 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -743,6 +743,18 @@ public class ToolsTest {
 			hashB = Tools.hashTool(a, null, p, q, arr_obj[1]);
 			Assertions.assertNotEquals(hashA, hashB, String.format("Failed obj with prime = %d", p));
 		}
+
+		Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(Integer.MIN_VALUE, null), "MIN_VALUE");
+		Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(Integer.MIN_VALUE / 2, null), "MIN_VALUE / 2");
+		Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(-1, null), "-1");
+		for (int h = 0; h < Tools.PRIME_COUNT; h++) {
+			final int H = h;
+			Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(H, null), "Value = " + H);
+		}
+		Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(Tools.PRIME_COUNT, null), "PRIME_COUNT");
+		Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(Tools.PRIME_COUNT + 1, null), "PRIME_COUNT + 1");
+		Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(Integer.MAX_VALUE / 2, null), "MAX_VALUE / 2");
+		Assertions.assertDoesNotThrow(() -> Tools.hashToolImpl(Integer.MAX_VALUE, null), "MAX_VALUE");
 	}
 
 	@Test
