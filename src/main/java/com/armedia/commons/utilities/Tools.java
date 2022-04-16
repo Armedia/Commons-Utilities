@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2022 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -81,8 +81,8 @@ import com.armedia.commons.utilities.function.CheckedTools;
 public class Tools {
 
 	private static final Set<String> TRUE_VALUES;
-	private static final int PRIME_COUNT;
-	private static final int PRIME_HALF;
+	protected static final int PRIME_COUNT;
+	protected static final int PRIME_HALF;
 	private static final List<Integer> PRIMES;
 	static {
 		Set<String> s = new HashSet<>();
@@ -661,19 +661,31 @@ public class Tools {
 			throw new IllegalArgumentException(
 				"Must provide the base object for which the hashcode is being calculated");
 		}
-		int a = (base.getClass().hashCode() % Tools.PRIME_COUNT);
-		final int primeA = Tools.PRIMES.get(Math.abs(a));
-		final int primeB = Tools.PRIMES.get((a + Tools.PRIME_HALF) % Tools.PRIME_COUNT);
-		HashCodeBuilder b = new HashCodeBuilder(primeA, primeB);
+		final int baseHash;
+		if (Class.class.isInstance(base)) {
+			baseHash = base.hashCode();
+		} else {
+			baseHash = base.getClass().hashCode();
+		}
+		return Tools.hashToolImpl(baseHash, superHash, values);
+	}
+
+	protected static int hashToolImpl(int baseHash, Integer superHash, Object... values) {
+		int a = Math.floorMod(baseHash, Tools.PRIME_COUNT);
+		final int primeA = Tools.PRIMES.get(a);
+		int b = Math.floorMod((a + Tools.PRIME_HALF), Tools.PRIME_COUNT);
+		final int primeB = Tools.PRIMES.get(b);
+
+		HashCodeBuilder hb = new HashCodeBuilder(primeA, primeB);
 		if (superHash != null) {
-			b.appendSuper(superHash);
+			hb.appendSuper(superHash);
 		}
 		if (values != null) {
 			for (Object o : values) {
-				b.append(o);
+				hb.append(o);
 			}
 		}
-		return b.toHashCode();
+		return hb.toHashCode();
 	}
 
 	/**
@@ -1793,29 +1805,32 @@ public class Tools {
 	}
 
 	/**
-	 * Returns the highest value R for which: <code>((R % mod) == 0) && (R &lt;= num)</code>
+	 * Returns the highest value R for which:
+	 * <code>({@link Math#floorMod(int, int) Math.floorMod(R, mod)} == 0) && (R &lt;= num)</code>
 	 *
 	 * @param num
 	 * @param mod
 	 *
 	 */
 	public static int modulateDown(int num, int mod) {
-		return (num - (num % mod));
+		return (num - Math.floorMod(num, mod));
 	}
 
 	/**
-	 * Returns the highest value R for which: <code>((R % mod) == 0) && (R &lt;= num)</code>
+	 * Returns the highest value R for which:
+	 * <code>({@link Math#floorMod(int, int) Math.floorMod(R, mod)} == 0) && (R &lt;= num)</code>
 	 *
 	 * @param num
 	 * @param mod
 	 *
 	 */
 	public static long modulateDown(long num, long mod) {
-		return (num - (num % mod));
+		return (num - Math.floorMod(num, mod));
 	}
 
 	/**
-	 * Returns the lowest value R for which: <code>((R % mod) == 0) && (R &gt;= num)</code>
+	 * Returns the lowest value R for which:
+	 * <code>({@link Math#floorMod(int, int) Math.floorMod(R, mod)} == 0) && (R &gt;= num)</code>
 	 *
 	 * @param num
 	 * @param mod
@@ -1826,7 +1841,8 @@ public class Tools {
 	}
 
 	/**
-	 * Returns the lowest value R for which: <code>((R % mod) == 0) && (R &gt;= num)</code>
+	 * Returns the lowest value R for which:
+	 * <code>({@link Math#floorMod(int, int) Math.floorMod(R, mod)} == 0) && (R &gt;= num)</code>
 	 *
 	 * @param num
 	 * @param mod
