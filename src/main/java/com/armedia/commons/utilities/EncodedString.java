@@ -36,6 +36,17 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.armedia.commons.utilities.codec.CheckedCodec;
 
+/**
+ * <p>
+ * This is a simple wrapper around an encoded string (i.e. encrypted) such that the value can be
+ * passed around safely without compromising the contents - even in display - but also makes it easy
+ * to decode the value for actual consumption by client programs.
+ * </p>
+ *
+ * @author diego.rivera@armedia.com
+ * @since 1.3.7
+ *
+ */
 public final class EncodedString {
 
 	private final byte[] data;
