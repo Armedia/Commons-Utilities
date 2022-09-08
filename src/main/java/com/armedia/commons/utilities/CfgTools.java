@@ -1857,15 +1857,15 @@ public class CfgTools implements Serializable {
 		this.settings = settings;
 	}
 
-	public <T> T decode(String setting, Function<Object, T> decoder, T defaultValue) {
+	public <T> T get(String setting, Function<Object, T> decoder, T defaultValue) {
 		return CfgTools.decodeWith(setting, decoder, this.settings, defaultValue);
 	}
 
-	public <T> T decode(String setting, Function<Object, T> decoder) {
+	public <T> T get(String setting, Function<Object, T> decoder) {
 		return CfgTools.decodeWith(setting, decoder, this.settings);
 	}
 
-	public <T> T decode(ConfigurationSetting setting, Function<Object, T> decoder) {
+	public <T> T get(ConfigurationSetting setting, Function<Object, T> decoder) {
 		return CfgTools.decodeWith(setting, decoder, this.settings);
 	}
 
@@ -1893,15 +1893,15 @@ public class CfgTools implements Serializable {
 		return CfgTools.decodeObject(setting, this.settings);
 	}
 
-	public <T> List<T> decodeAll(String setting, Function<Object, T> decoder, List<T> defaultValue) {
+	public <T> List<T> getAll(String setting, Function<Object, T> decoder, List<T> defaultValue) {
 		return CfgTools.decodeAllWith(setting, decoder, this.settings, defaultValue);
 	}
 
-	public <T> List<T> decodeAll(String setting, Function<Object, T> decoder) {
+	public <T> List<T> getAll(String setting, Function<Object, T> decoder) {
 		return CfgTools.decodeAllWith(setting, decoder, this.settings);
 	}
 
-	public <T> List<T> decodeAll(ConfigurationSetting setting, Function<Object, T> decoder) {
+	public <T> List<T> getAll(ConfigurationSetting setting, Function<Object, T> decoder) {
 		return CfgTools.decodeAllWith(setting, decoder, this.settings);
 	}
 
