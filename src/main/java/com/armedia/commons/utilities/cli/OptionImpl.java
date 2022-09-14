@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.armedia.commons.utilities.Tools;
@@ -47,6 +48,7 @@ public final class OptionImpl extends Option {
 	private Character valueSep = null;
 	private OptionValueFilter valueFilter = null;
 	private final List<String> defaults = new ArrayList<>();
+	private Function<String, String> valueProcessor = Option.IDENTITY;
 
 	private String key = null;
 
@@ -237,6 +239,16 @@ public final class OptionImpl extends Option {
 
 	public OptionImpl setValueFilter(OptionValueFilter valueFilter) {
 		this.valueFilter = valueFilter;
+		return this;
+	}
+
+	@Override
+	public Function<String, String> getValueProcessor() {
+		return this.valueProcessor;
+	}
+
+	public OptionImpl setValueProcessor(Function<String, String> valueProcessor) {
+		this.valueProcessor = Tools.coalesce(valueProcessor, Option.IDENTITY);
 		return this;
 	}
 

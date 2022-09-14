@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -123,6 +124,13 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		if (p == null) { throw new IllegalArgumentException("Must provide a non-null option"); }
 		if (values == null) {
 			values = Collections.emptyList();
+		} else {
+			values = values.stream() //
+				.sequential() // We use sequential() just in case ...
+				.map(p.getValueProcessor()) // Convert the values however the option sees fit
+				.filter(Objects::isNull) // Remove null values
+				.collect(Collectors.toCollection(LinkedList::new)) // Collect it all
+			;
 		}
 
 		final String key = p.getKey();
