@@ -41,6 +41,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -55,10 +56,40 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	private final Map<String, OptionValue> longOptions = new TreeMap<>();
 	private final Map<String, OptionValue> optionValues = new TreeMap<>();
 
-	private final Map<String, List<Collection<String>>> occurrences = new TreeMap<>();
-	private final Map<String, List<String>> values = new HashMap<>();
+	private final Map<String, List<Collection<Object>>> occurrences = new TreeMap<>();
+	private final Map<String, List<Object>> values = new HashMap<>();
 
 	public static final OptionValues EMPTY = new OptionValues();
+
+	private static final <T extends Number> T mapWithParser(Object obj, Class<T> klazz, Function<String, T> parser) {
+		if (obj == null) { return null; }
+		if (klazz.isInstance(obj)) { return klazz.cast(obj); }
+		return parser.apply(obj.toString());
+	}
+
+	private static final Function<Object, Integer> MAP_INTEGER = (o) -> {
+		return OptionValues.mapWithParser(o, Integer.class, Integer::valueOf);
+	};
+
+	private static final Function<Object, Long> MAP_LONG = (o) -> {
+		return OptionValues.mapWithParser(o, Long.class, Long::valueOf);
+	};
+
+	private static final Function<Object, Float> MAP_FLOAT = (o) -> {
+		return OptionValues.mapWithParser(o, Float.class, Float::valueOf);
+	};
+
+	private static final Function<Object, Double> MAP_DOUBLE = (o) -> {
+		return OptionValues.mapWithParser(o, Double.class, Double::valueOf);
+	};
+
+	private static final Function<Object, BigInteger> MAP_BIG_INTEGER = (o) -> {
+		return OptionValues.mapWithParser(o, BigInteger.class, BigInteger::new);
+	};
+
+	private static final Function<Object, BigDecimal> MAP_BIG_DECIMAL = (o) -> {
+		return OptionValues.mapWithParser(o, BigDecimal.class, BigDecimal::new);
+	};
 
 	OptionValues() {
 		// Do nothing...
@@ -85,8 +116,8 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 
 		// Copy the occurrences
 		for (String s : this.occurrences.keySet()) {
-			List<Collection<String>> l = new LinkedList<>();
-			for (Collection<String> c : this.occurrences.get(s)) {
+			List<Collection<Object>> l = new LinkedList<>();
+			for (Collection<Object> c : this.occurrences.get(s)) {
 				c = Tools.freezeCollection(new LinkedList<>(c), true);
 				l.add(c);
 			}
@@ -126,7 +157,6 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 			values = Collections.emptyList();
 		} else {
 			values = values.stream() //
-				.sequential() // We use sequential() just in case ...
 				.map(p.getValueProcessor()) // Convert the values however the option sees fit
 				.filter(Objects::nonNull) // Remove null values
 				.collect(Collectors.toCollection(LinkedList::new)) // Collect it all
@@ -149,14 +179,14 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 			}
 		}
 
-		List<Collection<String>> occurrences = this.occurrences.get(key);
+		List<Collection<Object>> occurrences = this.occurrences.get(key);
 		if (occurrences == null) {
 			occurrences = new LinkedList<>();
 			this.occurrences.put(key, occurrences);
 		}
 		occurrences.add(Tools.freezeCollection(new LinkedList<>(values), true));
 
-		List<String> l = this.values.get(key);
+		List<Object> l = this.values.get(key);
 		if (l == null) {
 			l = new LinkedList<>();
 			this.values.put(key, l);
@@ -207,137 +237,178 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		return this.optionValues.get(key);
 	}
 
+	public Object get(Option param) {
+		Object o = get(param, null);
+		if (o == null) {
+			o = param.getDefault();
+		}
+		return o;
+	}
+
+	public Object get(Option param, Object def) {
+		List<Object> l = getAll(param);
+		if ((l == null) || l.isEmpty()) { return def; }
+		return l.get(0);
+	}
+
+	public List<Object> getAll(Option param) {
+		return getAll(param, null);
+	}
+
+	public List<Object> getAll(Option param, List<Object> def) {
+		return Tools.coalesce(this.values.get(getValidKey(param)), def);
+	}
+
+	public <T> T getMapped(Option param, Function<Object, T> mapper) {
+		return getMapped(param, mapper, null);
+	}
+
+	public <T> T getMapped(Option param, Function<Object, T> mapper, T def) {
+		Objects.requireNonNull(mapper, "Must provide a mapping function");
+		Object o = get(param);
+		if (o == null) { return def; }
+		return mapper.apply(o);
+	}
+
+	public <T> List<T> getAllMapped(Option param, Function<Object, T> mapper) {
+		return getAllMapped(param, mapper, null);
+	}
+
+	public <T> List<T> getAllMapped(Option param, Function<Object, T> mapper, List<T> def) {
+		Objects.requireNonNull(mapper, "Must provide a mapping function");
+		List<Object> l = getAll(param);
+		if (l == null) { return def; }
+		List<T> r = new ArrayList<>(l.size());
+		l.forEach((v) -> r.add(mapper.apply(v)));
+		return r;
+	}
+
+	public <T> T getAs(Option param, Class<T> klazz) {
+		return getAs(param, klazz, null);
+	}
+
+	public <T> T getAs(Option param, Class<T> klazz, T def) {
+		return getMapped(param, Objects.requireNonNull(klazz, "Must provide a class to cast to")::cast, def);
+	}
+
+	public <T> List<T> getAllAs(Option param, Class<T> klazz) {
+		return getAllAs(param, klazz, null);
+	}
+
+	public <T> List<T> getAllAs(Option param, Class<T> klazz, List<T> def) {
+		return getAllMapped(param, Objects.requireNonNull(klazz, "Must provide a class to cast to")::cast, def);
+	}
+
 	public Boolean getBoolean(Option param) {
-		String s = getString(param);
-		return (s != null ? Tools.toBoolean(s) : null);
+		return getBoolean(param, null);
 	}
 
 	public Boolean getBoolean(Option param, Boolean def) {
-		Boolean v = getBoolean(param);
-		return (v != null ? v.booleanValue() : def);
+		return getMapped(param, Tools::toBoolean, def);
 	}
 
 	public List<Boolean> getBooleans(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Boolean> r = new ArrayList<>(l.size());
-		l.stream().map(Tools::toBoolean).forEach(r::add);
-		return Tools.freezeList(r);
+		return getBooleans(param, null);
+	}
+
+	public List<Boolean> getBooleans(Option param, List<Boolean> def) {
+		return getAllMapped(param, Tools::toBoolean, def);
 	}
 
 	public Integer getInteger(Option param) {
-		String s = getString(param);
-		return (s != null ? Integer.valueOf(s) : null);
+		return getInteger(param, null);
 	}
 
 	public Integer getInteger(Option param, Integer def) {
-		Integer v = getInteger(param);
-		return (v != null ? v.intValue() : def);
+		return getMapped(param, OptionValues.MAP_INTEGER, def);
 	}
 
 	public List<Integer> getIntegers(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Integer> r = new ArrayList<>(l.size());
-		l.stream().map(Integer::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
+		return getIntegers(param, null);
+	}
+
+	public List<Integer> getIntegers(Option param, List<Integer> def) {
+		return getAllMapped(param, OptionValues.MAP_INTEGER, def);
 	}
 
 	public Long getLong(Option param) {
-		String s = getString(param);
-		return (s != null ? Long.valueOf(s) : null);
+		return getLong(param, null);
 	}
 
 	public Long getLong(Option param, Long def) {
-		Long v = getLong(param);
-		return (v != null ? v.longValue() : def);
+		return getMapped(param, OptionValues.MAP_LONG, def);
 	}
 
 	public List<Long> getLongs(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Long> r = new ArrayList<>(l.size());
-		l.stream().map(Long::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
+		return getLongs(param, null);
+	}
+
+	public List<Long> getLongs(Option param, List<Long> def) {
+		return getAllMapped(param, OptionValues.MAP_LONG, def);
 	}
 
 	public Float getFloat(Option param) {
-		String s = getString(param);
-		return (s != null ? Float.valueOf(s) : null);
+		return getFloat(param, null);
 	}
 
 	public Float getFloat(Option param, Float def) {
-		Float v = getFloat(param);
-		return (v != null ? v.floatValue() : def);
+		return getMapped(param, OptionValues.MAP_FLOAT, def);
 	}
 
 	public List<Float> getFloats(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Float> r = new ArrayList<>(l.size());
-		l.stream().map(Float::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
+		return getFloats(param, null);
+	}
+
+	public List<Float> getFloats(Option param, List<Float> def) {
+		return getAllMapped(param, OptionValues.MAP_FLOAT, def);
 	}
 
 	public Double getDouble(Option param) {
-		String s = getString(param);
-		return (s != null ? Double.valueOf(s) : null);
+		return getDouble(param, null);
 	}
 
 	public Double getDouble(Option param, Double def) {
-		Double v = getDouble(param);
-		return (v != null ? v.doubleValue() : def);
+		return getMapped(param, OptionValues.MAP_DOUBLE, def);
 	}
 
 	public List<Double> getDoubles(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Double> r = new ArrayList<>(l.size());
-		l.stream().map(Double::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
+		return getDoubles(param, null);
+	}
+
+	public List<Double> getDoubles(Option param, List<Double> def) {
+		return getAllMapped(param, OptionValues.MAP_DOUBLE, def);
 	}
 
 	public BigInteger getBigInteger(Option param) {
-		String s = getString(param);
-		return (s != null ? new BigInteger(s) : null);
+		return getBigInteger(param, null);
 	}
 
 	public BigInteger getBigInteger(Option param, BigInteger def) {
-		BigInteger v = getBigInteger(param);
-		return (v != null ? v : def);
+		return getMapped(param, OptionValues.MAP_BIG_INTEGER, def);
 	}
 
 	public List<BigInteger> getBigIntegers(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<BigInteger> r = new ArrayList<>(l.size());
-		l.stream().map(BigInteger::new).forEach(r::add);
-		return Tools.freezeList(r);
+		return getBigIntegers(param, null);
+	}
+
+	public List<BigInteger> getBigIntegers(Option param, List<BigInteger> def) {
+		return getAllMapped(param, OptionValues.MAP_BIG_INTEGER, def);
 	}
 
 	public BigDecimal getBigDecimal(Option param) {
-		String s = getString(param);
-		return (s != null ? new BigDecimal(s) : null);
+		return getBigDecimal(param, null);
 	}
 
 	public BigDecimal getBigDecimal(Option param, BigDecimal def) {
-		BigDecimal v = getBigDecimal(param);
-		return (v != null ? v : def);
+		return getMapped(param, OptionValues.MAP_BIG_DECIMAL, def);
 	}
 
 	public List<BigDecimal> getBigDecimals(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<BigDecimal> r = new ArrayList<>(l.size());
-		l.stream().map(BigDecimal::new).forEach(r::add);
-		return Tools.freezeList(r);
+		return getBigDecimals(param, null);
+	}
+
+	public List<BigDecimal> getBigDecimals(Option param, List<BigDecimal> def) {
+		return getAllMapped(param, OptionValues.MAP_BIG_DECIMAL, null);
 	}
 
 	public String getString(Option param) {
@@ -359,9 +430,11 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	}
 
 	public List<String> getStrings(Option param, List<String> def) {
-		List<String> v = this.values.get(getValidKey(param));
+		List<Object> v = this.values.get(getValidKey(param));
 		if (v == null) { return def; }
-		return v;
+		List<String> l = new ArrayList<>(v.size());
+		v.forEach((o) -> l.add(Tools.toString(o)));
+		return l;
 	}
 
 	public <E extends Enum<E>> E getEnum(Class<E> enumClass, Option param) {
@@ -518,26 +591,21 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	}
 
 	public int getOccurrences(Option param) {
-		List<Collection<String>> occurrences = this.occurrences.get(getValidKey(param));
+		List<Collection<Object>> occurrences = this.occurrences.get(getValidKey(param));
 		if (occurrences == null) { return 0; }
 		return occurrences.size();
 	}
 
-	public Collection<String> getOccurrenceValues(Option param, int o) {
-		List<Collection<String>> occurrences = this.occurrences.get(getValidKey(param));
+	public Collection<Object> getOccurrenceValues(Option param, int o) {
+		List<Collection<Object>> occurrences = this.occurrences.get(getValidKey(param));
 		if (occurrences == null) { return null; }
 		if ((o < 0) || (o >= occurrences.size())) { throw new IndexOutOfBoundsException(); }
 		return occurrences.get(o);
 	}
 
 	public int getValueCount(Option param) {
-		List<Collection<String>> occurrences = this.occurrences.get(getValidKey(param));
-		if (occurrences == null) { return 0; }
-		int v = 0;
-		for (Collection<String> c : occurrences) {
-			v += c.size();
-		}
-		return v;
+		List<?> values = this.values.get(getValidKey(param));
+		return (values != null ? values.size() : 0);
 	}
 
 	public boolean hasValues(Option param) {
@@ -706,7 +774,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		return getOccurrences(Option.unwrap(param));
 	}
 
-	public Collection<String> getOccurrenceValues(Supplier<Option> param, int occurrence) {
+	public Collection<Object> getOccurrenceValues(Supplier<Option> param, int occurrence) {
 		return getOccurrenceValues(Option.unwrap(param), occurrence);
 	}
 
