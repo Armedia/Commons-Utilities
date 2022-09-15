@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2022 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,12 +31,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public abstract class Option implements PositionalValueSupport, Cloneable {
 
 	public static final Pattern VALID_LONG = Pattern.compile("^[$\\w][-$\\w]*$");
+
+	protected static final Function<String, String> IDENTITY = Function.identity();
 
 	/**
 	 * Allow letters, digits, '$' and '?' as short options
@@ -60,6 +63,8 @@ public abstract class Option implements PositionalValueSupport, Cloneable {
 	public abstract Character getValueSep();
 
 	public abstract OptionValueFilter getValueFilter();
+
+	public abstract Function<String, String> getValueProcessor();
 
 	public abstract boolean isValueAllowed(String value);
 

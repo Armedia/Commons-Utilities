@@ -30,14 +30,13 @@ import java.io.PrintStream;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.slf4j.Logger;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
 
 import com.armedia.commons.utilities.Tools;
 
-public class BasicLogger extends MarkerIgnoringBase implements Logger {
+public class BasicLogger extends MarkerIgnoringBase {
 	private static final long serialVersionUID = 1L;
 
 	public static enum Level {

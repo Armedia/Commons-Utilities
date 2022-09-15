@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2022 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -84,8 +85,6 @@ public class CfgTools implements Serializable {
 			return converter.apply(this.setting.getDefaultValue());
 		}
 	}
-
-	private static final Function<Object, Object> CONV_Object = Function.identity();
 
 	private static final class CONV_Enum<E extends Enum<E>> implements Function<Object, E> {
 
@@ -280,6 +279,38 @@ public class CfgTools implements Serializable {
 	}
 
 	/**
+	 * Decode the named setting from the given map as an instance of the given {@link Class},
+	 * returning the value stored (may be {@code null}), or {@code null} if it's not an instance of
+	 * the class. This is equivalent to calling {@link #decodeObject(String, Map, Object)
+	 * decodeAs(label, klazz, settings, null)}
+	 *
+	 * @param label
+	 * @param decoder
+	 * @param settings
+	 * @return the named setting from the given map as an instance of {@code klazz}
+	 */
+	public static <T> T decodeWith(String label, Function<Object, T> decoder, Map<String, ?> settings, T defaultValue) {
+		Objects.requireNonNull(decoder, "Must provide a decoder to convert the object");
+		return CfgTools.getValue(label, settings, (c) -> defaultValue, decoder);
+	}
+
+	/**
+	 * Decode the named setting from the given map as an instance of the given {@link Class},
+	 * returning the value stored (may be {@code null}), or {@code null} if it's not an instance of
+	 * the class. This is equivalent to calling {@link #decodeObject(String, Map, Object)
+	 * decodeAs(label, klazz, settings, null)}
+	 *
+	 * @param label
+	 * @param klazz
+	 * @param settings
+	 * @return the named setting from the given map as an instance of {@code klazz}
+	 */
+	public static <T> T decodeAs(String label, Class<T> klazz, Map<String, ?> settings, T defaultValue) {
+		Objects.requireNonNull(klazz, "Must provide a class to cast the value into");
+		return CfgTools.decodeWith(label, klazz::cast, settings, defaultValue);
+	}
+
+	/**
 	 * Decode the named setting from the given map as a {@link Object} value, returning the value
 	 * stored (may be {@code null}), or {@code defaultValue} if it's not defined.
 	 *
@@ -289,7 +320,38 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static Object decodeObject(String label, Map<String, ?> settings, Object defaultValue) {
-		return CfgTools.getValue(label, settings, (c) -> defaultValue, CfgTools.CONV_Object);
+		return CfgTools.decodeAs(label, Object.class, settings, defaultValue);
+	}
+
+	/**
+	 * Decode the named setting from the given map as an instance of the given {@link Class},
+	 * returning the value stored (may be {@code null}), or {@code null} if it's not an instance of
+	 * the class. This is equivalent to calling {@link #decodeObject(String, Map, Object)
+	 * decodeAs(label, klazz, settings, null)}
+	 *
+	 * @param label
+	 * @param decoder
+	 * @param settings
+	 * @return the named setting from the given map as an instance of {@code klazz}
+	 */
+	public static <T> T decodeWith(String label, Function<Object, T> decoder, Map<String, ?> settings) {
+		return CfgTools.decodeWith(label, decoder, settings, null);
+	}
+
+	/**
+	 * Decode the named setting from the given map as an instance of the given {@link Class},
+	 * returning the value stored (may be {@code null}), or {@code null} if it's not an instance of
+	 * the class. This is equivalent to calling {@link #decodeObject(String, Map, Object)
+	 * decodeAs(label, klazz, settings, null)}
+	 *
+	 * @param label
+	 * @param klazz
+	 * @param settings
+	 * @return the named setting from the given map as an instance of {@code klazz}
+	 */
+	public static <T> T decodeAs(String label, Class<T> klazz, Map<String, ?> settings) {
+		Objects.requireNonNull(klazz, "Must provide a class to cast the value into");
+		return CfgTools.decodeWith(label, klazz::cast, settings);
 	}
 
 	/**
@@ -302,7 +364,39 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static Object decodeObject(String label, Map<String, ?> settings) {
-		return CfgTools.decodeObject(label, settings, null);
+		return CfgTools.decodeAs(label, Object.class, settings);
+	}
+
+	/**
+	 * Decode the named setting from the given map as an instance of the given {@link Class},
+	 * returning the value stored (may be {@code null}), or {@code null} if it's not an instance of
+	 * the class. This is equivalent to calling {@link #decodeObject(String, Map, Object)
+	 * decodeAs(label, klazz, settings, null)}
+	 *
+	 * @param setting
+	 * @param decoder
+	 * @param settings
+	 * @return the named setting from the given map as an instance of {@code klazz}
+	 */
+	public static <T> T decodeWith(ConfigurationSetting setting, Function<Object, T> decoder, Map<String, ?> settings) {
+		CfgTools.validateSetting(setting);
+		return CfgTools.getValue(setting.getLabel(), settings, new SettingDefault<>(setting), decoder);
+	}
+
+	/**
+	 * Decode the named setting from the given map as an instance of the given {@link Class},
+	 * returning the value stored (may be {@code null}), or {@code null} if it's not an instance of
+	 * the class. This is equivalent to calling {@link #decodeObject(String, Map, Object)
+	 * decodeAs(label, klazz, settings, null)}
+	 *
+	 * @param setting
+	 * @param klazz
+	 * @param settings
+	 * @return the named setting from the given map as an instance of {@code klazz}
+	 */
+	public static <T> T decodeAs(ConfigurationSetting setting, Class<T> klazz, Map<String, ?> settings) {
+		Objects.requireNonNull(klazz, "Must provide a class to cast the value into");
+		return CfgTools.decodeWith(setting, klazz::cast, settings);
 	}
 
 	/**
@@ -317,8 +411,39 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static Object decodeObject(ConfigurationSetting setting, Map<String, ?> settings) {
-		CfgTools.validateSetting(setting);
-		return CfgTools.getValue(setting.getLabel(), settings, new SettingDefault<>(setting), CfgTools.CONV_Object);
+		return CfgTools.decodeAs(setting, Object.class, settings);
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of instances of {@link Class}
+	 * {@code klazz}, returning the List stored (may be {@code null}), or {@code defaultValue} if
+	 * it's not defined.
+	 *
+	 * @param label
+	 * @param decoder
+	 * @param settings
+	 * @param defaultValue
+	 * @return the named setting from the given map as an {@link Object} value
+	 */
+	public static <T> List<T> decodeAllWith(String label, Function<Object, T> decoder, Map<String, ?> settings,
+		List<T> defaultValue) {
+		Objects.requireNonNull(decoder, "Must provide a function to decode the list elements with");
+		return CfgTools.getValues(label, settings, (c) -> defaultValue, decoder);
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of instances of {@link Class}
+	 * {@code klazz}, returning the List stored (may be {@code null}), or {@code defaultValue} if
+	 * it's not defined.
+	 *
+	 * @param label
+	 * @param settings
+	 * @param defaultValue
+	 * @return the named setting from the given map as an {@link Object} value
+	 */
+	public static <T> List<T> decodeAllAs(String label, Class<T> klazz, Map<String, ?> settings, List<T> defaultValue) {
+		Objects.requireNonNull(klazz, "Must provide a class to cast the list elements into");
+		return CfgTools.decodeAllWith(label, klazz::cast, settings, defaultValue);
 	}
 
 	/**
@@ -331,7 +456,38 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as an {@link Object} value
 	 */
 	public static List<Object> decodeObjects(String label, Map<String, ?> settings, List<Object> defaultValue) {
-		return CfgTools.getValues(label, settings, (c) -> defaultValue, CfgTools.CONV_Object);
+		return CfgTools.decodeAllAs(label, Object.class, settings, defaultValue);
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of @link Object} values,
+	 * returning the list stored (may be {@code null}), or {@code null} if it's not defined. This is
+	 * equivalent to calling {@link #decodeObjects(String, Map, List) decodeObjects(label, settings,
+	 * null)}
+	 *
+	 * @param label
+	 * @param decoder
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Object} value
+	 */
+	public static <T> List<T> decodeAllWith(String label, Function<Object, T> decoder, Map<String, ?> settings) {
+		return CfgTools.decodeAllWith(label, decoder, settings, null);
+	}
+
+	/**
+	 * Decode the named setting from the given map as a {@link List} of @link Object} values,
+	 * returning the list stored (may be {@code null}), or {@code null} if it's not defined. This is
+	 * equivalent to calling {@link #decodeObjects(String, Map, List) decodeObjects(label, settings,
+	 * null)}
+	 *
+	 * @param label
+	 * @param klazz
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Object} value
+	 */
+	public static <T> List<T> decodeAllAs(String label, Class<T> klazz, Map<String, ?> settings) {
+		Objects.requireNonNull(klazz, "Must provide a class to cast the list elements into");
+		return CfgTools.decodeAllWith(label, klazz::cast, settings);
 	}
 
 	/**
@@ -345,7 +501,44 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Object} value
 	 */
 	public static List<Object> decodeObjects(String label, Map<String, ?> settings) {
-		return CfgTools.decodeObjects(label, settings, null);
+		return CfgTools.decodeAllAs(label, Object.class, settings);
+	}
+
+	/**
+	 * Decode the given setting from the given map as a {@link List} of {@link Object} values,
+	 * returning the list stored (may be {@code null}), or the setting's
+	 * {@link ConfigurationSetting#getDefaultValue() default value} (converted to a
+	 * List&lt;Object&gt;) if it's not defined. This is equivalent to calling
+	 * {@link #decodeObjects(String, Map, List) decodeObjects(setting.getLabel(), settings,
+	 * setting.getDefaultValue())}.
+	 *
+	 * @param setting
+	 * @param decoder
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Object} value
+	 */
+	public static <T> List<T> decodeAllWith(ConfigurationSetting setting, Function<Object, T> decoder,
+		Map<String, ?> settings) {
+		Objects.requireNonNull(decoder, "Must provide a function to decode the list elements with");
+		CfgTools.validateSetting(setting);
+		return CfgTools.getValues(setting.getLabel(), settings, new SettingDefault<>(setting), decoder);
+	}
+
+	/**
+	 * Decode the given setting from the given map as a {@link List} of {@link Object} values,
+	 * returning the list stored (may be {@code null}), or the setting's
+	 * {@link ConfigurationSetting#getDefaultValue() default value} (converted to a
+	 * List&lt;Object&gt;) if it's not defined. This is equivalent to calling
+	 * {@link #decodeObjects(String, Map, List) decodeObjects(setting.getLabel(), settings,
+	 * setting.getDefaultValue())}.
+	 *
+	 * @param setting
+	 * @param settings
+	 * @return the named setting from the given map as a {@link Object} value
+	 */
+	public static <T> List<T> decodeAllAs(ConfigurationSetting setting, Class<T> klazz, Map<String, ?> settings) {
+		Objects.requireNonNull(klazz, "Must provide a class to cast the list elements into");
+		return CfgTools.decodeAllWith(setting, klazz::cast, settings);
 	}
 
 	/**
@@ -361,8 +554,7 @@ public class CfgTools implements Serializable {
 	 * @return the named setting from the given map as a {@link Object} value
 	 */
 	public static List<Object> decodeObjects(ConfigurationSetting setting, Map<String, ?> settings) {
-		CfgTools.validateSetting(setting);
-		return CfgTools.getValues(setting.getLabel(), settings, new SettingDefault<>(setting), CfgTools.CONV_Object);
+		return CfgTools.decodeAllAs(setting, Object.class, settings);
 	}
 
 	/**
@@ -1665,6 +1857,30 @@ public class CfgTools implements Serializable {
 		this.settings = settings;
 	}
 
+	public <T> T get(String setting, Function<Object, T> decoder, T defaultValue) {
+		return CfgTools.decodeWith(setting, decoder, this.settings, defaultValue);
+	}
+
+	public <T> T get(String setting, Function<Object, T> decoder) {
+		return CfgTools.decodeWith(setting, decoder, this.settings);
+	}
+
+	public <T> T get(ConfigurationSetting setting, Function<Object, T> decoder) {
+		return CfgTools.decodeWith(setting, decoder, this.settings);
+	}
+
+	public <T> T getAs(String setting, Class<T> klazz, T defaultValue) {
+		return CfgTools.decodeAs(setting, klazz, this.settings, defaultValue);
+	}
+
+	public <T> T getAs(String setting, Class<T> klazz) {
+		return CfgTools.decodeAs(setting, klazz, this.settings);
+	}
+
+	public <T> T getAs(ConfigurationSetting setting, Class<T> klazz) {
+		return CfgTools.decodeAs(setting, klazz, this.settings);
+	}
+
 	public Object getObject(String setting, Object defaultValue) {
 		return CfgTools.decodeObject(setting, this.settings, defaultValue);
 	}
@@ -1675,6 +1891,30 @@ public class CfgTools implements Serializable {
 
 	public Object getObject(ConfigurationSetting setting) {
 		return CfgTools.decodeObject(setting, this.settings);
+	}
+
+	public <T> List<T> getAll(String setting, Function<Object, T> decoder, List<T> defaultValue) {
+		return CfgTools.decodeAllWith(setting, decoder, this.settings, defaultValue);
+	}
+
+	public <T> List<T> getAll(String setting, Function<Object, T> decoder) {
+		return CfgTools.decodeAllWith(setting, decoder, this.settings);
+	}
+
+	public <T> List<T> getAll(ConfigurationSetting setting, Function<Object, T> decoder) {
+		return CfgTools.decodeAllWith(setting, decoder, this.settings);
+	}
+
+	public <T> List<T> getAllAs(String setting, Class<T> klazz, List<T> defaultValue) {
+		return CfgTools.decodeAllAs(setting, klazz, this.settings, defaultValue);
+	}
+
+	public <T> List<T> getAllAs(String setting, Class<T> klazz) {
+		return CfgTools.decodeAllAs(setting, klazz, this.settings);
+	}
+
+	public <T> List<T> getAllAs(ConfigurationSetting setting, Class<T> klazz) {
+		return CfgTools.decodeAllAs(setting, klazz, this.settings);
 	}
 
 	public List<Object> getObjects(String setting, List<Object> defaultValue) {
