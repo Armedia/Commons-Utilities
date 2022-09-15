@@ -128,7 +128,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 			values = values.stream() //
 				.sequential() // We use sequential() just in case ...
 				.map(p.getValueProcessor()) // Convert the values however the option sees fit
-				.filter(Objects::isNull) // Remove null values
+				.filter(Objects::nonNull) // Remove null values
 				.collect(Collectors.toCollection(LinkedList::new)) // Collect it all
 			;
 		}
