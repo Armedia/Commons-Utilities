@@ -56,10 +56,14 @@ public final class EncodedString {
 
 	private final String string;
 
-	private EncodedString(Optional<CharSequence> string, CheckedCodec<CharSequence, byte[], ? extends Exception> cipher)
-		throws Exception {
+	private EncodedString(Optional<CharSequence> string, CheckedCodec<CharSequence, byte[], ? extends Exception> cipher,
+		boolean encrypted) throws Exception {
 		CharSequence str = string.orElse(StringUtils.EMPTY);
-		this.data = cipher.encode(str);
+		if (encrypted) {
+			this.data = Base64.getDecoder().decode(str.toString());
+		} else {
+			this.data = cipher.encode(str);
+		}
 		this.cipher = cipher;
 		this.hashCode = Tools.hashTool(this, null, str);
 		this.hash = DigestUtils.sha256(str.toString());
@@ -104,6 +108,22 @@ public final class EncodedString {
 	public static EncodedString from(CharSequence value, CheckedCodec<CharSequence, byte[], ? extends Exception> cipher)
 		throws Exception {
 		return new EncodedString(Optional.ofNullable(value),
-			Objects.requireNonNull(cipher, "Must provide a non-null cipher"));
+			Objects.requireNonNull(cipher, "Must provide a non-null cipher"), false);
+	}
+
+	public static EncodedString fromEncoded(char[] value,
+		CheckedCodec<CharSequence, byte[], ? extends Exception> cipher) throws Exception {
+		Objects.requireNonNull(cipher, "Must provide a non-null cipher");
+		CharSequence seq = null;
+		if ((value != null) && (value.length > 0)) {
+			seq = new String(value);
+		}
+		return EncodedString.fromEncoded(seq, cipher);
+	}
+
+	public static EncodedString fromEncoded(CharSequence value,
+		CheckedCodec<CharSequence, byte[], ? extends Exception> cipher) throws Exception {
+		return new EncodedString(Optional.ofNullable(value),
+			Objects.requireNonNull(cipher, "Must provide a non-null cipher"), true);
 	}
 }
