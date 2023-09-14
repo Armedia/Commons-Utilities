@@ -2594,6 +2594,8 @@ public class Tools {
 						} else if (quote == c) {
 							quote = NUL;
 							quotePos = -1;
+						} else {
+							buf.append(c);
 						}
 						break;
 
