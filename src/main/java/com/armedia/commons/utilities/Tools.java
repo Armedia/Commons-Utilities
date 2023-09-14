@@ -52,6 +52,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -2529,5 +2530,127 @@ public class Tools {
 				from.remove();
 			}
 		};
+	}
+
+	public static Collection<CharSequence> splitWithQuotes(String str) {
+		if (str == null) { return new LinkedList<>(); }
+
+		final char NUL = '\0';
+		boolean escaped = false;
+		char quote = NUL;
+		int quotePos = -1;
+
+		StringBuilder buf = new StringBuilder();
+		List<CharSequence> results = new LinkedList<>();
+
+		// Remove leading and trailing spaces
+		str = str.trim();
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+
+			// Handle whitespace
+			if (Character.isWhitespace(c)) {
+				if (quote != NUL) {
+					// If we're capturing (i.e. quoted), we simply append the space to the buffer
+					buf.append(c);
+				} else if (escaped) {
+					// If the whitespace is escaped, append it to the buffer
+					escaped = false;
+					buf.append(c);
+				} else {
+					// This is unescaped and unquoted whitespace, so it stops the capture
+					String s = buf.toString();
+					results.add(s);
+					buf.setLength(0);
+				}
+			} else {
+				switch (c) {
+					// Handle the backslash
+					case '\\':
+						// It's an escape character, handle it
+						if (escaped) {
+							buf.append('\\');
+							escaped = false;
+						} else {
+							escaped = true;
+						}
+						break;
+
+					// Handle quotes
+					case '"':
+					case '\'':
+						if (escaped) {
+							// If this quote is escaped, it will be added to the buffer regardless
+							if (c == quote) {
+								// If it's not the same quote we're wrapped around, then we
+								// pre-pend a backslash
+								buf.append('\\');
+							}
+							buf.append(c);
+							escaped = false;
+						} else if (quote == NUL) {
+							quote = c;
+							quotePos = i;
+						} else if (quote == c) {
+							quote = NUL;
+							quotePos = -1;
+						}
+						break;
+
+					// Non-whitespace, non-quote, non-backslash ... straight up capture!
+					default:
+						if (escaped) {
+							// Handle special characters (i.e. \n \t \r etc)?
+							escaped = false;
+							switch (c) {
+								case 'b':
+									buf.append("\b");
+									break;
+
+								case 'f':
+									buf.append("\f");
+									break;
+
+								case 'n':
+									buf.append("\n");
+									break;
+
+								case 'r':
+									buf.append("\r");
+									break;
+
+								case 't':
+									buf.append("\t");
+									break;
+
+								default:
+									buf.append('\\');
+									buf.append(c);
+									break;
+							}
+						} else {
+							buf.append(c);
+						}
+						break;
+				}
+			}
+		}
+
+		if (quote != NUL) {
+			throw new RuntimeException(
+				String.format("Unterminated [%s] at position %d in the source string [%s]", quote, quotePos, str));
+		}
+
+		// If the last character is a backslash, we simply append it? It's meant to be a line
+		// continuation, so we really shouldn't ... we'll figure that out later when it becomes a
+		// problem
+		if (escaped) {
+			buf.append('\\');
+		}
+
+		if (buf.length() > 0) {
+			results.add(buf.toString());
+		}
+		return results;
 	}
 }
