@@ -57,7 +57,7 @@
 		<jaxb-api.version>2.3.1</jaxb-api.version>
 		<slf4j.version>1.7.30</slf4j.version>
 		<junit.version>5.6.2</junit.version>
-		<easymock.version>4.2</easymock.version>
+		<easymock.version>5.0.0</easymock.version>
 		<logback.version>1.2.3</logback.version>
 		<log4j.version>2.19.0</log4j.version>
 		<jaxb-impl.version>2.3.0.1</jaxb-impl.version>
