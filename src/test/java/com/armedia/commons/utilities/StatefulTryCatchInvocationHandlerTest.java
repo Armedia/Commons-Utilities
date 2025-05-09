@@ -45,7 +45,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 	}
 
 	@Test
-	public void testHappyPath() throws Throwable {
+	public void testHappyPath() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicInteger paramCount = new AtomicInteger(0);
@@ -72,7 +72,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -122,7 +122,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 	}
 
 	@Test
-	public void testOnTry() throws Throwable {
+	public void testOnTry() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicInteger paramCount = new AtomicInteger(0);
@@ -149,7 +149,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected void onTry(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected void onTry(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -167,7 +167,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 			}
 
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -217,7 +217,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 	}
 
 	@Test
-	public void testOnTryException() throws Throwable {
+	public void testOnTryException() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicInteger paramCount = new AtomicInteger(0);
@@ -225,7 +225,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		final AtomicReference<Object> param2 = new AtomicReference<>(null);
 		final AtomicReference<Object> param3 = new AtomicReference<>(null);
 		final AtomicReference<TestInterface> testProxy = new AtomicReference<>(null);
-		final AtomicReference<Throwable> throwable = new AtomicReference<>(null);
+		final AtomicReference<Exception> throwable = new AtomicReference<>(null);
 		final Method doSomething;
 		{
 			Class<?>[] args = {
@@ -245,7 +245,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected void onTry(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected void onTry(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -264,28 +264,28 @@ public class StatefulTryCatchInvocationHandlerTest {
 			}
 
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.fail("doInvoke() should not be called");
 				return null;
 			}
 
 			@Override
 			protected Object onReturn(Object state, Object proxy, Method method, Object[] args, Object returnValue)
-				throws Throwable {
+				throws Exception {
 				Assertions.fail("onReturn() should not be called");
 				return null;
 			}
 
 			@Override
-			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Throwable thrown,
-				Object returnValue) throws Throwable {
+			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Exception thrown,
+				Object returnValue) throws Exception {
 				Assertions.fail("onCatch() should not be called");
 				return null;
 			}
 
 			@Override
 			protected Object onFinally(Object state, Object proxy, Method method, Object[] args, Object returnValue,
-				Throwable thrown) throws Throwable {
+				Exception thrown) throws Exception {
 				Assertions.fail("onFinally() should not be called");
 				return null;
 			}
@@ -308,7 +308,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 			param2.set(i);
 			try {
 				ti.doSomething(str, i);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(throwable.get(), t);
 			}
 		}
@@ -325,14 +325,14 @@ public class StatefulTryCatchInvocationHandlerTest {
 			param3.set(d);
 			try {
 				ti.doAnotherThing(i, uuid, d);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(throwable.get(), t);
 			}
 		}
 	}
 
 	@Test
-	public void testOnReturn() throws Throwable {
+	public void testOnReturn() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicReference<UUID> alternateReturn = new AtomicReference<>(null);
@@ -360,7 +360,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -380,7 +380,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 
 			@Override
 			protected Object onReturn(Object state, Object proxy, Method method, Object[] args, Object returned)
-				throws Throwable {
+				throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -433,7 +433,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 	}
 
 	@Test
-	public void testOnCatch() throws Throwable {
+	public void testOnCatch() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicInteger paramCount = new AtomicInteger(0);
@@ -441,7 +441,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		final AtomicReference<Object> param2 = new AtomicReference<>(null);
 		final AtomicReference<Object> param3 = new AtomicReference<>(null);
 		final AtomicReference<TestInterface> testProxy = new AtomicReference<>(null);
-		final AtomicReference<Throwable> throwable = new AtomicReference<>();
+		final AtomicReference<Exception> throwable = new AtomicReference<>();
 		final Method doSomething;
 		{
 			Class<?>[] args = {
@@ -461,7 +461,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -480,8 +480,8 @@ public class StatefulTryCatchInvocationHandlerTest {
 			}
 
 			@Override
-			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Throwable thrown,
-				Object returnValue) throws Throwable {
+			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Exception thrown,
+				Object returnValue) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -503,7 +503,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 
 			@Override
 			protected Object onFinally(Object state, Object proxy, Method method, Object[] args, Object returnValue,
-				Throwable thrown) throws Throwable {
+				Exception thrown) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -541,7 +541,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 			param2.set(i);
 			try {
 				ti.doSomething(str, i);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(throwable.get(), t);
 			}
 		}
@@ -558,14 +558,14 @@ public class StatefulTryCatchInvocationHandlerTest {
 			param3.set(d);
 			try {
 				ti.doAnotherThing(i, uuid, d);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(throwable.get(), t);
 			}
 		}
 	}
 
 	@Test
-	public void testOnReturnException() throws Throwable {
+	public void testOnReturnException() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicInteger paramCount = new AtomicInteger(0);
@@ -573,7 +573,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		final AtomicReference<Object> param2 = new AtomicReference<>(null);
 		final AtomicReference<Object> param3 = new AtomicReference<>(null);
 		final AtomicReference<TestInterface> testProxy = new AtomicReference<>(null);
-		final AtomicReference<Throwable> throwable = new AtomicReference<>();
+		final AtomicReference<Exception> throwable = new AtomicReference<>();
 		final Method doSomething;
 		{
 			Class<?>[] args = {
@@ -593,7 +593,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -613,7 +613,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 
 			@Override
 			protected Object onReturn(Object state, Object proxy, Method method, Object[] args, Object returned)
-				throws Throwable {
+				throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -633,8 +633,8 @@ public class StatefulTryCatchInvocationHandlerTest {
 			}
 
 			@Override
-			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Throwable thrown,
-				Object returnValue) throws Throwable {
+			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Exception thrown,
+				Object returnValue) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -656,7 +656,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 
 			@Override
 			protected Object onFinally(Object state, Object proxy, Method method, Object[] args, Object returnValue,
-				Throwable thrown) throws Throwable {
+				Exception thrown) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -694,7 +694,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 			param2.set(i);
 			try {
 				ti.doSomething(str, i);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(throwable.get(), t);
 			}
 		}
@@ -711,14 +711,14 @@ public class StatefulTryCatchInvocationHandlerTest {
 			param3.set(d);
 			try {
 				ti.doAnotherThing(i, uuid, d);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(throwable.get(), t);
 			}
 		}
 	}
 
 	@Test
-	public void testOnCatchAlternateException() throws Throwable {
+	public void testOnCatchAlternateException() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicInteger paramCount = new AtomicInteger(0);
@@ -726,8 +726,8 @@ public class StatefulTryCatchInvocationHandlerTest {
 		final AtomicReference<Object> param2 = new AtomicReference<>(null);
 		final AtomicReference<Object> param3 = new AtomicReference<>(null);
 		final AtomicReference<TestInterface> testProxy = new AtomicReference<>(null);
-		final AtomicReference<Throwable> throwable = new AtomicReference<>();
-		final AtomicReference<Throwable> newThrowable = new AtomicReference<>();
+		final AtomicReference<Exception> throwable = new AtomicReference<>();
+		final AtomicReference<Exception> newException = new AtomicReference<>();
 		final Method doSomething;
 		{
 			Class<?>[] args = {
@@ -747,7 +747,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -766,8 +766,8 @@ public class StatefulTryCatchInvocationHandlerTest {
 			}
 
 			@Override
-			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Throwable thrown,
-				Object returnValue) throws Throwable {
+			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Exception thrown,
+				Object returnValue) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -784,12 +784,12 @@ public class StatefulTryCatchInvocationHandlerTest {
 				}
 				Assertions.assertNull(returnValue);
 				Assertions.assertSame(throwable.get(), thrown);
-				throw newThrowable.get();
+				throw newException.get();
 			}
 
 			@Override
 			protected Object onFinally(Object state, Object proxy, Method method, Object[] args, Object returnValue,
-				Throwable thrown) throws Throwable {
+				Exception thrown) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -805,7 +805,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 					Assertions.assertSame(param3.get(), args[2]);
 				}
 				Assertions.assertNull(returnValue);
-				Assertions.assertSame(newThrowable.get(), thrown);
+				Assertions.assertSame(newException.get(), thrown);
 				return super.onFinally(state, proxy, method, args, returnValue, thrown);
 			}
 		};
@@ -821,15 +821,15 @@ public class StatefulTryCatchInvocationHandlerTest {
 		paramCount.set(2);
 		for (int i = -10; i < 10; i++) {
 			throwable.set(new RuntimeException(String.format("Exception # %02d", i)));
-			newThrowable.set(new RuntimeException(String.format("Alternate Exception # %02d", i)));
+			newException.set(new RuntimeException(String.format("Alternate Exception # %02d", i)));
 			returnValue.set(UUID.randomUUID());
 			String str = UUID.randomUUID().toString();
 			param1.set(str);
 			param2.set(i);
 			try {
 				ti.doSomething(str, i);
-			} catch (Throwable t) {
-				Assertions.assertSame(newThrowable.get(), t);
+			} catch (Exception t) {
+				Assertions.assertSame(newException.get(), t);
 			}
 		}
 
@@ -837,7 +837,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		paramCount.set(3);
 		for (long i = -10; i < 10; i++) {
 			throwable.set(new RuntimeException(String.format("Exception # %02d", i)));
-			newThrowable.set(new RuntimeException(String.format("Alternate Exception # %02d", i)));
+			newException.set(new RuntimeException(String.format("Alternate Exception # %02d", i)));
 			returnValue.set(UUID.randomUUID());
 			UUID uuid = UUID.randomUUID();
 			Date d = new Date();
@@ -846,14 +846,14 @@ public class StatefulTryCatchInvocationHandlerTest {
 			param3.set(d);
 			try {
 				ti.doAnotherThing(i, uuid, d);
-			} catch (Throwable t) {
-				Assertions.assertSame(newThrowable.get(), t);
+			} catch (Exception t) {
+				Assertions.assertSame(newException.get(), t);
 			}
 		}
 	}
 
 	@Test
-	public void testOnCatchAlternateReturn() throws Throwable {
+	public void testOnCatchAlternateReturn() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicReference<UUID> altReturnValue = new AtomicReference<>(null);
@@ -862,7 +862,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		final AtomicReference<Object> param2 = new AtomicReference<>(null);
 		final AtomicReference<Object> param3 = new AtomicReference<>(null);
 		final AtomicReference<TestInterface> testProxy = new AtomicReference<>(null);
-		final AtomicReference<Throwable> throwable = new AtomicReference<>();
+		final AtomicReference<Exception> throwable = new AtomicReference<>();
 		final Method doSomething;
 		{
 			Class<?>[] args = {
@@ -882,7 +882,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 		StatefulTryCatchInvocationHandler<Object> handler = new StatefulTryCatchInvocationHandler<Object>(
 			stateRef.get()) {
 			@Override
-			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object doInvoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -901,8 +901,8 @@ public class StatefulTryCatchInvocationHandlerTest {
 			}
 
 			@Override
-			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Throwable thrown,
-				Object returnValue) throws Throwable {
+			protected Object onCatch(Object state, Object proxy, Method method, Object[] args, Exception thrown,
+				Object returnValue) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);
@@ -924,7 +924,7 @@ public class StatefulTryCatchInvocationHandlerTest {
 
 			@Override
 			protected Object onFinally(Object state, Object proxy, Method method, Object[] args, Object returnValue,
-				Throwable thrown) throws Throwable {
+				Exception thrown) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);

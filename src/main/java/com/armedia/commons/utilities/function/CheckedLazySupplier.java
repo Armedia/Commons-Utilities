@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -42,7 +42,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.armedia.commons.utilities.Tools;
 import com.armedia.commons.utilities.concurrent.BaseShareableLockable;
 
-public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableLockable
+public class CheckedLazySupplier<T, EX extends Exception> extends BaseShareableLockable
 	implements CheckedSupplier<T, EX> {
 
 	private final Condition condition;
@@ -71,7 +71,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableL
 		this.concurrentInitializer = () -> {
 			try {
 				return getChecked();
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new ConcurrentException(t.getMessage(), t);
 			}
 		};
@@ -139,7 +139,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableL
 	public T get() {
 		try {
 			return getChecked(this.defaultInitializer);
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			throw new RuntimeException("Lazy initialization failed", t);
 		}
 	}
@@ -147,7 +147,7 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableL
 	public T get(Supplier<T> initializer) {
 		try {
 			return getChecked((initializer != null ? initializer::get : null));
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			throw new RuntimeException("Lazy initialization failed", t);
 		}
 	}
@@ -194,11 +194,11 @@ public class CheckedLazySupplier<T, EX extends Throwable> extends BaseShareableL
 		});
 	}
 
-	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> from(CheckedSupplier<T, EX> defaultInitializer) {
+	public static <T, EX extends Exception> CheckedLazySupplier<T, EX> from(CheckedSupplier<T, EX> defaultInitializer) {
 		return CheckedLazySupplier.from(defaultInitializer, null);
 	}
 
-	public static <T, EX extends Throwable> CheckedLazySupplier<T, EX> from(CheckedSupplier<T, EX> defaultInitializer,
+	public static <T, EX extends Exception> CheckedLazySupplier<T, EX> from(CheckedSupplier<T, EX> defaultInitializer,
 		T defaultValue) {
 		return new CheckedLazySupplier<>(defaultInitializer, defaultValue);
 	}

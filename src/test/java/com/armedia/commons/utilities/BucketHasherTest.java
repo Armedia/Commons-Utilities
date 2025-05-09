@@ -90,11 +90,11 @@ public class BucketHasherTest {
 		Assertions.assertEquals(2441322222L, BucketHasher.hash(1, BucketHasher.DEF_BUCKET, 10L));
 		Assertions.assertEquals(3501171530L, BucketHasher.hash(1, BucketHasher.DEF_BUCKET, BucketHasher.MAX_SEED));
 
-		Collection<Triple<CharSequence, Long, Class<Throwable>>> c = new LinkedList<>();
+		Collection<Triple<CharSequence, Long, Class<Exception>>> c = new LinkedList<>();
 		c.add(Triple.of("010203", 2665938722L, null));
 		c.add(Triple.of("abc", 1191608682L, null));
-		for (Triple<CharSequence, Long, Class<Throwable>> r : c) {
-			Class<Throwable> t = r.getRight();
+		for (Triple<CharSequence, Long, Class<Exception>> r : c) {
+			Class<Exception> t = r.getRight();
 			if (t != null) {
 				Assertions.assertThrows(t, () -> BucketHasher.hash(r.getLeft()));
 				continue;

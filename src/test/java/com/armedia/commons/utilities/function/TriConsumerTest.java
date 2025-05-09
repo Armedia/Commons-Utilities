@@ -56,7 +56,7 @@ public class TriConsumerTest {
 	}
 
 	@Test
-	public void testAndThen() throws Throwable {
+	public void testAndThen() throws Exception {
 		TriConsumer<String, Double, UUID> a = null;
 		TriConsumer<String, Double, UUID> b = null;
 

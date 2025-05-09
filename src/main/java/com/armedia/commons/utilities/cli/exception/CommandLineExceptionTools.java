@@ -46,7 +46,7 @@ public class CommandLineExceptionTools {
 	 * @throws MissingRequiredOptionsException
 	 * @throws MissingRequiredCommandException
 	 */
-	public static void unwindSyntaxException(final Throwable t) throws UnknownOptionException, UnknownCommandException,
+	public static void unwindSyntaxException(final Exception t) throws UnknownOptionException, UnknownCommandException,
 		TooManyPositionalValuesException, TooManyOptionValuesException, InsufficientPositionalValuesException,
 		InsufficientOptionValuesException, MissingRequiredOptionsException, MissingRequiredCommandException {
 		if (t == null) { return; }

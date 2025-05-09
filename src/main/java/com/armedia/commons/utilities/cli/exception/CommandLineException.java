@@ -36,15 +36,15 @@ public class CommandLineException extends Exception {
 		super(message);
 	}
 
-	public CommandLineException(Throwable cause) {
+	public CommandLineException(Exception cause) {
 		super(cause);
 	}
 
-	public CommandLineException(String message, Throwable cause) {
+	public CommandLineException(String message, Exception cause) {
 		super(message, cause);
 	}
 
-	public CommandLineException(String message, Throwable cause, boolean enableSuppression,
+	public CommandLineException(String message, Exception cause, boolean enableSuppression,
 		boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}

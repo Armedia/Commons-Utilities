@@ -36,15 +36,15 @@ public class ResourceLoaderException extends Exception {
 		super(message);
 	}
 
-	public ResourceLoaderException(Throwable cause) {
+	public ResourceLoaderException(Exception cause) {
 		super(cause);
 	}
 
-	public ResourceLoaderException(String message, Throwable cause) {
+	public ResourceLoaderException(String message, Exception cause) {
 		super(message, cause);
 	}
 
-	public ResourceLoaderException(String message, Throwable cause, boolean enableSuppression,
+	public ResourceLoaderException(String message, Exception cause, boolean enableSuppression,
 		boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}

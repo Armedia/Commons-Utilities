@@ -38,7 +38,7 @@ public abstract class ReaderTokenSource implements TokenSource {
 
 	public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
-	private Throwable thrown = null;
+	private Exception thrown = null;
 	private List<String> tokenStrings = null;
 	private Charset charset = ReaderTokenSource.DEFAULT_CHARSET;
 

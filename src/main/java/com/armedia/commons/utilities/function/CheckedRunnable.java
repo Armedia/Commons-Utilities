@@ -29,7 +29,7 @@ package com.armedia.commons.utilities.function;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface CheckedRunnable<EX extends Throwable> extends Runnable {
+public interface CheckedRunnable<EX extends Exception> extends Runnable {
 
 	public void runChecked() throws EX;
 
@@ -37,7 +37,7 @@ public interface CheckedRunnable<EX extends Throwable> extends Runnable {
 	public default void run() {
 		try {
 			runChecked();
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			throw new RuntimeException(t.getMessage(), t);
 		}
 	}

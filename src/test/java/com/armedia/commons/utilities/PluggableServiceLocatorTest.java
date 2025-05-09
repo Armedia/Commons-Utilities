@@ -239,8 +239,8 @@ public class PluggableServiceLocatorTest {
 		{
 			PluggableServiceLocator<BadService> badLocator = new PluggableServiceLocator<>(BadService.class);
 			Assertions.assertFalse(badLocator.isHideErrors());
-			final AtomicReference<Throwable> exception = new AtomicReference<>();
-			BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
+			final AtomicReference<Exception> exception = new AtomicReference<>();
+			BiConsumer<Class<?>, Exception> listener = (serviceClass, e) -> exception.set(e);
 			badLocator.setErrorListener(listener);
 			Assertions.assertSame(listener, badLocator.getErrorListener());
 			Assertions.assertThrows(NoSuchElementException.class, () -> badLocator.getFirst());
@@ -336,8 +336,8 @@ public class PluggableServiceLocatorTest {
 		Assertions.assertFalse(badLocator.getAll().hasNext());
 
 		badLocator = new PluggableServiceLocator<>(BadService.class);
-		final AtomicReference<Throwable> exception = new AtomicReference<>();
-		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
+		final AtomicReference<Exception> exception = new AtomicReference<>();
+		BiConsumer<Class<?>, Exception> listener = (serviceClass, e) -> exception.set(e);
 		badLocator.setErrorListener(listener);
 		Assertions.assertSame(listener, badLocator.getErrorListener());
 		Assertions.assertFalse(badLocator.getAll().hasNext());
@@ -450,8 +450,8 @@ public class PluggableServiceLocatorTest {
 		Assertions.assertFalse(badLocator.iterator().hasNext());
 
 		badLocator = new PluggableServiceLocator<>(BadService.class);
-		final AtomicReference<Throwable> exception = new AtomicReference<>();
-		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
+		final AtomicReference<Exception> exception = new AtomicReference<>();
+		BiConsumer<Class<?>, Exception> listener = (serviceClass, e) -> exception.set(e);
 		badLocator.setErrorListener(listener);
 		Assertions.assertSame(listener, badLocator.getErrorListener());
 		Assertions.assertFalse(badLocator.iterator().hasNext());

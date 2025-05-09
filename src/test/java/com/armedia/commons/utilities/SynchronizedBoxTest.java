@@ -180,7 +180,7 @@ public class SynchronizedBoxTest {
 				barrier.await();
 				c.waitUntilMatches((l) -> l == now);
 				success.set(true);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -202,7 +202,7 @@ public class SynchronizedBoxTest {
 			try {
 				barrier.await();
 				Assertions.assertEquals(now, c.waitUntilMatches((l) -> l == now, 200, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -217,7 +217,7 @@ public class SynchronizedBoxTest {
 			try {
 				barrier.await();
 				c.waitUntilMatches((l) -> l == now, 10, TimeUnit.MILLISECONDS);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -230,7 +230,7 @@ public class SynchronizedBoxTest {
 			f2.join();
 			Assertions.fail("Did not timeout while waiting");
 		} catch (CompletionException e) {
-			Throwable t = e.getCause();
+			Exception t = e.getCause();
 			Assertions.assertSame(RuntimeException.class, t.getClass());
 			Assertions.assertSame(TimeoutException.class, t.getCause().getClass());
 		}
@@ -246,7 +246,7 @@ public class SynchronizedBoxTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged());
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -269,7 +269,7 @@ public class SynchronizedBoxTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged(200, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -285,7 +285,7 @@ public class SynchronizedBoxTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged(10, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -299,7 +299,7 @@ public class SynchronizedBoxTest {
 			f2.join();
 			Assertions.fail("Did not timeout while waiting");
 		} catch (CompletionException e) {
-			Throwable t = e.getCause();
+			Exception t = e.getCause();
 			Assertions.assertSame(RuntimeException.class, t.getClass());
 			Assertions.assertSame(TimeoutException.class, t.getCause().getClass());
 		}

@@ -68,7 +68,7 @@ public class TextMemoryBufferTest {
 						continue;
 				}
 				a.add(Character.valueOf((char) i));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				// Not a valid character
 			}
 		}
@@ -387,7 +387,7 @@ public class TextMemoryBufferTest {
 		try (final TextMemoryBuffer b = new TextMemoryBuffer()) {
 			final Reader in = b.getReader();
 			final AtomicInteger counter = new AtomicInteger(0);
-			final AtomicReference<Throwable> thrown = new AtomicReference<>();
+			final AtomicReference<Exception> thrown = new AtomicReference<>();
 			final AtomicBoolean finished = new AtomicBoolean(false);
 			final int blockTimeMs = 100;
 			final int itemCount = 64;
@@ -425,7 +425,7 @@ public class TextMemoryBufferTest {
 							counter.incrementAndGet();
 						}
 						finished.set(true);
-					} catch (Throwable t) {
+					} catch (Exception t) {
 						thrown.set(t);
 					} finally {
 						ioBarrier.reset();
@@ -480,7 +480,7 @@ public class TextMemoryBufferTest {
 				Thread.currentThread().interrupt();
 			}
 			t.interrupt();
-			Throwable ex = thrown.get();
+			Exception ex = thrown.get();
 			if (ex != null) {
 				throw new RuntimeException(String.format("Failed to complete the read, caught an exception: %s", ex),
 					ex);
@@ -492,7 +492,7 @@ public class TextMemoryBufferTest {
 
 	@Test
 	public void testBlockingInputClosure() {
-		final AtomicReference<Throwable> thrown = new AtomicReference<>();
+		final AtomicReference<Exception> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final AtomicReference<Reader> in = new AtomicReference<>();
@@ -507,7 +507,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read();
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -520,7 +520,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read(buf);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -533,7 +533,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read(buf, 10, 20);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -581,7 +581,7 @@ public class TextMemoryBufferTest {
 
 	@Test
 	public void testBlockingInputPartialRead() throws IOException {
-		final AtomicReference<Throwable> thrown = new AtomicReference<>();
+		final AtomicReference<Exception> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final AtomicReference<Reader> in = new AtomicReference<>();
@@ -596,7 +596,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read();
 							Assertions.assertFalse(r == -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -609,7 +609,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read(buf);
 							Assertions.assertEquals(r, 1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -622,7 +622,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read(buf, 0, 128);
 							Assertions.assertEquals(r, 1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -671,7 +671,7 @@ public class TextMemoryBufferTest {
 
 	@Test
 	public void testBlockingInputInterruption() {
-		final AtomicReference<Throwable> thrown = new AtomicReference<>();
+		final AtomicReference<Exception> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final AtomicReference<Reader> in = new AtomicReference<>();
@@ -686,7 +686,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read();
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -699,7 +699,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read(buf);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -712,7 +712,7 @@ public class TextMemoryBufferTest {
 							int r = in.get().read(buf, 10, 20);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}

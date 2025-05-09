@@ -77,7 +77,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 
 	private void render(PrintStream str, Level level, FormattingTuple ft) {
 		final Date now = new Date(System.currentTimeMillis());
-		final Throwable thrown = ft.getThrowable();
+		final Exception thrown = ft.getException();
 		final String prefix = formatPrefix(now, Thread.currentThread(), level);
 		if (thrown != null) {
 			str.printf("%s%s%n%s%n", prefix, ft.getMessage(), Tools.dumpStackTrace(thrown));
@@ -124,7 +124,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void trace(String msg, Throwable t) {
+	public void trace(String msg, Exception t) {
 		if (!isTraceEnabled()) { return; }
 		render(System.out, Level.TRACE, MessageFormatter.format(msg, null, t));
 	}
@@ -159,7 +159,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void debug(String msg, Throwable t) {
+	public void debug(String msg, Exception t) {
 		if (!isDebugEnabled()) { return; }
 		render(System.out, Level.DEBUG, MessageFormatter.format(msg, null, t));
 	}
@@ -194,7 +194,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void info(String msg, Throwable t) {
+	public void info(String msg, Exception t) {
 		if (!isInfoEnabled()) { return; }
 		render(System.out, Level.INFO, MessageFormatter.format(msg, null, t));
 	}
@@ -229,7 +229,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void warn(String msg, Throwable t) {
+	public void warn(String msg, Exception t) {
 		if (!isWarnEnabled()) { return; }
 		render(System.err, Level.WARN, MessageFormatter.format(msg, null, t));
 	}
@@ -264,7 +264,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void error(String msg, Throwable t) {
+	public void error(String msg, Exception t) {
 		if (!isErrorEnabled()) { return; }
 		render(System.err, Level.ERROR, MessageFormatter.format(msg, null, t));
 	}

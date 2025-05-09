@@ -39,8 +39,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedTriFunctionTest {
 
 	@Test
-	public void testApplyChecked() throws Throwable {
-		CheckedTriFunction<String, Double, Date, UUID, Throwable> f = null;
+	public void testApplyChecked() throws Exception {
+		CheckedTriFunction<String, Double, Date, UUID, Exception> f = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -62,7 +62,7 @@ public class CheckedTriFunctionTest {
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
 		date.set(new Date());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		f = (s, n, d) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -72,14 +72,14 @@ public class CheckedTriFunctionTest {
 		try {
 			f.applyChecked(string.get(), number.get(), date.get());
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testApply() {
-		CheckedTriFunction<String, Double, Date, UUID, Throwable> f = null;
+		CheckedTriFunction<String, Double, Date, UUID, Exception> f = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -102,7 +102,7 @@ public class CheckedTriFunctionTest {
 		number.set(Math.random());
 		date.set(new Date());
 		uuid.set(UUID.randomUUID());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		f = (s, n, d) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -120,9 +120,9 @@ public class CheckedTriFunctionTest {
 	}
 
 	@Test
-	public void testAndThen() throws Throwable {
-		CheckedTriFunction<String, Double, Date, UUID, Throwable> a = null;
-		CheckedTriFunction<String, Double, Date, Long, Throwable> b = null;
+	public void testAndThen() throws Exception {
+		CheckedTriFunction<String, Double, Date, UUID, Exception> a = null;
+		CheckedTriFunction<String, Double, Date, Long, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final Random r = new Random(System.nanoTime());
@@ -157,7 +157,7 @@ public class CheckedTriFunctionTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -179,7 +179,7 @@ public class CheckedTriFunctionTest {
 			try {
 				b.applyChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -189,7 +189,7 @@ public class CheckedTriFunctionTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -211,7 +211,7 @@ public class CheckedTriFunctionTest {
 			try {
 				b.applyChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -221,7 +221,7 @@ public class CheckedTriFunctionTest {
 		}
 
 		{
-			CheckedTriFunction<String, Double, Date, UUID, Throwable> n = (x, y, z) -> null;
+			CheckedTriFunction<String, Double, Date, UUID, Exception> n = (x, y, z) -> null;
 			Assertions.assertThrows(NullPointerException.class, () -> n.andThen(null));
 		}
 	}

@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 
 @FunctionalInterface
-public interface CheckedBiPredicate<T, U, EX extends Throwable> extends BiPredicate<T, U> {
+public interface CheckedBiPredicate<T, U, EX extends Exception> extends BiPredicate<T, U> {
 
 	public boolean testChecked(T t, U u) throws EX;
 
@@ -38,7 +38,7 @@ public interface CheckedBiPredicate<T, U, EX extends Throwable> extends BiPredic
 	public default boolean test(T t, U u) {
 		try {
 			return testChecked(t, u);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

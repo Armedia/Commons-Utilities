@@ -43,18 +43,18 @@ public abstract class StatefulTryCatchInvocationHandler<T> extends StatefulInvoc
 	 * </p>
 	 */
 	@Override
-	protected final Object invoke(T state, Object proxy, Method method, Object[] args) throws Throwable {
+	protected final Object invoke(T state, Object proxy, Method method, Object[] args) throws Exception {
 		Object returnValue = null;
-		Throwable thrown = null;
+		Exception thrown = null;
 		onTry(state, proxy, method, args);
 		try {
 			returnValue = onReturn(state, proxy, method, args, doInvoke(state, proxy, method, args));
-		} catch (final Throwable t) {
+		} catch (final Exception t) {
 			thrown = t;
 			try {
 				returnValue = onCatch(state, proxy, method, args, t, returnValue);
 				thrown = null;
-			} catch (final Throwable t2) {
+			} catch (final Exception t2) {
 				thrown = t2;
 				throw t2;
 			}
@@ -74,9 +74,9 @@ public abstract class StatefulTryCatchInvocationHandler<T> extends StatefulInvoc
 	 * @param proxy
 	 * @param method
 	 * @param args
-	 * @throws Throwable
+	 * @throws Exception
 	 */
-	protected void onTry(T state, Object proxy, Method method, Object[] args) throws Throwable {
+	protected void onTry(T state, Object proxy, Method method, Object[] args) throws Exception {
 		// By default, do nothing
 	}
 
@@ -91,9 +91,9 @@ public abstract class StatefulTryCatchInvocationHandler<T> extends StatefulInvoc
 	 * @param proxy
 	 * @param method
 	 * @param args
-	 * @throws Throwable
+	 * @throws Exception
 	 */
-	protected abstract Object doInvoke(T state, Object proxy, Method method, Object[] args) throws Throwable;
+	protected abstract Object doInvoke(T state, Object proxy, Method method, Object[] args) throws Exception;
 
 	/**
 	 * <p>
@@ -110,10 +110,10 @@ public abstract class StatefulTryCatchInvocationHandler<T> extends StatefulInvoc
 	 * @param method
 	 * @param args
 	 * @param returnValue
-	 * @throws Throwable
+	 * @throws Exception
 	 */
 	protected Object onReturn(T state, Object proxy, Method method, Object[] args, Object returnValue)
-		throws Throwable {
+		throws Exception {
 		// By default, do nothing
 		return returnValue;
 	}
@@ -123,7 +123,7 @@ public abstract class StatefulTryCatchInvocationHandler<T> extends StatefulInvoc
 	 * Invoked on the <b><code>catch</code></b> phase of the <b><code>try-catch-finally</code></b>
 	 * block. The actual exception raised is provided as an argument. The exception is the actual
 	 * exception that the overarching {@link #invoke(Object, Method, Object[])} invocation will end
-	 * up raising. However, the method can return another {@link Throwable} instance (the same
+	 * up raising. However, the method can return another {@link Exception} instance (the same
 	 * typing restrictions apply as for {@link InvocationHandler#invoke(Object, Method, Object[])})
 	 * to be raised instead of the exception (i.e. unwrapped contained exceptions, replace them,
 	 * etc).
@@ -138,10 +138,10 @@ public abstract class StatefulTryCatchInvocationHandler<T> extends StatefulInvoc
 	 * @param args
 	 * @param thrown
 	 * @param returnValue
-	 * @throws Throwable
+	 * @throws Exception
 	 */
-	protected Object onCatch(T state, Object proxy, Method method, Object[] args, Throwable thrown, Object returnValue)
-		throws Throwable {
+	protected Object onCatch(T state, Object proxy, Method method, Object[] args, Exception thrown, Object returnValue)
+		throws Exception {
 		// By default just rethrow the original exception
 		throw thrown;
 	}
@@ -156,15 +156,15 @@ public abstract class StatefulTryCatchInvocationHandler<T> extends StatefulInvoc
 	 * @param returnValue
 	 * @param thrown
 	 *            Will only be non-{@code null} if
-	 *            {@link #onCatch(Object, Object, Method, Object[], Throwable, Object)} was also
+	 *            {@link #onCatch(Object, Object, Method, Object[], Exception, Object)} was also
 	 *            invoked
 	 * @param proxy
 	 * @param method
 	 * @param args
-	 * @throws Throwable
+	 * @throws Exception
 	 */
 	protected Object onFinally(T state, Object proxy, Method method, Object[] args, Object returnValue,
-		Throwable thrown) throws Throwable {
+		Exception thrown) throws Exception {
 		return returnValue;
 	}
 }

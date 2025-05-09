@@ -63,7 +63,7 @@ public class Interpolator {
 		}
 
 		public ExpressionException(int lineNumber, int column, String line, String expression, String error,
-			Throwable thrown) {
+			Exception thrown) {
 			super(thrown);
 			this.lineNumber = lineNumber;
 			this.column = column;

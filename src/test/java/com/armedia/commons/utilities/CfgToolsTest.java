@@ -764,7 +764,7 @@ public class CfgToolsTest implements GoodService {
 	 * Test method for {@link com.armedia.commons.utilities.CfgTools#getBinary(String, byte[])}.
 	 */
 	@Test
-	public void testGetBinaryWithDefault() throws Throwable {
+	public void testGetBinaryWithDefault() throws Exception {
 		byte[] sample = new byte[256];
 		CfgToolsTest.RANDOM.nextBytes(sample);
 
@@ -794,7 +794,7 @@ public class CfgToolsTest implements GoodService {
 	 * {@link com.armedia.commons.utilities.CfgTools#getBinary(ConfigurationSetting)}.
 	 */
 	@Test
-	public void testGetBinaryWithoutDefault() throws Throwable {
+	public void testGetBinaryWithoutDefault() throws Exception {
 		byte[] realData = Base64.decodeBase64(
 			"c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
 		Assertions.assertThrows(IllegalArgumentException.class,
@@ -813,7 +813,7 @@ public class CfgToolsTest implements GoodService {
 	 * .
 	 */
 	@Test
-	public void testGetBinaryConfigurationSetting() throws Throwable {
+	public void testGetBinaryConfigurationSetting() throws Exception {
 		byte[] realData = Base64.decodeBase64(
 			"c3aqSlM2IN/HO359hN2nybJ3GRTW/rNE8BckG4fmg0HJHtkIbLdmcXE+9/NI6eieQvVAZyAwPBLucINyeh+xe63eCxfCm9FSXCXytBGDZQm7yCCYxlBz1qRQCTlSzCkZCsotR9ZZ99TUYcVE8UBcEjTXpEXGTxFk3OFbW0jV+gpN5Hp4bSqJsUDsUds+END+nXGFMqQ7CTb1h04Qk6kW/7HstL+JidGLG9d2Qa+x5CfcXs3DMujc2mH461a/8lLLJ/i0NLofyRklJSr1ZWVlqPaq/sk9caCnTPKaDMPDYwTOGnkQVIdnOVjyACAKMs0paAIuo+n7wrG4wRD8f75/GzBPceQwGvVqkRANJtfzGK5zfgYVdNnQtN7U8OnJEl+0C9PMOB272SAx1epwSeLqIJEe9cQkwZyozMvO/md1gQiOsrIT1KcP5F0O4OGneSta9PakvJjsj3Y61N8eksJEFmmKtk69sDsu4ewZmCpDooxtNYRnCj0YNjTkXeL+77joivtz1K147ck7Lkjla1cO1BACCzArsQYVTdRxD9XT/sKHDsv+ahR0GzjuTxH8xUb2zhCT9mYFELcrOiJzeuY2kiYzFBbFohBRqZSdlTjbwHeFKjnpuDzY8imOUJFRw0Dfk3lYPd35A6bHvTEJpyYOufwQWg/5mYwk60YWKbaXcZr5wVFcX2Kxp7C5RrpxGINusROjHvovNUdfFxpm2LVP/NBYLfFnE0QlYDstp1ySipc8fYdRWWNqLxVnCX3YQKhof08934BNknS6WMyPryiIbtm4IblK/kBkCP5uENIvT2EHpGPANKLlwZ/DnA1G/k+AUee4kw1UhAbD+ZOR9/hqWlDFOtVc/69nKu4kp+pY25qtVcPNdDyh2s/yXLJsTkpEGBVFGqOEBY9fajP+knDXsvP8RBt97amfln3Fs/nPRK50KeI9wxzp39SCKJ6k2EIcohFvp/IMHts+QhXmbfjh+0sw5S4EFdfRtfBeBUEbFPtb5hceUK+iU5U4sRCFIi5I81TQLycy3mLkQ9xXqcF6ZUZ/uub97U77sSc/O9OgaWvoYrN69+i1nXYvCUobPT9KnebHxe1qC878Kv0RBi+zDMKO13bVHAmw0BYXXQy/j5H4IStFbW5wROyOdDK659X+2EEk3hDS0XdW8OyEBCntlT5jTcevWDRtSPG2vZSYYEAeYrXOxP3mtg/pfwBIJc+XitgzIvGKdiFEKPwZC4/21tWrT2Tb5oDCjuH6/ssDWfUHyGbco39lk3M0kC3PYLydTRtw5lWyK+Q+vlLKaPfLKXlo0ceap5q21fwZbuDCkioeIG8LPC3cxoOBYVGRhA7Rm+Bw9QTvmgKQwdS87eHkAg==");
 

@@ -517,11 +517,11 @@ public final class StreamConcatenation {
 			while (it.hasNext()) {
 				try {
 					it.next().close();
-				} catch (Throwable thrown) {
+				} catch (Exception thrown) {
 					while (it.hasNext()) {
 						try {
 							it.next().close();
-						} catch (Throwable suppressed) {
+						} catch (Exception suppressed) {
 							thrown.addSuppressed(suppressed);
 						}
 					}

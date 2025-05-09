@@ -29,7 +29,7 @@ package com.armedia.commons.utilities.function;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface CheckedTriConsumer<T, U, V, EX extends Throwable> extends TriConsumer<T, U, V> {
+public interface CheckedTriConsumer<T, U, V, EX extends Exception> extends TriConsumer<T, U, V> {
 
 	public void acceptChecked(T t, U u, V v) throws EX;
 
@@ -37,7 +37,7 @@ public interface CheckedTriConsumer<T, U, V, EX extends Throwable> extends TriCo
 	public default void accept(T t, U u, V v) {
 		try {
 			acceptChecked(t, u, v);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

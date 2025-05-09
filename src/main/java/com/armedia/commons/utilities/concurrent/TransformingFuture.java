@@ -87,7 +87,7 @@ public class TransformingFuture<F, T> implements Future<T> {
 		final F result = this.future.get();
 		try {
 			return this.transformer.applyChecked(result);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			throw new ExecutionException(e);
 		}
 	}
@@ -97,7 +97,7 @@ public class TransformingFuture<F, T> implements Future<T> {
 		final F result = this.future.get(timeout, unit);
 		try {
 			return this.transformer.applyChecked(result);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			throw new ExecutionException(e);
 		}
 	}

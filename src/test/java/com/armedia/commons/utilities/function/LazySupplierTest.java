@@ -417,7 +417,7 @@ public class LazySupplierTest {
 			try {
 				supplier.get().get();
 				Assertions.fail("Did not raise an exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
 			Assertions.assertNotSame(Thread.State.NEW, state);
@@ -574,7 +574,7 @@ public class LazySupplierTest {
 			try {
 				supplier.get().get();
 				Assertions.fail("Did not raise an exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
 			Assertions.assertNotSame(Thread.State.NEW, state);
@@ -752,7 +752,7 @@ public class LazySupplierTest {
 			try {
 				supplier.get().get();
 				Assertions.fail("Did not raise an exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
 			Assertions.assertNotSame(Thread.State.NEW, state);
@@ -969,7 +969,7 @@ public class LazySupplierTest {
 			try {
 				supplier.get().get();
 				Assertions.fail("Did not raise an exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(uuid.get(), t.getMessage());
 			}
 			Assertions.assertNotSame(Thread.State.NEW, state);

@@ -56,7 +56,7 @@ public class ResourceLineSourceFactoryTest {
 	public void testProcessException() throws LineSourceException {
 		ResourceLineSourceFactory rlsf = new ResourceLineSourceFactory();
 		Assertions.assertNull(rlsf.processException("some-source", "some-value", new FileNotFoundException()));
-		Throwable cause = new Throwable();
+		Exception cause = new Exception();
 		try {
 			rlsf.processException("some-source", "some-value", cause);
 		} catch (LineSourceException e) {

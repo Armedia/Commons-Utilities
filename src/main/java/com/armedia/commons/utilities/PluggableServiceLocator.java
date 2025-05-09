@@ -50,7 +50,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	private final ServiceLoader<S> loader;
 
 	private Predicate<S> defaultSelector = null;
-	private BiConsumer<Class<?>, Throwable> listener = null;
+	private BiConsumer<Class<?>, Exception> listener = null;
 	private boolean hideErrors = false;
 
 	public PluggableServiceLocator(Class<S> serviceClass) {
@@ -104,11 +104,11 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		this.defaultSelector = defaultSelector;
 	}
 
-	public final BiConsumer<Class<?>, Throwable> getErrorListener() {
+	public final BiConsumer<Class<?>, Exception> getErrorListener() {
 		return this.listener;
 	}
 
-	public final void setErrorListener(BiConsumer<Class<?>, Throwable> listener) {
+	public final void setErrorListener(BiConsumer<Class<?>, Exception> listener) {
 		this.listener = listener;
 	}
 
@@ -180,12 +180,12 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 				: selector);
 			private final Class<S> serviceClass = PluggableServiceLocator.this.serviceClass;
 			private final Iterator<S> it = PluggableServiceLocator.this.loader.iterator();
-			private final BiConsumer<Class<?>, Throwable> listener = PluggableServiceLocator.this.listener;
+			private final BiConsumer<Class<?>, Exception> listener = PluggableServiceLocator.this.listener;
 			private final boolean hideErrors = PluggableServiceLocator.this.hideErrors;
 
 			private S current = null;
 
-			private void handleThrown(Throwable t) {
+			private void handleThrown(Exception t) {
 				if (this.hideErrors) { return; }
 				if (this.listener == null) {
 					if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
@@ -193,7 +193,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 				}
 				try {
 					this.listener.accept(this.serviceClass, t);
-				} catch (Throwable t2) {
+				} catch (Exception t2) {
 					// Do nothing...
 				}
 			}
@@ -210,7 +210,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 								break;
 							}
 							next = this.it.next();
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							handleThrown(t);
 							continue;
 						}

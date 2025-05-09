@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -90,7 +90,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 
 	private final CountDownLatch startupLatch;
 
-	private final class Task<EX extends Throwable> implements Runnable {
+	private final class Task<EX extends Exception> implements Runnable {
 		private final Logger log = PooledWorkers.this.log;
 
 		private final boolean waitForWork;
@@ -102,7 +102,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		}
 
 		@SuppressWarnings("unchecked")
-		private EX castException(Throwable raised) {
+		private EX castException(Exception raised) {
 			return (EX) raised;
 		}
 
@@ -111,7 +111,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 			final STATE state;
 			try {
 				state = this.logic.initialize(PooledWorkers.this);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				PooledWorkers.this.startupLatch.countDown();
 				workerThreadExited("Failed to initialize the worker state", null, castException(t));
 				return;
@@ -162,7 +162,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 						// processing method
 						Thread.interrupted();
 						this.logic.process(state, item);
-					} catch (Throwable t) {
+					} catch (Exception t) {
 						this.logic.handleFailure(state, item, castException(t));
 					}
 				}
@@ -184,7 +184,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 *
 	 * @param backlogSize
 	 */
-	protected <EX extends Throwable> PooledWorkers(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
+	protected <EX extends Exception> PooledWorkers(PooledWorkersLogic<STATE, ITEM, EX> logic, int threadCount,
 		String name, int backlogSize, Collection<? extends ITEM> items, boolean waitForWork) {
 		Objects.requireNonNull(logic,
 			"Must provide a valid PooledWorkersLogic instance with which to perform the work");
@@ -219,7 +219,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 			};
 		}
 		this.executor = new ThreadPoolExecutor(this.threadCount, this.threadCount, 30, TimeUnit.SECONDS,
-			new LinkedBlockingQueue<Runnable>(), threadFactory);
+			new LinkedBlockingQueue<>(), threadFactory);
 		this.startupLatch = new CountDownLatch(threadCount);
 		for (int i = 0; i < this.threadCount; i++) {
 			this.futures.add(this.executor.submit(task));
@@ -247,7 +247,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 * @param state
 	 * @param thrown
 	 */
-	protected void workerThreadExited(String message, STATE state, Throwable thrown) {
+	protected void workerThreadExited(String message, STATE state, Exception thrown) {
 		if (state == null) {
 			// Failed to initialize
 			this.log.debug(message, thrown);
@@ -513,7 +513,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 * @param <ITEM>
 	 * @param <EX>
 	 */
-	public static class Builder<STATE, ITEM, EX extends Throwable> extends BaseShareableLockable {
+	public static class Builder<STATE, ITEM, EX extends Exception> extends BaseShareableLockable {
 		private PooledWorkersLogic<STATE, ITEM, EX> logic = null;
 		private int threads = 1;
 		private String name = null;

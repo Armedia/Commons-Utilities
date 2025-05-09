@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -1023,7 +1023,7 @@ public class Tools {
 		return Collections.unmodifiableMap(m);
 	}
 
-	public static String dumpStackTrace(Throwable t) {
+	public static String dumpStackTrace(Exception t) {
 		if (t == null) { return null; }
 		try (StringWriter sw = new StringWriter()) {
 			try (PrintWriter pw = new PrintWriter(sw)) {
@@ -1039,8 +1039,8 @@ public class Tools {
 
 	public static String dumpStackTrace() {
 		try {
-			throw new Throwable("Stack trace dump");
-		} catch (Throwable thrown) {
+			throw new Exception("Stack trace dump");
+		} catch (Exception thrown) {
 			return Tools.dumpStackTrace(thrown);
 		}
 	}
@@ -2006,7 +2006,7 @@ public class Tools {
 	 * @param targetClass
 	 *
 	 */
-	public static <T extends Throwable> T findRootCause(Throwable t, Class<T> targetClass) {
+	public static <T extends Exception> T findRootCause(Exception t, Class<T> targetClass) {
 		if (t == null) { return null; }
 		if (targetClass == null) {
 			throw new IllegalArgumentException("Must supply a target class to compare against");
@@ -2028,7 +2028,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static Throwable findRootCause(Throwable t) {
+	public static Exception findRootCause(Exception t) {
 		if (t == null) { return null; }
 		while ((t.getCause() != null) && (t.getCause() != t)) {
 			t = t.getCause();
@@ -2042,7 +2042,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static String getRootThrownMessage(Throwable t) {
+	public static String getRootThrownMessage(Exception t) {
 		t = Tools.findRootCause(t);
 		if (t == null) { return null; }
 		return Tools.getThrownMessage(t);
@@ -2055,7 +2055,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static String getThrownMessage(Throwable t) {
+	public static String getThrownMessage(Exception t) {
 		if (t.getMessage() == null) { return t.getClass().getCanonicalName(); }
 		return t.getMessage();
 	}
@@ -2066,7 +2066,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static String getStackTrace(Throwable t) {
+	public static String getStackTrace(Exception t) {
 		StringWriter writer = new StringWriter();
 		PrintWriter pw = new PrintWriter(writer);
 		t.printStackTrace(pw);
@@ -2497,7 +2497,7 @@ public class Tools {
 		return Tools.cast(klass, o, (ifNull != null ? CheckedTools.check(ifNull) : null));
 	}
 
-	public static final <T, EX extends Throwable> T cast(Class<T> klass, Object o, CheckedSupplier<T, EX> ifNull)
+	public static final <T, EX extends Exception> T cast(Class<T> klass, Object o, CheckedSupplier<T, EX> ifNull)
 		throws EX {
 		Objects.requireNonNull(klass, "Must provide a class to perform the cast to");
 		if (klass.isInstance(o)) { return klass.cast(o); }
