@@ -44,7 +44,7 @@
 	</scm>
 
 	<properties>
-		<revision>1.3.12-SNAPSHOT</revision>
+		<revision>1.3.13-SNAPSHOT</revision>
 		<maven.min-version>3.3.9</maven.min-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.build.target>11</project.build.target>
