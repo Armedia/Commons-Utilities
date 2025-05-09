@@ -82,7 +82,7 @@ public class SpyOutputStream extends FilterOutputStream {
 		super.write(b, off, len);
 		try {
 			this.spy.accept(buf);
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			// Do nothing... ignore the problem
 		}
 	}

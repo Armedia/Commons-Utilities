@@ -220,7 +220,7 @@ public class SynchronizedCounterTest {
 				barrier.await();
 				c.waitUntilValue(now);
 				success.set(true);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -242,7 +242,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				Assertions.assertTrue(c.waitUntilValue(now, 200, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -257,7 +257,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				Assertions.assertFalse(c.waitUntilValue(now, 10, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -278,7 +278,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged());
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -301,7 +301,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged(200, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -317,7 +317,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged(10, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -331,7 +331,7 @@ public class SynchronizedCounterTest {
 			f2.join();
 			Assertions.fail("Did not timeout while waiting");
 		} catch (CompletionException e) {
-			Throwable t = e.getCause();
+			Exception t = e.getCause();
 			Assertions.assertSame(RuntimeException.class, t.getClass());
 			Assertions.assertSame(TimeoutException.class, t.getCause().getClass());
 		}

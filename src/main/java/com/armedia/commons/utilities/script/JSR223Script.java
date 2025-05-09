@@ -327,7 +327,7 @@ public final class JSR223Script {
 			this.ioException = null;
 		}
 
-		private CompilationResult(Throwable thrown) {
+		private CompilationResult(Exception thrown) {
 			this.compiled = null;
 			if (IOException.class.isInstance(thrown)) {
 				this.ioException = IOException.class.cast(thrown);

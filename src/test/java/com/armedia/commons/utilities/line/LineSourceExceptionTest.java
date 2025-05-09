@@ -46,15 +46,15 @@ public class LineSourceExceptionTest {
 	}
 
 	@Test
-	public void testLineSourceExceptionThrowable() {
-		Throwable cause = new Throwable();
+	public void testLineSourceExceptionException() {
+		Exception cause = new Exception();
 		LineSourceException ex = new LineSourceException(cause);
 		Assertions.assertSame(cause, ex.getCause());
 	}
 
 	@Test
-	public void testLineSourceExceptionStringThrowable() {
-		Throwable cause = new Throwable();
+	public void testLineSourceExceptionStringException() {
+		Exception cause = new Exception();
 		for (int i = 0; i < 10; i++) {
 			String msg = String.format("%02d", i);
 			LineSourceException ex = new LineSourceException(msg, cause);
@@ -64,8 +64,8 @@ public class LineSourceExceptionTest {
 	}
 
 	@Test
-	public void testLineSourceExceptionStringThrowableBooleanBoolean() {
-		Throwable cause = new Throwable();
+	public void testLineSourceExceptionStringExceptionBooleanBoolean() {
+		Exception cause = new Exception();
 		LineSourceException ex = null;
 		for (int i = 0; i < 10; i++) {
 			String msg = String.format("%02d", i);

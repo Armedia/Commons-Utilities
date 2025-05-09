@@ -37,15 +37,15 @@ public class LineSourceException extends Exception {
 		super(message);
 	}
 
-	public LineSourceException(Throwable cause) {
+	public LineSourceException(Exception cause) {
 		super(cause);
 	}
 
-	public LineSourceException(String message, Throwable cause) {
+	public LineSourceException(String message, Exception cause) {
 		super(message, cause);
 	}
 
-	public LineSourceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+	public LineSourceException(String message, Exception cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 

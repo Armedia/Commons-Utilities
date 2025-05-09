@@ -95,7 +95,7 @@ public class ResourceLoaderTest {
 
 		try {
 			Assertions.assertNull(ResourceLoader.getResource((URI) null));
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.fail("Failed to accept a null URI");
 		}
 
@@ -135,10 +135,10 @@ public class ResourceLoaderTest {
 			}
 		}
 
-		urlData.add(Pair.of("ssh://www.google.com", Throwable.class));
-		urlData.add(Pair.of("jdbc:some:crap", Throwable.class));
-		urlData.add(Pair.of("some-weird-uri-syntax", Throwable.class));
-		urlData.add(Pair.of("!This is an illegal URI", Throwable.class));
+		urlData.add(Pair.of("ssh://www.google.com", Exception.class));
+		urlData.add(Pair.of("jdbc:some:crap", Exception.class));
+		urlData.add(Pair.of("some-weird-uri-syntax", Exception.class));
+		urlData.add(Pair.of("!This is an illegal URI", Exception.class));
 
 		urlData.forEach((p) -> {
 			final String str = p.getLeft();
@@ -153,10 +153,10 @@ public class ResourceLoaderTest {
 			}
 
 			URL url = null;
-			Throwable raised = null;
+			Exception raised = null;
 			try {
 				url = ResourceLoader.getResource(uri);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				raised = t;
 			}
 
@@ -200,7 +200,7 @@ public class ResourceLoaderTest {
 				return;
 			}
 
-			if (Throwable.class == result) {
+			if (Exception.class == result) {
 				// Not supported, should have raised an exception
 				Assertions.assertNotNull(raised,
 					String.format("Did not raise an exception for known-bad URL [%s]", str));
@@ -217,7 +217,7 @@ public class ResourceLoaderTest {
 
 		try {
 			Assertions.assertNull(ResourceLoader.getResource((URI) null));
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.fail("Failed to accept a null URI");
 		}
 
@@ -257,10 +257,10 @@ public class ResourceLoaderTest {
 			}
 		}
 
-		urlData.add(Pair.of("ssh://www.google.com", Throwable.class));
-		urlData.add(Pair.of("jdbc:some:crap", Throwable.class));
-		urlData.add(Pair.of("some-weird-uri-syntax", Throwable.class));
-		urlData.add(Pair.of("!This is an illegal URI", Throwable.class));
+		urlData.add(Pair.of("ssh://www.google.com", Exception.class));
+		urlData.add(Pair.of("jdbc:some:crap", Exception.class));
+		urlData.add(Pair.of("some-weird-uri-syntax", Exception.class));
+		urlData.add(Pair.of("!This is an illegal URI", Exception.class));
 
 		urlData.forEach((p) -> {
 			final String uri = p.getLeft();
@@ -270,14 +270,14 @@ public class ResourceLoaderTest {
 				new URI(uri);
 			} catch (URISyntaxException e) {
 				// If we can't build a URI, we shold expect the test to fail
-				result = Throwable.class;
+				result = Exception.class;
 			}
 
 			URL url = null;
-			Throwable raised = null;
+			Exception raised = null;
 			try {
 				url = ResourceLoader.getResource(uri);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				raised = t;
 			}
 
@@ -321,7 +321,7 @@ public class ResourceLoaderTest {
 				return;
 			}
 
-			if (Throwable.class == result) {
+			if (Exception.class == result) {
 				// Not supported, should have raised an exception
 				Assertions.assertNotNull(raised,
 					String.format("Did not raise an exception for known-bad URL [%s]", uri));

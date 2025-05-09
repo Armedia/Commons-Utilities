@@ -100,7 +100,7 @@ public class SpyWriter extends FilterWriter {
 		super.write(b, off, len);
 		try {
 			this.spy.accept(buf);
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			// Do nothing... ignore the problem
 		}
 	}
@@ -111,7 +111,7 @@ public class SpyWriter extends FilterWriter {
 		super.write(str, off, len);
 		try {
 			this.spy.accept(CharBuffer.wrap(str).asReadOnlyBuffer());
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			// Do nothing... ignore the problem
 		}
 	}

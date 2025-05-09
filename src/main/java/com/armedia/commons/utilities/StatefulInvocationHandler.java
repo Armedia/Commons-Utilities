@@ -41,9 +41,9 @@ public abstract class StatefulInvocationHandler<T> implements InvocationHandler 
 	}
 
 	@Override
-	public final Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	public final Object invoke(Object proxy, Method method, Object[] args) throws Exception {
 		return invoke(getState(), proxy, method, args);
 	}
 
-	protected abstract Object invoke(T state, Object proxy, Method method, Object[] args) throws Throwable;
+	protected abstract Object invoke(T state, Object proxy, Method method, Object[] args) throws Exception;
 }

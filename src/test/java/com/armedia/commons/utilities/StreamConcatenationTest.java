@@ -1773,9 +1773,9 @@ public final class StreamConcatenationTest {
 		try {
 			stream.close();
 			Assertions.fail("ref close did not throw");
-		} catch (Throwable expected) {
+		} catch (Exception expected) {
 			Assertions.assertTrue(expected instanceof StreamConcatenationTest.E1, "ref thrown type");
-			Throwable[] suppressed = expected.getSuppressed();
+			Exception[] suppressed = expected.getSuppressed();
 			Assertions.assertEquals(2, suppressed.length, "ref suppressed length");
 			Assertions.assertTrue(suppressed[0] instanceof StreamConcatenationTest.E2, "ref suppressed type 1");
 			Assertions.assertTrue(suppressed[1] instanceof StreamConcatenationTest.E3, "ref suppressed type 2");
@@ -1783,9 +1783,9 @@ public final class StreamConcatenationTest {
 		try {
 			intStream.close();
 			Assertions.fail("int close did not throw");
-		} catch (Throwable expected) {
+		} catch (Exception expected) {
 			Assertions.assertTrue(expected instanceof StreamConcatenationTest.E1, "int thrown type");
-			Throwable[] suppressed = expected.getSuppressed();
+			Exception[] suppressed = expected.getSuppressed();
 			Assertions.assertEquals(2, suppressed.length, "int suppressed length");
 			Assertions.assertTrue(suppressed[0] instanceof StreamConcatenationTest.E2, "int suppressed type 1");
 			Assertions.assertTrue(suppressed[1] instanceof StreamConcatenationTest.E3, "int suppressed type 2");
@@ -1793,9 +1793,9 @@ public final class StreamConcatenationTest {
 		try {
 			longStream.close();
 			Assertions.fail("long close did not throw");
-		} catch (Throwable expected) {
+		} catch (Exception expected) {
 			Assertions.assertTrue(expected instanceof StreamConcatenationTest.E1, "long thrown type");
-			Throwable[] suppressed = expected.getSuppressed();
+			Exception[] suppressed = expected.getSuppressed();
 			Assertions.assertEquals(2, suppressed.length, "long suppressed length");
 			Assertions.assertTrue(suppressed[0] instanceof StreamConcatenationTest.E2, "long suppressed type 1");
 			Assertions.assertTrue(suppressed[1] instanceof StreamConcatenationTest.E3, "long suppressed type 2");
@@ -1803,9 +1803,9 @@ public final class StreamConcatenationTest {
 		try {
 			doubleStream.close();
 			Assertions.fail("double close did not throw");
-		} catch (Throwable expected) {
+		} catch (Exception expected) {
 			Assertions.assertTrue(expected instanceof StreamConcatenationTest.E1, "double thrown type");
-			Throwable[] suppressed = expected.getSuppressed();
+			Exception[] suppressed = expected.getSuppressed();
 			Assertions.assertEquals(2, suppressed.length, "double suppressed length");
 			Assertions.assertTrue(suppressed[0] instanceof StreamConcatenationTest.E2, "double suppressed type 1");
 			Assertions.assertTrue(suppressed[1] instanceof StreamConcatenationTest.E3, "double suppressed type 2");

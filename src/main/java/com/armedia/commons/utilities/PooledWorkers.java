@@ -102,7 +102,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 		}
 
 		@SuppressWarnings("unchecked")
-		private EX castException(Throwable raised) {
+		private EX castException(Exception raised) {
 			return (EX) raised;
 		}
 
@@ -111,7 +111,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 			final STATE state;
 			try {
 				state = this.logic.initialize(PooledWorkers.this);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				PooledWorkers.this.startupLatch.countDown();
 				workerThreadExited("Failed to initialize the worker state", null, castException(t));
 				return;
@@ -162,7 +162,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 						// processing method
 						Thread.interrupted();
 						this.logic.process(state, item);
-					} catch (Throwable t) {
+					} catch (Exception t) {
 						this.logic.handleFailure(state, item, castException(t));
 					}
 				}
@@ -247,7 +247,7 @@ public final class PooledWorkers<STATE, ITEM> extends BaseShareableLockable {
 	 * @param state
 	 * @param thrown
 	 */
-	protected void workerThreadExited(String message, STATE state, Throwable thrown) {
+	protected void workerThreadExited(String message, STATE state, Exception thrown) {
 		if (state == null) {
 			// Failed to initialize
 			this.log.debug(message, thrown);

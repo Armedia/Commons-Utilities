@@ -46,15 +46,15 @@ public class ResourceLoaderExceptionTest {
 	}
 
 	@Test
-	public void testResourceLoaderExceptionThrowable() {
-		Throwable cause = new Throwable();
+	public void testResourceLoaderExceptionException() {
+		Exception cause = new Exception();
 		ResourceLoaderException ex = new ResourceLoaderException(cause);
 		Assertions.assertSame(cause, ex.getCause());
 	}
 
 	@Test
-	public void testResourceLoaderExceptionStringThrowable() {
-		Throwable cause = new Throwable();
+	public void testResourceLoaderExceptionStringException() {
+		Exception cause = new Exception();
 		for (int i = 0; i < 10; i++) {
 			String msg = String.format("%02d", i);
 			ResourceLoaderException ex = new ResourceLoaderException(msg, cause);
@@ -64,8 +64,8 @@ public class ResourceLoaderExceptionTest {
 	}
 
 	@Test
-	public void testResourceLoaderExceptionStringThrowableBooleanBoolean() {
-		Throwable cause = new Throwable();
+	public void testResourceLoaderExceptionStringExceptionBooleanBoolean() {
+		Exception cause = new Exception();
 		ResourceLoaderException ex = null;
 		for (int i = 0; i < 10; i++) {
 			String msg = String.format("%02d", i);

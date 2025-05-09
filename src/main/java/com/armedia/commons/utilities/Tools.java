@@ -1023,7 +1023,7 @@ public class Tools {
 		return Collections.unmodifiableMap(m);
 	}
 
-	public static String dumpStackTrace(Throwable t) {
+	public static String dumpStackTrace(Exception t) {
 		if (t == null) { return null; }
 		try (StringWriter sw = new StringWriter()) {
 			try (PrintWriter pw = new PrintWriter(sw)) {
@@ -1039,8 +1039,8 @@ public class Tools {
 
 	public static String dumpStackTrace() {
 		try {
-			throw new Throwable("Stack trace dump");
-		} catch (Throwable thrown) {
+			throw new Exception("Stack trace dump");
+		} catch (Exception thrown) {
 			return Tools.dumpStackTrace(thrown);
 		}
 	}
@@ -2006,7 +2006,7 @@ public class Tools {
 	 * @param targetClass
 	 *
 	 */
-	public static <T extends Throwable> T findRootCause(Throwable t, Class<T> targetClass) {
+	public static <T extends Exception> T findRootCause(Exception t, Class<T> targetClass) {
 		if (t == null) { return null; }
 		if (targetClass == null) {
 			throw new IllegalArgumentException("Must supply a target class to compare against");
@@ -2028,7 +2028,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static Throwable findRootCause(Throwable t) {
+	public static Exception findRootCause(Exception t) {
 		if (t == null) { return null; }
 		while ((t.getCause() != null) && (t.getCause() != t)) {
 			t = t.getCause();
@@ -2042,7 +2042,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static String getRootThrownMessage(Throwable t) {
+	public static String getRootThrownMessage(Exception t) {
 		t = Tools.findRootCause(t);
 		if (t == null) { return null; }
 		return Tools.getThrownMessage(t);
@@ -2055,7 +2055,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static String getThrownMessage(Throwable t) {
+	public static String getThrownMessage(Exception t) {
 		if (t.getMessage() == null) { return t.getClass().getCanonicalName(); }
 		return t.getMessage();
 	}
@@ -2066,7 +2066,7 @@ public class Tools {
 	 * @param t
 	 *
 	 */
-	public static String getStackTrace(Throwable t) {
+	public static String getStackTrace(Exception t) {
 		StringWriter writer = new StringWriter();
 		PrintWriter pw = new PrintWriter(writer);
 		t.printStackTrace(pw);
