@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -50,7 +50,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 	private final ServiceLoader<S> loader;
 
 	private Predicate<S> defaultSelector = null;
-	private BiConsumer<Class<?>, Exception> listener = null;
+	private BiConsumer<Class<?>, Throwable> listener = null;
 	private boolean hideErrors = false;
 
 	public PluggableServiceLocator(Class<S> serviceClass) {
@@ -104,11 +104,11 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 		this.defaultSelector = defaultSelector;
 	}
 
-	public final BiConsumer<Class<?>, Exception> getErrorListener() {
+	public final BiConsumer<Class<?>, Throwable> getErrorListener() {
 		return this.listener;
 	}
 
-	public final void setErrorListener(BiConsumer<Class<?>, Exception> listener) {
+	public final void setErrorListener(BiConsumer<Class<?>, Throwable> listener) {
 		this.listener = listener;
 	}
 
@@ -180,12 +180,12 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 				: selector);
 			private final Class<S> serviceClass = PluggableServiceLocator.this.serviceClass;
 			private final Iterator<S> it = PluggableServiceLocator.this.loader.iterator();
-			private final BiConsumer<Class<?>, Exception> listener = PluggableServiceLocator.this.listener;
+			private final BiConsumer<Class<?>, Throwable> listener = PluggableServiceLocator.this.listener;
 			private final boolean hideErrors = PluggableServiceLocator.this.hideErrors;
 
 			private S current = null;
 
-			private void handleThrown(Exception t) {
+			private void handleThrown(Throwable t) {
 				if (this.hideErrors) { return; }
 				if (this.listener == null) {
 					if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
@@ -193,7 +193,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 				}
 				try {
 					this.listener.accept(this.serviceClass, t);
-				} catch (Exception t2) {
+				} catch (Throwable t2) {
 					// Do nothing...
 				}
 			}
@@ -210,7 +210,7 @@ public class PluggableServiceLocator<S> implements Iterable<S> {
 								break;
 							}
 							next = this.it.next();
-						} catch (Exception t) {
+						} catch (Throwable t) {
 							handleThrown(t);
 							continue;
 						}

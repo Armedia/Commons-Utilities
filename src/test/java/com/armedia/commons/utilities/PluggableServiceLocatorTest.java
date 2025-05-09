@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -239,8 +239,8 @@ public class PluggableServiceLocatorTest {
 		{
 			PluggableServiceLocator<BadService> badLocator = new PluggableServiceLocator<>(BadService.class);
 			Assertions.assertFalse(badLocator.isHideErrors());
-			final AtomicReference<Exception> exception = new AtomicReference<>();
-			BiConsumer<Class<?>, Exception> listener = (serviceClass, e) -> exception.set(e);
+			final AtomicReference<Throwable> exception = new AtomicReference<>();
+			BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
 			badLocator.setErrorListener(listener);
 			Assertions.assertSame(listener, badLocator.getErrorListener());
 			Assertions.assertThrows(NoSuchElementException.class, () -> badLocator.getFirst());
@@ -336,8 +336,8 @@ public class PluggableServiceLocatorTest {
 		Assertions.assertFalse(badLocator.getAll().hasNext());
 
 		badLocator = new PluggableServiceLocator<>(BadService.class);
-		final AtomicReference<Exception> exception = new AtomicReference<>();
-		BiConsumer<Class<?>, Exception> listener = (serviceClass, e) -> exception.set(e);
+		final AtomicReference<Throwable> exception = new AtomicReference<>();
+		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
 		badLocator.setErrorListener(listener);
 		Assertions.assertSame(listener, badLocator.getErrorListener());
 		Assertions.assertFalse(badLocator.getAll().hasNext());
@@ -450,8 +450,8 @@ public class PluggableServiceLocatorTest {
 		Assertions.assertFalse(badLocator.iterator().hasNext());
 
 		badLocator = new PluggableServiceLocator<>(BadService.class);
-		final AtomicReference<Exception> exception = new AtomicReference<>();
-		BiConsumer<Class<?>, Exception> listener = (serviceClass, e) -> exception.set(e);
+		final AtomicReference<Throwable> exception = new AtomicReference<>();
+		BiConsumer<Class<?>, Throwable> listener = (serviceClass, e) -> exception.set(e);
 		badLocator.setErrorListener(listener);
 		Assertions.assertSame(listener, badLocator.getErrorListener());
 		Assertions.assertFalse(badLocator.iterator().hasNext());
