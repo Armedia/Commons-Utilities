@@ -44,7 +44,7 @@
 	</scm>
 
 	<properties>
-        <revision>1.3.12</revision>
+        <revision>1.3.12-SNAPSHOT</revision>
 		<maven.min-version>3.3.9</maven.min-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.build.target>1.8</project.build.target>
@@ -61,8 +61,6 @@
 		<logback.version>1.2.3</logback.version>
 		<log4j.version>2.19.0</log4j.version>
 		<jaxb-impl.version>2.3.0.1</jaxb-impl.version>
-
-		<build.number>-SNAPSHOT-${scmBranch}-${buildNumber}</build.number>
 	</properties>
 
 	<distributionManagement>
@@ -186,7 +184,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>${project.artifactId}-${project.version}${build.number}</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -398,41 +395,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>release</id>
-			<properties>
-				<build.number></build.number>
-			</properties>
-		</profile>
-		<profile>
-			<id>beta</id>
-			<properties>
-				<build.number>-beta-${betaNumber}</build.number>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-enforcer-plugin</artifactId>
-						<version>1.4.1</version>
-						<configuration>
-							<rules>
-								<requireMavenVersion>
-									<version>${maven.min-version}</version>
-								</requireMavenVersion>
-								<requireProperty>
-									<property>betaNumber</property>
-									<message>Must provide a valid betaNumber property (-DbetaNumber=...) for this build</message>
-									<regex>^[0-9]*[1-9]0?$</regex>
-									<regexMessage>The beta number [${betaNumber}] is not composed of all digits, or is not a valid number (it may not be all-zeros, but may have leading zeros)</regexMessage>
-								</requireProperty>
-							</rules>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>
