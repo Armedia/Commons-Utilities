@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -29,7 +29,7 @@ package com.armedia.commons.utilities.function;
 import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface CheckedSupplier<T, EX extends Throwable> extends Supplier<T> {
+public interface CheckedSupplier<T, EX extends Exception> extends Supplier<T> {
 
 	public T getChecked() throws EX;
 
@@ -37,7 +37,7 @@ public interface CheckedSupplier<T, EX extends Throwable> extends Supplier<T> {
 	public default T get() {
 		try {
 			return getChecked();
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			throw new RuntimeException(t.getMessage(), t);
 		}
 	}

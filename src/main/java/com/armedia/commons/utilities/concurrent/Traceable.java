@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -62,14 +62,14 @@ public interface Traceable {
 		return MessageFormatter.arrayFormat(format, args).getMessage();
 	}
 
-	public default <E extends Throwable> void trace(CheckedRunnable<E> r, String method, Object... args) throws E {
+	public default <E extends Exception> void trace(CheckedRunnable<E> r, String method, Object... args) throws E {
 		trace(() -> {
 			r.runChecked();
 			return null;
 		}, method, args);
 	}
 
-	public default <V, E extends Throwable> V trace(CheckedSupplier<V, E> s, String method, Object... args) throws E {
+	public default <V, E extends Exception> V trace(CheckedSupplier<V, E> s, String method, Object... args) throws E {
 		final String argStr = Traceable.formatArgs(args);
 		final Logger log = getLog();
 		final Instant start = Instant.now();

@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -280,12 +280,12 @@ public class BinaryMemoryBufferTest implements GoodService {
 	}
 
 	@Test
-	public void testBlockingInput() throws Throwable {
+	public void testBlockingInput() throws Exception {
 
 		BinaryMemoryBuffer b = new BinaryMemoryBuffer();
 		final InputStream in = b.getInputStream();
 		final AtomicInteger counter = new AtomicInteger(0);
-		final AtomicReference<Throwable> thrown = new AtomicReference<>();
+		final AtomicReference<Exception> thrown = new AtomicReference<>();
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final int blockTimeMs = 100;
 		final int itemCount = 64;
@@ -323,7 +323,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 						counter.incrementAndGet();
 					}
 					finished.set(true);
-				} catch (Throwable t) {
+				} catch (Exception t) {
 					thrown.set(t);
 				} finally {
 					ioBarrier.reset();
@@ -378,7 +378,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 			Thread.currentThread().interrupt();
 		}
 		t.interrupt();
-		Throwable ex = thrown.get();
+		Exception ex = thrown.get();
 		try {
 			if (ex != null) {
 				Assertions.fail(String.format("Failed to complete the read, caught an exception: %s", ex), ex);
@@ -393,7 +393,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 	@Test
 	public void testBlockingInputClosure() {
 		BinaryMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<>();
+		final AtomicReference<Exception> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final AtomicReference<InputStream> in = new AtomicReference<>();
@@ -408,7 +408,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read();
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -421,7 +421,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read(buf);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -434,7 +434,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read(buf, 10, 20);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -483,7 +483,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 	@Test
 	public void testBlockingInputPartialRead() throws IOException {
 		BinaryMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<>();
+		final AtomicReference<Exception> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final AtomicReference<InputStream> in = new AtomicReference<>();
@@ -498,7 +498,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read();
 							Assertions.assertFalse(r == -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -511,7 +511,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read(buf);
 							Assertions.assertEquals(r, 1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -524,7 +524,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read(buf, 0, 128);
 							Assertions.assertEquals(r, 1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -574,7 +574,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 	@Test
 	public void testBlockingInputInterruption() {
 		BinaryMemoryBuffer b = null;
-		final AtomicReference<Throwable> thrown = new AtomicReference<>();
+		final AtomicReference<Exception> thrown = new AtomicReference<>();
 		final AtomicBoolean started = new AtomicBoolean(false);
 		final AtomicBoolean finished = new AtomicBoolean(false);
 		final AtomicReference<InputStream> in = new AtomicReference<>();
@@ -589,7 +589,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read();
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -602,7 +602,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read(buf);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}
@@ -615,7 +615,7 @@ public class BinaryMemoryBufferTest implements GoodService {
 							int r = in.get().read(buf, 10, 20);
 							Assertions.assertEquals(r, -1);
 							finished.set(true);
-						} catch (Throwable t) {
+						} catch (Exception t) {
 							thrown.set(t);
 						}
 					}

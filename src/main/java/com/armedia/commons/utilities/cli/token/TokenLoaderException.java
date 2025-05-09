@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -35,12 +35,12 @@ public class TokenLoaderException extends CommandLineException {
 		super();
 	}
 
-	public TokenLoaderException(String message, Throwable cause, boolean enableSuppression,
+	public TokenLoaderException(String message, Exception cause, boolean enableSuppression,
 		boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
-	public TokenLoaderException(String message, Throwable cause) {
+	public TokenLoaderException(String message, Exception cause) {
 		super(message, cause);
 	}
 
@@ -48,7 +48,7 @@ public class TokenLoaderException extends CommandLineException {
 		super(message);
 	}
 
-	public TokenLoaderException(Throwable cause) {
+	public TokenLoaderException(Exception cause) {
 		super(cause);
 	}
 }

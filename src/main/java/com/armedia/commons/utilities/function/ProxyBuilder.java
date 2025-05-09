@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -52,7 +52,7 @@ public final class ProxyBuilder {
 
 	@FunctionalInterface
 	public static interface MethodSubstitute {
-		public Object invoke(Object target, Method method, Object[] args) throws Throwable;
+		public Object invoke(Object target, Method method, Object[] args) throws Exception;
 	}
 
 	@FunctionalInterface
@@ -62,7 +62,7 @@ public final class ProxyBuilder {
 
 	@FunctionalInterface
 	public static interface ResultProcessor {
-		public Object processResult(Method method, Object[] args, Object result, Throwable thrown);
+		public Object processResult(Method method, Object[] args, Object result, Exception thrown);
 	}
 
 	@FunctionalInterface
@@ -72,7 +72,7 @@ public final class ProxyBuilder {
 
 	@FunctionalInterface
 	public static interface ExceptionHandler {
-		public Object handleException(Object target, Method method, Object[] args, Throwable thrown) throws Throwable;
+		public Object handleException(Object target, Method method, Object[] args, Exception thrown) throws Exception;
 	}
 
 	@FunctionalInterface
@@ -82,7 +82,7 @@ public final class ProxyBuilder {
 
 	@FunctionalInterface
 	public static interface FinallyProcessor {
-		public void processFinally(Method method, Object[] args, Object result, Throwable thrown);
+		public void processFinally(Method method, Object[] args, Object result, Exception thrown);
 	}
 
 	private final BaseShareableLockable lock = new BaseShareableLockable();
@@ -223,7 +223,7 @@ public final class ProxyBuilder {
 			return args;
 		}
 
-		private Object substituteMethod(Method method, Object[] args) throws Throwable {
+		private Object substituteMethod(Method method, Object[] args) throws Exception {
 			if (this.methodSubstituteSelector != null) {
 				MethodSubstitute methodSubstitute = this.methodSubstituteSelector.selectMethodSubstitute(method, args);
 				if (methodSubstitute != null) { return methodSubstitute.invoke(this.target, method, args); }
@@ -231,7 +231,7 @@ public final class ProxyBuilder {
 			return method.invoke(this.target, args);
 		}
 
-		private Object processResult(Object result, Method method, Object[] args, Throwable thrown) {
+		private Object processResult(Object result, Method method, Object[] args, Exception thrown) {
 			if (this.resultProcessorSelector != null) {
 				ResultProcessor resultProcessor = this.resultProcessorSelector.selectResultProcessor(method, args);
 				if (resultProcessor != null) { return resultProcessor.processResult(method, args, result, thrown); }
@@ -239,7 +239,7 @@ public final class ProxyBuilder {
 			return result;
 		}
 
-		private Object handleException(Throwable thrown, Method method, Object[] args) throws Throwable {
+		private Object handleException(Exception thrown, Method method, Object[] args) throws Exception {
 			if (this.exceptionHandlerSelector != null) {
 				ExceptionHandler exceptionHandler = this.exceptionHandlerSelector.selectExceptionHandler(method, args);
 				if (exceptionHandler != null) {
@@ -249,7 +249,7 @@ public final class ProxyBuilder {
 			throw thrown;
 		}
 
-		private void processFinally(Method method, Object[] args, Object result, Throwable thrown) {
+		private void processFinally(Method method, Object[] args, Object result, Exception thrown) {
 			// By default, do nothing...
 			if (this.finallyProcessor != null) {
 				this.finallyProcessor.processFinally(method, args, result, thrown);
@@ -257,9 +257,9 @@ public final class ProxyBuilder {
 		}
 
 		@Override
-		public final Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		public final Object invoke(Object proxy, Method method, Object[] args) throws Exception {
 			Object returned = null;
-			Throwable thrown = null;
+			Exception thrown = null;
 			try {
 				// Adjust the arguments
 				args = processArguments(method, args);
@@ -272,7 +272,7 @@ public final class ProxyBuilder {
 
 				// Return the results
 				return (returned = result);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				// Handle the exception, in case we want to swallow it or turn it into something
 				// else
 				Object result = handleException(thrown = t, method, args);

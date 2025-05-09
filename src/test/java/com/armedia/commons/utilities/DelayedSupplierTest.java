@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -120,7 +120,7 @@ public class DelayedSupplierTest {
 		final CyclicBarrier barrier = new CyclicBarrier(3);
 
 		final AtomicLong wA = new AtomicLong(0);
-		final AtomicReference<Throwable> eA = new AtomicReference<>();
+		final AtomicReference<Exception> eA = new AtomicReference<>();
 		final AtomicReference<Object> rA = new AtomicReference<>();
 		final Thread tA = new Thread(() -> {
 			try {
@@ -131,7 +131,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wA.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eA.set(t);
 			}
 		});
@@ -139,7 +139,7 @@ public class DelayedSupplierTest {
 		tA.start();
 
 		final AtomicLong wB = new AtomicLong(0);
-		final AtomicReference<Throwable> eB = new AtomicReference<>();
+		final AtomicReference<Exception> eB = new AtomicReference<>();
 		final AtomicReference<Object> rB = new AtomicReference<>();
 		final Thread tB = new Thread(() -> {
 			try {
@@ -150,7 +150,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wB.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eB.set(t);
 			}
 		});
@@ -185,7 +185,7 @@ public class DelayedSupplierTest {
 		final CyclicBarrier barrier = new CyclicBarrier(3);
 
 		final AtomicLong wA = new AtomicLong(0);
-		final AtomicReference<Throwable> eA = new AtomicReference<>();
+		final AtomicReference<Exception> eA = new AtomicReference<>();
 		final AtomicReference<Object> rA = new AtomicReference<>();
 		final Thread tA = new Thread(() -> {
 			try {
@@ -196,7 +196,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wA.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eA.set(t);
 			}
 		});
@@ -204,7 +204,7 @@ public class DelayedSupplierTest {
 		tA.start();
 
 		final AtomicLong wB = new AtomicLong(0);
-		final AtomicReference<Throwable> eB = new AtomicReference<>();
+		final AtomicReference<Exception> eB = new AtomicReference<>();
 		final AtomicReference<Object> rB = new AtomicReference<>();
 		final Thread tB = new Thread(() -> {
 			try {
@@ -215,7 +215,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wB.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eB.set(t);
 			}
 		});
@@ -250,7 +250,7 @@ public class DelayedSupplierTest {
 		final CyclicBarrier barrier = new CyclicBarrier(3);
 
 		final AtomicLong wA = new AtomicLong(0);
-		final AtomicReference<Throwable> eA = new AtomicReference<>();
+		final AtomicReference<Exception> eA = new AtomicReference<>();
 		final AtomicReference<Object> rA = new AtomicReference<>();
 		final Thread tA = new Thread(() -> {
 			try {
@@ -261,7 +261,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wA.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eA.set(t);
 			}
 		});
@@ -269,7 +269,7 @@ public class DelayedSupplierTest {
 		tA.start();
 
 		final AtomicLong wB = new AtomicLong(0);
-		final AtomicReference<Throwable> eB = new AtomicReference<>();
+		final AtomicReference<Exception> eB = new AtomicReference<>();
 		final AtomicReference<Object> rB = new AtomicReference<>();
 		final Thread tB = new Thread(() -> {
 			try {
@@ -280,7 +280,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wB.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eB.set(t);
 			}
 		});
@@ -312,7 +312,7 @@ public class DelayedSupplierTest {
 		final CyclicBarrier barrier = new CyclicBarrier(3);
 
 		final AtomicLong wA = new AtomicLong(0);
-		final AtomicReference<Throwable> eA = new AtomicReference<>();
+		final AtomicReference<Exception> eA = new AtomicReference<>();
 		final AtomicReference<Object> rA = new AtomicReference<>();
 		final Thread tA = new Thread(() -> {
 			try {
@@ -323,7 +323,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wA.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eA.set(t);
 			}
 		});
@@ -331,7 +331,7 @@ public class DelayedSupplierTest {
 		tA.start();
 
 		final AtomicLong wB = new AtomicLong(0);
-		final AtomicReference<Throwable> eB = new AtomicReference<>();
+		final AtomicReference<Exception> eB = new AtomicReference<>();
 		final AtomicReference<Object> rB = new AtomicReference<>();
 		final Thread tB = new Thread(() -> {
 			try {
@@ -342,7 +342,7 @@ public class DelayedSupplierTest {
 				} finally {
 					wB.set(System.nanoTime() - start);
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				eB.set(t);
 			}
 		});

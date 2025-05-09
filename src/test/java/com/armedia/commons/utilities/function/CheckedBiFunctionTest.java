@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedBiFunctionTest {
 
 	@Test
-	public void testApplyChecked() throws Throwable {
-		CheckedBiFunction<String, Double, UUID, Throwable> f = null;
+	public void testApplyChecked() throws Exception {
+		CheckedBiFunction<String, Double, UUID, Exception> f = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -57,7 +57,7 @@ public class CheckedBiFunctionTest {
 
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		f = (s, n) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -66,14 +66,14 @@ public class CheckedBiFunctionTest {
 		try {
 			f.applyChecked(string.get(), number.get());
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testApply() {
-		CheckedBiFunction<String, Double, UUID, Throwable> f = null;
+		CheckedBiFunction<String, Double, UUID, Exception> f = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -92,7 +92,7 @@ public class CheckedBiFunctionTest {
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
 		uuid.set(UUID.randomUUID());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		f = (s, n) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -109,9 +109,9 @@ public class CheckedBiFunctionTest {
 	}
 
 	@Test
-	public void testAndThen() throws Throwable {
-		CheckedBiFunction<String, Double, UUID, Throwable> a = null;
-		CheckedBiFunction<String, Double, Long, Throwable> b = null;
+	public void testAndThen() throws Exception {
+		CheckedBiFunction<String, Double, UUID, Exception> a = null;
+		CheckedBiFunction<String, Double, Long, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final Random r = new Random(System.nanoTime());
@@ -143,7 +143,7 @@ public class CheckedBiFunctionTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -163,7 +163,7 @@ public class CheckedBiFunctionTest {
 			try {
 				b.applyChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -173,7 +173,7 @@ public class CheckedBiFunctionTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -193,7 +193,7 @@ public class CheckedBiFunctionTest {
 			try {
 				b.applyChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -203,7 +203,7 @@ public class CheckedBiFunctionTest {
 		}
 
 		{
-			CheckedBiFunction<String, Double, UUID, Throwable> n = (x, y) -> null;
+			CheckedBiFunction<String, Double, UUID, Exception> n = (x, y) -> null;
 			Assertions.assertThrows(NullPointerException.class, () -> n.andThen(null));
 		}
 	}

@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  *
@@ -47,7 +47,7 @@ import com.armedia.commons.utilities.function.TriConsumer;
  * @param <STATE>
  * @param <ITEM>
  */
-public final class FunctionalPooledWorkersLogic<STATE, ITEM, EX extends Throwable>
+public final class FunctionalPooledWorkersLogic<STATE, ITEM, EX extends Exception>
 	implements PooledWorkersLogic<STATE, ITEM, EX> {
 
 	private final CheckedFunction<PooledWorkers<STATE, ITEM>, STATE, EX> initializer;

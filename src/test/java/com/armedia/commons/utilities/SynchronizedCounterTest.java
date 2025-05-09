@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -220,7 +220,7 @@ public class SynchronizedCounterTest {
 				barrier.await();
 				c.waitUntilValue(now);
 				success.set(true);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -242,7 +242,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				Assertions.assertTrue(c.waitUntilValue(now, 200, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -257,7 +257,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				Assertions.assertFalse(c.waitUntilValue(now, 10, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -278,7 +278,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged());
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -301,7 +301,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged(200, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});
@@ -317,7 +317,7 @@ public class SynchronizedCounterTest {
 			try {
 				barrier.await();
 				newValue.set(c.waitUntilChanged(10, TimeUnit.MILLISECONDS));
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				throw new RuntimeException(t);
 			}
 		});

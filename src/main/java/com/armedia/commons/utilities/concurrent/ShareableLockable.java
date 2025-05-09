@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -195,7 +195,7 @@ public interface ShareableLockable extends MutexLockable {
 	 * @throws NullPointerException
 	 *             if {@code operation} is {@code null}
 	 */
-	public default <E, EX extends Throwable> E shareLocked(CheckedSupplier<E, EX> operation) throws EX {
+	public default <E, EX extends Exception> E shareLocked(CheckedSupplier<E, EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
 		try (SharedAutoLock l = sharedAutoLock()) {
 			return operation.getChecked();
@@ -227,7 +227,7 @@ public interface ShareableLockable extends MutexLockable {
 	 * @throws NullPointerException
 	 *             if {@code operation} is {@code null}
 	 */
-	public default <EX extends Throwable> void shareLocked(CheckedRunnable<EX> operation) throws EX {
+	public default <EX extends Exception> void shareLocked(CheckedRunnable<EX> operation) throws EX {
 		Objects.requireNonNull(operation, "Must provide a non-null operation to invoke");
 		shareLocked(() -> {
 			operation.runChecked();
@@ -304,7 +304,7 @@ public interface ShareableLockable extends MutexLockable {
 	 *         it wasn't.
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Exception> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedFunction<Supplier<Condition>, E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -313,7 +313,7 @@ public interface ShareableLockable extends MutexLockable {
 		return shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
-	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Exception> E shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedSupplier<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -391,7 +391,7 @@ public interface ShareableLockable extends MutexLockable {
 	 *         value returned by the {@code checker} parameter.
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Exception> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedBiFunction<E, Supplier<Condition>, E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -413,7 +413,7 @@ public interface ShareableLockable extends MutexLockable {
 		}
 	}
 
-	public default <E, EX extends Throwable> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Exception> E shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedFunction<E, E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		final CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> writeBlock.applyChecked(e);
@@ -485,7 +485,7 @@ public interface ShareableLockable extends MutexLockable {
 	 * @param writeBlock
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Exception> void shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedConsumer<Supplier<Condition>, EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -494,7 +494,7 @@ public interface ShareableLockable extends MutexLockable {
 		shareLockedUpgradable(null, newDecision, newWriteBlock);
 	}
 
-	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
+	public default <E, EX extends Exception> void shareLockedUpgradable(CheckedSupplier<Boolean, EX> decision,
 		CheckedRunnable<EX> writeBlock) throws EX {
 		Objects.requireNonNull(decision, "Must provide a non-null decision");
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
@@ -567,7 +567,7 @@ public interface ShareableLockable extends MutexLockable {
 	 * @param writeBlock
 	 * @throws EX
 	 */
-	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Exception> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedBiConsumer<E, Supplier<Condition>, EX> writeBlock) throws EX {
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> {
@@ -577,7 +577,7 @@ public interface ShareableLockable extends MutexLockable {
 		shareLockedUpgradable(checker, decision, newWriteBlock);
 	}
 
-	public default <E, EX extends Throwable> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
+	public default <E, EX extends Exception> void shareLockedUpgradable(CheckedSupplier<E, EX> checker,
 		CheckedPredicate<E, EX> decision, CheckedConsumer<E, EX> writeBlock) throws EX {
 		Objects.requireNonNull(writeBlock, "Must provide a non-null writeBlock");
 		CheckedBiFunction<E, Supplier<Condition>, E, EX> newWriteBlock = (e, c) -> {

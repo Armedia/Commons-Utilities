@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedPredicateTest {
 
 	@Test
-	public void testApplyChecked() throws Throwable {
-		CheckedPredicate<String, Throwable> p = null;
+	public void testApplyChecked() throws Exception {
+		CheckedPredicate<String, Exception> p = null;
 
 		final Random r = new Random(System.nanoTime());
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -54,7 +54,7 @@ public class CheckedPredicateTest {
 		Assertions.assertEquals(bool.get(), p.testChecked(string.get()));
 
 		string.set(UUID.randomUUID().toString());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		p = (s) -> {
 			Assertions.assertSame(string.get(), s);
 			throw thrown;
@@ -62,14 +62,14 @@ public class CheckedPredicateTest {
 		try {
 			p.testChecked(string.get());
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testApply() {
-		CheckedPredicate<String, Throwable> p = null;
+		CheckedPredicate<String, Exception> p = null;
 
 		final Random r = new Random(System.nanoTime());
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -85,7 +85,7 @@ public class CheckedPredicateTest {
 
 		string.set(UUID.randomUUID().toString());
 		bool.set(r.nextBoolean());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		p = (s) -> {
 			Assertions.assertSame(string.get(), s);
 			throw thrown;
@@ -101,9 +101,9 @@ public class CheckedPredicateTest {
 	}
 
 	@Test
-	public void testAnd() throws Throwable {
-		CheckedPredicate<String, Throwable> a = null;
-		CheckedPredicate<String, Throwable> b = null;
+	public void testAnd() throws Exception {
+		CheckedPredicate<String, Exception> a = null;
+		CheckedPredicate<String, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -181,7 +181,7 @@ public class CheckedPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -197,7 +197,7 @@ public class CheckedPredicateTest {
 			try {
 				b.testChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -207,7 +207,7 @@ public class CheckedPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -223,7 +223,7 @@ public class CheckedPredicateTest {
 			try {
 				b.testChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -233,15 +233,15 @@ public class CheckedPredicateTest {
 		}
 
 		{
-			CheckedPredicate<String, Throwable> n = (x) -> false;
+			CheckedPredicate<String, Exception> n = (x) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.and(null));
 		}
 	}
 
 	@Test
-	public void testOr() throws Throwable {
-		CheckedPredicate<String, Throwable> a = null;
-		CheckedPredicate<String, Throwable> b = null;
+	public void testOr() throws Exception {
+		CheckedPredicate<String, Exception> a = null;
+		CheckedPredicate<String, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -319,7 +319,7 @@ public class CheckedPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -335,7 +335,7 @@ public class CheckedPredicateTest {
 			try {
 				b.testChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -345,7 +345,7 @@ public class CheckedPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -361,7 +361,7 @@ public class CheckedPredicateTest {
 			try {
 				b.testChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -371,14 +371,14 @@ public class CheckedPredicateTest {
 		}
 
 		{
-			CheckedPredicate<String, Throwable> n = (x) -> false;
+			CheckedPredicate<String, Exception> n = (x) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.or(null));
 		}
 	}
 
 	@Test
-	public void testNegate() throws Throwable {
-		CheckedPredicate<String, Throwable> a = null;
+	public void testNegate() throws Exception {
+		CheckedPredicate<String, Exception> a = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 
@@ -397,7 +397,7 @@ public class CheckedPredicateTest {
 		Assertions.assertTrue(a.negate().test(string.get()));
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
 				Assertions.assertSame(string.get(), s);
@@ -406,16 +406,16 @@ public class CheckedPredicateTest {
 			try {
 				a.negate().testChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 		}
 	}
 
 	@Test
-	public void testXor() throws Throwable {
-		CheckedPredicate<String, Throwable> a = null;
-		CheckedPredicate<String, Throwable> b = null;
+	public void testXor() throws Exception {
+		CheckedPredicate<String, Exception> a = null;
+		CheckedPredicate<String, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -493,7 +493,7 @@ public class CheckedPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -509,7 +509,7 @@ public class CheckedPredicateTest {
 			try {
 				b.testChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -519,7 +519,7 @@ public class CheckedPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -535,7 +535,7 @@ public class CheckedPredicateTest {
 			try {
 				b.testChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -545,7 +545,7 @@ public class CheckedPredicateTest {
 		}
 
 		{
-			CheckedPredicate<String, Throwable> n = (x) -> false;
+			CheckedPredicate<String, Exception> n = (x) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.xor(null));
 		}
 	}

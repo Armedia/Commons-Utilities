@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -372,7 +372,7 @@ public class BaseShareableLockableTest {
 				throw ex;
 			});
 			Assertions.fail("Did not cascade the raised exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(ex, t);
 		}
 		Assertions.assertEquals(0, lock.getReadHoldCount());
@@ -460,7 +460,7 @@ public class BaseShareableLockableTest {
 				throw ex;
 			});
 			Assertions.fail("Did not cascade the raised exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(ex, t);
 		}
 		Assertions.assertFalse(writeLock.isHeldByCurrentThread());
@@ -1282,20 +1282,20 @@ public class BaseShareableLockableTest {
 	}
 
 	@Test
-	public void testRunnableAlwaysChecked() throws Throwable {
+	public void testRunnableAlwaysChecked() throws Exception {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 		final AtomicLong callCount = new AtomicLong(0);
 
 		callCount.set(0);
-		rwl.shareLocked(new CheckedRunnable<Throwable>() {
+		rwl.shareLocked(new CheckedRunnable<Exception>() {
 			@Override
 			public void run() {
 				Assertions.fail("CheckedRunnable.run() should never be called!");
 			}
 
 			@Override
-			public void runChecked() throws Throwable {
+			public void runChecked() throws Exception {
 				callCount.incrementAndGet();
 			}
 		});
@@ -1317,14 +1317,14 @@ public class BaseShareableLockableTest {
 		Assertions.assertEquals(1, callCount.get());
 
 		callCount.set(0);
-		rwl.mutexLocked(new CheckedRunnable<Throwable>() {
+		rwl.mutexLocked(new CheckedRunnable<Exception>() {
 			@Override
 			public void run() {
 				Assertions.fail("CheckedRunnable.run() should never be called!");
 			}
 
 			@Override
-			public void runChecked() throws Throwable {
+			public void runChecked() throws Exception {
 				callCount.incrementAndGet();
 			}
 		});
@@ -1347,13 +1347,13 @@ public class BaseShareableLockableTest {
 	}
 
 	@Test
-	public void testSupplierAlwaysChecked() throws Throwable {
+	public void testSupplierAlwaysChecked() throws Exception {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 		final AtomicLong callCount = new AtomicLong(0);
 
 		callCount.set(0);
-		rwl.shareLocked(new CheckedSupplier<Object, Throwable>() {
+		rwl.shareLocked(new CheckedSupplier<Object, Exception>() {
 			@Override
 			public Object get() {
 				Assertions.fail("CheckedSupplier.get() should never be called!");
@@ -1361,7 +1361,7 @@ public class BaseShareableLockableTest {
 			}
 
 			@Override
-			public Object getChecked() throws Throwable {
+			public Object getChecked() throws Exception {
 				callCount.incrementAndGet();
 				return null;
 			}
@@ -1385,7 +1385,7 @@ public class BaseShareableLockableTest {
 		Assertions.assertEquals(1, callCount.get());
 
 		callCount.set(0);
-		rwl.mutexLocked(new CheckedSupplier<Object, Throwable>() {
+		rwl.mutexLocked(new CheckedSupplier<Object, Exception>() {
 			@Override
 			public Object get() {
 				Assertions.fail("CheckedSupplier.get() should never be called!");
@@ -1393,7 +1393,7 @@ public class BaseShareableLockableTest {
 			}
 
 			@Override
-			public Object getChecked() throws Throwable {
+			public Object getChecked() throws Exception {
 				callCount.incrementAndGet();
 				return null;
 			}
@@ -1418,7 +1418,7 @@ public class BaseShareableLockableTest {
 	}
 
 	@Test
-	public void testAlwaysCheckedInComplexUpgradable() throws Throwable {
+	public void testAlwaysCheckedInComplexUpgradable() throws Exception {
 		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		final BaseShareableLockable rwl = new BaseShareableLockable(lock);
 		final AtomicLong predicateCount = new AtomicLong(0);
@@ -1428,7 +1428,7 @@ public class BaseShareableLockableTest {
 
 		Object expected = null;
 
-		final CheckedSupplier<Object, Throwable> supplier = new CheckedSupplier<Object, Throwable>() {
+		final CheckedSupplier<Object, Exception> supplier = new CheckedSupplier<Object, Exception>() {
 			@Override
 			public Object get() {
 				Assertions.fail("CheckedSupplier.get() should never be called");
@@ -1436,14 +1436,14 @@ public class BaseShareableLockableTest {
 			}
 
 			@Override
-			public Object getChecked() throws Throwable {
+			public Object getChecked() throws Exception {
 				Assertions.assertNotNull(uuid.get()); // for safety
 				supplierCount.incrementAndGet();
 				return uuid.get();
 			}
 		};
 
-		final CheckedPredicate<Object, Throwable> predicate = new CheckedPredicate<Object, Throwable>() {
+		final CheckedPredicate<Object, Exception> predicate = new CheckedPredicate<Object, Exception>() {
 			@Override
 			public boolean test(Object o) {
 				Assertions.fail("CheckedPredicate.test() should never be called");
@@ -1451,7 +1451,7 @@ public class BaseShareableLockableTest {
 			}
 
 			@Override
-			public boolean testChecked(Object o) throws Throwable {
+			public boolean testChecked(Object o) throws Exception {
 				Assertions.assertNotNull(o);
 				predicateCount.incrementAndGet();
 				return true;
@@ -1463,14 +1463,14 @@ public class BaseShareableLockableTest {
 		workerCount.set(0);
 		expected = UUID.randomUUID();
 		uuid.set(expected);
-		rwl.shareLockedUpgradable(supplier, predicate, new CheckedConsumer<Object, Throwable>() {
+		rwl.shareLockedUpgradable(supplier, predicate, new CheckedConsumer<Object, Exception>() {
 			@Override
 			public void accept(Object o) {
 				Assertions.fail("CheckedConsumer.accept() should never be called");
 			}
 
 			@Override
-			public void acceptChecked(Object o) throws Throwable {
+			public void acceptChecked(Object o) throws Exception {
 				Assertions.assertSame(uuid.get(), o);
 				workerCount.incrementAndGet();
 			}
@@ -1484,14 +1484,14 @@ public class BaseShareableLockableTest {
 		workerCount.set(0);
 		expected = UUID.randomUUID();
 		uuid.set(expected);
-		rwl.shareLockedUpgradable(supplier, predicate, new CheckedBiConsumer<Object, Supplier<Condition>, Throwable>() {
+		rwl.shareLockedUpgradable(supplier, predicate, new CheckedBiConsumer<Object, Supplier<Condition>, Exception>() {
 			@Override
 			public void accept(Object o, Supplier<Condition> c) {
 				Assertions.fail("CheckedConsumer.accept() should never be called");
 			}
 
 			@Override
-			public void acceptChecked(Object o, Supplier<Condition> c) throws Throwable {
+			public void acceptChecked(Object o, Supplier<Condition> c) throws Exception {
 				Assertions.assertSame(uuid.get(), o);
 				Assertions.assertNotNull(c);
 				Assertions.assertNotNull(c.get());
@@ -1508,7 +1508,7 @@ public class BaseShareableLockableTest {
 		expected = UUID.randomUUID();
 		uuid.set(expected);
 		Assertions.assertSame(expected,
-			rwl.shareLockedUpgradable(supplier, predicate, new CheckedFunction<Object, Object, Throwable>() {
+			rwl.shareLockedUpgradable(supplier, predicate, new CheckedFunction<Object, Object, Exception>() {
 				@Override
 				public Object apply(Object o) {
 					Assertions.fail("CheckedFunction.apply() should never be called");
@@ -1516,7 +1516,7 @@ public class BaseShareableLockableTest {
 				}
 
 				@Override
-				public Object applyChecked(Object o) throws Throwable {
+				public Object applyChecked(Object o) throws Exception {
 					Assertions.assertSame(uuid.get(), o);
 					workerCount.incrementAndGet();
 					return o;
@@ -1532,7 +1532,7 @@ public class BaseShareableLockableTest {
 		expected = UUID.randomUUID();
 		uuid.set(expected);
 		Assertions.assertSame(expected, rwl.shareLockedUpgradable(supplier, predicate,
-			new CheckedBiFunction<Object, Supplier<Condition>, Object, Throwable>() {
+			new CheckedBiFunction<Object, Supplier<Condition>, Object, Exception>() {
 				@Override
 				public Object apply(Object o, Supplier<Condition> c) {
 					Assertions.fail("CheckedFunction.apply() should never be called");
@@ -1540,7 +1540,7 @@ public class BaseShareableLockableTest {
 				}
 
 				@Override
-				public Object applyChecked(Object o, Supplier<Condition> c) throws Throwable {
+				public Object applyChecked(Object o, Supplier<Condition> c) throws Exception {
 					Assertions.assertSame(uuid.get(), o);
 					Assertions.assertNotNull(c);
 					Assertions.assertNotNull(c.get());

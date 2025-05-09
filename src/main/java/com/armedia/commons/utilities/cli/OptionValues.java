@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- *
+ * 
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- *
+ * 
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -41,6 +41,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,39 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	private final Map<String, List<String>> values = new HashMap<>();
 
 	public static final OptionValues EMPTY = new OptionValues();
+
+	private static <T> T mapWithParser(String str, Function<String, T> parser) {
+		if (str == null) { return null; }
+		return Objects.requireNonNull(parser, "Must provide a parser function").apply(str);
+	}
+
+	private static Boolean mapBoolean(String s) {
+		return OptionValues.mapWithParser(s, Tools::toBoolean);
+	}
+
+	private static Integer mapInteger(String s) {
+		return OptionValues.mapWithParser(s, Integer::valueOf);
+	}
+
+	private static Long mapLong(String s) {
+		return OptionValues.mapWithParser(s, Long::valueOf);
+	}
+
+	private static Float mapFloat(String s) {
+		return OptionValues.mapWithParser(s, Float::valueOf);
+	}
+
+	private static Double mapDouble(String s) {
+		return OptionValues.mapWithParser(s, Double::valueOf);
+	}
+
+	private static BigInteger mapBigInteger(String s) {
+		return OptionValues.mapWithParser(s, BigInteger::new);
+	}
+
+	private static BigDecimal mapBigDecimal(String s) {
+		return OptionValues.mapWithParser(s, BigDecimal::new);
+	}
 
 	OptionValues() {
 		// Do nothing...
@@ -125,9 +159,9 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		if (values == null) {
 			values = Collections.emptyList();
 		} else {
+			final Function<String, String> mapper = Tools.coalesce(p.getValueProcessor(), Option.IDENTITY);
 			values = values.stream() //
-				.sequential() // We use sequential() just in case ...
-				.map(p.getValueProcessor()) // Convert the values however the option sees fit
+				.map(mapper) // Convert the values however the option sees fit
 				.filter(Objects::nonNull) // Remove null values
 				.collect(Collectors.toCollection(LinkedList::new)) // Collect it all
 			;
@@ -170,7 +204,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	}
 
 	public Iterable<OptionValue> shortOptions() {
-		return Tools.freezeList(new ArrayList<>(this.shortOptions.values()));
+		return new ArrayList<>(this.shortOptions.values());
 	}
 
 	public OptionValue getOption(char shortOpt) {
@@ -182,7 +216,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	}
 
 	public Iterable<OptionValue> longOptions() {
-		return Tools.freezeList(new ArrayList<>(this.longOptions.values()));
+		return new ArrayList<>(this.longOptions.values());
 	}
 
 	public OptionValue getOption(String longOpt) {
@@ -207,139 +241,6 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		return this.optionValues.get(key);
 	}
 
-	public Boolean getBoolean(Option param) {
-		String s = getString(param);
-		return (s != null ? Tools.toBoolean(s) : null);
-	}
-
-	public Boolean getBoolean(Option param, Boolean def) {
-		Boolean v = getBoolean(param);
-		return (v != null ? v.booleanValue() : def);
-	}
-
-	public List<Boolean> getBooleans(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Boolean> r = new ArrayList<>(l.size());
-		l.stream().map(Tools::toBoolean).forEach(r::add);
-		return Tools.freezeList(r);
-	}
-
-	public Integer getInteger(Option param) {
-		String s = getString(param);
-		return (s != null ? Integer.valueOf(s) : null);
-	}
-
-	public Integer getInteger(Option param, Integer def) {
-		Integer v = getInteger(param);
-		return (v != null ? v.intValue() : def);
-	}
-
-	public List<Integer> getIntegers(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Integer> r = new ArrayList<>(l.size());
-		l.stream().map(Integer::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
-	}
-
-	public Long getLong(Option param) {
-		String s = getString(param);
-		return (s != null ? Long.valueOf(s) : null);
-	}
-
-	public Long getLong(Option param, Long def) {
-		Long v = getLong(param);
-		return (v != null ? v.longValue() : def);
-	}
-
-	public List<Long> getLongs(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Long> r = new ArrayList<>(l.size());
-		l.stream().map(Long::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
-	}
-
-	public Float getFloat(Option param) {
-		String s = getString(param);
-		return (s != null ? Float.valueOf(s) : null);
-	}
-
-	public Float getFloat(Option param, Float def) {
-		Float v = getFloat(param);
-		return (v != null ? v.floatValue() : def);
-	}
-
-	public List<Float> getFloats(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Float> r = new ArrayList<>(l.size());
-		l.stream().map(Float::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
-	}
-
-	public Double getDouble(Option param) {
-		String s = getString(param);
-		return (s != null ? Double.valueOf(s) : null);
-	}
-
-	public Double getDouble(Option param, Double def) {
-		Double v = getDouble(param);
-		return (v != null ? v.doubleValue() : def);
-	}
-
-	public List<Double> getDoubles(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<Double> r = new ArrayList<>(l.size());
-		l.stream().map(Double::valueOf).forEach(r::add);
-		return Tools.freezeList(r);
-	}
-
-	public BigInteger getBigInteger(Option param) {
-		String s = getString(param);
-		return (s != null ? new BigInteger(s) : null);
-	}
-
-	public BigInteger getBigInteger(Option param, BigInteger def) {
-		BigInteger v = getBigInteger(param);
-		return (v != null ? v : def);
-	}
-
-	public List<BigInteger> getBigIntegers(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<BigInteger> r = new ArrayList<>(l.size());
-		l.stream().map(BigInteger::new).forEach(r::add);
-		return Tools.freezeList(r);
-	}
-
-	public BigDecimal getBigDecimal(Option param) {
-		String s = getString(param);
-		return (s != null ? new BigDecimal(s) : null);
-	}
-
-	public BigDecimal getBigDecimal(Option param, BigDecimal def) {
-		BigDecimal v = getBigDecimal(param);
-		return (v != null ? v : def);
-	}
-
-	public List<BigDecimal> getBigDecimals(Option param) {
-		List<String> l = getStrings(param);
-		if (l == null) { return null; }
-		if (l.isEmpty()) { return Collections.emptyList(); }
-		List<BigDecimal> r = new ArrayList<>(l.size());
-		l.stream().map(BigDecimal::new).forEach(r::add);
-		return Tools.freezeList(r);
-	}
-
 	public String getString(Option param) {
 		List<String> l = getStrings(param);
 		if (l == null) { return param.getDefault(); }
@@ -361,7 +262,111 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	public List<String> getStrings(Option param, List<String> def) {
 		List<String> v = this.values.get(getValidKey(param));
 		if (v == null) { return def; }
-		return v;
+		return new ArrayList<>(v);
+	}
+
+	public <T> T getMapped(Option param, Function<String, T> parser) {
+		return OptionValues.mapWithParser(getString(param), parser);
+	}
+
+	public <T> T getMapped(Option param, Function<String, T> parser, T def) {
+		String str = getString(param);
+		if (str == null) { return def; }
+		return OptionValues.mapWithParser(str, parser);
+	}
+
+	public <T> List<T> getAllMapped(Option param, Function<String, T> parser) {
+		List<String> l = getStrings(param);
+		if (l == null) { return null; }
+		if (l.isEmpty()) { return Collections.emptyList(); }
+		Objects.requireNonNull(param, "Must provide a parser function");
+		List<T> r = new ArrayList<>(l.size());
+		l.stream().map(parser).filter(Objects::nonNull).forEach(r::add);
+		return r;
+	}
+
+	public Boolean getBoolean(Option param) {
+		return getMapped(param, OptionValues::mapBoolean);
+	}
+
+	public Boolean getBoolean(Option param, Boolean def) {
+		return Tools.coalesce(getBoolean(param), def);
+	}
+
+	public List<Boolean> getBooleans(Option param) {
+		return getAllMapped(param, OptionValues::mapBoolean);
+	}
+
+	public Integer getInteger(Option param) {
+		return getMapped(param, OptionValues::mapInteger);
+	}
+
+	public Integer getInteger(Option param, Integer def) {
+		return Tools.coalesce(getInteger(param), def);
+	}
+
+	public List<Integer> getIntegers(Option param) {
+		return getAllMapped(param, OptionValues::mapInteger);
+	}
+
+	public Long getLong(Option param) {
+		return getMapped(param, OptionValues::mapLong);
+	}
+
+	public Long getLong(Option param, Long def) {
+		return Tools.coalesce(getLong(param), def);
+	}
+
+	public List<Long> getLongs(Option param) {
+		return getAllMapped(param, OptionValues::mapLong);
+	}
+
+	public Float getFloat(Option param) {
+		return getMapped(param, OptionValues::mapFloat);
+	}
+
+	public Float getFloat(Option param, Float def) {
+		return Tools.coalesce(getFloat(param), def);
+	}
+
+	public List<Float> getFloats(Option param) {
+		return getAllMapped(param, OptionValues::mapFloat);
+	}
+
+	public Double getDouble(Option param) {
+		return getMapped(param, OptionValues::mapDouble);
+	}
+
+	public Double getDouble(Option param, Double def) {
+		return Tools.coalesce(getDouble(param), def);
+	}
+
+	public List<Double> getDoubles(Option param) {
+		return getAllMapped(param, OptionValues::mapDouble);
+	}
+
+	public BigInteger getBigInteger(Option param) {
+		return getMapped(param, OptionValues::mapBigInteger);
+	}
+
+	public BigInteger getBigInteger(Option param, BigInteger def) {
+		return Tools.coalesce(getBigInteger(param), def);
+	}
+
+	public List<BigInteger> getBigIntegers(Option param) {
+		return getAllMapped(param, OptionValues::mapBigInteger);
+	}
+
+	public BigDecimal getBigDecimal(Option param) {
+		return getMapped(param, OptionValues::mapBigDecimal);
+	}
+
+	public BigDecimal getBigDecimal(Option param, BigDecimal def) {
+		return Tools.coalesce(getBigDecimal(param), def);
+	}
+
+	public List<BigDecimal> getBigDecimals(Option param) {
+		return getAllMapped(param, OptionValues::mapBigDecimal);
 	}
 
 	public <E extends Enum<E>> E getEnum(Class<E> enumClass, Option param) {
@@ -377,6 +382,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		}
 		String value = getString(param);
 		if (value == null) { return null; }
+
 		OptionValueFilter filter = param.getValueFilter();
 		if (EnumValueFilter.class.isInstance(filter)) {
 			EnumValueFilter<?> enumFilter = EnumValueFilter.class.cast(filter);
@@ -478,39 +484,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 
 	public <E extends Enum<E>> Set<E> getEnums(Class<E> enumClass, String allString,
 		BiFunction<Object, Exception, E> invalidHandler, Option param, Set<E> def) {
-		if (enumClass == null) { throw new IllegalArgumentException("Must provide a non-null Enum class"); }
-		if (!enumClass.isEnum()) {
-			throw new IllegalArgumentException(
-				String.format("Class [%s] is not an Enum class", enumClass.getCanonicalName()));
-		}
-		List<String> v = getStrings(param, null);
-		if (v == null) { return def; }
-		Set<E> ret = EnumSet.noneOf(enumClass);
-		OptionValueFilter filter = param.getValueFilter();
-		EnumValueFilter<?> enumFilter = null;
-		if (EnumValueFilter.class.isInstance(filter)) {
-			enumFilter = EnumValueFilter.class.cast(filter);
-		}
-		for (String s : v) {
-			if (StringUtils.equalsIgnoreCase(allString, s)) { return EnumSet.allOf(enumClass); }
-			if (enumFilter != null) {
-				Object o = enumFilter.decode(s);
-				if (o != null) {
-					ret.add(enumClass.cast(o));
-					continue;
-				}
-			}
-			try {
-				ret.add(Enum.valueOf(enumClass, s));
-			} catch (final IllegalArgumentException e) {
-				if (invalidHandler == null) { throw e; }
-				E alt = invalidHandler.apply(ret, e);
-				if (alt != null) {
-					ret.add(alt);
-				}
-			}
-		}
-		return ret;
+		return Tools.coalesce(getEnums(enumClass, allString, invalidHandler, param), def);
 	}
 
 	public boolean isPresent(Option param) {

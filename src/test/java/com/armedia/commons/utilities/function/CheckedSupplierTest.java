@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -35,8 +35,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedSupplierTest {
 
 	@Test
-	public void testGetChecked() throws Throwable {
-		CheckedSupplier<UUID, Throwable> f = null;
+	public void testGetChecked() throws Exception {
+		CheckedSupplier<UUID, Exception> f = null;
 
 		final AtomicReference<UUID> uuid = new AtomicReference<>(null);
 
@@ -44,21 +44,21 @@ public class CheckedSupplierTest {
 		f = () -> uuid.get();
 		Assertions.assertSame(uuid.get(), f.getChecked());
 
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		f = () -> {
 			throw thrown;
 		};
 		try {
 			f.getChecked();
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testGet() {
-		CheckedSupplier<UUID, Throwable> f = null;
+		CheckedSupplier<UUID, Exception> f = null;
 
 		final AtomicReference<UUID> uuid = new AtomicReference<>(null);
 
@@ -67,7 +67,7 @@ public class CheckedSupplierTest {
 		Assertions.assertSame(uuid.get(), f.get());
 
 		uuid.set(UUID.randomUUID());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		f = () -> {
 			throw thrown;
 		};
