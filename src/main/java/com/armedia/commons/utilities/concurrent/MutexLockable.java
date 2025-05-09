@@ -122,7 +122,8 @@ public interface MutexLockable {
 	 *             if {@code operation} is {@code null}
 	 */
 	public default <E> E mutexLocked(Supplier<E> operation) {
-		return mutexLocked(CheckedTools.check(operation));
+		CheckedSupplier<E, RuntimeException> s = CheckedTools.check(operation);
+		return mutexLocked(s);
 	}
 
 	/**
@@ -155,7 +156,8 @@ public interface MutexLockable {
 	 */
 	public default void mutexLocked(Runnable operation) {
 		Objects.requireNonNull(operation, "Must provide an operation to run");
-		mutexLocked(CheckedTools.check(operation));
+		CheckedRunnable<RuntimeException> r = CheckedTools.check(operation);
+		mutexLocked(r);
 	}
 
 	/**

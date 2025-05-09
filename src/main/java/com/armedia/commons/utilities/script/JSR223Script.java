@@ -441,7 +441,8 @@ public final class JSR223Script {
 	}
 
 	public Object eval(Consumer<Bindings> initializer) throws ScriptException, IOException {
-		return eval(initializer != null ? CheckedTools.check(initializer) : null);
+		CheckedConsumer<Bindings, RuntimeException> c = (initializer != null ? CheckedTools.check(initializer) : null);
+		return eval(c);
 	}
 
 	public <EX extends Exception> Object eval(CheckedConsumer<Bindings, EX> initializer)

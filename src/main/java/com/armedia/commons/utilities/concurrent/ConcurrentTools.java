@@ -61,6 +61,7 @@ public class ConcurrentTools {
 	 */
 	public static <K, V> V createIfAbsent(final ConcurrentMap<K, V> map, final K key,
 		final Function<K, V> initializer) {
-		return ConcurrentTools.createIfAbsent(map, key, CheckedTools.check(initializer));
+		CheckedFunction<K, V, RuntimeException> f = CheckedTools.check(initializer);
+		return ConcurrentTools.createIfAbsent(map, key, f);
 	}
 }
