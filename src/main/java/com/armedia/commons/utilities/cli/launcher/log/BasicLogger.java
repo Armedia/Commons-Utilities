@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -77,7 +77,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 
 	private void render(PrintStream str, Level level, FormattingTuple ft) {
 		final Date now = new Date(System.currentTimeMillis());
-		final Exception thrown = ft.getException();
+		final Throwable thrown = ft.getThrowable();
 		final String prefix = formatPrefix(now, Thread.currentThread(), level);
 		if (thrown != null) {
 			str.printf("%s%s%n%s%n", prefix, ft.getMessage(), Tools.dumpStackTrace(thrown));
@@ -124,7 +124,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void trace(String msg, Exception t) {
+	public void trace(String msg, Throwable t) {
 		if (!isTraceEnabled()) { return; }
 		render(System.out, Level.TRACE, MessageFormatter.format(msg, null, t));
 	}
@@ -159,7 +159,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void debug(String msg, Exception t) {
+	public void debug(String msg, Throwable t) {
 		if (!isDebugEnabled()) { return; }
 		render(System.out, Level.DEBUG, MessageFormatter.format(msg, null, t));
 	}
@@ -194,7 +194,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void info(String msg, Exception t) {
+	public void info(String msg, Throwable t) {
 		if (!isInfoEnabled()) { return; }
 		render(System.out, Level.INFO, MessageFormatter.format(msg, null, t));
 	}
@@ -229,7 +229,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void warn(String msg, Exception t) {
+	public void warn(String msg, Throwable t) {
 		if (!isWarnEnabled()) { return; }
 		render(System.err, Level.WARN, MessageFormatter.format(msg, null, t));
 	}
@@ -264,7 +264,7 @@ public class BasicLogger extends MarkerIgnoringBase {
 	}
 
 	@Override
-	public void error(String msg, Exception t) {
+	public void error(String msg, Throwable t) {
 		if (!isErrorEnabled()) { return; }
 		render(System.err, Level.ERROR, MessageFormatter.format(msg, null, t));
 	}
