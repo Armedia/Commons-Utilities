@@ -5,21 +5,21 @@
  * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -227,9 +227,9 @@ public abstract class AbstractEntrypoint {
 		// First things first, find the first launcher
 		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class);
 
-		final List<Exception> exceptions = new ArrayList<>();
+		final List<Throwable> thrown = new ArrayList<>();
 		loader.setHideErrors(false);
-		loader.setErrorListener((c, e) -> exceptions.add(e));
+		loader.setErrorListener((c, e) -> thrown.add(e));
 
 		Iterator<AbstractEntrypoint> it = loader.getAll();
 		if (it.hasNext()) {
@@ -241,10 +241,10 @@ public abstract class AbstractEntrypoint {
 			return entrypoint;
 		} else {
 			AbstractEntrypoint.BOOT_LOG.error("No viable entrypoints were found");
-			if (!exceptions.isEmpty()) {
+			if (!thrown.isEmpty()) {
 				AbstractEntrypoint.BOOT_LOG.error("{} possible entrypoints were found, but failed to load:",
-					exceptions.size());
-				exceptions.forEach((e) -> AbstractEntrypoint.BOOT_LOG.error("Failed Entrypoint", e));
+					thrown.size());
+				thrown.forEach((e) -> AbstractEntrypoint.BOOT_LOG.error("Failed Entrypoint", e));
 			}
 			return null;
 		}
