@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 @FunctionalInterface
-public interface CheckedBiConsumer<T, U, EX extends Throwable> extends BiConsumer<T, U> {
+public interface CheckedBiConsumer<T, U, EX extends Exception> extends BiConsumer<T, U> {
 
 	public void acceptChecked(T t, U u) throws EX;
 
@@ -38,7 +38,7 @@ public interface CheckedBiConsumer<T, U, EX extends Throwable> extends BiConsume
 	public default void accept(T t, U u) {
 		try {
 			acceptChecked(t, u);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

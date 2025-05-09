@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 public class TriFunctionTest {
 
 	@Test
-	public void testApply() throws Throwable {
+	public void testApply() throws Exception {
 		TriFunction<String, Double, Date, UUID> f = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -61,7 +61,7 @@ public class TriFunctionTest {
 	}
 
 	@Test
-	public void testAndThen() throws Throwable {
+	public void testAndThen() throws Exception {
 		TriFunction<String, Double, Date, UUID> a = null;
 		TriFunction<String, Double, Date, Long> b = null;
 

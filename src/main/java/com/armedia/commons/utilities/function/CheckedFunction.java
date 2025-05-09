@@ -30,11 +30,11 @@ import java.util.Objects;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface CheckedFunction<T, R, EX extends Throwable> extends Function<T, R> {
+public interface CheckedFunction<T, R, EX extends Exception> extends Function<T, R> {
 
 	public R applyChecked(T t) throws EX;
 
-	static <T, EX extends Throwable> CheckedFunction<T, T, EX> checkedIdentity() {
+	static <T, EX extends Exception> CheckedFunction<T, T, EX> checkedIdentity() {
 		return (t) -> t;
 	}
 
@@ -42,7 +42,7 @@ public interface CheckedFunction<T, R, EX extends Throwable> extends Function<T,
 	public default R apply(T t) {
 		try {
 			return applyChecked(t);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

@@ -37,8 +37,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedRunnableTest {
 
 	@Test
-	public void testRunChecked() throws Throwable {
-		CheckedRunnable<Throwable> c = null;
+	public void testRunChecked() throws Exception {
+		CheckedRunnable<Exception> c = null;
 
 		final AtomicLong callCount = new AtomicLong(0);
 
@@ -47,7 +47,7 @@ public class CheckedRunnableTest {
 		c.runChecked();
 		Assertions.assertEquals(1, callCount.get());
 
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		c = () -> {
 			callCount.incrementAndGet();
 			throw thrown;
@@ -56,7 +56,7 @@ public class CheckedRunnableTest {
 		try {
 			c.runChecked();
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 		Assertions.assertEquals(1, callCount.get());
@@ -64,7 +64,7 @@ public class CheckedRunnableTest {
 
 	@Test
 	public void testRun() {
-		CheckedRunnable<Throwable> c = null;
+		CheckedRunnable<Exception> c = null;
 
 		final AtomicLong callCount = new AtomicLong(0);
 
@@ -73,7 +73,7 @@ public class CheckedRunnableTest {
 		c.run();
 		Assertions.assertEquals(1, callCount.get());
 
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		c = () -> {
 			callCount.incrementAndGet();
 			throw thrown;
@@ -91,9 +91,9 @@ public class CheckedRunnableTest {
 	}
 
 	@Test
-	public void testAndThenChecked() throws Throwable {
-		CheckedRunnable<Throwable> a = null;
-		CheckedRunnable<Throwable> b = null;
+	public void testAndThenChecked() throws Exception {
+		CheckedRunnable<Exception> a = null;
+		CheckedRunnable<Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 
@@ -107,7 +107,7 @@ public class CheckedRunnableTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			a = () -> {
 				callers.add("a");
@@ -117,7 +117,7 @@ public class CheckedRunnableTest {
 			try {
 				b.runChecked();
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -137,7 +137,7 @@ public class CheckedRunnableTest {
 			try {
 				b.runChecked();
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -147,7 +147,7 @@ public class CheckedRunnableTest {
 		}
 
 		{
-			CheckedRunnable<Throwable> n = () -> {
+			CheckedRunnable<Exception> n = () -> {
 			};
 
 			Assertions.assertThrows(NullPointerException.class, () -> n.andThen((Runnable) null));
@@ -155,9 +155,9 @@ public class CheckedRunnableTest {
 	}
 
 	@Test
-	public void testAndThen() throws Throwable {
-		CheckedRunnable<Throwable> a = null;
-		CheckedRunnable<Throwable> b = null;
+	public void testAndThen() throws Exception {
+		CheckedRunnable<Exception> a = null;
+		CheckedRunnable<Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 
@@ -171,7 +171,7 @@ public class CheckedRunnableTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			a = () -> {
 				callers.add("a");
@@ -181,7 +181,7 @@ public class CheckedRunnableTest {
 			try {
 				b.runChecked();
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -191,7 +191,7 @@ public class CheckedRunnableTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			a = () -> callers.add("a");
 			b = a.andThen(() -> {
@@ -201,7 +201,7 @@ public class CheckedRunnableTest {
 			try {
 				b.runChecked();
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -211,7 +211,7 @@ public class CheckedRunnableTest {
 		}
 
 		{
-			CheckedRunnable<Throwable> n = () -> {
+			CheckedRunnable<Exception> n = () -> {
 			};
 
 			Assertions.assertThrows(NullPointerException.class, () -> n.andThen(null));

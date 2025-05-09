@@ -39,8 +39,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedTriPredicateTest {
 
 	@Test
-	public void testApplyChecked() throws Throwable {
-		CheckedTriPredicate<String, Double, Date, Throwable> p = null;
+	public void testApplyChecked() throws Exception {
+		CheckedTriPredicate<String, Double, Date, Exception> p = null;
 
 		final Random r = new Random(System.nanoTime());
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -63,7 +63,7 @@ public class CheckedTriPredicateTest {
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
 		date.set(new Date());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		p = (s, n, d) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -73,14 +73,14 @@ public class CheckedTriPredicateTest {
 		try {
 			p.testChecked(string.get(), number.get(), date.get());
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testApply() {
-		CheckedTriPredicate<String, Double, Date, Throwable> p = null;
+		CheckedTriPredicate<String, Double, Date, Exception> p = null;
 
 		final Random r = new Random(System.nanoTime());
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -104,7 +104,7 @@ public class CheckedTriPredicateTest {
 		number.set(Math.random());
 		date.set(new Date());
 		bool.set(r.nextBoolean());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		p = (s, n, d) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -122,9 +122,9 @@ public class CheckedTriPredicateTest {
 	}
 
 	@Test
-	public void testAnd() throws Throwable {
-		CheckedTriPredicate<String, Double, Date, Throwable> a = null;
-		CheckedTriPredicate<String, Double, Date, Throwable> b = null;
+	public void testAnd() throws Exception {
+		CheckedTriPredicate<String, Double, Date, Exception> a = null;
+		CheckedTriPredicate<String, Double, Date, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -228,7 +228,7 @@ public class CheckedTriPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -250,7 +250,7 @@ public class CheckedTriPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -260,7 +260,7 @@ public class CheckedTriPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -282,7 +282,7 @@ public class CheckedTriPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -292,15 +292,15 @@ public class CheckedTriPredicateTest {
 		}
 
 		{
-			CheckedTriPredicate<String, Double, Date, Throwable> n = (x, y, z) -> false;
+			CheckedTriPredicate<String, Double, Date, Exception> n = (x, y, z) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.and(null));
 		}
 	}
 
 	@Test
-	public void testOr() throws Throwable {
-		CheckedTriPredicate<String, Double, Date, Throwable> a = null;
-		CheckedTriPredicate<String, Double, Date, Throwable> b = null;
+	public void testOr() throws Exception {
+		CheckedTriPredicate<String, Double, Date, Exception> a = null;
+		CheckedTriPredicate<String, Double, Date, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -404,7 +404,7 @@ public class CheckedTriPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -426,7 +426,7 @@ public class CheckedTriPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -436,7 +436,7 @@ public class CheckedTriPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -458,7 +458,7 @@ public class CheckedTriPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -468,14 +468,14 @@ public class CheckedTriPredicateTest {
 		}
 
 		{
-			CheckedTriPredicate<String, Double, Date, Throwable> n = (x, y, z) -> false;
+			CheckedTriPredicate<String, Double, Date, Exception> n = (x, y, z) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.or(null));
 		}
 	}
 
 	@Test
-	public void testNegate() throws Throwable {
-		CheckedTriPredicate<String, Double, Date, Throwable> a = null;
+	public void testNegate() throws Exception {
+		CheckedTriPredicate<String, Double, Date, Exception> a = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -504,7 +504,7 @@ public class CheckedTriPredicateTest {
 		Assertions.assertTrue(a.negate().test(string.get(), number.get(), date.get()));
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
 			date.set(new Date());
@@ -517,16 +517,16 @@ public class CheckedTriPredicateTest {
 			try {
 				a.negate().testChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 		}
 	}
 
 	@Test
-	public void testXor() throws Throwable {
-		CheckedTriPredicate<String, Double, Date, Throwable> a = null;
-		CheckedTriPredicate<String, Double, Date, Throwable> b = null;
+	public void testXor() throws Exception {
+		CheckedTriPredicate<String, Double, Date, Exception> a = null;
+		CheckedTriPredicate<String, Double, Date, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -628,7 +628,7 @@ public class CheckedTriPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -650,7 +650,7 @@ public class CheckedTriPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -660,7 +660,7 @@ public class CheckedTriPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -682,7 +682,7 @@ public class CheckedTriPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get(), date.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -692,7 +692,7 @@ public class CheckedTriPredicateTest {
 		}
 
 		{
-			CheckedTriPredicate<String, Double, Date, Throwable> n = (x, y, z) -> false;
+			CheckedTriPredicate<String, Double, Date, Exception> n = (x, y, z) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.xor(null));
 		}
 	}
