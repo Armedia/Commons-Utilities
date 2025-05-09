@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -62,7 +62,7 @@ public class TriPredicateTest {
 	}
 
 	@Test
-	public void testAnd() throws Throwable {
+	public void testAnd() throws Exception {
 		TriPredicate<String, Double, Date> a = null;
 		TriPredicate<String, Double, Date> b = null;
 
@@ -174,7 +174,7 @@ public class TriPredicateTest {
 	}
 
 	@Test
-	public void testOr() throws Throwable {
+	public void testOr() throws Exception {
 		TriPredicate<String, Double, Date> a = null;
 		TriPredicate<String, Double, Date> b = null;
 
@@ -286,7 +286,7 @@ public class TriPredicateTest {
 	}
 
 	@Test
-	public void testNegate() throws Throwable {
+	public void testNegate() throws Exception {
 		TriPredicate<String, Double, Date> a = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -317,7 +317,7 @@ public class TriPredicateTest {
 	}
 
 	@Test
-	public void testXor() throws Throwable {
+	public void testXor() throws Exception {
 		TriPredicate<String, Double, Date> a = null;
 		TriPredicate<String, Double, Date> b = null;
 

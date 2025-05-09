@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -37,15 +37,15 @@ public class LineSourceException extends Exception {
 		super(message);
 	}
 
-	public LineSourceException(Throwable cause) {
+	public LineSourceException(Exception cause) {
 		super(cause);
 	}
 
-	public LineSourceException(String message, Throwable cause) {
+	public LineSourceException(String message, Exception cause) {
 		super(message, cause);
 	}
 
-	public LineSourceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+	public LineSourceException(String message, Exception cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 

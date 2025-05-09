@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  *
@@ -151,7 +151,7 @@ public abstract class AbstractEntrypoint {
 		} catch (CommandLineSyntaxException e) {
 			HelpRenderer.renderError("ERROR", e, System.err);
 			return 1;
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			this.log.error("Failed to process the command-line arguments", t);
 			return -1;
 		}
@@ -217,7 +217,7 @@ public abstract class AbstractEntrypoint {
 		// By default, do nothing
 	}
 
-	protected void showError(Logger log, Throwable e) {
+	protected void showError(Logger log, Exception e) {
 		log.error("Exception caught", e);
 	}
 
@@ -227,9 +227,9 @@ public abstract class AbstractEntrypoint {
 		// First things first, find the first launcher
 		PluggableServiceLocator<AbstractEntrypoint> loader = new PluggableServiceLocator<>(AbstractEntrypoint.class);
 
-		final List<Throwable> exceptions = new ArrayList<>();
+		final List<Throwable> thrown = new ArrayList<>();
 		loader.setHideErrors(false);
-		loader.setErrorListener((c, e) -> exceptions.add(e));
+		loader.setErrorListener((c, e) -> thrown.add(e));
 
 		Iterator<AbstractEntrypoint> it = loader.getAll();
 		if (it.hasNext()) {
@@ -241,10 +241,10 @@ public abstract class AbstractEntrypoint {
 			return entrypoint;
 		} else {
 			AbstractEntrypoint.BOOT_LOG.error("No viable entrypoints were found");
-			if (!exceptions.isEmpty()) {
+			if (!thrown.isEmpty()) {
 				AbstractEntrypoint.BOOT_LOG.error("{} possible entrypoints were found, but failed to load:",
-					exceptions.size());
-				exceptions.forEach((e) -> AbstractEntrypoint.BOOT_LOG.error("Failed Entrypoint", e));
+					thrown.size());
+				thrown.forEach((e) -> AbstractEntrypoint.BOOT_LOG.error("Failed Entrypoint", e));
 			}
 			return null;
 		}
@@ -258,7 +258,7 @@ public abstract class AbstractEntrypoint {
 			int ret = 0;
 			try {
 				ret = entrypoint.execute(args);
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				AbstractEntrypoint.BOOT_LOG.error("Failed to launch {} from the entrypoint class {}",
 					entrypoint.getName(), entrypoint.getClass().getCanonicalName(), t);
 				ret = 1;

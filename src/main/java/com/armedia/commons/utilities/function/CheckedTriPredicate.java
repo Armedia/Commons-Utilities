@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -29,7 +29,7 @@ package com.armedia.commons.utilities.function;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface CheckedTriPredicate<T, U, V, EX extends Throwable> extends TriPredicate<T, U, V> {
+public interface CheckedTriPredicate<T, U, V, EX extends Exception> extends TriPredicate<T, U, V> {
 
 	public boolean testChecked(T t, U u, V v) throws EX;
 
@@ -37,7 +37,7 @@ public interface CheckedTriPredicate<T, U, V, EX extends Throwable> extends TriP
 	public default boolean test(T t, U u, V v) {
 		try {
 			return testChecked(t, u, v);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

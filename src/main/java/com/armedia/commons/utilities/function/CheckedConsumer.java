@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @FunctionalInterface
-public interface CheckedConsumer<T, EX extends Throwable> extends Consumer<T> {
+public interface CheckedConsumer<T, EX extends Exception> extends Consumer<T> {
 
 	public void acceptChecked(T t) throws EX;
 
@@ -38,7 +38,7 @@ public interface CheckedConsumer<T, EX extends Throwable> extends Consumer<T> {
 	public default void accept(T t) {
 		try {
 			acceptChecked(t);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

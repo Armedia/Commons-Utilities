@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -37,8 +37,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedConsumerTest {
 
 	@Test
-	public void testAcceptChecked() throws Throwable {
-		CheckedConsumer<String, Throwable> c = null;
+	public void testAcceptChecked() throws Exception {
+		CheckedConsumer<String, Exception> c = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 
@@ -47,7 +47,7 @@ public class CheckedConsumerTest {
 		c.acceptChecked(string.get());
 
 		string.set(UUID.randomUUID().toString());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		c = (s) -> {
 			Assertions.assertSame(string.get(), s);
 			throw thrown;
@@ -55,14 +55,14 @@ public class CheckedConsumerTest {
 		try {
 			c.acceptChecked(string.get());
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testAccept() {
-		CheckedConsumer<String, Throwable> c = null;
+		CheckedConsumer<String, Exception> c = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 
@@ -71,7 +71,7 @@ public class CheckedConsumerTest {
 		c.accept(string.get());
 
 		string.set(UUID.randomUUID().toString());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		c = (s) -> {
 			Assertions.assertSame(string.get(), s);
 			throw thrown;
@@ -87,9 +87,9 @@ public class CheckedConsumerTest {
 	}
 
 	@Test
-	public void testAndThen() throws Throwable {
-		CheckedConsumer<String, Throwable> a = null;
-		CheckedConsumer<String, Throwable> b = null;
+	public void testAndThen() throws Exception {
+		CheckedConsumer<String, Exception> a = null;
+		CheckedConsumer<String, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -111,7 +111,7 @@ public class CheckedConsumerTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -126,7 +126,7 @@ public class CheckedConsumerTest {
 			try {
 				b.acceptChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -136,7 +136,7 @@ public class CheckedConsumerTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			a = (s) -> {
@@ -151,7 +151,7 @@ public class CheckedConsumerTest {
 			try {
 				b.acceptChecked(string.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -161,7 +161,7 @@ public class CheckedConsumerTest {
 		}
 
 		{
-			CheckedConsumer<String, Throwable> n = (x) -> {
+			CheckedConsumer<String, Exception> n = (x) -> {
 			};
 
 			Assertions.assertThrows(NullPointerException.class, () -> n.andThen(null));

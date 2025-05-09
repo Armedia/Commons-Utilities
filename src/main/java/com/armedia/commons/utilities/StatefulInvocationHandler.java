@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -41,9 +41,9 @@ public abstract class StatefulInvocationHandler<T> implements InvocationHandler 
 	}
 
 	@Override
-	public final Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	public final Object invoke(Object proxy, Method method, Object[] args) throws Exception {
 		return invoke(getState(), proxy, method, args);
 	}
 
-	protected abstract Object invoke(T state, Object proxy, Method method, Object[] args) throws Throwable;
+	protected abstract Object invoke(T state, Object proxy, Method method, Object[] args) throws Exception;
 }

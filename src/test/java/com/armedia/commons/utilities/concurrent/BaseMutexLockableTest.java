@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -167,7 +167,7 @@ public class BaseMutexLockableTest {
 		Assertions.assertNotNull(c);
 		Assertions.assertFalse(lock.isLocked());
 		Assertions.assertFalse(lock.isHeldByCurrentThread());
-		Assertions.assertThrows(Throwable.class, () -> c.await());
+		Assertions.assertThrows(Exception.class, () -> c.await());
 
 		try (MutexAutoLock auto = rwl.mutexAutoLock()) {
 			Assertions.assertTrue(lock.isLocked());
@@ -210,7 +210,7 @@ public class BaseMutexLockableTest {
 				throw ex;
 			});
 			Assertions.fail("Did not cascade the raised exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(ex, t);
 		}
 		Assertions.assertFalse(lock.isHeldByCurrentThread());
@@ -250,20 +250,20 @@ public class BaseMutexLockableTest {
 	}
 
 	@Test
-	public void testRunnableAlwaysChecked() throws Throwable {
+	public void testRunnableAlwaysChecked() throws Exception {
 		final ReentrantLock lock = new ReentrantLock();
 		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
 		final AtomicLong callCount = new AtomicLong(0);
 
 		callCount.set(0);
-		rwl.mutexLocked(new CheckedRunnable<Throwable>() {
+		rwl.mutexLocked(new CheckedRunnable<Exception>() {
 			@Override
 			public void run() {
 				Assertions.fail("CheckedRunnable.run() should never be called!");
 			}
 
 			@Override
-			public void runChecked() throws Throwable {
+			public void runChecked() throws Exception {
 				callCount.incrementAndGet();
 			}
 		});
@@ -286,13 +286,13 @@ public class BaseMutexLockableTest {
 	}
 
 	@Test
-	public void testSupplierAlwaysChecked() throws Throwable {
+	public void testSupplierAlwaysChecked() throws Exception {
 		final ReentrantLock lock = new ReentrantLock();
 		final BaseMutexLockable rwl = new BaseMutexLockable(lock);
 		final AtomicLong callCount = new AtomicLong(0);
 
 		callCount.set(0);
-		rwl.mutexLocked(new CheckedSupplier<Object, Throwable>() {
+		rwl.mutexLocked(new CheckedSupplier<Object, Exception>() {
 			@Override
 			public Object get() {
 				Assertions.fail("CheckedSupplier.get() should never be called!");
@@ -300,7 +300,7 @@ public class BaseMutexLockableTest {
 			}
 
 			@Override
-			public Object getChecked() throws Throwable {
+			public Object getChecked() throws Exception {
 				callCount.incrementAndGet();
 				return null;
 			}

@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -57,7 +57,7 @@ public class ResourceLineSourceFactory implements LineSourceFactory {
 		return ResourceLoader.getResourceOrFile(resource, relative);
 	}
 
-	protected LineSource processException(String resource, String relative, Throwable t) throws LineSourceException {
+	protected LineSource processException(String resource, String relative, Exception t) throws LineSourceException {
 		if (FileNotFoundException.class.isInstance(t)) { return null; }
 		throw new LineSourceException(
 			String.format("Couldn't read the resource at [%s] (relative to [%s]", resource, relative), t);

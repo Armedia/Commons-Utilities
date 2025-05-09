@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -37,8 +37,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedTriConsumerTest {
 
 	@Test
-	public void testAcceptChecked() throws Throwable {
-		CheckedTriConsumer<String, Double, UUID, Throwable> c = null;
+	public void testAcceptChecked() throws Exception {
+		CheckedTriConsumer<String, Double, UUID, Exception> c = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -57,7 +57,7 @@ public class CheckedTriConsumerTest {
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
 		uuid.set(UUID.randomUUID());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		c = (s, n, u) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -67,14 +67,14 @@ public class CheckedTriConsumerTest {
 		try {
 			c.acceptChecked(string.get(), number.get(), uuid.get());
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testAccept() {
-		CheckedTriConsumer<String, Double, UUID, Throwable> c = null;
+		CheckedTriConsumer<String, Double, UUID, Exception> c = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -93,7 +93,7 @@ public class CheckedTriConsumerTest {
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
 		uuid.set(UUID.randomUUID());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		c = (s, n, u) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -111,9 +111,9 @@ public class CheckedTriConsumerTest {
 	}
 
 	@Test
-	public void testAndThen() throws Throwable {
-		CheckedTriConsumer<String, Double, UUID, Throwable> a = null;
-		CheckedTriConsumer<String, Double, UUID, Throwable> b = null;
+	public void testAndThen() throws Exception {
+		CheckedTriConsumer<String, Double, UUID, Exception> a = null;
+		CheckedTriConsumer<String, Double, UUID, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -142,7 +142,7 @@ public class CheckedTriConsumerTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -163,7 +163,7 @@ public class CheckedTriConsumerTest {
 			try {
 				b.acceptChecked(string.get(), number.get(), uuid.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -173,7 +173,7 @@ public class CheckedTriConsumerTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -194,7 +194,7 @@ public class CheckedTriConsumerTest {
 			try {
 				b.acceptChecked(string.get(), number.get(), uuid.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -204,7 +204,7 @@ public class CheckedTriConsumerTest {
 		}
 
 		{
-			CheckedTriConsumer<String, Double, UUID, Throwable> n = (x, y, z) -> {
+			CheckedTriConsumer<String, Double, UUID, Exception> n = (x, y, z) -> {
 			};
 
 			Assertions.assertThrows(NullPointerException.class, () -> n.andThen(null));

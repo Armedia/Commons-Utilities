@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  *
@@ -32,7 +32,7 @@ import com.armedia.commons.utilities.function.CheckedBiConsumer;
 import com.armedia.commons.utilities.function.CheckedTools;
 
 @FunctionalInterface
-public interface PooledWorkersLogic<STATE, ITEM, EX extends Throwable> {
+public interface PooledWorkersLogic<STATE, ITEM, EX extends Exception> {
 
 	public default STATE initialize(PooledWorkers<STATE, ITEM> worker) throws EX {
 		return null;
@@ -47,12 +47,12 @@ public interface PooledWorkersLogic<STATE, ITEM, EX extends Throwable> {
 	public default void cleanup(STATE state) {
 	}
 
-	public static <STATE, ITEM, EX extends Throwable> PooledWorkersLogic<STATE, ITEM, EX> of(
+	public static <STATE, ITEM, EX extends Exception> PooledWorkersLogic<STATE, ITEM, EX> of(
 		BiConsumer<STATE, ITEM> processor) {
 		return new FunctionalPooledWorkersLogic<>(CheckedTools.check(processor));
 	}
 
-	public static <STATE, ITEM, EX extends Throwable> PooledWorkersLogic<STATE, ITEM, EX> of(
+	public static <STATE, ITEM, EX extends Exception> PooledWorkersLogic<STATE, ITEM, EX> of(
 		CheckedBiConsumer<STATE, ITEM, EX> processor) {
 		return new FunctionalPooledWorkersLogic<>(processor);
 	}

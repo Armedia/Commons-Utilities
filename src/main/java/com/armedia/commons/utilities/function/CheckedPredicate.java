@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 @FunctionalInterface
-public interface CheckedPredicate<T, EX extends Throwable> extends Predicate<T> {
+public interface CheckedPredicate<T, EX extends Exception> extends Predicate<T> {
 
 	public boolean testChecked(T t) throws EX;
 
@@ -38,7 +38,7 @@ public interface CheckedPredicate<T, EX extends Throwable> extends Predicate<T> 
 	public default boolean test(T t) {
 		try {
 			return testChecked(t);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

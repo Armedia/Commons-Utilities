@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- *
+ * 
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- *
+ * 
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -156,6 +156,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		if (values == null) {
 			values = Collections.emptyList();
 		} else {
+			final Function<String, String> mapper = Tools.coalesce(p.getValueProcessor(), Option.IDENTITY);
 			values = values.stream() //
 				.map(p.getValueProcessor()) // Convert the values however the option sees fit
 				.filter(Objects::nonNull) // Remove null values
@@ -200,7 +201,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	}
 
 	public Iterable<OptionValue> shortOptions() {
-		return Tools.freezeList(new ArrayList<>(this.shortOptions.values()));
+		return new ArrayList<>(this.shortOptions.values());
 	}
 
 	public OptionValue getOption(char shortOpt) {
@@ -212,7 +213,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 	}
 
 	public Iterable<OptionValue> longOptions() {
-		return Tools.freezeList(new ArrayList<>(this.longOptions.values()));
+		return new ArrayList<>(this.longOptions.values());
 	}
 
 	public OptionValue getOption(String longOpt) {
@@ -450,6 +451,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 		}
 		String value = getString(param);
 		if (value == null) { return null; }
+
 		OptionValueFilter filter = param.getValueFilter();
 		if (EnumValueFilter.class.isInstance(filter)) {
 			EnumValueFilter<?> enumFilter = EnumValueFilter.class.cast(filter);
@@ -551,39 +553,7 @@ public final class OptionValues implements Iterable<OptionValue>, Cloneable {
 
 	public <E extends Enum<E>> Set<E> getEnums(Class<E> enumClass, String allString,
 		BiFunction<Object, Exception, E> invalidHandler, Option param, Set<E> def) {
-		if (enumClass == null) { throw new IllegalArgumentException("Must provide a non-null Enum class"); }
-		if (!enumClass.isEnum()) {
-			throw new IllegalArgumentException(
-				String.format("Class [%s] is not an Enum class", enumClass.getCanonicalName()));
-		}
-		List<String> v = getStrings(param, null);
-		if (v == null) { return def; }
-		Set<E> ret = EnumSet.noneOf(enumClass);
-		OptionValueFilter filter = param.getValueFilter();
-		EnumValueFilter<?> enumFilter = null;
-		if (EnumValueFilter.class.isInstance(filter)) {
-			enumFilter = EnumValueFilter.class.cast(filter);
-		}
-		for (String s : v) {
-			if (StringUtils.equalsIgnoreCase(allString, s)) { return EnumSet.allOf(enumClass); }
-			if (enumFilter != null) {
-				Object o = enumFilter.decode(s);
-				if (o != null) {
-					ret.add(enumClass.cast(o));
-					continue;
-				}
-			}
-			try {
-				ret.add(Enum.valueOf(enumClass, s));
-			} catch (final IllegalArgumentException e) {
-				if (invalidHandler == null) { throw e; }
-				E alt = invalidHandler.apply(ret, e);
-				if (alt != null) {
-					ret.add(alt);
-				}
-			}
-		}
-		return ret;
+		return Tools.coalesce(getEnums(enumClass, allString, invalidHandler, param), def);
 	}
 
 	public boolean isPresent(Option param) {

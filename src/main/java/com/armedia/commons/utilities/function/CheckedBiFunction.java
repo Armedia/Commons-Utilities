@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 @FunctionalInterface
-public interface CheckedBiFunction<T, U, R, EX extends Throwable> extends BiFunction<T, U, R> {
+public interface CheckedBiFunction<T, U, R, EX extends Exception> extends BiFunction<T, U, R> {
 
 	public R applyChecked(T t, U u) throws EX;
 
@@ -38,7 +38,7 @@ public interface CheckedBiFunction<T, U, R, EX extends Throwable> extends BiFunc
 	public default R apply(T t, U u) {
 		try {
 			return applyChecked(t, u);
-		} catch (Throwable thrown) {
+		} catch (Exception thrown) {
 			throw new RuntimeException(thrown.getMessage(), thrown);
 		}
 	}

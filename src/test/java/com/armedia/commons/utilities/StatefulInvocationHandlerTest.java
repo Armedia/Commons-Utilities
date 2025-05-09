@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -45,7 +45,7 @@ public class StatefulInvocationHandlerTest {
 	}
 
 	@Test
-	public void testStatefulInvocationHandler() throws Throwable {
+	public void testStatefulInvocationHandler() throws Exception {
 		final AtomicReference<Object> stateRef = new AtomicReference<>(new Object());
 		final AtomicReference<UUID> returnValue = new AtomicReference<>(null);
 		final AtomicInteger paramCount = new AtomicInteger(0);
@@ -71,7 +71,7 @@ public class StatefulInvocationHandlerTest {
 
 		StatefulInvocationHandler<Object> handler = new StatefulInvocationHandler<Object>(stateRef.get()) {
 			@Override
-			protected Object invoke(Object state, Object proxy, Method method, Object[] args) throws Throwable {
+			protected Object invoke(Object state, Object proxy, Method method, Object[] args) throws Exception {
 				Assertions.assertSame(stateRef.get(), state);
 				Assertions.assertSame(state, getState());
 				Assertions.assertSame(testProxy.get(), proxy);

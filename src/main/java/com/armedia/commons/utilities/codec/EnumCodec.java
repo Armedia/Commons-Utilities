@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -160,7 +160,7 @@ public class EnumCodec<E extends Enum<E>> implements Codec<E, String> {
 	public String encode(E e) {
 		try {
 			return this.encodeChecked(e);
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
 			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
 			throw new RuntimeException(String.format("Failed to encode the enum value [%s]", e), t);
@@ -181,7 +181,7 @@ public class EnumCodec<E extends Enum<E>> implements Codec<E, String> {
 	public E decode(String s) {
 		try {
 			return this.decodeChecked(s);
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			if (RuntimeException.class.isInstance(t)) { throw RuntimeException.class.cast(t); }
 			if (Error.class.isInstance(t)) { throw Error.class.cast(t); }
 			throw new RuntimeException(String.format("Failed to decode the String [%s]", s), t);

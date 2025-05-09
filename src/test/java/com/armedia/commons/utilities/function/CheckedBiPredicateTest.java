@@ -2,7 +2,7 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
  * 
@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Test;
 public class CheckedBiPredicateTest {
 
 	@Test
-	public void testApplyChecked() throws Throwable {
-		CheckedBiPredicate<String, Double, Throwable> p = null;
+	public void testApplyChecked() throws Exception {
+		CheckedBiPredicate<String, Double, Exception> p = null;
 
 		final Random r = new Random(System.nanoTime());
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -58,7 +58,7 @@ public class CheckedBiPredicateTest {
 
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		p = (s, n) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -67,14 +67,14 @@ public class CheckedBiPredicateTest {
 		try {
 			p.testChecked(string.get(), number.get());
 			Assertions.fail("Did not raise the cascaded exception");
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			Assertions.assertSame(thrown, t);
 		}
 	}
 
 	@Test
 	public void testApply() {
-		CheckedBiPredicate<String, Double, Throwable> p = null;
+		CheckedBiPredicate<String, Double, Exception> p = null;
 
 		final Random r = new Random(System.nanoTime());
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -94,7 +94,7 @@ public class CheckedBiPredicateTest {
 		string.set(UUID.randomUUID().toString());
 		number.set(Math.random());
 		bool.set(r.nextBoolean());
-		final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+		final Exception thrown = new Exception(UUID.randomUUID().toString());
 		p = (s, n) -> {
 			Assertions.assertSame(string.get(), s);
 			Assertions.assertSame(number.get(), n);
@@ -111,9 +111,9 @@ public class CheckedBiPredicateTest {
 	}
 
 	@Test
-	public void testAnd() throws Throwable {
-		CheckedBiPredicate<String, Double, Throwable> a = null;
-		CheckedBiPredicate<String, Double, Throwable> b = null;
+	public void testAnd() throws Exception {
+		CheckedBiPredicate<String, Double, Exception> a = null;
+		CheckedBiPredicate<String, Double, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -204,7 +204,7 @@ public class CheckedBiPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -223,7 +223,7 @@ public class CheckedBiPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -233,7 +233,7 @@ public class CheckedBiPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -252,7 +252,7 @@ public class CheckedBiPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -262,15 +262,15 @@ public class CheckedBiPredicateTest {
 		}
 
 		{
-			CheckedBiPredicate<String, Double, Throwable> n = (x, y) -> false;
+			CheckedBiPredicate<String, Double, Exception> n = (x, y) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.and(null));
 		}
 	}
 
 	@Test
-	public void testOr() throws Throwable {
-		CheckedBiPredicate<String, Double, Throwable> a = null;
-		CheckedBiPredicate<String, Double, Throwable> b = null;
+	public void testOr() throws Exception {
+		CheckedBiPredicate<String, Double, Exception> a = null;
+		CheckedBiPredicate<String, Double, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -361,7 +361,7 @@ public class CheckedBiPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -380,7 +380,7 @@ public class CheckedBiPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -390,7 +390,7 @@ public class CheckedBiPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -409,7 +409,7 @@ public class CheckedBiPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -419,14 +419,14 @@ public class CheckedBiPredicateTest {
 		}
 
 		{
-			CheckedBiPredicate<String, Double, Throwable> n = (x, y) -> false;
+			CheckedBiPredicate<String, Double, Exception> n = (x, y) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.or(null));
 		}
 	}
 
 	@Test
-	public void testNegate() throws Throwable {
-		CheckedBiPredicate<String, Double, Throwable> a = null;
+	public void testNegate() throws Exception {
+		CheckedBiPredicate<String, Double, Exception> a = null;
 
 		final AtomicReference<String> string = new AtomicReference<>(null);
 		final AtomicReference<Double> number = new AtomicReference<>(null);
@@ -450,7 +450,7 @@ public class CheckedBiPredicateTest {
 		Assertions.assertTrue(a.negate().test(string.get(), number.get()));
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
 			a = (s, n) -> {
@@ -461,16 +461,16 @@ public class CheckedBiPredicateTest {
 			try {
 				a.negate().testChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 		}
 	}
 
 	@Test
-	public void testXor() throws Throwable {
-		CheckedBiPredicate<String, Double, Throwable> a = null;
-		CheckedBiPredicate<String, Double, Throwable> b = null;
+	public void testXor() throws Exception {
+		CheckedBiPredicate<String, Double, Exception> a = null;
+		CheckedBiPredicate<String, Double, Exception> b = null;
 
 		final List<String> callers = new ArrayList<>();
 		final AtomicReference<String> string = new AtomicReference<>(null);
@@ -561,7 +561,7 @@ public class CheckedBiPredicateTest {
 		}, callers.toArray());
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -580,7 +580,7 @@ public class CheckedBiPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(1, callers.size());
@@ -590,7 +590,7 @@ public class CheckedBiPredicateTest {
 		}
 
 		{
-			final Throwable thrown = new Throwable(UUID.randomUUID().toString());
+			final Exception thrown = new Exception(UUID.randomUUID().toString());
 			callers.clear();
 			string.set(UUID.randomUUID().toString());
 			number.set(Math.random());
@@ -609,7 +609,7 @@ public class CheckedBiPredicateTest {
 			try {
 				b.testChecked(string.get(), number.get());
 				Assertions.fail("Did not raise the chained exception");
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				Assertions.assertSame(thrown, t);
 			}
 			Assertions.assertEquals(2, callers.size());
@@ -619,7 +619,7 @@ public class CheckedBiPredicateTest {
 		}
 
 		{
-			CheckedBiPredicate<String, Double, Throwable> n = (x, y) -> false;
+			CheckedBiPredicate<String, Double, Exception> n = (x, y) -> false;
 			Assertions.assertThrows(NullPointerException.class, () -> n.xor(null));
 		}
 	}

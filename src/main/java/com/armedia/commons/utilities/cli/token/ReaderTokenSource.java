@@ -2,24 +2,24 @@
  * #%L
  * Armedia Caliente
  * %%
- * Copyright (C) 2013 - 2022 Armedia, LLC
+ * Copyright (C) 2013 - 2025 Armedia, LLC
  * %%
  * This file is part of the Caliente software.
- * 
+ *
  * If the software was purchased under a paid Caliente license, the terms of
  * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Caliente is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Caliente is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Caliente. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -38,7 +38,7 @@ public abstract class ReaderTokenSource implements TokenSource {
 
 	public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
-	private Throwable thrown = null;
+	private Exception thrown = null;
 	private List<String> tokenStrings = null;
 	private Charset charset = ReaderTokenSource.DEFAULT_CHARSET;
 
@@ -159,6 +159,14 @@ public abstract class ReaderTokenSource implements TokenSource {
 		}
 	}
 
+	protected String process(String token) {
+		return token;
+	}
+
+	private boolean processAndAdd(List<String> tokens, String token) {
+		return tokens.add(process(token));
+	}
+
 	protected List<String> tokenize(Reader r) throws IOException {
 		List<String> ret = new ArrayList<>();
 
@@ -169,7 +177,7 @@ public abstract class ReaderTokenSource implements TokenSource {
 			Character current = readNext(r);
 			if (current == null) {
 				if (tokenOpen) {
-					ret.add(b.toString());
+					processAndAdd(ret, b.toString());
 					tokenOpen = false;
 				}
 				return ret;
@@ -192,7 +200,7 @@ public abstract class ReaderTokenSource implements TokenSource {
 				selector: switch (current) {
 					case '#':
 						if (tokenOpen) {
-							ret.add(b.toString());
+							processAndAdd(ret, b.toString());
 							b.setLength(0);
 							tokenOpen = false;
 						}
@@ -205,7 +213,7 @@ public abstract class ReaderTokenSource implements TokenSource {
 					case '\n':
 					case '\f':
 						if (tokenOpen) {
-							ret.add(b.toString());
+							processAndAdd(ret, b.toString());
 							b.setLength(0);
 							tokenOpen = false;
 						}
@@ -217,7 +225,7 @@ public abstract class ReaderTokenSource implements TokenSource {
 						if (tokenOpen) {
 							b.append(quoted);
 						} else {
-							ret.add(quoted);
+							processAndAdd(ret, quoted);
 						}
 						continue nextChar;
 
