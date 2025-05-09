@@ -32,20 +32,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringSubstitutor;
-import org.apache.commons.text.lookup.StringLookup;
-
 import com.armedia.commons.utilities.Tools;
 
 public abstract class ReaderTokenSource implements TokenSource {
 
 	public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
-
-	private static final StringLookup LOOKUP = (key) -> StringUtils.getIfBlank(System.getenv(key),
-		() -> System.getProperty(key));
-
-	private static final StringSubstitutor SUBSTITUTOR = new StringSubstitutor(ReaderTokenSource.LOOKUP);
 
 	private Throwable thrown = null;
 	private List<String> tokenStrings = null;
@@ -169,8 +160,7 @@ public abstract class ReaderTokenSource implements TokenSource {
 	}
 
 	protected String process(String token) {
-		// Apply the environment and envvar interpolation
-		return ReaderTokenSource.SUBSTITUTOR.replace(token);
+		return token;
 	}
 
 	private boolean processAndAdd(List<String> tokens, String token) {

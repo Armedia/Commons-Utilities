@@ -29,7 +29,6 @@ package com.armedia.commons.utilities.cli.token;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -61,39 +60,6 @@ public class ReaderTokenSourceTest {
 		Assertions.assertEquals(expected.size(), actual.size(), "Token counts");
 		for (int i = 0; i < actual.size(); i++) {
 			Assertions.assertEquals(expected.get(i), actual.get(i), String.format("Mismatch found at token %d", i));
-		}
-	}
-
-	@Test
-	public void testInterpolated() throws Exception {
-		final long nanoTime = System.nanoTime();
-		String singlePropName = "test.single.property." + nanoTime;
-		String dualPropName = "test.dual.property." + nanoTime;
-		try {
-			String singlePropValue = UUID.randomUUID().toString();
-			System.setProperty(singlePropName, singlePropValue);
-
-			String dualPropValue = UUID.randomUUID().toString() + " " + nanoTime;
-			System.setProperty(dualPropName, dualPropValue);
-
-			String path = System.getenv("PATH");
-			String str = "abc ${PATH} ${" + singlePropName + "} ${NOTHING} ${" + dualPropName + "}";
-			List<String> expected = Arrays.asList(new String[] {
-				"abc", //
-				path, //
-				singlePropValue, //
-				"${NOTHING}", //
-				dualPropValue, //
-			});
-			ReaderTokenSource source = new CharacterSequenceTokenSource(str);
-			List<String> actual = source.getTokenStrings();
-			Assertions.assertEquals(expected.size(), actual.size(), "Token counts");
-			for (int i = 0; i < actual.size(); i++) {
-				Assertions.assertEquals(expected.get(i), actual.get(i), String.format("Mismatch found at token %d", i));
-			}
-		} finally {
-			System.clearProperty(dualPropName);
-			System.clearProperty(singlePropName);
 		}
 	}
 
